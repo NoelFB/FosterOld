@@ -49,8 +49,8 @@ namespace Foster.GLFW
         [StructLayout(LayoutKind.Sequential)]
         public struct GamepadState
         {
-            char[] buttons;
-            float[] axes;
+            public char[] Buttons;
+            public float[] Axes;
         }
 
         public enum WindowAttributes
@@ -75,7 +75,10 @@ namespace Foster.GLFW
             TransparentFramebuffer,
             FocusOnshow,
             ScaleToMonitor,
-            DoubleBuffer
+            DoubleBuffer,
+            ContextVersionMajor = 0x00022002,
+            ContextVersionMinor = 0x00022003,
+            ContextVersionRevision = 0x00022004
         }
 
         public delegate void ErrorFunc(int id, string message);
@@ -166,6 +169,9 @@ namespace Foster.GLFW
 
         [DllImport(DLL, EntryPoint = "glfwWindowHint", CallingConvention = CallingConvention.Cdecl)]
         public static extern void WindowHint(WindowHints hint, bool value);
+
+        [DllImport(DLL, EntryPoint = "glfwWindowHint", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void WindowHint(WindowHints hint, int value);
 
         [DllImport(DLL, EntryPoint = "glfwWindowHintString", CallingConvention = CallingConvention.Cdecl)]
         public static extern void WindowHintString(WindowHints hint, [MarshalAs(UnmanagedType.LPStr)] string value);

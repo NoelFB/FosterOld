@@ -7,8 +7,11 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
+        private GLFW_System system;
         private GLFW.Window handle;
+        private string title;
         private bool opened;
+        private bool visible;
 
         public override RectInt Bounds
         {
@@ -37,6 +40,12 @@ namespace Foster.GLFW
 
         public override bool Opened => opened;
 
+        public override string Title
+        {
+            get => title;
+            set => GLFW.SetWindowTitle(handle, title = value);
+        }
+
         public override bool Bordered
         {
             get => GLFW.GetWindowAttrib(handle, GLFW.WindowAttributes.Decorated);
@@ -55,13 +64,34 @@ namespace Foster.GLFW
             set => throw new NotImplementedException();
         }
 
-        public GLFW_Window(string title, int width, int height)
+        public override bool Visible
         {
-            handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, IntPtr.Zero);
+            get => visible;
+            set
+            {
+                visible = value;
+                if (visible)
+                    GLFW.ShowWindow(handle);
+                else
+                    GLFW.HideWindow(handle);
+            }
+        }
+
+        public GLFW_Window(GLFW_System system, string title, int width, int height, bool visible = true)
+        {
+            this.system = system;
+            this.title = title;
+
+            var share = IntPtr.Zero;
+            if (system.Windows.Count > 0)
+                share = (system.Windows[0] as GLFW_Window).handle;
+
+            handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, share);
+            opened = true;
+            Visible = visible;
 
             GLFW.SetWindowCloseCallback(handle, (handle) => Close());
-
-            opened = true;
+            MakeCurrent();
         }
 
         public override void MakeCurrent()
@@ -85,6 +115,7 @@ namespace Foster.GLFW
             if (opened)
             {
                 GLFW.DestroyWindow(handle);
+                system.windows.Remove(this);
                 opened = false;
             }
         }

@@ -23,5 +23,11 @@ namespace Foster.Framework
         public abstract void SetData<T>(Memory<T> buffer);
         public abstract void GetData<T>(Memory<T> buffer);
 
+        public Bitmap AsBitmap()
+        {
+            var bitmap = new Bitmap(Width, Height);
+            GetData(new Memory<Color>(bitmap.Pixels));
+            return bitmap;
+        }
     }
 }

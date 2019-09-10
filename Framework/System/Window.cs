@@ -27,10 +27,13 @@ namespace Foster.Framework
             get => Bounds.Height;
         }
 
+        public abstract string Title { get; set; }
+
         public abstract bool Opened { get; }
         public abstract bool Bordered { get; set; }
         public abstract bool Resizable { get; set; }
         public abstract bool Fullscreen { get; set; }
+        public abstract bool Visible { get; set; }
 
         public abstract RectInt Bounds { get; set; }
         public abstract Point2 DrawSize { get; }

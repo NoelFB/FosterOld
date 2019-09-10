@@ -1,15 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Foster.Framework;
 
 namespace Foster.GLFW
 {
     public class GLFW_System : Framework.System
     {
+        internal readonly List<Window> windows = new List<Window>();
 
-        protected override void Created()
+        public override ReadOnlyCollection<Window> Windows { get; }
+
+        public GLFW_System()
         {
-            base.Created();
+            Windows = windows.AsReadOnly();
+        }
 
+        protected override void OnCreated()
+        {
             if (GLFW.Init() == 0)
             {
                 GLFW.GetError(out var error);
@@ -20,36 +28,37 @@ namespace Foster.GLFW
 
             ApiName = "GLFW";
             ApiVersion = new Version(major, minor, rev);
+
+            base.OnCreated();
         }
 
-        protected override void Startup()
+        protected override void OnStartup()
         {
-            base.Startup();
+            base.OnStartup();
 
-            if (App.Graphics != null)
-            {
-                if (App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
-                    throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
-            }
+            if (App.Graphics != null && App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
+                throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
         }
 
-        protected override void Shutdown()
+        protected override void OnShutdown()
         {
-            base.Shutdown();
+            base.OnShutdown();
             GLFW.Terminate();
         }
 
-        protected override void PostUpdate()
+        protected override void OnPostUpdate()
         {
             GLFW.PollEvents();
         }
 
-        public override Window CreateWindow(string title, int width, int height)
+        public override Window CreateWindow(string title, int width, int height, bool visible = true)
         {
-            return new GLFW_Window(title, width, height);
+            var window = new GLFW_Window(this, title, width, height, visible);
+            windows.Add(window);
+            return window;
         }
 
-        public override IntPtr ProcAddress(string name)
+        public override IntPtr GetProcAddress(string name)
         {
             return GLFW.GetProcAddress(name);
         }

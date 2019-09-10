@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Foster.Framework
 {
@@ -21,6 +22,7 @@ namespace Foster.Framework
         public static Window? Window { get; private set; }
 
         public static event Action? OnUpdate;
+        public static event Action<Window>? OnRender;
         public static event Action? OnExit;
         public static event Action? OnShutdown;
 
@@ -47,15 +49,20 @@ namespace Foster.Framework
 
             // Startup
             foreach (var module in modules)
-                module.Startup();
+                module.OnStartup();
 
             // Create our first Window
-            // If this window is Closed, the entire App ends
-            Window = System.CreateWindow(title, width, height);
+            Window = System.CreateWindow(title, width, height, false);
+
+            // We now have a Context
+            foreach (var module in modules)
+                module.OnContext();
+
+            Window.Visible = true;
 
             // Tell Module's we have a Window to Display to
             foreach (var module in modules)
-                module.Displayed();
+                module.OnDisplayed();
 
             // Start Running
             onReady?.Invoke();
@@ -69,18 +76,23 @@ namespace Foster.Framework
             while (Running && Window != null && Window.Opened)
             {
                 foreach (var module in modules)
-                    module.PreUpdate();
+                    module.OnPreUpdate();
 
                 OnUpdate?.Invoke();
 
-                if (Window != null && Window.Opened)
+                if (System != null)
                 {
-                    Window.MakeCurrent();
-                    Window.Present();
+                    foreach (var window in System.Windows)
+                    {
+                        window.MakeCurrent();
+                        Graphics?.Target(null);
+                        OnRender?.Invoke(window);
+                        window.Present();
+                    }
                 }
 
                 foreach (var module in modules)
-                    module.PostUpdate();
+                    module.OnPostUpdate();
             }
 
             // Close the Window
@@ -88,7 +100,7 @@ namespace Foster.Framework
 
             // exit Modules
             foreach (var module in modules)
-                module.Shutdown();
+                module.OnShutdown();
             modules.Clear();
             modulesByType.Clear();
 
@@ -115,23 +127,31 @@ namespace Foster.Framework
             }
         }
 
-        public static void Register<T>() where T : Module
+        public static void RegisterModule<T>() where T : Module
+        {
+            RegisterModule(typeof(T));
+        }
+
+        public static void RegisterModule(Type type)
         {
             if (Started)
                 throw new Exception("App has already started; Registering Module's must be called before App.Startup");
 
-            var module = Activator.CreateInstance<T>();
+            if (!(Activator.CreateInstance(type) is Module module))
+                throw new Exception("Type must inheirt from Module");
 
             // add Module to lookup
-            Type? type = typeof(T);
-            while (type != typeof(Module) && type != null)
+            while (type != typeof(Module))
             {
                 modulesByType.Add(type, module);
+
+                if (type.BaseType == null)
+                    break;
                 type = type.BaseType;
             }
 
             modules.Add(module);
-            module.Created();
+            module.OnCreated();
         }
 
         internal static T? Module<T>() where T : Module

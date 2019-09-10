@@ -17,7 +17,10 @@ namespace Foster.Framework
         public abstract Shader CreateShader(int width, int height);
         public abstract Mesh<T> CreateMesh<T>() where T : struct;
 
-        protected internal override void Startup()
+        public abstract void Target(Target? target);
+        public abstract void Clear(Color color);
+
+        protected internal override void OnDisplayed()
         {
             Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");
         }

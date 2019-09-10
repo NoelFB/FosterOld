@@ -11,13 +11,15 @@ namespace Foster.Framework
         public string? ApiName;
         public Version? ApiVersion;
 
-        public abstract Window CreateWindow(string title, int width, int height);
-        public abstract IntPtr ProcAddress(string name);
+        public abstract Window CreateWindow(string title, int width, int height, bool visible = true);
+        public abstract ReadOnlyCollection<Window> Windows { get; }
+        public abstract IntPtr GetProcAddress(string name);
 
-        protected internal override void Startup()
+        protected internal override void OnStartup()
         {
             Console.WriteLine($" - System {ApiName} {ApiVersion}");
         }
+
 
     }
 }

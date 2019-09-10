@@ -5,13 +5,11 @@ VisualStudioVersion = 16.0.29123.89
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.Framework", "..\..\Framework\Foster.Framework.csproj", "{1558902F-E790-42A5-AD40-ECDAC648ED59}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foster.GLFW", "..\..\Platforms\Foster.GLFW\Foster.GLFW.csproj", "{8DA5DBE3-2CC1-4EE9-BAD6-24414F17CF31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.GLFW", "..\..\Platforms\Foster.GLFW\Foster.GLFW.csproj", "{8DA5DBE3-2CC1-4EE9-BAD6-24414F17CF31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test1", "Test1.csproj", "{789509F4-C93D-476E-9EFD-11C011AA209E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test1", "Test1.csproj", "{789509F4-C93D-476E-9EFD-11C011AA209E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foster.OpenGL", "..\..\Platforms\Foster.OpenGL\Foster.OpenGL.csproj", "{21AA6D96-4561-45FC-9C40-3F2C4280109E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foster.SDL2", "..\..\Platforms\Foster.SDL2\Foster.SDL2.csproj", "{7942CD8F-4E1A-41AC-BACB-DB0807E77F59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.OpenGL", "..\..\Platforms\Foster.OpenGL\Foster.OpenGL.csproj", "{21AA6D96-4561-45FC-9C40-3F2C4280109E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +33,6 @@ Global
 		{21AA6D96-4561-45FC-9C40-3F2C4280109E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21AA6D96-4561-45FC-9C40-3F2C4280109E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21AA6D96-4561-45FC-9C40-3F2C4280109E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7942CD8F-4E1A-41AC-BACB-DB0807E77F59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7942CD8F-4E1A-41AC-BACB-DB0807E77F59}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7942CD8F-4E1A-41AC-BACB-DB0807E77F59}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7942CD8F-4E1A-41AC-BACB-DB0807E77F59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

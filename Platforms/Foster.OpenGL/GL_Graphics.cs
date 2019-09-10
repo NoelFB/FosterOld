@@ -3,15 +3,23 @@ using System;
 
 namespace Foster.OpenGL
 {
-    public class OpenGL_Graphics : Graphics
+    public class GL_Graphics : Graphics
     {
 
-        protected override void Created()
+        protected override void OnCreated()
         {
             Api = GraphicsApi.OpenGL;
             ApiName = "OpenGL";
-            ApiVersion = new Version();
-            MaxTextureSize = 8192;
+        }
+
+        protected override void OnDisplayed()
+        {
+            GL.Init();
+
+            MaxTextureSize = GL.MaxTextureSize;
+            ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
+        
+            base.OnDisplayed();
         }
 
         public override Texture CreateTexture(int width, int height)
@@ -34,6 +42,15 @@ namespace Foster.OpenGL
             throw new NotImplementedException();
         }
 
+        public override void Target(Target? target)
+        {
+            GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
+        }
 
+        public override void Clear(Color color)
+        {
+            GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
+            GL.Clear(GLEnum.COLOR_BUFFER_BIT);
+        }
     }
 }
