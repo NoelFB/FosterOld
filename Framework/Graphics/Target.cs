@@ -17,5 +17,7 @@ namespace Foster.Framework
         {
             Attachments = attachments.AsReadOnly();
         }
+
+        public static implicit operator Texture(Target target) => target.Attachments[0];
     }
 }

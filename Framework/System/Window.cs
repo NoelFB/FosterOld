@@ -42,5 +42,9 @@ namespace Foster.Framework
         public abstract void Present();
         public abstract void Close();
 
+        public static Window Create(string title, int width, int height, bool visible = true)
+        {
+            return App.GetModule<System>().CreateWindow(title, width, height, visible);
+        }
     }
 }

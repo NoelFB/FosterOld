@@ -8,8 +8,8 @@ namespace Foster.Framework
     public abstract class Texture : GraphicsResource
     {
 
-        public readonly int Width;
-        public readonly int Height;
+        public int Width { get; protected set; }
+        public int Height { get; protected set; }
 
         public abstract TextureFilter Filter { get; set; }
         public abstract TextureWrap WrapX { get; set; }
@@ -28,6 +28,11 @@ namespace Foster.Framework
             var bitmap = new Bitmap(Width, Height);
             GetData(new Memory<Color>(bitmap.Pixels));
             return bitmap;
+        }
+
+        public static Texture Create(int width, int height)
+        {
+            return App.GetModule<Graphics>().CreateTexture(width, height);
         }
     }
 }

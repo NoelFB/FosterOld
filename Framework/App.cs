@@ -36,14 +36,17 @@ namespace Foster.Framework
 
             Started = true;
 
-            // Find Core Modules
-            System = Module<System>();
-            Graphics = Module<Graphics>();
-            Audio = Module<Audio>();
-            Input = Module<Input>();
+            // Get Main Modules
+            {
+                System = GetModule<System>();
 
-            if (System == null)
-                throw new Exception("A System Module is required");
+                if (TryGetModule<Graphics>(out var graphics))
+                    Graphics = graphics;
+                if (TryGetModule<Audio>(out var audio))
+                    Audio = audio;
+                if (TryGetModule<Input>(out var input))
+                    Input = input;
+            }
 
             Console.WriteLine($"FOSTER {Version}");
 
@@ -154,12 +157,24 @@ namespace Foster.Framework
             module.OnCreated();
         }
 
-        internal static T? Module<T>() where T : Module
+        internal static bool TryGetModule<T>(out T? module) where T : Module
         {
-            if (modulesByType.TryGetValue(typeof(T), out var module))
-                return (T)module;
+            if (modulesByType.TryGetValue(typeof(T), out var m))
+            {
+                module = (T)m;
+                return true;
+            }
 
-            return null;
+            module = null;
+            return false;
+        }
+
+        internal static T GetModule<T>() where T : Module
+        {
+            if (!modulesByType.TryGetValue(typeof(T), out var module))
+                throw new Exception($"App is missing a Module of type {typeof(T).Name}");
+
+            return (T)module;
         }
 
     }

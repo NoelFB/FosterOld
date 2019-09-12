@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public class Batch2d
+    public class Batch2D
     {
+
+
+
     }
 }
