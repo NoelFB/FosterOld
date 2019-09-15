@@ -7,6 +7,7 @@ using System.Text;
 using Foster.Framework;
 
 using GLSizei = System.Int32;
+using System.Runtime.CompilerServices;
 
 namespace Foster.OpenGL
 {
@@ -27,6 +28,7 @@ namespace Foster.OpenGL
 
         public static void Init()
         {
+            AssignDelegate(ref DebugMessageCallback, "glDebugMessageCallback");
             AssignDelegate(ref Flush, "glFlush");
             AssignDelegate(ref Enable, "glEnable");
             AssignDelegate(ref Disable, "glDisable");
@@ -128,6 +130,46 @@ namespace Foster.OpenGL
             GetIntegerv((GLEnum)0x8D57, out MaxSamples);
             GetIntegerv((GLEnum)0x8872, out MaxTextureImageUnits);
             GetIntegerv((GLEnum)0x0D33, out MaxTextureSize);
+
+#if DEBUG
+
+            Enable(GLEnum.DEBUG_OUTPUT);
+            Enable(GLEnum.DEBUG_OUTPUT_SYNCHRONOUS);
+
+            DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(new OnError((source, type, id, severity, length, message, userParam) =>
+            {
+                string typeName;
+
+                switch (type)
+                {
+                    case GLEnum.DEBUG_TYPE_ERROR: typeName = "ERROR"; break;
+                    case GLEnum.DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "DEPRECATED BEHAVIOR"; break;
+                    case GLEnum.DEBUG_TYPE_MARKER: typeName = "MARKER"; break;
+                    case GLEnum.DEBUG_TYPE_OTHER: typeName = "OTHER"; break;
+                    case GLEnum.DEBUG_TYPE_PERFORMANCE: typeName = "PEROFRMANCE"; break;
+                    case GLEnum.DEBUG_TYPE_POP_GROUP: typeName = "POP GROUP"; break;
+                    case GLEnum.DEBUG_TYPE_PORTABILITY: typeName = "PORTABILITY"; break;
+                    case GLEnum.DEBUG_TYPE_PUSH_GROUP: typeName = "PUSH GROUP"; break;
+                    default: case GLEnum.DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "UNDEFINED BEHAVIOR"; break;
+                }
+                
+                string severityName;
+
+                switch (severity)
+                {
+                    case GLEnum.DEBUG_SEVERITY_HIGH: severityName = "HIGH"; break;
+                    case GLEnum.DEBUG_SEVERITY_MEDIUM: severityName = "MEDIUM"; break;
+                    case GLEnum.DEBUG_SEVERITY_LOW: severityName = "LOW"; break;
+                    default: case GLEnum.DEBUG_SEVERITY_NOTIFICATION: severityName = "NOTIFICATION"; break;
+                }
+
+                Console.WriteLine($"GL {typeName} ({severityName})");
+                Console.WriteLine("\t" + Marshal.PtrToStringAnsi(message, (int)length));
+                Console.WriteLine();
+
+            })), IntPtr.Zero);
+
+#endif
         }
 
         private static void AssignDelegate<T>(ref T def, string name) where T : class
@@ -136,11 +178,17 @@ namespace Foster.OpenGL
                 throw new Exception("GL Module requires a System that implements ProcAddress");
 
             var addr = App.System.GetProcAddress(name);
-            if (addr == IntPtr.Zero)
+            if (addr == IntPtr.Zero || !(Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
                 throw new Exception($"OpenGL method '{name}' not available");
 
-            def = Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) as T;
+            def = del;
         }
+
+        private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity,  uint length, IntPtr message, IntPtr userParam);
+
+
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        public static GL_Delegates.DebugMessageCallback DebugMessageCallback;
 
         public static GL_Delegates.Flush Flush;
         public static GL_Delegates.Enable Enable;
@@ -154,9 +202,31 @@ namespace Foster.OpenGL
         public static GL_Delegates.BlendEquationSeparate BlendEquationSeparate;
         public static GL_Delegates.BlendFunc BlendFunc;
         public static GL_Delegates.GetIntegerv GetIntegerv;
+
         public static GL_Delegates.GenTextures GenTextures;
+        public static unsafe uint GenTexture()
+        {
+            uint id;
+            GenTextures(1, new IntPtr(&id));
+            return id;
+        }
+
         public static GL_Delegates.GenTextures GenRenderbuffers;
+        public static unsafe uint GenRenderbuffer()
+        {
+            uint id;
+            GenRenderbuffers(1, new IntPtr(&id));
+            return id;
+        }
+
         public static GL_Delegates.GenFramebuffers GenFramebuffers;
+        public static unsafe uint GenFramebuffer()
+        {
+            uint id;
+            GenFramebuffers(1, new IntPtr(&id));
+            return id;
+        }
+
         public static GL_Delegates.ActiveTexture ActiveTexture;
         public static GL_Delegates.BindTexture BindTexture;
         public static GL_Delegates.BindRenderbuffer BindRenderbuffer;
@@ -169,16 +239,42 @@ namespace Foster.OpenGL
         public static GL_Delegates.GetTexImage GetTexImage;
         public static GL_Delegates.DrawElements DrawElements;
         public static GL_Delegates.DrawElementsInstanced DrawElementsInstanced;
+
         public static GL_Delegates.DeleteTextures DeleteTextures;
+        public static unsafe void DeleteTexture(uint id) => DeleteTextures(1, &id);
+
         public static GL_Delegates.DeleteRenderbuffers DeleteRenderbuffers;
+        public static unsafe void DeleteRenderbuffer(uint id) => DeleteRenderbuffers(1, &id);
+
         public static GL_Delegates.DeleteFramebuffers DeleteFramebuffers;
+        public static unsafe void DeleteFramebuffer(uint id) => DeleteFramebuffers(1, &id);
+
         public static GL_Delegates.GenVertexArrays GenVertexArrays;
+        public static unsafe uint GenVertexArray()
+        {
+            uint id;
+            GenVertexArrays(1, &id);
+            return id;
+        }
+
         public static GL_Delegates.BindVertexArray BindVertexArray;
         public static GL_Delegates.GenBuffers GenBuffers;
+        public static unsafe uint GenBuffer()
+        {
+            uint id;
+            GenBuffers(1, &id);
+            return id;
+        }
+
         public static GL_Delegates.BindBuffer BindBuffer;
         public static GL_Delegates.BufferData BufferData;
+        
         public static GL_Delegates.DeleteBuffers DeleteBuffers;
+        public static unsafe void DeleteBuffer(uint id) => DeleteBuffers(1, &id);
+
         public static GL_Delegates.DeleteVertexArrays DeleteVertexArrays;
+        public static unsafe void DeleteVertexArray(uint id) => DeleteVertexArrays(1, &id);
+
         public static GL_Delegates.EnableVertexAttribArray EnableVertexAttribArray;
         public static GL_Delegates.VertexAttribPointer VertexAttribPointer;
         public static GL_Delegates.VertexAttribDivisor VertexAttribDivisor;
@@ -191,7 +287,7 @@ namespace Foster.OpenGL
         public static GL_Delegates.GetShaderiv GetShaderiv;
 
         private static GL_Delegates.GetShaderInfoLog getShaderInfoLog;
-        public static unsafe string GetShaderInfoLog(uint shader)
+        public static unsafe string? GetShaderInfoLog(uint shader)
         {
             GetShaderiv(shader, (GLEnum)0x8B84, out int len);
 
@@ -200,7 +296,10 @@ namespace Foster.OpenGL
 
             getShaderInfoLog(shader, len, out len, ptr);
 
-            return new string(bytes, 0, len);
+            if (len <= 0)
+                return null;
+
+            return Marshal.PtrToStringAnsi(ptr, len);
         }
 
         public static GL_Delegates.CreateProgram CreateProgram;
@@ -209,7 +308,7 @@ namespace Foster.OpenGL
         public static GL_Delegates.GetProgramiv GetProgramiv;
 
         private static GL_Delegates.GetProgramInfoLog getProgramInfoLog;
-        public static unsafe string GetProgramInfoLog(uint program)
+        public static unsafe string? GetProgramInfoLog(uint program)
         {
             GetProgramiv(program, (GLEnum)0x8B84, out int len);
 
@@ -218,7 +317,10 @@ namespace Foster.OpenGL
 
             getProgramInfoLog(program, len, out len, ptr);
 
-            return new string(bytes, 0, len);
+            if (len <= 0)
+                return null;
+
+            return Marshal.PtrToStringAnsi(ptr, len);
         }
 
         private static GL_Delegates.GetActiveUniform getActiveUniform;
@@ -229,9 +331,7 @@ namespace Foster.OpenGL
 
             getActiveUniform(program, index, 64, out int length, out size, out type, ptr);
 
-            name = null;
-            if (length > 0)
-                name = new string(uniformName, 0, length);
+            name = Marshal.PtrToStringAnsi(ptr, length) ?? "";
         }
 
         public static GL_Delegates.UseProgram UseProgram;
@@ -270,10 +370,12 @@ namespace Foster.OpenGL
         public static GL_Delegates.UniformMatrix3x4fv UniformMatrix3x4fv;
         public static GL_Delegates.UniformMatrix4x3fv UniformMatrix4x3fv;
 
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
     }
 
     internal static class GL_Delegates
     {
+        public delegate void DebugMessageCallback(IntPtr callback, IntPtr userdata);
         public delegate void Flush();
         public delegate void Enable(GLEnum mode);
         public delegate void Disable(GLEnum mode);
@@ -427,6 +529,12 @@ namespace Foster.OpenGL
         SRC_ALPHA_SATURATE = 0x0308,
         CONSTANT_COLOR = 0x8001,
         ONE_MINUS_CONSTANT_COLOR = 0x8002,
+        CONSTANT_ALPHA           = 0x8003,
+        ONE_MINUS_CONSTANT_ALPHA = 0x8004,
+        SRC1_ALPHA               = 0x8589,
+        SRC1_COLOR               = 0x88F9,
+        ONE_MINUS_SRC1_COLOR     = 0x88FA,
+        ONE_MINUS_SRC1_ALPHA     = 0x88FB,
         // Equations
         MIN = 0x8007,
         MAX = 0x8008,
@@ -559,6 +667,9 @@ namespace Foster.OpenGL
         DEBUG_SOURCE_OTHER = 0x824B,
         // Type Enum Values
         DEBUG_TYPE_ERROR = 0x824C,
+        DEBUG_TYPE_PUSH_GROUP = 0x8269,
+        DEBUG_TYPE_POP_GROUP = 0x826A,
+        DEBUG_TYPE_MARKER = 0x8268,
         DEBUG_TYPE_DEPRECATED_BEHAVIOR = 0x824D,
         DEBUG_TYPE_UNDEFINED_BEHAVIOR = 0x824E,
         DEBUG_TYPE_PORTABILITY = 0x824F,
@@ -568,6 +679,9 @@ namespace Foster.OpenGL
         DEBUG_SEVERITY_HIGH = 0x9146,
         DEBUG_SEVERITY_MEDIUM = 0x9147,
         DEBUG_SEVERITY_LOW = 0x9148,
-        DEBUG_SEVERITY_NOTIFICATION = 0x826B
+        DEBUG_SEVERITY_NOTIFICATION = 0x826B,
+        // Debug
+        DEBUG_OUTPUT = 0x92E0,
+        DEBUG_OUTPUT_SYNCHRONOUS = 0x8242
     }
 }

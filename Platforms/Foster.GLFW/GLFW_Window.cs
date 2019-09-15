@@ -7,7 +7,7 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
-        private GLFW_System system;
+        private readonly GLFW_System system;
         private GLFW.Window handle;
         private string title;
         private bool opened;
@@ -34,7 +34,18 @@ namespace Foster.GLFW
         {
             get
             {
-                return new Point2();
+                GLFW.GetFramebufferSize(handle, out int width, out int height);
+                return new Point2(width, height);
+            }
+        }
+
+        public override Vector2 PixelSize
+        {
+            get
+            {
+                var monitor = GLFW.GetWindowMonitor(handle);
+                GLFW.GetMonitorContentScale(monitor, out var x, out var y);
+                return new Vector2(x, y);
             }
         }
 
@@ -82,9 +93,11 @@ namespace Foster.GLFW
             this.system = system;
             this.title = title;
 
+            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
+
             var share = IntPtr.Zero;
-            if (system.Windows.Count > 0)
-                share = (system.Windows[0] as GLFW_Window).handle;
+            if (system.Windows.Count > 0 && (system.Windows[0] is GLFW_Window first))
+                share = first.handle;
 
             handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, share);
             opened = true;

@@ -88,7 +88,11 @@ namespace Foster.Framework
                     foreach (var window in System.Windows)
                     {
                         window.MakeCurrent();
-                        Graphics?.Target(null);
+                        if (Graphics != null)
+                        {
+                            Graphics.Target(null);
+                            Graphics.Viewport = new RectInt(0, 0, window.DrawSize.X, window.DrawSize.Y);
+                        }
                         OnRender?.Invoke(window);
                         window.Present();
                     }

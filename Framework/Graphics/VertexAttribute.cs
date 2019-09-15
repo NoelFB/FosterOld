@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace Foster.Framework
         public readonly uint Location;
         public readonly int Components;
         public readonly VertexType Type;
-        public readonly int TypeSize;
+        public readonly int Size;
         public readonly bool Normalized;
 
         public int Offset { get; private set; }
@@ -28,26 +29,27 @@ namespace Foster.Framework
             Type = type;
             Normalized = normalized;
 
-            TypeSize = 1;
+            Size = 1;
             if (Type == VertexType.Byte)
-                TypeSize = 1;
+                Size = 1;
             else if (Type == VertexType.Float)
-                TypeSize = 4;
+                Size = 4;
             else if (Type == VertexType.Int)
-                TypeSize = 4;
+                Size = 4;
             else if (Type == VertexType.Short)
-                TypeSize = 2;
+                Size = 2;
             else if (Type == VertexType.UnsignedByte)
-                TypeSize = 1;
+                Size = 1;
             else if (Type == VertexType.UnsignedInt)
-                TypeSize = 4;
+                Size = 4;
             else if (Type == VertexType.UnsignedShort)
-                TypeSize = 2;
+                Size = 2;
         }
 
         public static bool TypeHasAttributes<T>()
         {
-            return (attributesOfType.TryGetValue(typeof(T), out var list) && list != null && list.Count > 0);
+            AttributesOfType<T>(out var list);
+            return (list != null && list.Count > 0);
         }
 
         public static void AttributesOfType<T>(out List<VertexAttributeAttribute>? list)
@@ -60,14 +62,14 @@ namespace Foster.Framework
                 attributesOfType.Add(type, list = new List<VertexAttributeAttribute>());
 
                 int stride = 0;
-                foreach (var field in type.GetFields())
+                foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
                     var attribs = field.GetCustomAttributes(typeof(VertexAttributeAttribute), false);
                     if (attribs != null && attribs.Length > 0)
                     {
                         var attrib = (VertexAttributeAttribute)attribs[0];
                         attrib.Offset = stride;
-                        stride += attrib.Components * attrib.TypeSize;
+                        stride += attrib.Components * attrib.Size;
                         list.Add(attrib);
                     }
                 }

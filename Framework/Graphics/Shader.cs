@@ -47,7 +47,7 @@ namespace Foster.Framework
                 throw new Exception($"Uniform {name} doesn't exist or isn't a Matrix4x4");
         }
 
-        public void SetUniform(string name, Texture value)
+        public void SetUniform(string name, Texture? value)
         {
             if (uniforms.TryGetValue(name, out var uniform) && uniform.Type == UniformType.Sampler2D)
                 uniform.Value = value;

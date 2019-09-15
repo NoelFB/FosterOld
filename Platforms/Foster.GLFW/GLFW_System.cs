@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using Foster.Framework;
 
 namespace Foster.GLFW
 {
     public class GLFW_System : Framework.System
     {
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetProcessDPIAware();
+
         internal readonly List<Window> windows = new List<Window>();
 
         public override ReadOnlyCollection<Window> Windows { get; }
@@ -14,6 +18,9 @@ namespace Foster.GLFW
         public GLFW_System()
         {
             Windows = windows.AsReadOnly();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                SetProcessDPIAware();
         }
 
         protected override void OnCreated()
@@ -38,6 +45,11 @@ namespace Foster.GLFW
 
             if (App.Graphics != null && App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
                 throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
+        }
+
+        protected override void OnDisplayed()
+        {
+            GLFW.SwapInterval(1);
         }
 
         protected override void OnShutdown()

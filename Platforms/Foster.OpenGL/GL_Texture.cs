@@ -61,11 +61,7 @@ namespace Foster.OpenGL
 
         public GL_Texture(GL_Graphics graphics, int width, int height) : base(graphics)
         {
-            unsafe
-            {
-                fixed (uint* id = &ID)
-                    GL.GenTextures(1, new IntPtr(id));
-            }
+            ID = GL.GenTexture();
 
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
@@ -76,8 +72,6 @@ namespace Foster.OpenGL
             WrapX = TextureWrap.Wrap;
             WrapY = TextureWrap.Wrap;
             Filter = TextureFilter.Linear;
-
-            GL.BindTexture(GLEnum.TEXTURE_2D, 0);
         }
 
         public override unsafe void GetData<T>(Memory<T> buffer)
@@ -87,7 +81,6 @@ namespace Foster.OpenGL
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
             GL.TexImage2D(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, Width, Height, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
-            GL.BindTexture(GLEnum.TEXTURE_2D, 0);
         }
 
         public override unsafe void SetData<T>(Memory<T> buffer)
@@ -97,7 +90,18 @@ namespace Foster.OpenGL
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
             GL.GetTexImage(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
-            GL.BindTexture(GLEnum.TEXTURE_2D, 0);
+        }
+
+        public override void Dispose()
+        {
+            if (!Disposed)
+            {
+                var textureID = ID;
+                if (Graphics is GL_Graphics graphics)
+                    graphics.OnResourceCleanup += () => GL.DeleteTexture(textureID);
+            }
+
+            base.Dispose();
         }
     }
 }

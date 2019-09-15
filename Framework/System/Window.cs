@@ -37,6 +37,7 @@ namespace Foster.Framework
 
         public abstract RectInt Bounds { get; set; }
         public abstract Point2 DrawSize { get; }
+        public abstract Vector2 PixelSize { get; }
 
         public abstract void MakeCurrent();
         public abstract void Present();

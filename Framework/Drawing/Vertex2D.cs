@@ -27,22 +27,22 @@ namespace Foster.Framework
         public Color Col;
 
         [VertexAttribute(3, VertexType.UnsignedByte, 1, true)]
-        private byte multiply;
+        public byte Mult;
 
         [VertexAttribute(4, VertexType.UnsignedByte, 1, true)]
-        private byte wash;
+        public byte Wash;
 
         [VertexAttribute(5, VertexType.UnsignedByte, 1, true)]
-        private byte fill;
+        public byte Fill;
 
         public Modes Mode
         {
-            get => (multiply > 0 ? Modes.Multiply : (wash > 0 ? Modes.Wash : Modes.Fill));
+            get => (Mult > 0 ? Modes.Multiply : (Wash > 0 ? Modes.Wash : Modes.Fill));
             set
             {
-                multiply = (byte)(value == Modes.Multiply ? 255 : 0);
-                wash = (byte)(value == Modes.Wash ? 255 : 0);
-                fill = (byte)(value == Modes.Fill ? 255 : 0);
+                Mult = (byte)(value == Modes.Multiply ? 255 : 0);
+                Wash = (byte)(value == Modes.Wash ? 255 : 0);
+                Fill = (byte)(value == Modes.Fill ? 255 : 0);
             }
         }
 
@@ -51,9 +51,19 @@ namespace Foster.Framework
             Pos = position;
             Tex = texcoord;
             Col = color;
-            multiply = (byte)(mode == Modes.Multiply ? 255 : 0);
-            wash = (byte)(mode == Modes.Wash ? 255 : 0);
-            fill = (byte)(mode == Modes.Fill ? 255 : 0);
+            Mult = (byte)(mode == Modes.Multiply ? 255 : 0);
+            Wash = (byte)(mode == Modes.Wash ? 255 : 0);
+            Fill = (byte)(mode == Modes.Fill ? 255 : 0);
+        }
+
+        public Vertex2D(Vector2 position, Vector2 texcoord, Color color, byte mult, byte wash, byte fill)
+        {
+            Pos = position;
+            Tex = texcoord;
+            Col = color;
+            this.Mult = mult;
+            this.Wash = wash;
+            this.Fill = fill;
         }
 
         public override string ToString()
