@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Foster.Framework
+﻿namespace Foster.Framework
 {
     public abstract class Module
     {

@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 4)]
     public struct Color
     {
 
@@ -53,7 +49,7 @@ namespace Foster.Framework
             R = (byte)(rgb >> 16);
             G = (byte)(rgb >> 08);
             B = (byte)(rgb);
-            A = (byte)255;
+            A = 255;
         }
 
         public Color(int rgb, float alpha)
@@ -98,17 +94,29 @@ namespace Foster.Framework
 
         public Color Premultiply()
         {
-            var a = A;
+            byte a = A;
             return new Color((byte)(R * a / 255), (byte)(G * a / 255), (byte)(B * a / 255), a);
         }
 
-        public Vector4 ToVector4() => new Vector4(R / 255f, G / 255f, B / 255f, A / 255f);
+        public Vector4 ToVector4()
+        {
+            return new Vector4(R / 255f, G / 255f, B / 255f, A / 255f);
+        }
 
-        public override bool Equals(object? obj) => (obj is Color other) && (this == other);
+        public override bool Equals(object? obj)
+        {
+            return (obj is Color other) && (this == other);
+        }
 
-        public override int GetHashCode() => (int)ABGR;
+        public override int GetHashCode()
+        {
+            return (int)ABGR;
+        }
 
-        public override string ToString() => ($"[{R}, {G}, {B}, {A}]");
+        public override string ToString()
+        {
+            return ($"[{R}, {G}, {B}, {A}]");
+        }
 
         /// <summary>
         /// The input string is the Components, R, G, B, and A. Ex. "RGBA" returns a hex string with those components
@@ -117,25 +125,40 @@ namespace Foster.Framework
         /// <returns></returns>
         public string ToHexString(string components)
         {
-            var result = "";
+            string result = "";
 
             for (int i = 0; i < components.Length; i++)
             {
                 if (char.ToUpperInvariant(components[i]) == 'R')
+                {
                     result += R.ToString("X2");
+                }
                 else if (char.ToUpperInvariant(components[i]) == 'G')
+                {
                     result += G.ToString("X2");
+                }
                 else if (char.ToUpperInvariant(components[i]) == 'B')
+                {
                     result += B.ToString("X2");
+                }
                 else if (char.ToUpperInvariant(components[i]) == 'A')
+                {
                     result += A.ToString("X2");
+                }
             }
 
             return result;
         }
 
-        public string ToHexStringRGB() => ToHexString("RGB");
-        public string ToHexStringRGBA() => ToHexString("RGBA");
+        public string ToHexStringRGB()
+        {
+            return ToHexString("RGB");
+        }
+
+        public string ToHexStringRGBA()
+        {
+            return ToHexString("RGBA");
+        }
 
         public static Color FromHexString(string components, ReadOnlySpan<char> value)
         {
@@ -165,8 +188,15 @@ namespace Foster.Framework
             return color;
         }
 
-        public static Color FromHexStringRGB(string value) => FromHexString("RGB", value);
-        public static Color FromHexStringRGBA(string value) => FromHexString("RGBA", value);
+        public static Color FromHexStringRGB(string value)
+        {
+            return FromHexString("RGB", value);
+        }
+
+        public static Color FromHexStringRGBA(string value)
+        {
+            return FromHexString("RGBA", value);
+        }
 
         public static Color Lerp(Color a, Color b, float amount)
         {
@@ -180,7 +210,10 @@ namespace Foster.Framework
             );
         }
 
-        public static implicit operator Color(int color) => new Color(color);
+        public static implicit operator Color(int color)
+        {
+            return new Color(color);
+        }
 
         public static Color operator *(Color value, float scale)
         {
@@ -192,10 +225,14 @@ namespace Foster.Framework
             );
         }
 
-        public static bool operator ==(Color a, Color b) => a.ABGR == b.ABGR;
+        public static bool operator ==(Color a, Color b)
+        {
+            return a.ABGR == b.ABGR;
+        }
 
-        public static bool operator !=(Color a, Color b) => a.ABGR != b.ABGR;
-
-
+        public static bool operator !=(Color a, Color b)
+        {
+            return a.ABGR != b.ABGR;
+        }
     }
 }

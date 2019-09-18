@@ -1,7 +1,5 @@
 ﻿using Foster.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.OpenGL
 {
@@ -9,7 +7,6 @@ namespace Foster.OpenGL
     {
         public readonly GL_Shader Shader;
         public readonly int Size;
-        public readonly int Location;
         public bool Dirty { get; private set; } = true;
 
         private object? value = null;
@@ -43,14 +40,16 @@ namespace Foster.OpenGL
                 case GLEnum.FLOAT_VEC4: Type = UniformType.Float4; break;
                 case GLEnum.FLOAT_MAT3x2: Type = UniformType.Matrix3x2; break;
                 case GLEnum.FLOAT_MAT4: Type = UniformType.Matrix4x4; break;
-                case GLEnum.SAMPLER_2D: default: Type = UniformType.Sampler2D; break;
+                case GLEnum.SAMPLER_2D: default: Type = UniformType.Texture2D; break;
             }
         }
 
         public unsafe void Upload(object? value = null)
         {
             if (value == null)
+            {
                 value = this.value;
+            }
 
             switch (Type)
             {
@@ -61,21 +60,21 @@ namespace Foster.OpenGL
                     GL.Uniform1f(Location, (float)(value ?? 0));
                     break;
                 case UniformType.Float2:
-                    var vec2 = (Vector2)(value ?? Vector2.Zero);
+                    Vector2 vec2 = (Vector2)(value ?? Vector2.Zero);
                     GL.Uniform2f(Location, vec2.X, vec2.Y);
                     break;
                 case UniformType.Float3:
-                    var vec3 = (Vector3)(value ?? Vector3.Zero);
+                    Vector3 vec3 = (Vector3)(value ?? Vector3.Zero);
                     GL.Uniform3f(Location, vec3.X, vec3.Y, vec3.Z);
                     break;
                 case UniformType.Float4:
-                    var vec4 = (Vector4)(value ?? Vector4.Zero);
+                    Vector4 vec4 = (Vector4)(value ?? Vector4.Zero);
                     GL.Uniform4f(Location, vec4.X, vec4.Y, vec4.Z, vec4.W);
                     break;
                 case UniformType.Matrix3x2:
                     {
-                        var m3x2 = (Matrix3x2)(value ?? Matrix3x2.Identity);
-                        var matrix = stackalloc float[6];
+                        Matrix3x2 m3x2 = (Matrix3x2)(value ?? Matrix3x2.Identity);
+                        float* matrix = stackalloc float[6];
 
                         matrix[0] = m3x2.M11;
                         matrix[1] = m3x2.M12;
@@ -89,7 +88,7 @@ namespace Foster.OpenGL
                     break;
                 case UniformType.Matrix4x4:
                     {
-                        var matrix = stackalloc float[16];
+                        float* matrix = stackalloc float[16];
 
                         if (value is Matrix3x2 m3x2)
                         {
@@ -133,7 +132,7 @@ namespace Foster.OpenGL
                         GL.UniformMatrix4fv(Location, 1, false, new IntPtr(matrix));
                     }
                     break;
-                case UniformType.Sampler2D:
+                case UniformType.Texture2D:
                     GL.Uniform1i(Location, (int)(value ?? 0));
                     break;
             }

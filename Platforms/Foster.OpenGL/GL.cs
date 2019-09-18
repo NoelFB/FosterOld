@@ -1,13 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Diagnostics;
-using System.Reflection;
+﻿using Foster.Framework;
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using Foster.Framework;
-
 using GLSizei = System.Int32;
-using System.Runtime.CompilerServices;
 
 namespace Foster.OpenGL
 {
@@ -139,6 +133,8 @@ namespace Foster.OpenGL
             DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(new OnError((source, type, id, severity, length, message, userParam) =>
             {
                 string typeName;
+                string severityName;
+                string output = Marshal.PtrToStringAnsi(message, (int)length);
 
                 switch (type)
                 {
@@ -152,8 +148,6 @@ namespace Foster.OpenGL
                     case GLEnum.DEBUG_TYPE_PUSH_GROUP: typeName = "PUSH GROUP"; break;
                     default: case GLEnum.DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "UNDEFINED BEHAVIOR"; break;
                 }
-                
-                string severityName;
 
                 switch (severity)
                 {
@@ -163,8 +157,13 @@ namespace Foster.OpenGL
                     default: case GLEnum.DEBUG_SEVERITY_NOTIFICATION: severityName = "NOTIFICATION"; break;
                 }
 
+                if (type == GLEnum.DEBUG_TYPE_ERROR)
+                {
+                    throw new Exception(output);
+                }
+
                 Console.WriteLine($"GL {typeName} ({severityName})");
-                Console.WriteLine("\t" + Marshal.PtrToStringAnsi(message, (int)length));
+                Console.WriteLine("\t" + output);
                 Console.WriteLine();
 
             })), IntPtr.Zero);
@@ -175,16 +174,20 @@ namespace Foster.OpenGL
         private static void AssignDelegate<T>(ref T def, string name) where T : class
         {
             if (App.System == null)
+            {
                 throw new Exception("GL Module requires a System that implements ProcAddress");
+            }
 
-            var addr = App.System.GetProcAddress(name);
+            IntPtr addr = App.System.GetProcAddress(name);
             if (addr == IntPtr.Zero || !(Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
+            {
                 throw new Exception($"OpenGL method '{name}' not available");
+            }
 
             def = del;
         }
 
-        private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity,  uint length, IntPtr message, IntPtr userParam);
+        private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, IntPtr message, IntPtr userParam);
 
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
@@ -241,13 +244,22 @@ namespace Foster.OpenGL
         public static GL_Delegates.DrawElementsInstanced DrawElementsInstanced;
 
         public static GL_Delegates.DeleteTextures DeleteTextures;
-        public static unsafe void DeleteTexture(uint id) => DeleteTextures(1, &id);
+        public static unsafe void DeleteTexture(uint id)
+        {
+            DeleteTextures(1, &id);
+        }
 
         public static GL_Delegates.DeleteRenderbuffers DeleteRenderbuffers;
-        public static unsafe void DeleteRenderbuffer(uint id) => DeleteRenderbuffers(1, &id);
+        public static unsafe void DeleteRenderbuffer(uint id)
+        {
+            DeleteRenderbuffers(1, &id);
+        }
 
         public static GL_Delegates.DeleteFramebuffers DeleteFramebuffers;
-        public static unsafe void DeleteFramebuffer(uint id) => DeleteFramebuffers(1, &id);
+        public static unsafe void DeleteFramebuffer(uint id)
+        {
+            DeleteFramebuffers(1, &id);
+        }
 
         public static GL_Delegates.GenVertexArrays GenVertexArrays;
         public static unsafe uint GenVertexArray()
@@ -268,12 +280,18 @@ namespace Foster.OpenGL
 
         public static GL_Delegates.BindBuffer BindBuffer;
         public static GL_Delegates.BufferData BufferData;
-        
+
         public static GL_Delegates.DeleteBuffers DeleteBuffers;
-        public static unsafe void DeleteBuffer(uint id) => DeleteBuffers(1, &id);
+        public static unsafe void DeleteBuffer(uint id)
+        {
+            DeleteBuffers(1, &id);
+        }
 
         public static GL_Delegates.DeleteVertexArrays DeleteVertexArrays;
-        public static unsafe void DeleteVertexArray(uint id) => DeleteVertexArrays(1, &id);
+        public static unsafe void DeleteVertexArray(uint id)
+        {
+            DeleteVertexArrays(1, &id);
+        }
 
         public static GL_Delegates.EnableVertexAttribArray EnableVertexAttribArray;
         public static GL_Delegates.VertexAttribPointer VertexAttribPointer;
@@ -291,13 +309,15 @@ namespace Foster.OpenGL
         {
             GetShaderiv(shader, (GLEnum)0x8B84, out int len);
 
-            var bytes = stackalloc char[len];
-            var ptr = new IntPtr(bytes);
+            char* bytes = stackalloc char[len];
+            IntPtr ptr = new IntPtr(bytes);
 
             getShaderInfoLog(shader, len, out len, ptr);
 
             if (len <= 0)
+            {
                 return null;
+            }
 
             return Marshal.PtrToStringAnsi(ptr, len);
         }
@@ -312,13 +332,15 @@ namespace Foster.OpenGL
         {
             GetProgramiv(program, (GLEnum)0x8B84, out int len);
 
-            var bytes = stackalloc char[len];
-            var ptr = new IntPtr(bytes);
+            char* bytes = stackalloc char[len];
+            IntPtr ptr = new IntPtr(bytes);
 
             getProgramInfoLog(program, len, out len, ptr);
 
             if (len <= 0)
+            {
                 return null;
+            }
 
             return Marshal.PtrToStringAnsi(ptr, len);
         }
@@ -326,8 +348,8 @@ namespace Foster.OpenGL
         private static GL_Delegates.GetActiveUniform getActiveUniform;
         public static unsafe void GetActiveUniform(uint program, uint index, out int size, out GLEnum type, out string name)
         {
-            var uniformName = stackalloc char[64];
-            var ptr = new IntPtr(uniformName);
+            char* uniformName = stackalloc char[64];
+            IntPtr ptr = new IntPtr(uniformName);
 
             getActiveUniform(program, index, 64, out int length, out size, out type, ptr);
 
@@ -529,12 +551,12 @@ namespace Foster.OpenGL
         SRC_ALPHA_SATURATE = 0x0308,
         CONSTANT_COLOR = 0x8001,
         ONE_MINUS_CONSTANT_COLOR = 0x8002,
-        CONSTANT_ALPHA           = 0x8003,
+        CONSTANT_ALPHA = 0x8003,
         ONE_MINUS_CONSTANT_ALPHA = 0x8004,
-        SRC1_ALPHA               = 0x8589,
-        SRC1_COLOR               = 0x88F9,
-        ONE_MINUS_SRC1_COLOR     = 0x88FA,
-        ONE_MINUS_SRC1_ALPHA     = 0x88FB,
+        SRC1_ALPHA = 0x8589,
+        SRC1_COLOR = 0x88F9,
+        ONE_MINUS_SRC1_COLOR = 0x88FA,
+        ONE_MINUS_SRC1_ALPHA = 0x88FB,
         // Equations
         MIN = 0x8007,
         MAX = 0x8008,

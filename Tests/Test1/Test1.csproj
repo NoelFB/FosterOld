@@ -16,4 +16,10 @@
     <ProjectReference Include="..\..\Platforms\Foster.OpenGL\Foster.OpenGL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Renogare-Regular.otf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -7,11 +7,15 @@ namespace Foster.Framework
 {
     public abstract class Shader : GraphicsResource
     {
+        public readonly ReadOnlyCollection<ShaderUniform> Textures;
+        protected readonly List<ShaderUniform> textures = new List<ShaderUniform>();
+
         public readonly ReadOnlyDictionary<string, ShaderUniform> Uniforms;
         protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
 
         public Shader(Graphics graphics) : base(graphics)
         {
+            Textures = textures.AsReadOnly();
             Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(uniforms);
         }
 
@@ -49,7 +53,7 @@ namespace Foster.Framework
 
         public void SetUniform(string name, Texture? value)
         {
-            if (uniforms.TryGetValue(name, out var uniform) && uniform.Type == UniformType.Sampler2D)
+            if (uniforms.TryGetValue(name, out var uniform) && uniform.Type == UniformType.Texture2D)
                 uniform.Value = value;
             else
                 throw new Exception($"Uniform {name} doesn't exist or isn't a Sampler2D");

@@ -1,7 +1,5 @@
 ﻿using Foster.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.OpenGL
 {
@@ -18,7 +16,7 @@ namespace Foster.OpenGL
             get => filter;
             set
             {
-                var f = (value == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR);
+                GLEnum f = (value == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR);
 
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
@@ -34,7 +32,7 @@ namespace Foster.OpenGL
             get => wrapX;
             set
             {
-                var s = (value == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT);
+                GLEnum s = (value == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT);
 
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
@@ -49,7 +47,7 @@ namespace Foster.OpenGL
             get => wrapY;
             set
             {
-                var t = (value == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT);
+                GLEnum t = (value == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT);
 
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
@@ -74,18 +72,18 @@ namespace Foster.OpenGL
             Filter = TextureFilter.Linear;
         }
 
-        public override unsafe void GetData<T>(Memory<T> buffer)
+        public override unsafe void SetData<T>(Memory<T> buffer)
         {
-            using var handle = buffer.Pin();
+            using System.Buffers.MemoryHandle handle = buffer.Pin();
 
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
             GL.TexImage2D(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, Width, Height, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
         }
 
-        public override unsafe void SetData<T>(Memory<T> buffer)
+        public override unsafe void GetData<T>(Memory<T> buffer)
         {
-            using var handle = buffer.Pin();
+            using System.Buffers.MemoryHandle handle = buffer.Pin();
 
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
@@ -96,9 +94,11 @@ namespace Foster.OpenGL
         {
             if (!Disposed)
             {
-                var textureID = ID;
+                uint textureID = ID;
                 if (Graphics is GL_Graphics graphics)
+                {
                     graphics.OnResourceCleanup += () => GL.DeleteTexture(textureID);
+                }
             }
 
             base.Dispose();

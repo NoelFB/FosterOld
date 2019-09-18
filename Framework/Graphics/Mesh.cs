@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.Framework
 {
@@ -9,7 +7,9 @@ namespace Foster.Framework
         public Mesh(Graphics graphics) : base(graphics)
         {
             if (!VertexAttributeAttribute.TypeHasAttributes<TVertex>())
+            {
                 throw new Exception("Vertex Type must have at least 1 field with a VertexAttribute");
+            }
         }
 
         public abstract void SetVertices(Memory<TVertex> vertices);

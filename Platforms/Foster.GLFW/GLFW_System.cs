@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Foster.Framework;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
-using Foster.Framework;
 
 namespace Foster.GLFW
 {
@@ -20,18 +20,20 @@ namespace Foster.GLFW
             Windows = windows.AsReadOnly();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
                 SetProcessDPIAware();
+            }
         }
 
         protected override void OnCreated()
         {
             if (GLFW.Init() == 0)
             {
-                GLFW.GetError(out var error);
+                GLFW.GetError(out string error);
                 throw new Exception($"GLFW Error: {error}");
             }
 
-            GLFW.GetVersion(out var major, out var minor, out var rev);
+            GLFW.GetVersion(out int major, out int minor, out int rev);
 
             ApiName = "GLFW";
             ApiVersion = new Version(major, minor, rev);
@@ -44,7 +46,9 @@ namespace Foster.GLFW
             base.OnStartup();
 
             if (App.Graphics != null && App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
+            {
                 throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
+            }
         }
 
         protected override void OnDisplayed()
@@ -65,7 +69,7 @@ namespace Foster.GLFW
 
         public override Window CreateWindow(string title, int width, int height, bool visible = true)
         {
-            var window = new GLFW_Window(this, title, width, height, visible);
+            GLFW_Window window = new GLFW_Window(this, title, width, height, visible);
             windows.Add(window);
             return window;
         }

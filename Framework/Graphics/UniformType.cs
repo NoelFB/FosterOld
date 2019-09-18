@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Foster.Framework
+﻿namespace Foster.Framework
 {
     public enum UniformType
     {
@@ -21,6 +17,6 @@ namespace Foster.Framework
         Matrix3x2 = 0x300,
         Matrix4x4,
 
-        Sampler2D = 0x400
+        Texture2D = 0x400
     }
 }

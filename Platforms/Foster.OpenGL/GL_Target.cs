@@ -1,7 +1,4 @@
 ﻿using Foster.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.OpenGL
 {
@@ -21,7 +18,7 @@ namespace Foster.OpenGL
             // texture (color) attachments
             for (int i = 0; i < textures; i++)
             {
-                var color = new GL_Texture(graphics, width, height);
+                GL_Texture color = new GL_Texture(graphics, width, height);
                 attachments.Add(color);
 
                 GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, (GLEnum.COLOR_ATTACHMENT0 + i), GLEnum.TEXTURE_2D, color.ID, 0);
@@ -32,7 +29,7 @@ namespace Foster.OpenGL
             {
                 HasDepthBuffer = true;
 
-                var renderBuffer = GL.GenRenderbuffer();
+                uint renderBuffer = GL.GenRenderbuffer();
                 GL.BindRenderbuffer(GLEnum.RENDERBUFFER, renderBuffer);
                 GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH24_STENCIL8, width, height);
                 GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, renderBuffer);
@@ -46,9 +43,11 @@ namespace Foster.OpenGL
         {
             if (!Disposed)
             {
-                var targetID = ID;
+                uint targetID = ID;
                 if (Graphics is GL_Graphics graphics)
+                {
                     graphics.OnResourceCleanup += () => GL.DeleteFramebuffer(targetID);
+                }
             }
 
             base.Dispose();

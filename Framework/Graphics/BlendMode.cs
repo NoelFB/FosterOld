@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.Framework
 {
@@ -49,11 +47,33 @@ namespace Foster.Framework
             Destination = destination;
         }
 
-        public static readonly BlendMode Normal     = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.OneMinusSrcAlpha);
-        public static readonly BlendMode Add        = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.DstAlpha);
-        public static readonly BlendMode Subtract   = new BlendMode(BlendOperations.ReverseSubtract, BlendFactors.One, BlendFactors.One);
-        public static readonly BlendMode Multiply   = new BlendMode(BlendOperations.Add, BlendFactors.DstColor, BlendFactors.OneMinusSrcAlpha);
-        public static readonly BlendMode Screen     = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.OneMinusSrcColor);
+        public static readonly BlendMode Normal = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.OneMinusSrcAlpha);
+        public static readonly BlendMode Add = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.DstAlpha);
+        public static readonly BlendMode Subtract = new BlendMode(BlendOperations.ReverseSubtract, BlendFactors.One, BlendFactors.One);
+        public static readonly BlendMode Multiply = new BlendMode(BlendOperations.Add, BlendFactors.DstColor, BlendFactors.OneMinusSrcAlpha);
+        public static readonly BlendMode Screen = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.OneMinusSrcColor);
 
+        public static bool operator ==(BlendMode a, BlendMode b)
+        {
+            return a.Operation == b.Operation && a.Source == b.Source && a.Destination == b.Destination;
+        }
+
+        public static bool operator !=(BlendMode a, BlendMode b)
+        {
+            return a.Operation != b.Operation || a.Source != b.Source || a.Destination != b.Destination;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is BlendMode mode &&
+                   Operation == mode.Operation &&
+                   Source == mode.Source &&
+                   Destination == mode.Destination;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Operation, Source, Destination);
+        }
     }
 }

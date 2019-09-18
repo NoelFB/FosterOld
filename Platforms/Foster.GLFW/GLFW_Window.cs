@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foster.Framework;
+﻿using Foster.Framework;
+using System;
 
 namespace Foster.GLFW
 {
@@ -43,8 +41,8 @@ namespace Foster.GLFW
         {
             get
             {
-                var monitor = GLFW.GetWindowMonitor(handle);
-                GLFW.GetMonitorContentScale(monitor, out var x, out var y);
+                IntPtr monitor = GLFW.GetWindowMonitor(handle);
+                GLFW.GetMonitorContentScale(monitor, out float x, out float y);
                 return new Vector2(x, y);
             }
         }
@@ -82,9 +80,13 @@ namespace Foster.GLFW
             {
                 visible = value;
                 if (visible)
+                {
                     GLFW.ShowWindow(handle);
+                }
                 else
+                {
                     GLFW.HideWindow(handle);
+                }
             }
         }
 
@@ -95,9 +97,11 @@ namespace Foster.GLFW
 
             GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
 
-            var share = IntPtr.Zero;
+            IntPtr share = IntPtr.Zero;
             if (system.Windows.Count > 0 && (system.Windows[0] is GLFW_Window first))
+            {
                 share = first.handle;
+            }
 
             handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, share);
             opened = true;
@@ -110,7 +114,9 @@ namespace Foster.GLFW
         public override void MakeCurrent()
         {
             if (!opened)
+            {
                 throw new Exception("This Window has been Closed");
+            }
 
             GLFW.MakeContextCurrent(handle);
         }
@@ -118,7 +124,9 @@ namespace Foster.GLFW
         public override void Present()
         {
             if (!opened)
+            {
                 throw new Exception("This Window has been Closed");
+            }
 
             GLFW.SwapBuffers(handle);
         }
@@ -127,6 +135,7 @@ namespace Foster.GLFW
         {
             if (opened)
             {
+                GLFW.SetWindowCloseCallback(handle, null);
                 GLFW.DestroyWindow(handle);
                 system.windows.Remove(this);
                 opened = false;

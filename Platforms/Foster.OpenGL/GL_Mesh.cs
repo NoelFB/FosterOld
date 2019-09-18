@@ -1,8 +1,6 @@
 ﻿using Foster.Framework;
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Foster.OpenGL
 {
@@ -30,7 +28,7 @@ namespace Foster.OpenGL
 
         public override unsafe void SetVertices(Memory<TVertex> vertices)
         {
-            using var pinned = vertices.Pin();
+            using System.Buffers.MemoryHandle pinned = vertices.Pin();
 
             GL.BindVertexArray(VertexArray);
             GL.BindBuffer(GLEnum.ARRAY_BUFFER, VertexBuffer);
@@ -39,7 +37,7 @@ namespace Foster.OpenGL
 
         public override unsafe void SetTriangles(Memory<int> triangles)
         {
-            using var pinned = triangles.Pin();
+            using System.Buffers.MemoryHandle pinned = triangles.Pin();
 
             GL.BindVertexArray(VertexArray);
             GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, TriangleBuffer);
@@ -49,7 +47,7 @@ namespace Foster.OpenGL
         public override unsafe void SetInstances<T>(Memory<T> instances)
         {
             // create buffer if it's missing
-            var type = typeof(T);
+            Type type = typeof(T);
             if (type != InstanceType || InstanceBuffer == 0)
             {
                 InstanceType = type;
@@ -62,7 +60,7 @@ namespace Foster.OpenGL
             }
 
             // upload buffer data
-            using var handle = instances.Pin();
+            using System.Buffers.MemoryHandle handle = instances.Pin();
             GL.BindVertexArray(VertexArray);
             GL.BindBuffer(GLEnum.ARRAY_BUFFER, InstanceBuffer);
             GL.BufferData(GLEnum.ARRAY_BUFFER, new IntPtr(Marshal.SizeOf<T>() * instances.Length), new IntPtr(handle.Pointer), GLEnum.STATIC_DRAW);
@@ -77,7 +75,9 @@ namespace Foster.OpenGL
         public override void DrawInstances(int start, int elements, int instances)
         {
             if (InstanceType == null)
+            {
                 throw new Exception("Instances must be assigned before being drawn");
+            }
 
             GL.BindVertexArray(VertexArray);
             GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
@@ -85,16 +85,18 @@ namespace Foster.OpenGL
 
         private static void EnableAttribsOnBuffer<T>(uint divisor = 0)
         {
-            VertexAttributeAttribute.AttributesOfType<T>(out var attributes);
+            VertexAttributeAttribute.AttributesOfType<T>(out System.Collections.Generic.List<VertexAttributeAttribute>? attributes);
 
             if (attributes == null)
+            {
                 throw new Exception("Expecting Vertex Attributes");
+            }
 
-            foreach (var attrib in attributes)
+            foreach (VertexAttributeAttribute attrib in attributes)
             {
                 // this is kind of messy because some attributes can take up multiple slots
                 // ex. a marix4x4 actually takes up 4 (size 16)
-                var ptr = new IntPtr(attrib.Offset);
+                IntPtr ptr = new IntPtr(attrib.Offset);
                 for (int i = 0, loc = 0; i < attrib.Components; i += 4, loc++)
                 {
                     int size = Math.Min(attrib.Components - i, 4);
@@ -126,22 +128,27 @@ namespace Foster.OpenGL
         {
             if (!Disposed)
             {
-                var vertexArrayID = VertexArray;
-                var vertexBufferID = VertexBuffer;
-                var triangleBufferID = TriangleBuffer;
-                var instanceBufferID = InstanceBuffer;
+                uint vertexArrayID = VertexArray;
+                uint vertexBufferID = VertexBuffer;
+                uint triangleBufferID = TriangleBuffer;
+                uint instanceBufferID = InstanceBuffer;
 
                 if (Graphics is GL_Graphics graphics)
+                {
                     graphics.OnResourceCleanup += () =>
                     {
                         GL.BindVertexArray(vertexArrayID);
                         GL.DeleteBuffer(vertexBufferID);
                         GL.DeleteBuffer(triangleBufferID);
                         if (instanceBufferID > 0)
+                        {
                             GL.DeleteBuffer(instanceBufferID);
+                        }
+
                         GL.DeleteVertexArray(vertexArrayID);
                         GL.BindVertexArray(0);
                     };
+                }
             }
 
             base.Dispose();

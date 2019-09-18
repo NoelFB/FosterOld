@@ -1,6 +1,5 @@
 ﻿using Foster.Framework;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Foster.OpenGL
 {
@@ -18,14 +17,11 @@ namespace Foster.OpenGL
         protected override void OnDisplayed()
         {
             GL.Init();
-
             GL.Enable(GLEnum.BLEND);
-            GL.BlendEquation(GLEnum.FUNC_ADD);
-            GL.BlendFunc(GLEnum.ONE, GLEnum.ONE_MINUS_SRC_ALPHA);
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
-        
+
             base.OnDisplayed();
         }
 
@@ -37,10 +33,10 @@ namespace Foster.OpenGL
 
         private RectInt viewport;
 
-        public override RectInt Viewport 
-        { 
-            get => viewport; 
-            set 
+        public override RectInt Viewport
+        {
+            get => viewport;
+            set
             {
                 viewport = value;
                 GL.Viewport(viewport.X, viewport.Y, viewport.Width, viewport.Height);
@@ -75,9 +71,13 @@ namespace Foster.OpenGL
         public override void DepthTest(bool enabled)
         {
             if (enabled)
+            {
                 GL.Enable(GLEnum.DEPTH_TEST);
+            }
             else
+            {
                 GL.Disable(GLEnum.DEPTH_TEST);
+            }
         }
 
         public override void CullMode(Cull mode)
@@ -90,31 +90,47 @@ namespace Foster.OpenGL
             {
                 GL.Enable(GLEnum.CULL_FACE);
                 if (mode == Cull.Back)
+                {
                     GL.CullFace(GLEnum.BACK);
+                }
                 else if (mode == Cull.Front)
+                {
                     GL.CullFace(GLEnum.FRONT);
+                }
                 else
+                {
                     GL.CullFace(GLEnum.FRONT_AND_BACK);
+                }
             }
         }
 
         public override void BlendMode(BlendMode blendMode)
         {
-            var op = blendMode.Operation switch
+            GLEnum op = GetBlendFunc(blendMode.Operation);
+            GLEnum src = GetBlendFactor(blendMode.Source);
+            GLEnum dst = GetBlendFactor(blendMode.Destination);
+
+            GL.BlendEquation(op);
+            GL.BlendFunc(src, dst);
+        }
+
+        public override void Clear(Color color)
+        {
+            GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
+            GL.Clear(GLEnum.COLOR_BUFFER_BIT);
+        }
+
+        private static GLEnum GetBlendFunc(BlendOperations operation)
+        {
+            return operation switch
             {
                 BlendOperations.Add => GLEnum.FUNC_ADD,
                 BlendOperations.Subtract => GLEnum.FUNC_SUBTRACT,
                 BlendOperations.ReverseSubtract => GLEnum.FUNC_REVERSE_SUBTRACT,
                 BlendOperations.Min => GLEnum.MIN,
                 BlendOperations.Max => GLEnum.MAX,
-                _ => throw new Exception("Unsupported BlendOpteration"),
+                _ => throw new Exception($"Unsupported Blend Opteration {operation}"),
             };
-
-            var src = GetBlendFactor(blendMode.Source);
-            var dst = GetBlendFactor(blendMode.Destination);
-
-            GL.BlendEquation(op);
-            GL.BlendFunc(src, dst);
         }
 
         private static GLEnum GetBlendFactor(BlendFactors factor)
@@ -140,14 +156,8 @@ namespace Foster.OpenGL
                 BlendFactors.OneMinusSrc1Color => GLEnum.ONE_MINUS_SRC1_COLOR,
                 BlendFactors.Src1Alpha => GLEnum.SRC1_ALPHA,
                 BlendFactors.OneMinusSrc1Alpha => GLEnum.ONE_MINUS_SRC1_ALPHA,
-                _ => throw new Exception("Unsupported Blend Factor"),
+                _ => throw new Exception($"Unsupported Blend Factor {factor}"),
             };
-        }
-
-        public override void Clear(Color color)
-        {
-            GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
-            GL.Clear(GLEnum.COLOR_BUFFER_BIT);
         }
     }
 }

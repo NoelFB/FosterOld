@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Foster.GLFW
 {
@@ -14,8 +12,15 @@ namespace Foster.GLFW
         {
             public IntPtr Ptr;
 
-            public static implicit operator Window(IntPtr ptr) => new Window() { Ptr = ptr };
-            public static implicit operator IntPtr(Window window) => window.Ptr;
+            public static implicit operator Window(IntPtr ptr)
+            {
+                return new Window() { Ptr = ptr };
+            }
+
+            public static implicit operator IntPtr(Window window)
+            {
+                return window.Ptr;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -23,8 +28,15 @@ namespace Foster.GLFW
         {
             public IntPtr Ptr;
 
-            public static implicit operator Monitor(IntPtr ptr) => new Monitor() { Ptr = ptr };
-            public static implicit operator IntPtr(Monitor monitor) => monitor.Ptr;
+            public static implicit operator Monitor(IntPtr ptr)
+            {
+                return new Monitor() { Ptr = ptr };
+            }
+
+            public static implicit operator IntPtr(Monitor monitor)
+            {
+                return monitor.Ptr;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -55,10 +67,10 @@ namespace Foster.GLFW
 
         public enum WindowAttributes
         {
-            Resizable   = 0x00020003,
-            Decorated   = 0x00020005,
+            Resizable = 0x00020003,
+            Decorated = 0x00020005,
             AutoIconify = 0x00020006,
-            Floating    = 0x00020007,
+            Floating = 0x00020007,
             FocusOnShow = 0x0002000C,
         }
 
@@ -273,7 +285,7 @@ namespace Foster.GLFW
         public static extern WindowSizeFunc SetWindowSizeCallback(Window window, WindowSizeFunc callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetWindowCloseCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern WindowCloseFunc SetWindowCloseCallback(Window window, WindowCloseFunc callback);
+        public static extern WindowCloseFunc? SetWindowCloseCallback(Window window, WindowCloseFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetWindowRefreshCallback", CallingConvention = CallingConvention.Cdecl)]
         public static extern WindowRefreshFunc SetWindowRefreshCallback(Window window, WindowRefreshFunc callback);
@@ -425,10 +437,10 @@ namespace Foster.GLFW
         public static extern void SetTime(double time);
 
         [DllImport(DLL, EntryPoint = "glfwGetTimerValue", CallingConvention = CallingConvention.Cdecl)]
-        public static extern UInt64 GetTimerValue();
+        public static extern ulong GetTimerValue();
 
         [DllImport(DLL, EntryPoint = "glfwGetTimerFrequency", CallingConvention = CallingConvention.Cdecl)]
-        public static extern UInt64 GetTimerFrequency();
+        public static extern ulong GetTimerFrequency();
 
         [DllImport(DLL, EntryPoint = "glfwMakeContextCurrent", CallingConvention = CallingConvention.Cdecl)]
         public static extern void MakeContextCurrent(Window window);
@@ -452,7 +464,7 @@ namespace Foster.GLFW
         public static extern int VulkanSupported();
 
         [DllImport(DLL, EntryPoint = "glfwGetRequiredInstanceExtensions", CallingConvention = CallingConvention.Cdecl)]
-        public static extern string[] GetRequiredInstanceExtensions(out UInt32 count);
+        public static extern string[] GetRequiredInstanceExtensions(out uint count);
 
 
     }
