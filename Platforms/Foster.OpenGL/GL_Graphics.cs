@@ -66,6 +66,15 @@ namespace Foster.OpenGL
         public override void Target(Target? target)
         {
             GL.BindFramebuffer(GLEnum.FRAMEBUFFER, (target as GL_Target)?.ID ?? 0);
+
+            if (target != null)
+            {
+                Viewport = new RectInt(0, 0, target.Width, target.Height);
+            }
+            else if (App.System?.CurrentWindow != null && App.System.CurrentWindow.Opened)
+            {
+                Viewport = new RectInt(0, 0, App.System.CurrentWindow.DrawSize.X, App.System.CurrentWindow.DrawSize.Y);
+            }
         }
 
         public override void DepthTest(bool enabled)

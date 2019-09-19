@@ -8,9 +8,9 @@ namespace Foster.Framework
     public abstract class Shader : GraphicsResource
     {
         public readonly ReadOnlyCollection<ShaderUniform> Textures;
-        protected readonly List<ShaderUniform> textures = new List<ShaderUniform>();
-
         public readonly ReadOnlyDictionary<string, ShaderUniform> Uniforms;
+
+        protected readonly List<ShaderUniform> textures = new List<ShaderUniform>();
         protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
 
         public Shader(Graphics graphics) : base(graphics)

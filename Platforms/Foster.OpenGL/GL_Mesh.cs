@@ -75,9 +75,7 @@ namespace Foster.OpenGL
         public override void DrawInstances(int start, int elements, int instances)
         {
             if (InstanceType == null)
-            {
                 throw new Exception("Instances must be assigned before being drawn");
-            }
 
             GL.BindVertexArray(VertexArray);
             GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
@@ -88,9 +86,7 @@ namespace Foster.OpenGL
             VertexAttributeAttribute.AttributesOfType<T>(out System.Collections.Generic.List<VertexAttributeAttribute>? attributes);
 
             if (attributes == null)
-            {
                 throw new Exception("Expecting Vertex Attributes");
-            }
 
             foreach (VertexAttributeAttribute attrib in attributes)
             {
@@ -140,10 +136,9 @@ namespace Foster.OpenGL
                         GL.BindVertexArray(vertexArrayID);
                         GL.DeleteBuffer(vertexBufferID);
                         GL.DeleteBuffer(triangleBufferID);
+
                         if (instanceBufferID > 0)
-                        {
                             GL.DeleteBuffer(instanceBufferID);
-                        }
 
                         GL.DeleteVertexArray(vertexArrayID);
                         GL.BindVertexArray(0);

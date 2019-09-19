@@ -321,6 +321,9 @@ void main(void)
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
+            if (currentBatch.Texture?.FlipVertically ?? false)
+                FlipYUVs(ref t0, ref t1, ref t2, ref t3);
+
             Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
@@ -358,6 +361,9 @@ void main(void)
         {
             PushQuad();
             ExpandVertices(vertexCount + 4);
+
+            if (currentBatch.Texture?.FlipVertically ?? false)
+                FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
 
@@ -471,7 +477,7 @@ void main(void)
 
         #endregion
 
-        #region Subtexture
+        #region Image
 
         public void Image(Texture texture,
             Vector2 pos0, Vector2 pos1, Vector2 pos2, Vector2 pos3,
@@ -489,6 +495,15 @@ void main(void)
         {
             SetTexture(texture);
             Quad(pos0, pos1, pos2, pos3, uv0, uv1, uv2, uv3, color, washed);
+        }
+
+        public void Image(Texture texture, Color color, bool washed = false)
+        {
+            SetTexture(texture);
+            Quad(
+                new Vector2(0, 0), new Vector2(texture.Width, 0), new Vector2(texture.Width, texture.Height),  new Vector2(0, texture.Height),
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
+                color, washed);
         }
 
         public void Image(Texture texture, Vector2 position, Color color, bool washed = false)
@@ -641,6 +656,17 @@ void main(void)
         {
             to.X = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M31;
             to.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M32;
+        }
+
+        private void FlipYUVs(ref Vector2 uv0, ref Vector2 uv1, ref Vector2 uv2, ref Vector2 uv3)
+        {
+            var temp = uv0.Y;
+            uv0.Y = uv3.Y;
+            uv3.Y = temp;
+
+            temp = uv1.Y;
+            uv1.Y = uv2.Y;
+            uv2.Y = temp;
         }
 
         #endregion

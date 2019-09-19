@@ -19,6 +19,7 @@ namespace Foster.OpenGL
             for (int i = 0; i < textures; i++)
             {
                 GL_Texture color = new GL_Texture(graphics, width, height);
+                color.flipVertically = true;
                 attachments.Add(color);
 
                 GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, (GLEnum.COLOR_ATTACHMENT0 + i), GLEnum.TEXTURE_2D, color.ID, 0);

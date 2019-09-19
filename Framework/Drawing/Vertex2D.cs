@@ -5,13 +5,6 @@ namespace Foster.Framework
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Vertex2D
     {
-        public enum Modes
-        {
-            Multiply,
-            Wash,
-            Fill
-        }
-
         [VertexAttribute(0, VertexType.Float, 2)]
         public Vector2 Pos;
 
@@ -30,27 +23,6 @@ namespace Foster.Framework
         [VertexAttribute(5, VertexType.UnsignedByte, 1, true)]
         public byte Fill;
 
-        public Modes Mode
-        {
-            get => (Mult > 0 ? Modes.Multiply : (Wash > 0 ? Modes.Wash : Modes.Fill));
-            set
-            {
-                Mult = (byte)(value == Modes.Multiply ? 255 : 0);
-                Wash = (byte)(value == Modes.Wash ? 255 : 0);
-                Fill = (byte)(value == Modes.Fill ? 255 : 0);
-            }
-        }
-
-        public Vertex2D(Vector2 position, Vector2 texcoord, Color color, Modes mode = Modes.Multiply)
-        {
-            Pos = position;
-            Tex = texcoord;
-            Col = color;
-            Mult = (byte)(mode == Modes.Multiply ? 255 : 0);
-            Wash = (byte)(mode == Modes.Wash ? 255 : 0);
-            Fill = (byte)(mode == Modes.Fill ? 255 : 0);
-        }
-
         public Vertex2D(Vector2 position, Vector2 texcoord, Color color, int mult, int wash, int fill)
         {
             Pos = position;
@@ -63,7 +35,7 @@ namespace Foster.Framework
 
         public override string ToString()
         {
-            return $"{{Position:{Pos}, Texcoord:{Tex}, Color:{Col}, Mode:{Mode}}}";
+            return $"{{Pos:{Pos}, Tex:{Tex}, Col:{Col}, Mult:{Mult}, Wash:{Wash}, Fill:{Fill}}}";
         }
 
     }

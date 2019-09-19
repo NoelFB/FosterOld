@@ -64,6 +64,21 @@ namespace Foster.GLFW
 
         protected override void OnPostUpdate()
         {
+            for (int i = windows.Count - 1; i >= 0; i--)
+            {
+                var window = (windows[i] as GLFW_Window);
+                if (window == null)
+                    continue;
+
+                if (GLFW.WindowShouldClose(window.handle))
+                {
+                    window.Close();
+                    windows.RemoveAt(i);
+
+                    GLFW.DestroyWindow(window.handle);
+                }
+            }
+
             GLFW.PollEvents();
         }
 

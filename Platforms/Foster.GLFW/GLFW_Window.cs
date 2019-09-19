@@ -6,7 +6,7 @@ namespace Foster.GLFW
     public class GLFW_Window : Window
     {
         private readonly GLFW_System system;
-        private GLFW.Window handle;
+        internal GLFW.Window handle;
         private string title;
         private bool opened;
         private bool visible;
@@ -49,6 +49,8 @@ namespace Foster.GLFW
 
         public override bool Opened => opened;
 
+        protected override Framework.System System => system;
+
         public override string Title
         {
             get => title;
@@ -80,13 +82,9 @@ namespace Foster.GLFW
             {
                 visible = value;
                 if (visible)
-                {
                     GLFW.ShowWindow(handle);
-                }
                 else
-                {
                     GLFW.HideWindow(handle);
-                }
             }
         }
 
@@ -97,26 +95,21 @@ namespace Foster.GLFW
 
             GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
 
-            IntPtr share = IntPtr.Zero;
+            var share = IntPtr.Zero;
             if (system.Windows.Count > 0 && (system.Windows[0] is GLFW_Window first))
-            {
                 share = first.handle;
-            }
 
             handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, share);
             opened = true;
             Visible = visible;
 
-            GLFW.SetWindowCloseCallback(handle, (handle) => Close());
             MakeCurrent();
         }
 
-        public override void MakeCurrent()
+        protected override void MakeCurrentInternal()
         {
             if (!opened)
-            {
                 throw new Exception("This Window has been Closed");
-            }
 
             GLFW.MakeContextCurrent(handle);
         }
@@ -124,9 +117,7 @@ namespace Foster.GLFW
         public override void Present()
         {
             if (!opened)
-            {
                 throw new Exception("This Window has been Closed");
-            }
 
             GLFW.SwapBuffers(handle);
         }
@@ -135,9 +126,7 @@ namespace Foster.GLFW
         {
             if (opened)
             {
-                GLFW.SetWindowCloseCallback(handle, null);
-                GLFW.DestroyWindow(handle);
-                system.windows.Remove(this);
+                GLFW.SetWindowShouldClose(handle, true);
                 opened = false;
             }
         }

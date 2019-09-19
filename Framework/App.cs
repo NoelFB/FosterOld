@@ -19,7 +19,9 @@ namespace Foster.Framework
         public static Graphics? Graphics { get; private set; }
         public static Audio? Audio { get; private set; }
         public static Input? Input { get; private set; }
-        public static Window? Window { get; private set; }
+
+        public static Window? MainWindow => System?.MainWindow;
+        public static Window? CurrentWindow => System?.CurrentWindow;
 
         public static event Action? OnUpdate;
         public static event Action<Window>? OnRender;
@@ -55,13 +57,14 @@ namespace Foster.Framework
                 module.OnStartup();
 
             // Create our first Window
-            Window = System.CreateWindow(title, width, height, false);
+            System.MainWindow = System.CreateWindow(title, width, height, false);
+            System.MainWindow.MakeCurrent();
 
             // We now have a Context
             foreach (var module in modules)
                 module.OnContext();
 
-            Window.Visible = true;
+            System.MainWindow.Visible = true;
 
             // Tell Module's we have a Window to Display to
             foreach (var module in modules)
@@ -76,7 +79,7 @@ namespace Foster.Framework
         {
             Running = true;
 
-            while (Running && Window != null && Window.Opened)
+            while (Running && MainWindow != null && MainWindow.Opened)
             {
                 foreach (var module in modules)
                     module.OnPreUpdate();
@@ -87,12 +90,12 @@ namespace Foster.Framework
                 {
                     foreach (var window in System.Windows)
                     {
+                        if (!window.Opened)
+                            continue;
+
                         window.MakeCurrent();
                         if (Graphics != null)
-                        {
                             Graphics.Target(null);
-                            Graphics.Viewport = new RectInt(0, 0, window.DrawSize.X, window.DrawSize.Y);
-                        }
                         OnRender?.Invoke(window);
                         window.Present();
                     }
@@ -103,7 +106,7 @@ namespace Foster.Framework
             }
 
             // Close the Window
-            Window?.Close();
+            MainWindow?.Close();
 
             // exit Modules
             foreach (var module in modules)
@@ -112,7 +115,6 @@ namespace Foster.Framework
             modulesByType.Clear();
 
             // dereference
-            Window = null;
             Input = null;
             Audio = null;
             Graphics = null;

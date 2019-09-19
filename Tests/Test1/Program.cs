@@ -6,6 +6,7 @@ namespace Test1
 {
     internal class Program
     {
+        private static Target? target;
         private static Batch2D? batch;
         private static Texture? texture;
         private static float x;
@@ -22,13 +23,27 @@ namespace Test1
                     throw new Exception("Expecting a Graphics Module");
                 }
 
+                target = App.Graphics.CreateTarget(500, 500);
+
                 batch = new Batch2D(App.Graphics);
 
                 PngFormat.Read(File.OpenRead("03_japanese.png"), out int w, out int h, out Color[] pixels, true);
-                PngFormat.Write(File.OpenWrite("test2.png"), w, h, pixels);
-
                 texture = App.Graphics.CreateTexture(w, h);
                 texture.SetData(new Memory<Color>(pixels));
+
+                App.Graphics.Target(target);
+                App.Graphics.Clear(Color.Red);
+
+                batch.Clear();
+                Console.WriteLine("RECT");
+                batch.Rect(-64, -64, 64, 64, Color.Green);
+                batch.SetTexture(texture);
+                Console.WriteLine("QUAD");
+                batch.Quad(new Vector2(0, 0), new Vector2(600, 0), new Vector2(600, 400), new Vector2(0, 800), new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1), Color.White);
+
+                Console.WriteLine("IMAGE");
+                batch.Image(texture, Vector2.Zero, Vector2.One * 0.35f, Vector2.Zero, 0f, Color.White);
+                batch.Render();
 
                 App.OnUpdate += Update;
                 App.OnRender += Render;
@@ -45,23 +60,13 @@ namespace Test1
             App.Graphics!.Clear(new Color(0.5f, 0.5f, 0.5f, 1.0f));
 
             batch!.Clear();
-            batch.PushMatrix(Matrix3x2.CreateTranslation(100, 100));
-            batch.PushMatrix(Matrix3x2.CreateRotation(0.5f));
-            batch.PushMatrix(Matrix3x2.CreateTranslation(100, 200));
-            batch.Rect(0, 0, 200, 200, Color.Red * 0.5f);
-            batch.PopMatrix();
-            batch.Rect(100, 0, 200, 100, Color.White * 0.25f);
-            batch.Rect(100, 0, 200, 100, Color.White * 0.25f);
-            batch.Rect(100, 0, 200, 100, Color.White * 0.25f);
-            batch.Rect(100, 0, 200, 100, Color.White * 0.25f);
-            batch.PopMatrix();
-            batch.PopMatrix();
 
             batch.SetTexture(texture);
             batch.Quad(new Vector2(0, 0), new Vector2(640, 0), new Vector2(640, 480), new Vector2(0, 480), new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1), Color.White);
 
             var subtex = new Subtexture(texture, new Rect(400, 32, 200, 200));
             batch.Image(subtex, new Vector2(1000, 400), Color.White);
+            batch.Image(target, new Vector2(32, 600), Color.White);
 
             batch.Render();
         }

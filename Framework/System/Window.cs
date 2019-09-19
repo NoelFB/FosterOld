@@ -7,26 +7,12 @@ namespace Foster.Framework
     public abstract class Window
     {
 
-        public int X
-        {
-            get => Bounds.X;
-        }
+        public int X => Bounds.X;
+        public int Y => Bounds.Y;
+        public int Width => Bounds.Width;
+        public int Height => Bounds.Height;
 
-        public int Y
-        {
-            get => Bounds.Y;
-        }
-
-        public int Width
-        {
-            get => Bounds.Width;
-        }
-
-        public int Height
-        {
-            get => Bounds.Height;
-        }
-
+        protected abstract System System { get; }
         public abstract string Title { get; set; }
 
         public abstract bool Opened { get; }
@@ -39,9 +25,17 @@ namespace Foster.Framework
         public abstract Point2 DrawSize { get; }
         public abstract Vector2 PixelSize { get; }
 
-        public abstract void MakeCurrent();
+        public void MakeCurrent()
+        {
+            System.CurrentWindow = this;
+            MakeCurrentInternal();
+        }
+
+        protected abstract void MakeCurrentInternal();
+
         public abstract void Present();
         public abstract void Close();
+
 
         public static Window Create(string title, int width, int height, bool visible = true)
         {

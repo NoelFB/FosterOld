@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public class Target : GraphicsResource
+    public abstract class Target : GraphicsResource
     {
         public int Width { get; protected set; }
         public int Height { get; protected set; }

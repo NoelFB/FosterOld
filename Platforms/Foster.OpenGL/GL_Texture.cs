@@ -10,6 +10,7 @@ namespace Foster.OpenGL
         private TextureFilter filter;
         private TextureWrap wrapX;
         private TextureWrap wrapY;
+        internal bool flipVertically = false;
 
         public override TextureFilter Filter
         {
@@ -56,6 +57,8 @@ namespace Foster.OpenGL
                 wrapY = value;
             }
         }
+
+        public override bool FlipVertically => flipVertically;
 
         public GL_Texture(GL_Graphics graphics, int width, int height) : base(graphics)
         {

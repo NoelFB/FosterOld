@@ -10,7 +10,7 @@ namespace Foster.Framework
         public class Character
         {
             public uint Unicode;
-            public Subtexture Image;
+            public Subtexture? Image;
             public float Advance;
         }
 

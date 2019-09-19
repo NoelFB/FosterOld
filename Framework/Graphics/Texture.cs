@@ -14,6 +14,7 @@ namespace Foster.Framework
         public abstract TextureFilter Filter { get; set; }
         public abstract TextureWrap WrapX { get; set; }
         public abstract TextureWrap WrapY { get; set; }
+        public abstract bool FlipVertically { get; }
 
         public Texture(Graphics graphics) : base(graphics)
         {
