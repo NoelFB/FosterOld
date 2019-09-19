@@ -5,7 +5,7 @@ using System.IO.Compression;
 
 namespace Foster.Framework
 {
-    public static class Png
+    public class PngFormat : ImageFormat
     {
         private enum Colors
         {
@@ -25,7 +25,7 @@ namespace Foster.Framework
         private static readonly byte[] header = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
         private static readonly uint[] crcTable = new uint[256];
 
-        static Png()
+        static PngFormat()
         {
             // create the CRC table
             // taken from libpng format specification: http://www.libpng.org/pub/png/spec/1.2/PNG-CRCAppendix.html
@@ -42,6 +42,26 @@ namespace Foster.Framework
                 }
                 crcTable[n] = c;
             }
+        }
+
+        public override string Name => "PNG";
+
+        public override bool IsFormat(Stream stream)
+        {
+            return IsPng(stream);
+        }
+
+        public override Bitmap Read(Stream stream)
+        {
+            if (Read(stream, out int width, out int height, out Color[] pixels, false))
+                return new Bitmap(width, height, pixels);
+
+            throw new Exception("Unable to read PNG from Stream");
+        }
+
+        public override void Write(Stream stream, Bitmap bitmap)
+        {
+            Write(stream, bitmap.Width, bitmap.Height, bitmap.Pixels);
         }
 
         public static bool IsPng(Stream stream)
@@ -61,7 +81,7 @@ namespace Foster.Framework
         // This could likely be optimized a buuunch more
         // We also ignore all checksums when reading because they don't seem super important for game usage
 
-        public static unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels, bool premultiplyAlpha = true)
+        public static unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels, bool premultiplyAlpha)
         {
             width = height = 0;
 

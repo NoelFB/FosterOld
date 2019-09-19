@@ -11,14 +11,21 @@ namespace Foster.Framework
         public readonly int Width;
         public readonly int Height;
 
-        public Bitmap(int width, int height)
+        public Bitmap(int width, int height) 
+            : this(width, height, new Color[width * height])
+        {
+        }
+
+        public Bitmap(int width, int height, Color[] pixels)
         {
             if (width <= 0 || height <= 0)
                 throw new Exception("Width and Height must be larger than 0");
+            if (pixels.Length != width * height)
+                throw new Exception("Pixels array doesn't fit the Bitmap size");
 
             Width = width;
             Height = height;
-            Pixels = new Color[width * height];
+            Pixels = pixels;
         }
 
         public void Premultiply()

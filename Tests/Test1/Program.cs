@@ -24,8 +24,8 @@ namespace Test1
 
                 batch = new Batch2D(App.Graphics);
 
-                Png.Read(File.OpenRead("03_japanese.png"), out int w, out int h, out Color[] pixels, true);
-                Png.Write(File.OpenWrite("test2.png"), w, h, pixels);
+                PngFormat.Read(File.OpenRead("03_japanese.png"), out int w, out int h, out Color[] pixels, true);
+                PngFormat.Write(File.OpenWrite("test2.png"), w, h, pixels);
 
                 texture = App.Graphics.CreateTexture(w, h);
                 texture.SetData(new Memory<Color>(pixels));
@@ -59,6 +59,9 @@ namespace Test1
 
             batch.SetTexture(texture);
             batch.Quad(new Vector2(0, 0), new Vector2(640, 0), new Vector2(640, 480), new Vector2(0, 480), new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1), Color.White);
+
+            var subtex = new Subtexture(texture, new Rect(400, 32, 200, 200));
+            batch.Image(subtex, new Vector2(1000, 400), Color.White);
 
             batch.Render();
         }

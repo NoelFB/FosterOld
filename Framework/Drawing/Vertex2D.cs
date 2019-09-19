@@ -51,14 +51,14 @@ namespace Foster.Framework
             Fill = (byte)(mode == Modes.Fill ? 255 : 0);
         }
 
-        public Vertex2D(Vector2 position, Vector2 texcoord, Color color, byte mult, byte wash, byte fill)
+        public Vertex2D(Vector2 position, Vector2 texcoord, Color color, int mult, int wash, int fill)
         {
             Pos = position;
             Tex = texcoord;
             Col = color;
-            Mult = mult;
-            Wash = wash;
-            Fill = fill;
+            Mult = (byte)mult;
+            Wash = (byte)wash;
+            Fill = (byte)fill;
         }
 
         public override string ToString()

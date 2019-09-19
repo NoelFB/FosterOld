@@ -316,12 +316,12 @@ void main(void)
             vertexCount += 4;
         }
 
-        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color color)
+        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color color, bool washed = false)
         {
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, color, 255, 0, 0), vertexCount, 4);
+            Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -354,12 +354,12 @@ void main(void)
             vertexCount += 4;
         }
 
-        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color c0, Color c1, Color c2, Color c3)
+        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color c0, Color c1, Color c2, Color c3, bool washed = false)
         {
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, c0, 255, 0, 0), vertexCount, 4);
+            Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -467,6 +467,123 @@ void main(void)
                 new Vector2(x + width, y),
                 new Vector2(x + width, y + height),
                 new Vector2(x, y + height), c0, c1, c2, c3);
+        }
+
+        #endregion
+
+        #region Subtexture
+
+        public void Image(Texture texture,
+            Vector2 pos0, Vector2 pos1, Vector2 pos2, Vector2 pos3,
+            Vector2 uv0, Vector2 uv1, Vector2 uv2, Vector2 uv3,
+            Color col0, Color col1, Color col2, Color col3, bool washed = false)
+        {
+            SetTexture(texture);
+            Quad(pos0, pos1, pos2, pos3, uv0, uv1, uv2, uv3, col0, col1, col2, col3, washed);
+        }
+
+        public void Image(Texture texture,
+            Vector2 pos0, Vector2 pos1, Vector2 pos2, Vector2 pos3,
+            Vector2 uv0, Vector2 uv1, Vector2 uv2, Vector2 uv3,
+            Color color, bool washed)
+        {
+            SetTexture(texture);
+            Quad(pos0, pos1, pos2, pos3, uv0, uv1, uv2, uv3, color, washed);
+        }
+
+        public void Image(Texture texture, Vector2 position, Color color, bool washed = false)
+        {
+            SetTexture(texture);
+            Quad(
+                position, position + new Vector2(texture.Width, 0), position + new Vector2(texture.Width, texture.Height), position + new Vector2(0, texture.Height),
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
+                color, washed);
+        }
+
+        public void Image(Texture texture, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        {
+            var was = MatrixStack;
+
+            MatrixStack = Matrix3x2.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+
+            SetTexture(texture);
+            Quad(
+                Vector2.Zero, new Vector2(texture.Width, 0), new Vector2(texture.Width, texture.Height), new Vector2(0, texture.Height),
+                new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
+                color, washed);
+
+            MatrixStack = was;
+        }
+
+        public void Image(Texture texture, Rect clip, Vector2 position, Color color, bool washed = false)
+        {
+            var tx0 = clip.X / (float)texture.Width;
+            var ty0 = clip.Y / (float)texture.Height;
+            var tx1 = clip.Right / (float)texture.Width;
+            var ty1 = clip.Bottom / (float)texture.Height;
+
+            SetTexture(texture);
+            Quad(
+                position, position + new Vector2(clip.Width, 0), position + new Vector2(clip.Width, clip.Height), position + new Vector2(0, clip.Height),
+                new Vector2(tx0, ty0), new Vector2(tx1, ty0), new Vector2(tx1, ty1), new Vector2(tx0, ty1),
+                color, washed);
+        }
+
+        public void Image(Texture texture, Rect clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        {
+            var was = MatrixStack;
+
+            MatrixStack = Matrix3x2.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+
+            var tx0 = clip.X / (float)texture.Width;
+            var ty0 = clip.Y / (float)texture.Height;
+            var tx1 = clip.Right / (float)texture.Width;
+            var ty1 = clip.Bottom / (float)texture.Height;
+
+            SetTexture(texture);
+            Quad(
+                Vector2.Zero, new Vector2(clip.Width, 0), new Vector2(clip.Width, clip.Height), new Vector2(0, clip.Height),
+                new Vector2(tx0, ty0), new Vector2(tx1, ty0), new Vector2(tx1, ty1), new Vector2(tx0, ty1),
+                color, washed);
+
+            MatrixStack = was;
+        }
+
+        public void Image(Subtexture subtex, Color color, bool washed = false)
+        {
+            SetTexture(subtex.Texture);
+            Quad(
+                subtex.DrawCoords[0], subtex.DrawCoords[1], subtex.DrawCoords[2], subtex.DrawCoords[3],
+                subtex.TexCoords[0], subtex.TexCoords[1], subtex.TexCoords[2], subtex.TexCoords[3],
+                color, washed);
+        }
+
+        public void Image(Subtexture subtex, Vector2 position, Color color, bool washed = false)
+        {
+            SetTexture(subtex.Texture);
+            Quad(position + subtex.DrawCoords[0], position + subtex.DrawCoords[1], position + subtex.DrawCoords[2], position + subtex.DrawCoords[3],
+                subtex.TexCoords[0], subtex.TexCoords[1], subtex.TexCoords[2], subtex.TexCoords[3],
+                color, washed);
+        }
+
+        public void Image(Subtexture subtex, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        {
+            var was = MatrixStack;
+
+            MatrixStack = Matrix3x2.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+
+            SetTexture(subtex.Texture);
+            Quad(
+                subtex.DrawCoords[0], subtex.DrawCoords[1], subtex.DrawCoords[2], subtex.DrawCoords[3],
+                subtex.TexCoords[0], subtex.TexCoords[1], subtex.TexCoords[2], subtex.TexCoords[3],
+                color, washed);
+
+            MatrixStack = was;
+        }
+
+        public void Image(Subtexture subtex, RectInt clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
