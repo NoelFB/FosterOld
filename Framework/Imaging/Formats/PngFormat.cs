@@ -2,9 +2,14 @@
 using System.Buffers.Binary;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// This is not a true or full PNG format implementation, but rather handles the most common PNG formats for games
+    /// It could probably be optimized more.
+    /// </summary>
     public class PngFormat : ImageFormat
     {
         private enum Colors
@@ -403,26 +408,7 @@ namespace Foster.Framework
 
         public static unsafe void Write(Stream stream, int width, int height, Color[] pixels)
         {
-            // taken from zlib format specification: https://tools.ietf.org/html/rfc1950#section-9
-            // removed the mod math as the subtraction was faster ...
-            static uint Adler32(uint value, Span<byte> buf)
-            {
-                uint s1 = value & 0xffff;
-                uint s2 = (value >> 16) & 0xffff;
-
-                for (int n = 0; n < buf.Length; n++)
-                {
-                    s1 += buf[n];
-                    while (s1 > 65520)
-                        s1 -= 65521;
-
-                    s2 += s1;
-                    while (s2 > 65520)
-                        s2 -= 65521;
-                }
-
-                return ((s2 << 16) + s1);
-            }
+            const int MaxIDATChunkLength = 8192;
 
             static void Chunk(BinaryWriter writer, string title, Span<byte> buffer)
             {
@@ -431,7 +417,6 @@ namespace Foster.Framework
                     writer.Write(SwapEndian(buffer.Length));
                     for (int i = 0; i < title.Length; i++)
                         writer.Write((byte)title[i]);
-
                     writer.Write(buffer);
                 }
 
@@ -445,6 +430,32 @@ namespace Foster.Framework
                         crc = crcTable[(crc ^ buffer[n]) & 0xFF] ^ (crc >> 8);
 
                     writer.Write(SwapEndian((int)(crc ^ 0xFFFFFFFFU)));
+                }
+            }
+
+            static void WriteIDAT(BinaryWriter writer, MemoryStream memory, bool writeAll)
+            {
+                var zlib = new Span<byte>(memory.GetBuffer());
+                var remainder = (int)memory.Position;
+                var offset = 0;
+
+                // write out IDAT chunks while there is memory to write
+                while ((writeAll ? remainder > 0 : remainder >= MaxIDATChunkLength))
+                {
+                    var amount = Math.Min(remainder, MaxIDATChunkLength);
+
+                    Chunk(writer, "IDAT", zlib.Slice(offset, amount));
+                    offset += amount;
+                    remainder -= amount;
+                }
+
+                // shift remaining memory back
+                if (!writeAll)
+                {
+                    if (remainder > 0)
+                        zlib.Slice(offset).CopyTo(zlib);
+                    memory.Position = remainder;
+                    memory.SetLength(remainder);
                 }
             }
 
@@ -467,11 +478,8 @@ namespace Foster.Framework
                 Chunk(writer, "IHDR", buf);
             }
 
-            // IDAT Chunk
+            // IDAT Chunk(s)
             {
-                const int MaxChunkLength = 8192;
-
-                // Create zlib data
                 using MemoryStream zlibMemory = new MemoryStream();
 
                 // zlib Header
@@ -486,39 +494,44 @@ namespace Foster.Framework
                     fixed (Color* ptr = pixels)
                     {
                         Span<byte> filter = stackalloc byte[1] { 0 };
-                        Span<byte> buf = new Span<byte>((byte*)ptr, pixels.Length * 4);
+                        byte* pixelBuffer = (byte*)ptr;
 
                         for (int y = 0; y < height; y++)
                         {
-                            Span<byte> row = buf.Slice(y * width * 4, width * 4);
-
-                            // deflate
+                            // deflate filter
                             deflate.Write(filter);
-                            deflate.Write(row);
 
-                            // adler 32
-                            adler = Adler32(adler, filter);
-                            adler = Adler32(adler, row);
+                            // update adler checksum
+                            adler = Calc.Adler32_Z(adler, filter);
+
+                            // append the row of pixels (in steps, potentially)
+                            const int MaxHorizontalStep = 1024;
+                            for (int x = 0; x < width; x += MaxHorizontalStep)
+                            {
+                                var segment = new Span<byte>(pixelBuffer + x * 4, Math.Min(width - x, MaxHorizontalStep) * 4);
+                                
+                                // delfate the segment of the row
+                                deflate.Write(segment);
+
+                                // update adler checksum
+                                adler = Calc.Adler32_Z(adler, segment);
+
+                                // write out chunks if we've hit out max IDAT chunk length
+                                if (zlibMemory.Position >= MaxIDATChunkLength)
+                                    WriteIDAT(writer, zlibMemory, false);
+                            }
+
+                            pixelBuffer += width * 4;
                         }
                     }
                 }
 
                 // zlib adler32 trailer
-                using (BinaryWriter bytes = new BinaryWriter(zlibMemory))
+                using (BinaryWriter bytes = new BinaryWriter(zlibMemory, Encoding.UTF8, true))
                     bytes.Write(SwapEndian((int)adler));
 
-                // write out chunks
-                {
-                    Span<byte> zlib = new Span<byte>(zlibMemory.GetBuffer());
-                    int index = 0;
-
-                    while (index < zlib.Length)
-                    {
-                        int len = Math.Min(zlib.Length - index, MaxChunkLength);
-                        Chunk(writer, "IDAT", zlib.Slice(index, len));
-                        index += len;
-                    }
-                }
+                // write out remaining chunks
+                WriteIDAT(writer, zlibMemory, true);
             }
 
             // IEND Chunk
@@ -540,14 +553,14 @@ namespace Foster.Framework
             return c;
         }
 
-        private static bool Check(string name, Span<byte> buffer, int start = 0)
+        private static bool Check(string name, Span<byte> buffer)
         {
-            if (start + buffer.Length < name.Length)
+            if (buffer.Length < name.Length)
                 return false;
 
             for (int i = 0; i < name.Length; i++)
             {
-                if ((char)buffer[start + i] != name[i])
+                if ((char)buffer[i] != name[i])
                     return false;
             }
 

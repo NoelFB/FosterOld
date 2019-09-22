@@ -34,5 +34,24 @@ namespace Foster.Framework
                 Pixels[i] = Pixels[i].Premultiply();
         }
 
+        public void SetPixels(RectInt desintation, Memory<Color> pixels)
+        {
+            var src = pixels.Span;
+            var dst = new Span<Color>(Pixels);
+
+            for (int y = 0; y < desintation.Height; y++)
+            {
+                var from = src.Slice(y * desintation.Width, desintation.Width);
+                var to = dst.Slice(desintation.X + (desintation.Y + y) * Width, desintation.Width);
+
+                from.CopyTo(to);
+            }
+        }
+
+        public Bitmap Clone()
+        {
+            return new Bitmap(Width, Height, new Memory<Color>(Pixels).ToArray());
+        }
+
     }
 }

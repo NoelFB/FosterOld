@@ -603,6 +603,25 @@ void main(void)
 
         #endregion
 
+        #region Text
+
+        public void Text(SpriteFont font, string text, Color color)
+        {
+
+        }
+
+        public void Text(SpriteFont font, string text, Vector2 position, Color color)
+        {
+
+        }
+
+        public void Text(SpriteFont font, string text, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color)
+        {
+
+        }
+
+        #endregion
+
         #region Internal Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -16,5 +16,9 @@ namespace Foster.Framework
 
         public readonly Dictionary<uint, Character> Characters = new Dictionary<uint, Character>();
 
+        public SpriteFont(Font font, int size, string charset)
+        {
+
+        }
     }
 }

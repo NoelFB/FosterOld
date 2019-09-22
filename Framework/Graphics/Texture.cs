@@ -35,5 +35,12 @@ namespace Foster.Framework
         {
             return App.GetModule<Graphics>().CreateTexture(width, height);
         }
+
+        public static Texture Create(Bitmap bitmap)
+        {
+            var texture = App.GetModule<Graphics>().CreateTexture(bitmap.Width, bitmap.Height);
+            texture.SetData<Color>(new Memory<Color>(bitmap.Pixels));
+            return texture;
+        }
     }
 }
