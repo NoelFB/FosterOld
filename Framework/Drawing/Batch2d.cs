@@ -607,17 +607,35 @@ void main(void)
 
         public void Text(SpriteFont font, string text, Color color)
         {
+            var position = new Vector2(0, font.Ascent + font.Descent);
 
-        }
+            for (int i = 0; i < text.Length; i ++)
+            {
+                if (text[i] == '\n')
+                {
+                    position.X = 0;
+                    position.Y += font.LineHeight;
+                    continue;
+                }
 
-        public void Text(SpriteFont font, string text, Vector2 position, Color color)
-        {
+                if (!font.Charset.TryGetValue(text[i], out var ch))
+                    continue;
 
-        }
+                if (ch.Image != null)
+                {
+                    var at = position + ch.Offset;
 
-        public void Text(SpriteFont font, string text, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color)
-        {
+                    if (i < text.Length - 1 && text[i + 1] != '\n')
+                    {
+                        if (ch.Kerning.TryGetValue(text[i + 1], out float kerning))
+                            at.X += kerning;
+                    }
 
+                    Image(ch.Image, at, color, true);
+                }
+
+                position.X += ch.Advance;
+            }
         }
 
         #endregion

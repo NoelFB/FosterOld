@@ -15,10 +15,10 @@ namespace Foster.Framework
         public static bool Running { get; private set; } = false;
         public static bool Exiting { get; private set; } = false;
 
-        public static System? System { get; private set; }
-        public static Graphics? Graphics { get; private set; }
-        public static Audio? Audio { get; private set; }
-        public static Input? Input { get; private set; }
+        public static System System => GetModule<System>();
+        public static Graphics Graphics => GetModule<Graphics>();
+        public static Audio Audio => GetModule<Audio>();
+        public static Input Input => GetModule<Input>();
 
         public static Window? MainWindow => System?.MainWindow;
         public static Window? CurrentWindow => System?.CurrentWindow;
@@ -37,18 +37,6 @@ namespace Foster.Framework
                 throw new Exception("App is still exiting");
 
             Started = true;
-
-            // Get Main Modules
-            {
-                System = GetModule<System>();
-
-                if (TryGetModule<Graphics>(out var graphics))
-                    Graphics = graphics;
-                if (TryGetModule<Audio>(out var audio))
-                    Audio = audio;
-                if (TryGetModule<Input>(out var input))
-                    Input = input;
-            }
 
             Console.WriteLine($"FOSTER {Version}");
 
@@ -94,8 +82,8 @@ namespace Foster.Framework
                             continue;
 
                         window.MakeCurrent();
-                        if (Graphics != null)
-                            Graphics.Target(null);
+                        Graphics.Target(null);
+                        Graphics.Clear(Color.Black);
                         OnRender?.Invoke(window);
                         window.Present();
                     }
@@ -113,12 +101,6 @@ namespace Foster.Framework
                 module.OnShutdown();
             modules.Clear();
             modulesByType.Clear();
-
-            // dereference
-            Input = null;
-            Audio = null;
-            Graphics = null;
-            System = null;
 
             // finalize
             Started = false;

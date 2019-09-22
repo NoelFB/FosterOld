@@ -6,11 +6,6 @@ namespace Test1
 {
     internal class Program
     {
-        private static Target? target;
-        private static Batch2D? batch;
-        private static Texture? texture;
-        private static float x;
-
         private static void Main()
         {
             App.RegisterModule<Foster.GLFW.GLFW_System>();
@@ -18,18 +13,34 @@ namespace Test1
 
             App.Startup("hello", 1280, 720, () =>
             {
-                if (App.Graphics == null)
-                {
-                    throw new Exception("Expecting a Graphics Module");
-                }
+                var game = new Game();
+                App.OnRender += game.Render;
 
-                int size = 256;
-                Color[] pixels = new Color[size * size];
-                for (int i = 0; i < pixels.Length; i++)
-                    pixels[i] = Color.Red;
-
-                PngFormat.Write(File.OpenWrite("test.png"), size, size, pixels);
             });
+        }
+
+        class Game
+        {
+            private Batch2D batch;
+            private SpriteFont font;
+
+            public Game()
+            {
+                batch = new Batch2D(App.Graphics);
+
+                var t = System.Diagnostics.Stopwatch.StartNew();
+                font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
+                Console.WriteLine(t.ElapsedMilliseconds);
+            }
+
+            public void Render(Window window)
+            {
+                batch.Clear();
+                batch.PushMatrix(new Vector2(32, 32), Vector2.One, Vector2.Zero, 0f);
+                batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White);
+                batch.PopMatrix();
+                batch.Render();
+            }
         }
 
 

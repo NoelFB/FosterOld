@@ -80,7 +80,7 @@ namespace Foster.Framework
         /// <summary>
         /// Image Padding
         /// </summary>
-        public int Padding = 0;
+        public int Padding = 1;
 
         /// <summary>
         /// Power of Two
@@ -108,14 +108,15 @@ namespace Foster.Framework
 
         }
 
-        public void AddPixels(string name, int width, int height, Memory<Color> pixels)
+        public void AddPixels(string name, int width, int height, Span<Color> pixels)
         {
             AddSource(name, width, height, pixels);
         }
 
         public void AddBitmap(string name, Bitmap bitmap)
         {
-            AddSource(name, bitmap.Width, bitmap.Height, new Memory<Color>(bitmap.Pixels));
+            if (bitmap != null)
+                AddSource(name, bitmap.Width, bitmap.Height, new Span<Color>(bitmap.Pixels));
         }
 
         public void AddFile(string name, string path)
@@ -123,12 +124,11 @@ namespace Foster.Framework
             throw new NotImplementedException();
         }
 
-        private void AddSource(string name, int width, int height, Memory<Color> data)
+        private void AddSource(string name, int width, int height, Span<Color> pixels)
         {
             HasUnpackedData = true;
 
             var source = new Source(name);
-            var pixels = data.Span;
             int top = 0, left = 0, right = width, bottom = height;
 
             // trim
@@ -219,7 +219,7 @@ namespace Foster.Framework
                 return Packed;
 
             // sort the sources by size
-            sources.Sort((a, b) => a.Packed.Width * a.Packed.Height - b.Packed.Width * b.Packed.Height);
+            sources.Sort((a, b) => b.Packed.Width * b.Packed.Height - a.Packed.Width * a.Packed.Height);
 
             // make sure the largest isn't too large
             if (sources[0].Packed.Width > MaxSize || sources[0].Packed.Height > MaxSize)
@@ -259,7 +259,7 @@ namespace Foster.Framework
                         var node = FindNode(root, w, h);
 
                         // try to expand
-                        if (node != null)
+                        if (node == null)
                         {
                             bool canGrowDown = (w <= root->Rect.Width) && (root->Rect.Height + h < MaxSize);
                             bool canGrowRight = (h <= root->Rect.Height) && (root->Rect.Width + w < MaxSize);

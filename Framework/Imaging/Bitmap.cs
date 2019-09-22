@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Foster.Framework
@@ -32,6 +33,11 @@ namespace Foster.Framework
         {
             for (int i = 0; i < Pixels.Length; i++)
                 Pixels[i] = Pixels[i].Premultiply();
+        }
+
+        public void SetPixels(Memory<Color> pixels)
+        {
+            SetPixels(new RectInt(0, 0, Width, Height), pixels);
         }
 
         public void SetPixels(RectInt desintation, Memory<Color> pixels)

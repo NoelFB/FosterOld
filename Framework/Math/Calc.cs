@@ -495,9 +495,9 @@ namespace Foster.Framework
 
         #region Parsing
 
-        public static Vector2 ParseVector2(ReadOnlySpan<char> span, char separator = ',')
+        public static Vector2 ParseVector2(ReadOnlySpan<char> span, char delimiter = ',')
         {
-            var index = span.IndexOf(separator);
+            var index = span.IndexOf(delimiter);
 
             if (index >= 0)
             {
