@@ -28,9 +28,7 @@ namespace Test1
             {
                 batch = new Batch2D(App.Graphics);
 
-                var t = System.Diagnostics.Stopwatch.StartNew();
                 font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
-                Console.WriteLine(t.ElapsedMilliseconds);
             }
 
             public void Render(Window window)

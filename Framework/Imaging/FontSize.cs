@@ -61,14 +61,16 @@ namespace Foster.Framework
                         int h = (y1 - y0);
 
                         // define character
-                        var ch = new Character();
-                        ch.Unicode = unicode;
-                        ch.Glyph = glyph;
-                        ch.Width = w;
-                        ch.Height = h;
-                        ch.Advance = advance * Scale;
-                        ch.OffsetX = offsetX * Scale;
-                        ch.OffsetY = (float)y0;
+                        var ch = new Character
+                        {
+                            Unicode = unicode,
+                            Glyph = glyph,
+                            Width = w,
+                            Height = h,
+                            Advance = advance * Scale,
+                            OffsetX = offsetX * Scale,
+                            OffsetY = y0
+                        };
                         ch.HasGlyph = (w > 0 && h > 0 && StbTrueType.stbtt_IsGlyphEmpty(font.fontInfo, ch.Glyph) == 0);
                         Charset[unicode] = ch;
                     }

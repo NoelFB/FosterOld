@@ -2,11 +2,50 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
     public class Batch2D : GraphicsResource
     {
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct Vertex
+        {
+            [VertexAttribute(0, VertexType.Float, 2)]
+            public Vector2 Pos;
+
+            [VertexAttribute(1, VertexType.Float, 2)]
+            public Vector2 Tex;
+
+            [VertexAttribute(2, VertexType.UnsignedByte, 4, true)]
+            public Color Col;
+
+            [VertexAttribute(3, VertexType.UnsignedByte, 1, true)]
+            public byte Mult;
+
+            [VertexAttribute(4, VertexType.UnsignedByte, 1, true)]
+            public byte Wash;
+
+            [VertexAttribute(5, VertexType.UnsignedByte, 1, true)]
+            public byte Fill;
+
+            public Vertex(Vector2 position, Vector2 texcoord, Color color, int mult, int wash, int fill)
+            {
+                Pos = position;
+                Tex = texcoord;
+                Col = color;
+                Mult = (byte)mult;
+                Wash = (byte)wash;
+                Fill = (byte)fill;
+            }
+
+            public override string ToString()
+            {
+                return $"{{Pos:{Pos}, Tex:{Tex}, Col:{Col}, Mult:{Mult}, Wash:{Wash}, Fill:{Fill}}}";
+            }
+
+        }
 
         #region Shader Source
 
@@ -55,12 +94,12 @@ void main(void)
         #endregion
 
         public readonly Shader DefaultShader;
-        public readonly Mesh<Vertex2D> Mesh;
+        public readonly Mesh<Vertex> Mesh;
 
         public Matrix3x2 MatrixStack = Matrix3x2.Identity;
         private readonly Stack<Matrix3x2> matrixStack = new Stack<Matrix3x2>();
 
-        private Vertex2D[] vertices;
+        private Vertex[] vertices;
         private int[] triangles;
         private readonly List<Batch> batches;
         private Batch currentBatch;
@@ -94,9 +133,9 @@ void main(void)
         public Batch2D(Graphics graphics) : base(graphics)
         {
             DefaultShader = graphics.CreateShader(VertexSource, FragmentSource);
-            Mesh = graphics.CreateMesh<Vertex2D>();
+            Mesh = graphics.CreateMesh<Vertex>();
 
-            vertices = new Vertex2D[64];
+            vertices = new Vertex[64];
             triangles = new int[64];
             batches = new List<Batch>();
 
@@ -131,7 +170,7 @@ void main(void)
                 if (dirty)
                 {
                     Mesh.SetTriangles(new Memory<int>(triangles, 0, triangleCount));
-                    Mesh.SetVertices(new Memory<Vertex2D>(vertices, 0, vertexCount));
+                    Mesh.SetVertices(new Memory<Vertex>(vertices, 0, vertexCount));
 
                     dirty = false;
                 }
@@ -306,7 +345,7 @@ void main(void)
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -324,7 +363,7 @@ void main(void)
             if (currentBatch.Texture?.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -343,7 +382,7 @@ void main(void)
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -365,7 +404,7 @@ void main(void)
             if (currentBatch.Texture?.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -391,7 +430,7 @@ void main(void)
             PushTriangle();
             ExpandVertices(vertexCount + 3);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 3);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 3);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
@@ -405,7 +444,7 @@ void main(void)
             PushTriangle();
             ExpandVertices(vertexCount + 3);
 
-            Array.Fill(vertices, new Vertex2D(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), vertexCount, 3);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), vertexCount, 3);
 
             Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
             Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
