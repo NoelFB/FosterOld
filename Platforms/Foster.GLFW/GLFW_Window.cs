@@ -57,6 +57,8 @@ namespace Foster.GLFW
             set => GLFW.SetWindowTitle(handle, title = value);
         }
 
+        public override bool VSync { get; set; } = true;
+
         public override bool Bordered
         {
             get => GLFW.GetWindowAttrib(handle, GLFW.WindowAttributes.Decorated);
@@ -94,6 +96,7 @@ namespace Foster.GLFW
             this.title = title;
 
             GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
+            GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
 
             var share = IntPtr.Zero;
             if (system.Windows.Count > 0 && (system.Windows[0] is GLFW_Window first))
@@ -112,6 +115,7 @@ namespace Foster.GLFW
                 throw new Exception("This Window has been Closed");
 
             GLFW.MakeContextCurrent(handle);
+            GLFW.SwapInterval(VSync ? 1 : 0);
         }
 
         public override void Present()

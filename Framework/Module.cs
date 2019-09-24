@@ -11,6 +11,8 @@
         protected internal virtual void OnDestroyed() { }
         protected internal virtual void OnPreUpdate() { }
         protected internal virtual void OnPostUpdate() { }
+        protected internal virtual void OnPreRender() { }
+        protected internal virtual void OnPostRender() { }
 
     }
 }

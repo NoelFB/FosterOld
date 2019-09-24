@@ -13,7 +13,7 @@ namespace Foster.Framework
         protected readonly List<ShaderUniform> textures = new List<ShaderUniform>();
         protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
 
-        public Shader(Graphics graphics) : base(graphics)
+        protected Shader(Graphics graphics) : base(graphics)
         {
             Textures = textures.AsReadOnly();
             Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(uniforms);

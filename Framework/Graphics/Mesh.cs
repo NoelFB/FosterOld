@@ -4,7 +4,7 @@ namespace Foster.Framework
 {
     public abstract class Mesh<TVertex> : GraphicsResource where TVertex : struct
     {
-        public Mesh(Graphics graphics) : base(graphics)
+        protected Mesh(Graphics graphics) : base(graphics)
         {
             if (!VertexAttributeAttribute.TypeHasAttributes<TVertex>())
             {
@@ -19,5 +19,9 @@ namespace Foster.Framework
         public abstract void Draw(int start, int elements);
         public abstract void DrawInstances(int start, int elements, int instances);
 
+        public static Mesh<TVertex> Create()
+        {
+            return App.Graphics.CreateMesh<TVertex>();
+        }
     }
 }

@@ -51,11 +51,6 @@ namespace Foster.GLFW
             }
         }
 
-        protected override void OnDisplayed()
-        {
-            GLFW.SwapInterval(1);
-        }
-
         protected override void OnShutdown()
         {
             base.OnShutdown();

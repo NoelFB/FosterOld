@@ -27,15 +27,22 @@ namespace Test1
             public Game()
             {
                 batch = new Batch2D(App.Graphics);
-
                 font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
             }
 
             public void Render(Window window)
             {
+                App.Graphics.Clear(0x113355);
+
+                var p = 140f;
+
                 batch.Clear();
-                batch.PushMatrix(new Vector2(32, 32), Vector2.One, Vector2.Zero, 0f);
-                batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White);
+                batch.PushMatrix(new Vector2(p, p), Vector2.One * 0.3f, Vector2.Zero, 0f);
+                batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White * 0.9f);
+                batch.PopMatrix();
+
+                batch.PushMatrix(new Vector2(p, App.Graphics.Viewport.Height - p - font.LineHeight * 0.3f), Vector2.One * 0.3f, Vector2.Zero, 0f);
+                batch.Text(font, $"> FPS: {Time.FPS}", 0x44eeaa);
                 batch.PopMatrix();
                 batch.Render();
             }

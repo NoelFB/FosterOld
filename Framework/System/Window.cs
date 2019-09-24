@@ -20,6 +20,7 @@ namespace Foster.Framework
         public abstract bool Resizable { get; set; }
         public abstract bool Fullscreen { get; set; }
         public abstract bool Visible { get; set; }
+        public abstract bool VSync { get; set; }
 
         public abstract RectInt Bounds { get; set; }
         public abstract Point2 DrawSize { get; }

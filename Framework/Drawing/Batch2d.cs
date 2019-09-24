@@ -130,6 +130,11 @@ void main(void)
             }
         }
 
+        public Batch2D() : this(App.Graphics)
+        {
+
+        }
+
         public Batch2D(Graphics graphics) : base(graphics)
         {
             DefaultShader = graphics.CreateShader(VertexSource, FragmentSource);
@@ -164,6 +169,7 @@ void main(void)
         public void Render()
         {
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
+            Debug.Assert(!Disposed, "Batch was Disposed and cannot Render");
 
             if (batches.Count > 0 || currentBatch.Elements > 0)
             {

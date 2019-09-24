@@ -14,7 +14,7 @@ namespace Foster.Framework
         public readonly ReadOnlyCollection<Texture> Attachments;
         protected readonly List<Texture> attachments = new List<Texture>();
 
-        public Target(Graphics graphics) : base(graphics)
+        protected Target(Graphics graphics) : base(graphics)
         {
             Attachments = attachments.AsReadOnly();
         }

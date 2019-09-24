@@ -71,7 +71,7 @@ namespace Foster.OpenGL
             {
                 Viewport = new RectInt(0, 0, target.Width, target.Height);
             }
-            else if (App.System?.CurrentWindow != null && App.System.CurrentWindow.Opened)
+            else if (App.System.CurrentWindow != null && App.System.CurrentWindow.Opened)
             {
                 Viewport = new RectInt(0, 0, App.System.CurrentWindow.DrawSize.X, App.System.CurrentWindow.DrawSize.Y);
             }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace Foster.Framework
 {
@@ -10,6 +12,7 @@ namespace Foster.Framework
 
         private static readonly List<Module> modules = new List<Module>();
         private static readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
+        private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
         public static bool Started { get; private set; } = false;
         public static bool Running { get; private set; } = false;
@@ -67,15 +70,67 @@ namespace Foster.Framework
         {
             Running = true;
 
+            // timer
+            var framecount = 0;
+            var frameticks = 0L;
+            var lastTime = new TimeSpan();
+            var timer = Stopwatch.StartNew();
+            var accumulator = TimeSpan.Zero;
+
             while (Running && MainWindow != null && MainWindow.Opened)
             {
-                foreach (var module in modules)
-                    module.OnPreUpdate();
-
-                OnUpdate?.Invoke();
-
-                if (System != null)
+                // update
                 {
+                    // fixed timestep update
+                    if (Time.FixedStepEnabled)
+                    {
+                        // delta time is always the same
+                        Time.Delta = 1f / Time.FixedStepTarget;
+
+                        var target = TimeSpan.FromSeconds(1f / Time.FixedStepTarget);
+                        var current = TimeSpan.FromTicks(timer.Elapsed.Ticks);
+                        accumulator += (current - lastTime);
+                        lastTime = current;
+
+                        // while we're too fast, wait
+                        while (accumulator < target)
+                        {
+                            Thread.Sleep((int)((target - accumulator).TotalMilliseconds));
+
+                            current = TimeSpan.FromTicks(timer.Elapsed.Ticks);
+                            accumulator += (current - lastTime);
+                            lastTime = current;
+                        }
+
+                        // Do not allow any update to take longer than our maximum.
+                        if (accumulator > maxElapsedTime)
+                            accumulator = maxElapsedTime;
+
+                        // do as many updates as we can
+                        while (accumulator >= target)
+                        {
+                            accumulator -= target;
+                            Time.Duration += target;
+                            Update();
+                        }
+                    }
+                    // non-fixed timestep update
+                    else
+                    {
+                        Time.Duration = TimeSpan.FromTicks(timer.Elapsed.Ticks);
+                        Time.Delta = (float)(Time.Duration - lastTime).TotalSeconds;
+                        lastTime = Time.Duration;
+                        accumulator = TimeSpan.Zero;
+
+                        Update();
+                    }
+                }
+
+                // render
+                {
+                    foreach (var module in modules)
+                        module.OnPreRender();
+
                     foreach (var window in System.Windows)
                     {
                         if (!window.Opened)
@@ -87,10 +142,19 @@ namespace Foster.Framework
                         OnRender?.Invoke(window);
                         window.Present();
                     }
+
+                    foreach (var module in modules)
+                        module.OnPostRender();
                 }
 
-                foreach (var module in modules)
-                    module.OnPostUpdate();
+                // determine fps
+                framecount++;
+                if (TimeSpan.FromTicks(timer.Elapsed.Ticks - frameticks).TotalSeconds >= 1)
+                {
+                    Time.FPS = framecount;
+                    frameticks = timer.Elapsed.Ticks;
+                    framecount = 0;
+                }
             }
 
             // Close the Window
@@ -106,6 +170,17 @@ namespace Foster.Framework
             Started = false;
             Exiting = false;
             OnShutdown?.Invoke();
+        }
+
+        private static void Update()
+        {
+            foreach (var module in modules)
+                module.OnPreUpdate();
+
+            OnUpdate?.Invoke();
+
+            foreach (var module in modules)
+                module.OnPostUpdate();
         }
 
         public static void Exit()

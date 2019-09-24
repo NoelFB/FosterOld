@@ -10,7 +10,7 @@ namespace Foster.OpenGL
         private TextureFilter filter;
         private TextureWrap wrapX;
         private TextureWrap wrapY;
-        internal bool flipVertically = false;
+        internal bool flipVertically;
 
         public override TextureFilter Filter
         {
@@ -75,7 +75,7 @@ namespace Foster.OpenGL
             Filter = TextureFilter.Linear;
         }
 
-        public override unsafe void SetData<T>(Memory<T> buffer)
+        public override unsafe void SetData(Memory<Color> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -84,7 +84,7 @@ namespace Foster.OpenGL
             GL.TexImage2D(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, Width, Height, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
         }
 
-        public override unsafe void GetData<T>(Memory<T> buffer)
+        public override unsafe void GetData(Memory<Color> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -99,9 +99,7 @@ namespace Foster.OpenGL
             {
                 uint textureID = ID;
                 if (Graphics is GL_Graphics graphics)
-                {
                     graphics.OnResourceCleanup += () => GL.DeleteTexture(textureID);
-                }
             }
 
             base.Dispose();

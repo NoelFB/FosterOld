@@ -35,6 +35,12 @@ namespace Foster.Framework
         public float Height;
         public float LineHeight;
 
+        public SpriteFont(string? familyName = null, string? styleName = null)
+        {
+            FamilyName = familyName ?? "Unknown";
+            StyleName = styleName ?? "Unknown";
+        }
+
         public SpriteFont(string fontFile, int size, string charset)
             : this(new FontSize(new Font(fontFile), size, charset))
         {
