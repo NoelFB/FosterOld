@@ -126,47 +126,49 @@ namespace Foster.OpenGL
             GetIntegerv((GLEnum)0x0D33, out MaxTextureSize);
 
 #if DEBUG
-
-            Enable(GLEnum.DEBUG_OUTPUT);
-            Enable(GLEnum.DEBUG_OUTPUT_SYNCHRONOUS);
-
-            DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(new OnError((source, type, id, severity, length, message, userParam) =>
+            if (DebugMessageCallback != null)
             {
-                string typeName;
-                string severityName;
-                string output = Marshal.PtrToStringAnsi(message, (int)length);
+                Enable(GLEnum.DEBUG_OUTPUT);
+                Enable(GLEnum.DEBUG_OUTPUT_SYNCHRONOUS);
 
-                switch (type)
+                DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(new OnError((source, type, id, severity, length, message, userParam) =>
                 {
-                    case GLEnum.DEBUG_TYPE_ERROR: typeName = "ERROR"; break;
-                    case GLEnum.DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "DEPRECATED BEHAVIOR"; break;
-                    case GLEnum.DEBUG_TYPE_MARKER: typeName = "MARKER"; break;
-                    case GLEnum.DEBUG_TYPE_OTHER: typeName = "OTHER"; break;
-                    case GLEnum.DEBUG_TYPE_PERFORMANCE: typeName = "PEROFRMANCE"; break;
-                    case GLEnum.DEBUG_TYPE_POP_GROUP: typeName = "POP GROUP"; break;
-                    case GLEnum.DEBUG_TYPE_PORTABILITY: typeName = "PORTABILITY"; break;
-                    case GLEnum.DEBUG_TYPE_PUSH_GROUP: typeName = "PUSH GROUP"; break;
-                    default: case GLEnum.DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "UNDEFINED BEHAVIOR"; break;
-                }
+                    string typeName;
+                    string severityName;
+                    string output = Marshal.PtrToStringAnsi(message, (int)length);
 
-                switch (severity)
-                {
-                    case GLEnum.DEBUG_SEVERITY_HIGH: severityName = "HIGH"; break;
-                    case GLEnum.DEBUG_SEVERITY_MEDIUM: severityName = "MEDIUM"; break;
-                    case GLEnum.DEBUG_SEVERITY_LOW: severityName = "LOW"; break;
-                    default: case GLEnum.DEBUG_SEVERITY_NOTIFICATION: severityName = "NOTIFICATION"; break;
-                }
+                    switch (type)
+                    {
+                        case GLEnum.DEBUG_TYPE_ERROR: typeName = "ERROR"; break;
+                        case GLEnum.DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "DEPRECATED BEHAVIOR"; break;
+                        case GLEnum.DEBUG_TYPE_MARKER: typeName = "MARKER"; break;
+                        case GLEnum.DEBUG_TYPE_OTHER: typeName = "OTHER"; break;
+                        case GLEnum.DEBUG_TYPE_PERFORMANCE: typeName = "PEROFRMANCE"; break;
+                        case GLEnum.DEBUG_TYPE_POP_GROUP: typeName = "POP GROUP"; break;
+                        case GLEnum.DEBUG_TYPE_PORTABILITY: typeName = "PORTABILITY"; break;
+                        case GLEnum.DEBUG_TYPE_PUSH_GROUP: typeName = "PUSH GROUP"; break;
+                        default: case GLEnum.DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "UNDEFINED BEHAVIOR"; break;
+                    }
 
-                if (type == GLEnum.DEBUG_TYPE_ERROR)
-                {
-                    throw new Exception(output);
-                }
+                    switch (severity)
+                    {
+                        case GLEnum.DEBUG_SEVERITY_HIGH: severityName = "HIGH"; break;
+                        case GLEnum.DEBUG_SEVERITY_MEDIUM: severityName = "MEDIUM"; break;
+                        case GLEnum.DEBUG_SEVERITY_LOW: severityName = "LOW"; break;
+                        default: case GLEnum.DEBUG_SEVERITY_NOTIFICATION: severityName = "NOTIFICATION"; break;
+                    }
 
-                Console.WriteLine($"GL {typeName} ({severityName})");
-                Console.WriteLine("\t" + output);
-                Console.WriteLine();
+                    if (type == GLEnum.DEBUG_TYPE_ERROR)
+                    {
+                        throw new Exception(output);
+                    }
 
-            })), IntPtr.Zero);
+                    Console.WriteLine($"GL {typeName} ({severityName})");
+                    Console.WriteLine("\t" + output);
+                    Console.WriteLine();
+
+                })), IntPtr.Zero);
+            }
 
 #endif
         }
@@ -179,12 +181,8 @@ namespace Foster.OpenGL
             }
 
             IntPtr addr = App.System.GetProcAddress(name);
-            if (addr == IntPtr.Zero || !(Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
-            {
-                throw new Exception($"OpenGL method '{name}' not available");
-            }
-
-            def = del;
+            if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
+                def = del;
         }
 
         private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, IntPtr message, IntPtr userParam);
