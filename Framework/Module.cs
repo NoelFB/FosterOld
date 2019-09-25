@@ -3,6 +3,11 @@
     public abstract class Module
     {
 
+        /// <summary>
+        /// A lower priority is run first
+        /// </summary>
+        protected internal int Priority = 10000;
+
         protected internal virtual void Created() { }
         protected internal virtual void Startup() { }
         protected internal virtual void Shutdown() { }

@@ -10,18 +10,18 @@ namespace Foster.Framework
     {
         public static readonly Version Version = new Version(0, 1, 0);
 
-        private static readonly List<Module> modules = new List<Module>();
-        private static readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
+
         private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
         public static bool Started { get; private set; } = false;
         public static bool Running { get; private set; } = false;
         public static bool Exiting { get; private set; } = false;
 
-        public static System System => GetModule<System>();
-        public static Graphics Graphics => GetModule<Graphics>();
-        public static Audio Audio => GetModule<Audio>();
-        public static Input Input => GetModule<Input>();
+        public static ModuleList Modules = new ModuleList();
+        public static System System => Modules.Get<System>();
+        public static Graphics Graphics => Modules.Get<Graphics>();
+        public static Audio Audio => Modules.Get<Audio>();
+        public static Input Input => Modules.Get<Input>();
 
         public static void Start()
         {
@@ -31,15 +31,10 @@ namespace Foster.Framework
             if (Exiting)
                 throw new Exception("App is still exiting");
 
-            Started = true;
-
             Console.WriteLine($"FOSTER {Version}");
 
-            // Startup
-            foreach (var module in modules)
-                module.Startup();
-
-            // Start Running
+            Started = true;
+            Modules.Startup();
             Run();
         }
 
@@ -88,7 +83,10 @@ namespace Foster.Framework
                         {
                             accumulator -= target;
                             Time.Duration += target;
-                            Update();
+
+                            Modules.BeforeUpdate();
+                            Modules.Update();
+                            Modules.AfterUpdate();
                         }
                     }
                     // non-fixed timestep update
@@ -99,14 +97,15 @@ namespace Foster.Framework
                         lastTime = Time.Duration;
                         accumulator = TimeSpan.Zero;
 
-                        Update();
+                        Modules.BeforeUpdate();
+                        Modules.Update();
+                        Modules.AfterUpdate();
                     }
                 }
 
                 // render
                 {
-                    foreach (var module in modules)
-                        module.BeforeRender();
+                    Modules.BeforeRender();
 
                     foreach (var window in System.Windows)
                     {
@@ -114,13 +113,10 @@ namespace Foster.Framework
                             continue;
 
                         window.SetActive();
-
-                        foreach (var module in modules)
-                            module.Render(window);
+                        Modules.Render(window);
                     }
 
-                    foreach (var module in modules)
-                        module.AfterRender();
+                    Modules.AfterRender();
 
                     foreach (var window in System.Windows)
                         window.Present();
@@ -135,31 +131,15 @@ namespace Foster.Framework
                     framecount = 0;
                 }
 
-                foreach (var module in modules)
-                    module.Tick();
+                Modules.Tick();
             }
 
-            // exit Modules
-            foreach (var module in modules)
-                module.Shutdown();
-            modules.Clear();
-            modulesByType.Clear();
+            Modules.Shutdown();
+            Modules.Clear();
 
             // finalize
             Started = false;
             Exiting = false;
-        }
-
-        private static void Update()
-        {
-            foreach (var module in modules)
-                module.BeforeUpdate();
-
-            foreach (var module in modules)
-                module.Update();
-
-            foreach (var module in modules)
-                module.AfterUpdate();
         }
 
         public static void Exit()
@@ -171,52 +151,7 @@ namespace Foster.Framework
             }
         }
 
-        public static void RegisterModule<T>() where T : Module
-        {
-            RegisterModule(typeof(T));
-        }
-
-        public static void RegisterModule(Type type)
-        {
-            if (Started)
-                throw new Exception("App has already started; Registering Module's must be called before App.Startup");
-
-            if (!(Activator.CreateInstance(type) is Module module))
-                throw new Exception("Type must inheirt from Module");
-
-            // add Module to lookup
-            while (type != typeof(Module))
-            {
-                modulesByType.Add(type, module);
-
-                if (type.BaseType == null)
-                    break;
-                type = type.BaseType;
-            }
-
-            modules.Add(module);
-            module.Created();
-        }
-
-        internal static bool TryGetModule<T>(out T? module) where T : Module
-        {
-            if (modulesByType.TryGetValue(typeof(T), out var m))
-            {
-                module = (T)m;
-                return true;
-            }
-
-            module = null;
-            return false;
-        }
-
-        internal static T GetModule<T>() where T : Module
-        {
-            if (!modulesByType.TryGetValue(typeof(T), out var module))
-                throw new Exception($"App is missing a Module of type {typeof(T).Name}");
-
-            return (T)module;
-        }
+        
 
     }
 }

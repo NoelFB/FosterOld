@@ -68,7 +68,7 @@ namespace Foster.Framework
         /// <returns></returns>
         public static Texture Create(int width, int height)
         {
-            return App.GetModule<Graphics>().CreateTexture(width, height);
+            return App.Graphics.CreateTexture(width, height);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Foster.Framework
         /// <returns></returns>
         public static Texture Create(Bitmap bitmap)
         {
-            var texture = App.GetModule<Graphics>().CreateTexture(bitmap.Width, bitmap.Height);
+            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height);
             texture.SetData(new Memory<Color>(bitmap.Pixels));
             return texture;
         }

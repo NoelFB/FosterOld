@@ -29,7 +29,7 @@ namespace Foster.Framework
 
         public void SetActive()
         {
-            System.SetActiveWindow(this);
+            System.ActiveWindow = this;
         }
 
         public abstract void Present();
@@ -37,7 +37,7 @@ namespace Foster.Framework
 
         public static Window Create(string title, int width, int height, bool visible = true)
         {
-            return App.GetModule<System>().CreateWindow(title, width, height, visible);
+            return App.System.CreateWindow(title, width, height, visible);
         }
     }
 }

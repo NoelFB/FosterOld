@@ -21,7 +21,7 @@ namespace Foster.Framework
 
         public static Target Create(int width, int height, int textures = 1, bool depthBuffer = false)
         {
-            return App.GetModule<Graphics>().CreateTarget(width, height, textures, depthBuffer);
+            return App.Graphics.CreateTarget(width, height, textures, depthBuffer);
         }
 
         public static implicit operator Texture(Target target) => target.Attachments[0];

@@ -86,7 +86,7 @@ namespace Foster.OpenGL
         private bool BindVertexArray()
         {
             // create the VAO on this context if it doesn't exist
-            var context = App.System.Context;
+            var context = App.System.ActiveContext;
             if (context != null)
             {
                 if (!VertexArrays.TryGetValue(context, out uint id))

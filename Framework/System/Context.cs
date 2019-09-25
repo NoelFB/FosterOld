@@ -16,7 +16,7 @@ namespace Foster.Framework
 
         public void SetActive()
         {
-            System.SetActiveContext(this);
+            System.ActiveContext = this;
         }
     }
 }

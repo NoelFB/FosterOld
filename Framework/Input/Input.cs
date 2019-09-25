@@ -13,6 +13,11 @@ namespace Foster.Framework
         public InputState LastState { get; } = new InputState();
         private readonly InputState nextState = new InputState();
 
+        protected Input()
+        {
+            Priority = 300;
+        }
+
         protected internal override void Startup()
         {
             Console.WriteLine($" - Input {ApiName} {ApiVersion}");

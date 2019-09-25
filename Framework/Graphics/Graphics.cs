@@ -23,6 +23,11 @@ namespace Foster.Framework
         public abstract void CullMode(Cull mode);
         public abstract void BlendMode(BlendMode blendMode);
 
+        protected Graphics()
+        {
+            Priority = 200;
+        }
+
         protected internal override void Startup()
         {
             Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");

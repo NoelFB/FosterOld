@@ -19,10 +19,17 @@ namespace Foster.OpenGL
             Api = GraphicsApi.OpenGL;
             ApiName = "OpenGL";
 
+            base.Created();
+        }
+
+        protected override void Startup()
+        {
             GL.Init();
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
+
+            base.Startup();
         }
 
         protected override void Tick()
@@ -133,9 +140,9 @@ namespace Foster.OpenGL
             {
                 Viewport = new RectInt(0, 0, target.Width, target.Height);
             }
-            else if (App.System.Window != null && App.System.Window.Opened)
+            else if (App.System.ActiveWindow != null && App.System.ActiveWindow.Opened)
             {
-                Viewport = new RectInt(0, 0, App.System.Window.DrawSize.X, App.System.Window.DrawSize.Y);
+                Viewport = new RectInt(0, 0, App.System.ActiveWindow.DrawSize.X, App.System.ActiveWindow.DrawSize.Y);
             }
         }
 

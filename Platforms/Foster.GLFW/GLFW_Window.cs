@@ -96,12 +96,12 @@ namespace Foster.GLFW
             this.system = system;
             this.title = title;
 
-            var handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, system.SharedContext);
+            var handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, system?.SharedContext ?? IntPtr.Zero);
             context = new GLFW_Context(system, handle);
             opened = true;
             Visible = visible;
 
-            system.SetActiveWindow(this);
+            system.ActiveWindow = this;
         }
 
         public override void Present()
@@ -109,8 +109,8 @@ namespace Foster.GLFW
             if (!opened)
                 throw new Exception("This Window has been Closed");
 
-            if (system.Window != this)
-                system.SetActiveWindow(this);
+            if (system.ActiveWindow != this)
+                system.ActiveWindow = this;
 
             GLFW.SwapInterval(VSync ? 1 : 0);
             GLFW.SwapBuffers(context.Handle);

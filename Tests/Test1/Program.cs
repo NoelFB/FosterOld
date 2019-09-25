@@ -8,9 +8,10 @@ namespace Test1
     {
         private static void Main()
         {
-            App.RegisterModule<Foster.GLFW.GLFW_System>();
-            App.RegisterModule<Foster.OpenGL.GL_Graphics>();
-            App.RegisterModule<Game>();
+            App.Modules.Register<Foster.GLFW.GLFW_System>();
+            App.Modules.Register<Foster.OpenGL.GL_Graphics>();
+            App.Modules.Register<Game>();
+
             App.Start();
         }
 
@@ -22,7 +23,6 @@ namespace Test1
 
             protected override void Startup()
             {
-
                 batch = new Batch2D(App.Graphics);
                 font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
                 batch2 = new Batch2D(App.Graphics);
