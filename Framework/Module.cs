@@ -3,16 +3,19 @@
     public abstract class Module
     {
 
-        protected internal virtual void OnCreated() { }
-        protected internal virtual void OnStartup() { }
-        protected internal virtual void OnContext() { }
-        protected internal virtual void OnDisplayed() { }
-        protected internal virtual void OnShutdown() { }
-        protected internal virtual void OnDestroyed() { }
-        protected internal virtual void OnPreUpdate() { }
-        protected internal virtual void OnPostUpdate() { }
-        protected internal virtual void OnPreRender() { }
-        protected internal virtual void OnPostRender() { }
+        protected internal virtual void Created() { }
+        protected internal virtual void Startup() { }
+        protected internal virtual void Shutdown() { }
+
+        protected internal virtual void BeforeUpdate() { }
+        protected internal virtual void Update() { }
+        protected internal virtual void AfterUpdate() { }
+
+        protected internal virtual void BeforeRender() { }
+        protected internal virtual void Render(Window window) { }
+        protected internal virtual void AfterRender() { }
+
+        protected internal virtual void Tick() { }
 
     }
 }

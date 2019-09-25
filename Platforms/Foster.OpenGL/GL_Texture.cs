@@ -97,9 +97,8 @@ namespace Foster.OpenGL
         {
             if (!Disposed)
             {
-                uint textureID = ID;
                 if (Graphics is GL_Graphics graphics)
-                    graphics.OnResourceCleanup += () => GL.DeleteTexture(textureID);
+                    graphics.TexturesToDelete.Add(ID);
             }
 
             base.Dispose();

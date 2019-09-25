@@ -11,39 +11,49 @@ namespace Foster.GLFW
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetProcessDPIAware();
 
-        internal readonly List<Window> windows = new List<Window>();
+        public GLFW_Context SharedContext;
 
-        public override ReadOnlyCollection<Window> Windows { get; }
+        private Window? activeWindow;
+        public override Window? Window => activeWindow;
+
+        private Context? activeContext;
+        public override Context? Context => activeContext;
 
         public GLFW_System()
         {
-            Windows = windows.AsReadOnly();
-
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 SetProcessDPIAware();
-            }
-        }
 
-        protected override void OnCreated()
-        {
             if (GLFW.Init() == 0)
             {
                 GLFW.GetError(out string error);
                 throw new Exception($"GLFW Error: {error}");
             }
 
-            GLFW.GetVersion(out int major, out int minor, out int rev);
+            // get API info
+            {
+                GLFW.GetVersion(out int major, out int minor, out int rev);
+                ApiName = "GLFW";
+                ApiVersion = new Version(major, minor, rev);
+            }
 
-            ApiName = "GLFW";
-            ApiVersion = new Version(major, minor, rev);
+            // create a hidden context
+            // the only way to create a "windowless" context in GLFW is to create a window and hide it
+            {
+                GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
+                GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
+                GLFW.WindowHint(GLFW.WindowHints.Visible, false);
 
-            base.OnCreated();
+                SharedContext = new GLFW_Context(this, GLFW.CreateWindow(128, 128, "SharedContext", IntPtr.Zero, IntPtr.Zero));
+                SharedContext.SetActive();
+
+                GLFW.WindowHint(GLFW.WindowHints.Visible, true);
+            }
         }
 
-        protected override void OnStartup()
+        protected override void Startup()
         {
-            base.OnStartup();
+            base.Startup();
 
             if (App.Graphics != null && App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
             {
@@ -51,13 +61,18 @@ namespace Foster.GLFW
             }
         }
 
-        protected override void OnShutdown()
+        protected override void Shutdown()
         {
-            base.OnShutdown();
+            base.Shutdown();
             GLFW.Terminate();
         }
 
-        protected override void OnPostUpdate()
+        protected override void BeforeUpdate()
+        {
+            GLFW.PollEvents();
+        }
+
+        protected override void AfterUpdate()
         {
             for (int i = windows.Count - 1; i >= 0; i--)
             {
@@ -65,16 +80,33 @@ namespace Foster.GLFW
                 if (window == null)
                     continue;
 
-                if (GLFW.WindowShouldClose(window.handle))
+                if (GLFW.WindowShouldClose(window.context.Handle))
                 {
                     window.Close();
+                    window.context.IsDisposed = true;
                     windows.RemoveAt(i);
 
-                    GLFW.DestroyWindow(window.handle);
+                    GLFW.DestroyWindow(window.context.Handle);
                 }
             }
+        }
 
-            GLFW.PollEvents();
+        public override void SetActiveWindow(Window? window)
+        {
+            if (activeWindow != window && window is GLFW_Window win)
+            {
+                activeWindow = win;
+                SetActiveContext(win.context);
+            }
+        }
+
+        public override void SetActiveContext(Context? context)
+        {
+            if (activeContext != context && context is GLFW_Context ctx)
+            {
+                activeContext = ctx;
+                GLFW.MakeContextCurrent(ctx.Handle);
+            }
         }
 
         public override Window CreateWindow(string title, int width, int height, bool visible = true)

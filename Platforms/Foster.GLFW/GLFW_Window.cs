@@ -5,8 +5,9 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
-        private readonly GLFW_System system;
-        internal GLFW.Window handle;
+        internal readonly GLFW_System system;
+        internal readonly GLFW_Context context;
+
         private string title;
         private bool opened;
         private bool visible;
@@ -15,16 +16,16 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowPos(handle, out int x, out int y);
-                GLFW.GetWindowSize(handle, out int w, out int h);
+                GLFW.GetWindowPos(context.Handle, out int x, out int y);
+                GLFW.GetWindowSize(context.Handle, out int w, out int h);
 
                 return new RectInt(x, y, w, h);
             }
 
             set
             {
-                GLFW.SetWindowPos(handle, value.X, value.Y);
-                GLFW.SetWindowSize(handle, value.Width, value.Height);
+                GLFW.SetWindowPos(context.Handle, value.X, value.Y);
+                GLFW.SetWindowSize(context.Handle, value.Width, value.Height);
             }
         }
 
@@ -32,7 +33,7 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetFramebufferSize(handle, out int width, out int height);
+                GLFW.GetFramebufferSize(context.Handle, out int width, out int height);
                 return new Point2(width, height);
             }
         }
@@ -41,34 +42,34 @@ namespace Foster.GLFW
         {
             get
             {
-                IntPtr monitor = GLFW.GetWindowMonitor(handle);
+                IntPtr monitor = GLFW.GetWindowMonitor(context.Handle);
                 GLFW.GetMonitorContentScale(monitor, out float x, out float y);
                 return new Vector2(x, y);
             }
         }
 
         public override bool Opened => opened;
-
         protected override Framework.System System => system;
+        public override Context Context => context;
 
         public override string Title
         {
             get => title;
-            set => GLFW.SetWindowTitle(handle, title = value);
+            set => GLFW.SetWindowTitle(context.Handle, title = value);
         }
 
         public override bool VSync { get; set; } = true;
 
         public override bool Bordered
         {
-            get => GLFW.GetWindowAttrib(handle, GLFW.WindowAttributes.Decorated);
-            set => GLFW.SetWindowAttrib(handle, GLFW.WindowAttributes.Decorated, value);
+            get => GLFW.GetWindowAttrib(context.Handle, GLFW.WindowAttributes.Decorated);
+            set => GLFW.SetWindowAttrib(context.Handle, GLFW.WindowAttributes.Decorated, value);
         }
 
         public override bool Resizable
         {
-            get => GLFW.GetWindowAttrib(handle, GLFW.WindowAttributes.Resizable);
-            set => GLFW.SetWindowAttrib(handle, GLFW.WindowAttributes.Resizable, value);
+            get => GLFW.GetWindowAttrib(context.Handle, GLFW.WindowAttributes.Resizable);
+            set => GLFW.SetWindowAttrib(context.Handle, GLFW.WindowAttributes.Resizable, value);
         }
 
         public override bool Fullscreen
@@ -84,9 +85,9 @@ namespace Foster.GLFW
             {
                 visible = value;
                 if (visible)
-                    GLFW.ShowWindow(handle);
+                    GLFW.ShowWindow(context.Handle);
                 else
-                    GLFW.HideWindow(handle);
+                    GLFW.HideWindow(context.Handle);
             }
         }
 
@@ -95,27 +96,12 @@ namespace Foster.GLFW
             this.system = system;
             this.title = title;
 
-            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
-            GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
-
-            var share = IntPtr.Zero;
-            if (system.Windows.Count > 0 && (system.Windows[0] is GLFW_Window first))
-                share = first.handle;
-
-            handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, share);
+            var handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, system.SharedContext);
+            context = new GLFW_Context(system, handle);
             opened = true;
             Visible = visible;
 
-            MakeCurrent();
-        }
-
-        protected override void MakeCurrentInternal()
-        {
-            if (!opened)
-                throw new Exception("This Window has been Closed");
-
-            GLFW.MakeContextCurrent(handle);
-            GLFW.SwapInterval(VSync ? 1 : 0);
+            system.SetActiveWindow(this);
         }
 
         public override void Present()
@@ -123,14 +109,18 @@ namespace Foster.GLFW
             if (!opened)
                 throw new Exception("This Window has been Closed");
 
-            GLFW.SwapBuffers(handle);
+            if (system.Window != this)
+                system.SetActiveWindow(this);
+
+            GLFW.SwapInterval(VSync ? 1 : 0);
+            GLFW.SwapBuffers(context.Handle);
         }
 
         public override void Close()
         {
             if (opened)
             {
-                GLFW.SetWindowShouldClose(handle, true);
+                GLFW.SetWindowShouldClose(context.Handle, true);
                 opened = false;
             }
         }

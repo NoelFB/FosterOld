@@ -10,27 +10,27 @@ namespace Test1
         {
             App.RegisterModule<Foster.GLFW.GLFW_System>();
             App.RegisterModule<Foster.OpenGL.GL_Graphics>();
-
-            App.Startup("hello", 1280, 720, () =>
-            {
-                var game = new Game();
-                App.OnRender += game.Render;
-
-            });
+            App.RegisterModule<Game>();
+            App.Start();
         }
 
-        class Game
+        class Game : Module
         {
             private Batch2D batch;
+            private Batch2D batch2;
             private SpriteFont font;
 
-            public Game()
+            protected override void Startup()
             {
+
                 batch = new Batch2D(App.Graphics);
                 font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
+                batch2 = new Batch2D(App.Graphics);
+
+                App.System.CreateWindow("Hello!", 1280, 720);
             }
 
-            public void Render(Window window)
+            protected override void Render(Window window)
             {
                 App.Graphics.Clear(0x113355);
 
@@ -45,6 +45,18 @@ namespace Test1
                 batch.Text(font, $"> FPS: {Time.FPS}", 0x44eeaa);
                 batch.PopMatrix();
                 batch.Render();
+
+                p *= 2;
+
+                if (!batch2.Disposed)
+                {
+                    batch2.Clear();
+                    batch2.PushMatrix(new Vector2(p, p), Vector2.One * 0.3f, Vector2.Zero, 0f);
+                    batch2.Text(font, "what's up?", Color.White * 0.9f);
+                    batch2.PopMatrix();
+                    batch2.Render();
+                    //batch2.Dispose();
+                }
             }
         }
 

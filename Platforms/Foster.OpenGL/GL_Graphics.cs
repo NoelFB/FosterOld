@@ -1,34 +1,96 @@
 ﻿using Foster.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Foster.OpenGL
 {
     public class GL_Graphics : Graphics
     {
 
-        public event Action? OnResourceCleanup;
+        internal List<uint> BuffersToDelete = new List<uint>();
+        internal List<uint> ProgramsToDelete = new List<uint>();
+        internal List<uint> TexturesToDelete = new List<uint>();
 
-        protected override void OnCreated()
+        internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
+        internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
+
+        protected override void Created()
         {
             Api = GraphicsApi.OpenGL;
             ApiName = "OpenGL";
-        }
 
-        protected override void OnDisplayed()
-        {
             GL.Init();
-            GL.Enable(GLEnum.BLEND);
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
-
-            base.OnDisplayed();
         }
 
-        protected override void OnPostUpdate()
+        protected override void Tick()
         {
-            OnResourceCleanup?.Invoke();
-            OnResourceCleanup = null;
+            unsafe
+            {
+                if (BuffersToDelete.Count > 0)
+                {
+                    fixed (uint* buffers = BuffersToDelete.ToArray())
+                        GL.DeleteBuffers(BuffersToDelete.Count, buffers);
+                    BuffersToDelete.Clear();
+                }
+
+                if (ProgramsToDelete.Count > 0)
+                {
+                    foreach (var id in ProgramsToDelete)
+                        GL.DeleteProgram(id);
+                    ProgramsToDelete.Clear();
+                }
+
+                if (TexturesToDelete.Count > 0)
+                {
+                    fixed (uint* textures = TexturesToDelete.ToArray())
+                        GL.DeleteTextures(TexturesToDelete.Count, textures);
+                    TexturesToDelete.Clear();
+                }
+
+                if (VertexArraysToDelete.Count > 0)
+                {
+                    foreach (var kv in VertexArraysToDelete)
+                    {
+                        var context = kv.Key;
+                        if (!context.Disposed)
+                        {
+                            var list = kv.Value;
+
+                            context.SetActive();
+
+                            fixed (uint* arrays = list.ToArray())
+                                GL.DeleteVertexArrays(list.Count, arrays);
+                        }
+                    }
+                    VertexArraysToDelete.Clear();
+                }
+
+                if (FrameBuffersToDelete.Count > 0)
+                {
+                    foreach (var kv in FrameBuffersToDelete)
+                    {
+                        var context = kv.Key;
+                        if (!context.Disposed)
+                        {
+                            var list = kv.Value;
+
+                            context.SetActive();
+
+                            fixed (uint* buffers = list.ToArray())
+                                GL.DeleteFramebuffers(list.Count, buffers);
+                        }
+                    }
+                    FrameBuffersToDelete.Clear();
+                }
+            }
+        }
+
+        protected override void AfterRender()
+        {
+            GL.Flush();
         }
 
         private RectInt viewport;
@@ -71,9 +133,9 @@ namespace Foster.OpenGL
             {
                 Viewport = new RectInt(0, 0, target.Width, target.Height);
             }
-            else if (App.System.CurrentWindow != null && App.System.CurrentWindow.Opened)
+            else if (App.System.Window != null && App.System.Window.Opened)
             {
-                Viewport = new RectInt(0, 0, App.System.CurrentWindow.DrawSize.X, App.System.CurrentWindow.DrawSize.Y);
+                Viewport = new RectInt(0, 0, App.System.Window.DrawSize.X, App.System.Window.DrawSize.Y);
             }
         }
 
@@ -119,6 +181,7 @@ namespace Foster.OpenGL
             GLEnum src = GetBlendFactor(blendMode.Source);
             GLEnum dst = GetBlendFactor(blendMode.Destination);
 
+            GL.Enable(GLEnum.BLEND);
             GL.BlendEquation(op);
             GL.BlendFunc(src, dst);
         }

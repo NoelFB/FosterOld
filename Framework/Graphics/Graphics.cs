@@ -23,10 +23,15 @@ namespace Foster.Framework
         public abstract void CullMode(Cull mode);
         public abstract void BlendMode(BlendMode blendMode);
 
-        protected internal override void OnDisplayed()
+        protected internal override void Startup()
         {
             Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");
         }
 
+        protected internal override void Render(Window window)
+        {
+            Target(null);
+            Clear(Color.Black);
+        }
     }
 }

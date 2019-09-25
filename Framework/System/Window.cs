@@ -14,6 +14,7 @@ namespace Foster.Framework
 
         protected abstract System System { get; }
         public abstract string Title { get; set; }
+        public abstract Context Context { get; }
 
         public abstract bool Opened { get; }
         public abstract bool Bordered { get; set; }
@@ -26,17 +27,13 @@ namespace Foster.Framework
         public abstract Point2 DrawSize { get; }
         public abstract Vector2 PixelSize { get; }
 
-        public void MakeCurrent()
+        public void SetActive()
         {
-            System.CurrentWindow = this;
-            MakeCurrentInternal();
+            System.SetActiveWindow(this);
         }
-
-        protected abstract void MakeCurrentInternal();
 
         public abstract void Present();
         public abstract void Close();
-
 
         public static Window Create(string title, int width, int height, bool visible = true)
         {

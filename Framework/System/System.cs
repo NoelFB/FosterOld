@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Foster.Framework
@@ -17,30 +18,34 @@ namespace Foster.Framework
         public Version? ApiVersion;
 
         /// <summary>
-        /// The First-created and Primary App Window
+        /// The Active Window
         /// </summary>
-        public Window? MainWindow { get; internal set; }
+        public abstract Window? Window { get; }
 
         /// <summary>
-        /// The Currently Active Window
-        /// Call Window.MakeCurrent() to change the CurrentWindow
+        /// The Active Rendering Context
         /// </summary>
-        public Window? CurrentWindow { get; internal set; }
+        public abstract Context? Context { get; }
+
+        /// <summary>
+        /// Sets the Active Window on the current Thread
+        /// </summary>
+        public abstract void SetActiveWindow(Window? window);
+
+        /// <summary>
+        /// Sets the Actve Rendering Context on the current Thread
+        /// </summary>
+        public abstract void SetActiveContext(Context? context);
 
         /// <summary>
         /// Creates a new Window
         /// </summary>
-        /// <param name="title"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="visible"></param>
-        /// <returns></returns>
         public abstract Window CreateWindow(string title, int width, int height, bool visible = true);
 
         /// <summary>
         /// A list of all opened Windows
         /// </summary>
-        public abstract ReadOnlyCollection<Window> Windows { get; }
+        public readonly ReadOnlyCollection<Window> Windows;
 
         /// <summary>
         /// Gets a Pointer to a Platform rendering method of the given name
@@ -50,7 +55,14 @@ namespace Foster.Framework
         /// <returns></returns>
         public abstract IntPtr GetProcAddress(string name);
 
-        protected internal override void OnStartup()
+        protected List<Window> windows = new List<Window>();
+
+        protected System()
+        {
+            Windows = windows.AsReadOnly();
+        }
+
+        protected internal override void Startup()
         {
             Console.WriteLine($" - System {ApiName} {ApiVersion}");
         }

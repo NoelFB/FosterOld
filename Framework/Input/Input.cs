@@ -13,12 +13,12 @@ namespace Foster.Framework
         public InputState LastState { get; } = new InputState();
         private readonly InputState nextState = new InputState();
 
-        protected internal override void OnStartup()
+        protected internal override void Startup()
         {
             Console.WriteLine($" - Input {ApiName} {ApiVersion}");
         }
 
-        protected internal override void OnPreUpdate()
+        protected internal override void BeforeUpdate()
         {
             LastState.Copy(State);
             State.Copy(nextState);

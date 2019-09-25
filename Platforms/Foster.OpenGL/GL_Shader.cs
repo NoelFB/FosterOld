@@ -123,11 +123,8 @@ namespace Foster.OpenGL
         {
             if (!Disposed)
             {
-                uint programID = ID;
                 if (Graphics is GL_Graphics graphics)
-                {
-                    graphics.OnResourceCleanup += () => GL.DeleteProgram(programID);
-                }
+                    graphics.ProgramsToDelete.Add(ID);
             }
 
             base.Dispose();

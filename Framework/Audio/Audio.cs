@@ -9,7 +9,7 @@ namespace Foster.Framework
         public string? ApiName { get; protected set; }
         public Version? ApiVersion { get; protected set; }
 
-        protected internal override void OnStartup()
+        protected internal override void Startup()
         {
             Console.WriteLine($" - Audio {ApiName} {ApiVersion}");
         }

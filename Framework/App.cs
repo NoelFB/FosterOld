@@ -23,15 +23,7 @@ namespace Foster.Framework
         public static Audio Audio => GetModule<Audio>();
         public static Input Input => GetModule<Input>();
 
-        public static Window? MainWindow => System?.MainWindow;
-        public static Window? CurrentWindow => System?.CurrentWindow;
-
-        public static event Action? OnUpdate;
-        public static event Action<Window>? OnRender;
-        public static event Action? OnExit;
-        public static event Action? OnShutdown;
-
-        public static void Startup(string title, int width, int height, Action? onReady)
+        public static void Start()
         {
             if (Running)
                 throw new Exception("App is already running");
@@ -45,24 +37,9 @@ namespace Foster.Framework
 
             // Startup
             foreach (var module in modules)
-                module.OnStartup();
-
-            // Create our first Window
-            System.MainWindow = System.CreateWindow(title, width, height, false);
-            System.MainWindow.MakeCurrent();
-
-            // We now have a Context
-            foreach (var module in modules)
-                module.OnContext();
-
-            System.MainWindow.Visible = true;
-
-            // Tell Module's we have a Window to Display to
-            foreach (var module in modules)
-                module.OnDisplayed();
+                module.Startup();
 
             // Start Running
-            onReady?.Invoke();
             Run();
         }
 
@@ -77,7 +54,7 @@ namespace Foster.Framework
             var timer = Stopwatch.StartNew();
             var accumulator = TimeSpan.Zero;
 
-            while (Running && MainWindow != null && MainWindow.Opened)
+            while (Running && System.Windows.Count > 0)
             {
                 // update
                 {
@@ -129,22 +106,24 @@ namespace Foster.Framework
                 // render
                 {
                     foreach (var module in modules)
-                        module.OnPreRender();
+                        module.BeforeRender();
 
                     foreach (var window in System.Windows)
                     {
                         if (!window.Opened)
                             continue;
 
-                        window.MakeCurrent();
-                        Graphics.Target(null);
-                        Graphics.Clear(Color.Black);
-                        OnRender?.Invoke(window);
-                        window.Present();
+                        window.SetActive();
+
+                        foreach (var module in modules)
+                            module.Render(window);
                     }
 
                     foreach (var module in modules)
-                        module.OnPostRender();
+                        module.AfterRender();
+
+                    foreach (var window in System.Windows)
+                        window.Present();
                 }
 
                 // determine fps
@@ -155,32 +134,32 @@ namespace Foster.Framework
                     frameticks = timer.Elapsed.Ticks;
                     framecount = 0;
                 }
-            }
 
-            // Close the Window
-            MainWindow?.Close();
+                foreach (var module in modules)
+                    module.Tick();
+            }
 
             // exit Modules
             foreach (var module in modules)
-                module.OnShutdown();
+                module.Shutdown();
             modules.Clear();
             modulesByType.Clear();
 
             // finalize
             Started = false;
             Exiting = false;
-            OnShutdown?.Invoke();
         }
 
         private static void Update()
         {
             foreach (var module in modules)
-                module.OnPreUpdate();
-
-            OnUpdate?.Invoke();
+                module.BeforeUpdate();
 
             foreach (var module in modules)
-                module.OnPostUpdate();
+                module.Update();
+
+            foreach (var module in modules)
+                module.AfterUpdate();
         }
 
         public static void Exit()
@@ -189,7 +168,6 @@ namespace Foster.Framework
             {
                 Running = false;
                 Exiting = true;
-                OnExit?.Invoke();
             }
         }
 
@@ -217,7 +195,7 @@ namespace Foster.Framework
             }
 
             modules.Add(module);
-            module.OnCreated();
+            module.Created();
         }
 
         internal static bool TryGetModule<T>(out T? module) where T : Module
