@@ -90,7 +90,12 @@ namespace Foster.GLFW
             DoubleBuffer = 0x00021010,
             ContextVersionMajor = 0x00022002,
             ContextVersionMinor = 0x00022003,
-            ContextVersionRevision = 0x00022004
+            ContextVersionRevision = 0x00022004,
+
+            OpenGLVersionMajor = 0x00022002,
+            OpenGLVersionMinor = 0x00022003,
+            OpenGLProfile = 0x00022008,
+            OpenGLForwardCompat = 0x00022006
         }
 
         public delegate void ErrorFunc(int id, string message);

@@ -55,6 +55,15 @@ namespace Foster.GLFW
         {
             base.Startup();
 
+            if (App.Graphics != null && App.Graphics.Api == GraphicsApi.OpenGL)
+            {
+                // macOS requires versions to be set to 3.2
+                GLFW.WindowHint(GLFW.WindowHints.OpenGLVersionMajor, 3);
+                GLFW.WindowHint(GLFW.WindowHints.OpenGLVersionMinor, 2);
+                GLFW.WindowHint(GLFW.WindowHints.OpenGLProfile, 0x00032001);
+                GLFW.WindowHint(GLFW.WindowHints.OpenGLForwardCompat, true);
+            }
+
             if (App.Graphics != null && App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
             {
                 throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
