@@ -5,11 +5,9 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
-        internal readonly GLFW_System system;
         internal readonly GLFW_Context context;
 
         private string title;
-        private bool opened;
         private bool visible;
 
         public override RectInt Bounds
@@ -29,15 +27,6 @@ namespace Foster.GLFW
             }
         }
 
-        public override Point2 DrawSize
-        {
-            get
-            {
-                GLFW.GetFramebufferSize(context.Handle, out int width, out int height);
-                return new Point2(width, height);
-            }
-        }
-
         public override Vector2 PixelSize
         {
             get
@@ -48,9 +37,11 @@ namespace Foster.GLFW
             }
         }
 
-        public override bool Opened => opened;
-        protected override Framework.System System => system;
+        public override Framework.System System { get; }
+
         public override Context Context => context;
+
+        public override bool Opened => !context.Disposed;
 
         public override string Title
         {
@@ -93,36 +84,33 @@ namespace Foster.GLFW
 
         public GLFW_Window(GLFW_System system, string title, int width, int height, bool visible = true)
         {
-            this.system = system;
+            System = system;
             this.title = title;
 
-            var handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, system?.SharedContext ?? IntPtr.Zero);
+            GLFW_Context? shared = null;
+            if (system.Contexts.Count > 0)
+                shared = system.Contexts[0];
+
+            var handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared ?? IntPtr.Zero);
             context = new GLFW_Context(system, handle);
-            opened = true;
+            system.Contexts.Add(context);
+
             Visible = visible;
 
-            system.ActiveWindow = this;
+            system.SetCurrentContext(context);
         }
 
         public override void Present()
         {
-            if (!opened)
-                throw new Exception("This Window has been Closed");
-
-            if (system.ActiveWindow != this)
-                system.ActiveWindow = this;
-
+            GLFW.MakeContextCurrent(context.Handle);
             GLFW.SwapInterval(VSync ? 1 : 0);
             GLFW.SwapBuffers(context.Handle);
         }
 
         public override void Close()
         {
-            if (opened)
-            {
-                GLFW.SetWindowShouldClose(context.Handle, true);
-                opened = false;
-            }
+            if (!Context.Disposed)
+                Context.Dispose();
         }
     }
 }

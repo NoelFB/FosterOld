@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Foster.GLFW
 {
@@ -11,36 +12,7 @@ namespace Foster.GLFW
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetProcessDPIAware();
 
-        public GLFW_Context? SharedContext;
-
-        private Window? activeWindow;
-        private Context? activeContext;
-
-        public override Window? ActiveWindow
-        {
-            get => activeWindow;
-            set
-            {
-                if (activeWindow != value && value is GLFW_Window win)
-                {
-                    activeWindow = win;
-                    ActiveContext = win.Context;
-                }
-            }
-        }
-
-        public override Context? ActiveContext
-        {
-            get => activeContext;
-            set
-            {
-                if (activeContext != value && value is GLFW_Context ctx)
-                {
-                    activeContext = ctx;
-                    GLFW.MakeContextCurrent(ctx.Handle);
-                }
-            }
-        }
+        public List<GLFW_Context> Contexts = new List<GLFW_Context>();
 
         public override bool SupportsMultipleWindows => true;
 
@@ -86,18 +58,12 @@ namespace Foster.GLFW
                 }
             }
 
-            // create a hidden context
-            // the only way to create a "windowless" context in GLFW is to create a window and hide it
-            {
-                GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
-                GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
-                GLFW.WindowHint(GLFW.WindowHints.Visible, false);
+            // Various Window Hints
+            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
+            GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
 
-                SharedContext = new GLFW_Context(this, GLFW.CreateWindow(128, 128, "SharedContext", IntPtr.Zero, IntPtr.Zero));
-                SharedContext.SetActive();
-
-                GLFW.WindowHint(GLFW.WindowHints.Visible, true);
-            }
+            // Our default shared context
+            CreateContext();
 
             base.Startup();
         }
@@ -115,19 +81,26 @@ namespace Foster.GLFW
 
         protected override void AfterUpdate()
         {
-            for (int i = windows.Count - 1; i >= 0; i--)
+            // check for closing contexts
+            for (int i = Contexts.Count - 1; i >= 0; i--)
             {
-                var window = (windows[i] as GLFW_Window);
-                if (window == null)
-                    continue;
+                var context = Contexts[i];
 
-                if (GLFW.WindowShouldClose(window.context.Handle))
+                if (GLFW.WindowShouldClose(context.Handle))
                 {
-                    window.Close();
-                    window.context.IsDisposed = true;
-                    windows.RemoveAt(i);
+                    // see if we have a displayed window associated with this context
+                    for (int j = 0; j < windows.Count; j++)
+                    {
+                        if (windows[j].Context == context)
+                        {
+                            windows[j].Close();
+                            windows.RemoveAt(j);
+                            break;
+                        }
+                    }
 
-                    GLFW.DestroyWindow(window.context.Handle);
+                    Contexts.RemoveAt(i);
+                    GLFW.DestroyWindow(context.Handle);
                 }
             }
         }
@@ -142,6 +115,70 @@ namespace Foster.GLFW
         public override IntPtr GetProcAddress(string name)
         {
             return GLFW.GetProcAddress(name);
+        }
+
+        public override Context CreateContext()
+        {
+            // GLFW has no way to create a context without an associated window ...
+            // So we create a hidden Window
+
+            GLFW.WindowHint(GLFW.WindowHints.Visible, false);
+
+            GLFW_Context? shared = null;
+            if (Contexts.Count > 0)
+                shared = Contexts[0];
+
+            var context = new GLFW_Context(this, GLFW.CreateWindow(128, 128, "", IntPtr.Zero, shared ?? IntPtr.Zero));
+            Contexts.Add(context);
+            SetCurrentContext(context);
+
+            GLFW.WindowHint(GLFW.WindowHints.Visible, true);
+
+            return context;
+        }
+
+        public override Context? GetCurrentContext()
+        {
+            var ptr = GLFW.GetCurrentContext();
+
+            foreach (var context in Contexts)
+                if (context.Handle.Ptr == ptr)
+                    return context;
+
+            return null;
+        }
+
+        public override void SetCurrentContext(Context? context)
+        {
+            // set current context
+            if (context is GLFW_Context ctx)
+            {
+                if (ctx.Disposed)
+                    throw new Exception("The Context is Disposed");
+
+                // already on the current thread
+                if (ctx.ActiveThreadId == Thread.CurrentThread.ManagedThreadId)
+                    return;
+
+                // currently assigned to a different thread
+                if (ctx.ActiveThreadId != 0)
+                    throw new Exception("The Context is active on another Thread. A Context can only be current for a single Thread at a time. You must make it non-current on the old Thread before making setting it on another.");
+
+                // unset existing
+                if (GetCurrentContext() is GLFW_Context current)
+                    current.ActiveThreadId = 0;
+
+                ctx.ActiveThreadId = Thread.CurrentThread.ManagedThreadId;
+                GLFW.MakeContextCurrent(ctx.Handle);
+            }
+            // unset existing context if we're setting to null
+            else 
+            {
+                if (GetCurrentContext() is GLFW_Context current)
+                    current.ActiveThreadId = 0;
+
+                GLFW.MakeContextCurrent(IntPtr.Zero);
+            }
         }
     }
 

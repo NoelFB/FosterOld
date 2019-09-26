@@ -18,16 +18,6 @@ namespace Foster.Framework
         public Version? ApiVersion { get; protected set; }
 
         /// <summary>
-        /// The Active Window
-        /// </summary>
-        public abstract Window? ActiveWindow { get; set; }
-
-        /// <summary>
-        /// The Active Rendering Context
-        /// </summary>
-        public abstract Context? ActiveContext { get; set; }
-
-        /// <summary>
         /// Whether the System can support Multiple Windows
         /// </summary>
         public abstract bool SupportsMultipleWindows { get; }
@@ -41,6 +31,25 @@ namespace Foster.Framework
         /// Creates a new Window
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, bool visible = true);
+
+        /// <summary>
+        /// Creates a new Rendering Context and sets it on the current Thread
+        /// </summary>
+        /// <returns></returns>
+        public abstract Context CreateContext();
+
+        /// <summary>
+        /// Gets the current Rendering Context on the current Thread
+        /// </summary>
+        /// <returns></returns>
+        public abstract Context? GetCurrentContext();
+
+        /// <summary>
+        /// Sets the current Rendering Context on the current Thread
+        /// Note that if this context is current on another thread, this will fail
+        /// </summary>
+        /// <param name="context"></param>
+        public abstract void SetCurrentContext(Context? context);
 
         /// <summary>
         /// Gets a Pointer to a Platform rendering method of the given name

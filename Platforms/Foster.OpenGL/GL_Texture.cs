@@ -1,12 +1,13 @@
 ﻿using Foster.Framework;
 using System;
+using System.Threading;
 
 namespace Foster.OpenGL
 {
     public class GL_Texture : Texture
     {
 
-        public readonly uint ID;
+        public uint ID { get; private set; }
         private TextureFilter filter;
         private TextureWrap wrapX;
         private TextureWrap wrapY;
@@ -66,13 +67,15 @@ namespace Foster.OpenGL
 
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
+
             GL.TexImage2D(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, width, height, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(0));
+            GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MIN_FILTER, (int)GLEnum.LINEAR);
+            GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MAG_FILTER, (int)GLEnum.LINEAR);
+            GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_S, (int)GLEnum.REPEAT);
+            GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)GLEnum.REPEAT);
 
             Width = width;
             Height = height;
-            WrapX = TextureWrap.Wrap;
-            WrapY = TextureWrap.Wrap;
-            Filter = TextureFilter.Linear;
         }
 
         public override unsafe void SetData(Memory<Color> buffer)

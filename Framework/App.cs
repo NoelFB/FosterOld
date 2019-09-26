@@ -9,19 +9,18 @@ namespace Foster.Framework
     public static class App
     {
         public static readonly Version Version = new Version(0, 1, 0);
-
-
-        private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
-
+        
         public static bool Started { get; private set; } = false;
         public static bool Running { get; private set; } = false;
         public static bool Exiting { get; private set; } = false;
 
-        public static ModuleList Modules = new ModuleList();
+        public readonly static ModuleList Modules = new ModuleList();
         public static System System => Modules.Get<System>();
         public static Graphics Graphics => Modules.Get<Graphics>();
         public static Audio Audio => Modules.Get<Audio>();
         public static Input Input => Modules.Get<Input>();
+
+        private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
         public static void Start()
         {
@@ -112,7 +111,7 @@ namespace Foster.Framework
                         if (!window.Opened)
                             continue;
 
-                        window.SetActive();
+                        System.SetCurrentContext(window.Context);
                         Modules.Render(window);
                     }
 

@@ -4,19 +4,18 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public abstract class Context
+    public abstract class Context : IDisposable
     {
+        public abstract System System { get; }
         public abstract bool Disposed { get; }
-        protected abstract System System { get; }
+        public abstract int BackbufferWidth { get; }
+        public abstract int BackbufferHeight { get; }
 
         protected Context()
         {
 
         }
 
-        public void SetActive()
-        {
-            System.ActiveContext = this;
-        }
+        public abstract void Dispose();
     }
 }

@@ -12,7 +12,7 @@ namespace Foster.Framework
         public int Width => Bounds.Width;
         public int Height => Bounds.Height;
 
-        protected abstract System System { get; }
+        public abstract System System { get; }
         public abstract string Title { get; set; }
         public abstract Context Context { get; }
 
@@ -24,13 +24,7 @@ namespace Foster.Framework
         public abstract bool VSync { get; set; }
 
         public abstract RectInt Bounds { get; set; }
-        public abstract Point2 DrawSize { get; }
         public abstract Vector2 PixelSize { get; }
-
-        public void SetActive()
-        {
-            System.ActiveWindow = this;
-        }
 
         public abstract void Present();
         public abstract void Close();
