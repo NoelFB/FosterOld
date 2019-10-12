@@ -12,6 +12,8 @@ namespace Foster.Framework
         public int Width => Bounds.Width;
         public int Height => Bounds.Height;
 
+        public Action? OnClose;
+
         public abstract System System { get; }
         public abstract string Title { get; set; }
         public abstract Context Context { get; }

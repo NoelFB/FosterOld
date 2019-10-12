@@ -7,6 +7,7 @@
         /// A lower priority is run first
         /// </summary>
         protected internal int Priority = 10000;
+        protected internal int MainThreadId = 0;
 
         protected internal virtual void Created() { }
         protected internal virtual void Startup() { }

@@ -14,6 +14,9 @@ namespace Foster.GLFW
 
         internal GLFW_Context(GLFW_System system, GLFW.Window window)
         {
+            if (window.Ptr == IntPtr.Zero)
+                throw new Exception("Unable to create Context");
+
             System = system;
             Handle = window;
         }
@@ -26,6 +29,9 @@ namespace Foster.GLFW
         {
             get
             {
+                if (disposed)
+                    return 0;
+
                 GLFW.GetFramebufferSize(Handle, out int width, out _);
                 return width;
             }
@@ -35,6 +41,9 @@ namespace Foster.GLFW
         {
             get
             {
+                if (disposed)
+                    return 0;
+
                 GLFW.GetFramebufferSize(Handle, out _, out int height);
                 return height;
             }

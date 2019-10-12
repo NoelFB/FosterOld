@@ -15,9 +15,6 @@ namespace Foster.OpenGL
         internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
         internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
 
-        internal int MainThreadId;
-        internal Context BackgroundContext;
-
         protected override void Created()
         {
             Api = GraphicsApi.OpenGL;
@@ -32,12 +29,6 @@ namespace Foster.OpenGL
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
-
-            MainThreadId = Thread.CurrentThread.ManagedThreadId;
-
-            var context = App.System.GetCurrentContext();
-            BackgroundContext = App.System.CreateContext();
-            App.System.SetCurrentContext(context);
 
             base.Startup();
         }
@@ -211,7 +202,7 @@ namespace Foster.OpenGL
             GL.Clear(GLEnum.COLOR_BUFFER_BIT);
         }
 
-        internal void PerformOnThread(Action action)
+        /*internal void PerformOnThread(Action action)
         {
             if (MainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
@@ -232,7 +223,7 @@ namespace Foster.OpenGL
                     system.SetCurrentContext(last);
                 }
             }
-        }
+        }*/
 
         private static GLEnum GetBlendFunc(BlendOperations operation)
         {
@@ -243,6 +234,7 @@ namespace Foster.OpenGL
                 BlendOperations.ReverseSubtract => GLEnum.FUNC_REVERSE_SUBTRACT,
                 BlendOperations.Min => GLEnum.MIN,
                 BlendOperations.Max => GLEnum.MAX,
+
                 _ => throw new Exception($"Unsupported Blend Opteration {operation}"),
             };
         }
@@ -270,6 +262,7 @@ namespace Foster.OpenGL
                 BlendFactors.OneMinusSrc1Color => GLEnum.ONE_MINUS_SRC1_COLOR,
                 BlendFactors.Src1Alpha => GLEnum.SRC1_ALPHA,
                 BlendFactors.OneMinusSrc1Alpha => GLEnum.ONE_MINUS_SRC1_ALPHA,
+
                 _ => throw new Exception($"Unsupported Blend Factor {factor}"),
             };
         }

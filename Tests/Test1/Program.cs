@@ -13,7 +13,7 @@ namespace Test1
             App.Modules.Register<Foster.OpenGL.GL_Graphics>();
             App.Modules.Register<Game>();
 
-            App.Start();
+            App.Start("Hello", 1280, 720);
         }
 
         class Game : Module
@@ -27,19 +27,14 @@ namespace Test1
                 batch = new Batch2D(App.Graphics);
                 batch2 = new Batch2D(App.Graphics);
 
-                App.System.CreateWindow("Hello!", 1280, 720);
+                var win = App.System.CreateWindow("Hello!", 1280, 720);
+                win.OnClose += App.Exit;
 
-                var thread = new Thread(new ThreadStart(LoadTextures));
-                thread.Start();
-            }
+                //var win2 = App.System.CreateWindow("Hello!", 1280, 720);
+                //win2.VSync = false;
 
-            private void LoadTextures()
-            {
-                using (var temp = App.System.CreateContext())
-                {
-                    font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
-                    font.Charset['a'].Image.Texture.Filter = TextureFilter.Nearest;
-                }
+                font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
+                font.Charset['a'].Image.Texture.Filter = TextureFilter.Nearest;
             }
 
             protected override void Render(Window window)
@@ -55,7 +50,7 @@ namespace Test1
                     var p = 140f;
 
                     batch.Clear();
-                    batch.PushMatrix(new Vector2(p, p), Vector2.One * 32f, Vector2.Zero, 0f);
+                    batch.PushMatrix(new Vector2(p, p), Vector2.One * 3f, Vector2.Zero, 0f);
                     batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White * 0.9f);
                     batch.PopMatrix();
 

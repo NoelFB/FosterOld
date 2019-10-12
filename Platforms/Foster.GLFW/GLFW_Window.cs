@@ -9,6 +9,7 @@ namespace Foster.GLFW
 
         private string title;
         private bool visible;
+        private bool lastVsync;
 
         public override RectInt Bounds
         {
@@ -82,28 +83,26 @@ namespace Foster.GLFW
             }
         }
 
-        public GLFW_Window(GLFW_System system, string title, int width, int height, bool visible = true)
+        public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible)
         {
             System = system;
+
+            this.context = context;
             this.title = title;
+            this.visible = visible;
 
-            GLFW_Context? shared = null;
-            if (system.Contexts.Count > 0)
-                shared = system.Contexts[0];
-
-            var handle = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared ?? IntPtr.Zero);
-            context = new GLFW_Context(system, handle);
-            system.Contexts.Add(context);
-
-            Visible = visible;
-
-            system.SetCurrentContext(context);
+            System.SetCurrentContext(context);
+            GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
         }
 
         public override void Present()
         {
-            GLFW.MakeContextCurrent(context.Handle);
-            GLFW.SwapInterval(VSync ? 1 : 0);
+            if (lastVsync != VSync)
+            {
+                System.SetCurrentContext(context);
+                GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
+            }
+            
             GLFW.SwapBuffers(context.Handle);
         }
 

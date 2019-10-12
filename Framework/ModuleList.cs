@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Foster.Framework
 {
@@ -32,6 +33,7 @@ namespace Foster.Framework
             }
 
             modules.Add(module);
+            module.MainThreadId = Thread.CurrentThread.ManagedThreadId;
             module.Created();
         }
 

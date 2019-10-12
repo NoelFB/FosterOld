@@ -28,12 +28,13 @@ namespace Foster.Framework
         public readonly ReadOnlyCollection<Window> Windows;
         
         /// <summary>
-        /// Creates a new Window
+        /// Creates a new Window. This must be called from the Main Thread.
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, bool visible = true);
 
         /// <summary>
-        /// Creates a new Rendering Context and sets it on the current Thread
+        /// Creates a new Rendering Context. This must be called from the Main Thread.
+        /// This will not make the new Context current.
         /// </summary>
         /// <returns></returns>
         public abstract Context CreateContext();
@@ -46,7 +47,7 @@ namespace Foster.Framework
 
         /// <summary>
         /// Sets the current Rendering Context on the current Thread
-        /// Note that if this context is current on another thread, this will fail
+        /// Note that this will fail if the context is current on another thread
         /// </summary>
         /// <param name="context"></param>
         public abstract void SetCurrentContext(Context? context);

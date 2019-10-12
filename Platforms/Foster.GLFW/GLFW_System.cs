@@ -64,6 +64,7 @@ namespace Foster.GLFW
 
             // Our default shared context
             CreateContext();
+            SetCurrentContext(Contexts[0]);
 
             base.Startup();
         }
@@ -74,13 +75,10 @@ namespace Foster.GLFW
             GLFW.Terminate();
         }
 
-        protected override void BeforeUpdate()
-        {
-            GLFW.PollEvents();
-        }
-
         protected override void AfterUpdate()
         {
+            GLFW.PollEvents();
+
             // check for closing contexts
             for (int i = Contexts.Count - 1; i >= 0; i--)
             {
@@ -93,6 +91,7 @@ namespace Foster.GLFW
                     {
                         if (windows[j].Context == context)
                         {
+                            windows[j].OnClose?.Invoke();
                             windows[j].Close();
                             windows.RemoveAt(j);
                             break;
@@ -107,7 +106,11 @@ namespace Foster.GLFW
 
         public override Window CreateWindow(string title, int width, int height, bool visible = true)
         {
-            GLFW_Window window = new GLFW_Window(this, title, width, height, visible);
+            if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
+                throw new Exception("Creating a Window must be called from the Main Thread");
+
+            var context = CreateContextInternal(width, height, title, visible);
+            var window = new GLFW_Window(this, context, title, visible);
             windows.Add(window);
             return window;
         }
@@ -119,20 +122,26 @@ namespace Foster.GLFW
 
         public override Context CreateContext()
         {
-            // GLFW has no way to create a context without an associated window ...
-            // So we create a hidden Window
+            if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
+                throw new Exception("Creating a Context must be called from the Main Thread");
 
-            GLFW.WindowHint(GLFW.WindowHints.Visible, false);
+            return CreateContextInternal(128, 128, "hidden-context", false);
+        }
+
+        private GLFW_Context CreateContextInternal(int width, int height, string title, bool visible)
+        {
+            GLFW.WindowHint(GLFW.WindowHints.Visible, visible);
 
             GLFW_Context? shared = null;
             if (Contexts.Count > 0)
                 shared = Contexts[0];
 
-            var context = new GLFW_Context(this, GLFW.CreateWindow(128, 128, "", IntPtr.Zero, shared ?? IntPtr.Zero));
-            Contexts.Add(context);
-            SetCurrentContext(context);
+            // GLFW has no way to create a context without a window
+            // so any background contexts also just create a hidden window
 
-            GLFW.WindowHint(GLFW.WindowHints.Visible, true);
+            var window = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared ?? IntPtr.Zero);
+            var context = new GLFW_Context(this, window);
+            Contexts.Add(context);
 
             return context;
         }
@@ -141,9 +150,9 @@ namespace Foster.GLFW
         {
             var ptr = GLFW.GetCurrentContext();
 
-            foreach (var context in Contexts)
-                if (context.Handle.Ptr == ptr)
-                    return context;
+            for (int i = 0; i < Contexts.Count; i++)
+                if (Contexts[i].Handle.Ptr == ptr)
+                    return Contexts[i];
 
             return null;
         }

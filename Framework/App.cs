@@ -10,7 +10,6 @@ namespace Foster.Framework
     {
         public static readonly Version Version = new Version(0, 1, 0);
         
-        public static bool Started { get; private set; } = false;
         public static bool Running { get; private set; } = false;
         public static bool Exiting { get; private set; } = false;
 
@@ -22,7 +21,7 @@ namespace Foster.Framework
 
         private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
-        public static void Start()
+        public static void Start(string title, int width, int height)
         {
             if (Running)
                 throw new Exception("App is already running");
@@ -32,7 +31,6 @@ namespace Foster.Framework
 
             Console.WriteLine($"FOSTER {Version}");
 
-            Started = true;
             Modules.Startup();
             Run();
         }
@@ -48,7 +46,7 @@ namespace Foster.Framework
             var timer = Stopwatch.StartNew();
             var accumulator = TimeSpan.Zero;
 
-            while (Running && System.Windows.Count > 0)
+            while (Running)
             {
                 // update
                 {
@@ -83,9 +81,7 @@ namespace Foster.Framework
                             accumulator -= target;
                             Time.Duration += target;
 
-                            Modules.BeforeUpdate();
-                            Modules.Update();
-                            Modules.AfterUpdate();
+                            Update();
                         }
                     }
                     // non-fixed timestep update
@@ -96,9 +92,7 @@ namespace Foster.Framework
                         lastTime = Time.Duration;
                         accumulator = TimeSpan.Zero;
 
-                        Modules.BeforeUpdate();
-                        Modules.Update();
-                        Modules.AfterUpdate();
+                        Update();
                     }
                 }
 
@@ -132,13 +126,18 @@ namespace Foster.Framework
 
                 Modules.Tick();
             }
-
+            
+            // finalize
             Modules.Shutdown();
             Modules.Clear();
-
-            // finalize
-            Started = false;
             Exiting = false;
+        }
+
+        private static void Update()
+        {
+            Modules.BeforeUpdate();
+            Modules.Update();
+            Modules.AfterUpdate();
         }
 
         public static void Exit()
@@ -149,8 +148,5 @@ namespace Foster.Framework
                 Exiting = true;
             }
         }
-
-        
-
     }
 }
