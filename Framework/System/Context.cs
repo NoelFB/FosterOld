@@ -16,6 +16,11 @@ namespace Foster.Framework
 
         }
 
+        public void MakeCurrent()
+        {
+            System.SetCurrentContext(this);
+        }
+
         public abstract void Dispose();
     }
 }

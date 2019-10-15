@@ -15,6 +15,7 @@ namespace Foster.GLFW
         public List<GLFW_Context> Contexts = new List<GLFW_Context>();
 
         public override bool SupportsMultipleWindows => true;
+        public event Action<GLFW_Window>? OnWindowCreated;
 
         public GLFW_System()
         {
@@ -112,6 +113,9 @@ namespace Foster.GLFW
             var context = CreateContextInternal(width, height, title, visible);
             var window = new GLFW_Window(this, context, title, visible);
             windows.Add(window);
+
+            OnWindowCreated?.Invoke(window);
+
             return window;
         }
 
@@ -122,14 +126,14 @@ namespace Foster.GLFW
 
         public override Context CreateContext()
         {
-            if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
-                throw new Exception("Creating a Context must be called from the Main Thread");
-
             return CreateContextInternal(128, 128, "hidden-context", false);
         }
 
         private GLFW_Context CreateContextInternal(int width, int height, string title, bool visible)
         {
+            if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
+                throw new Exception("Creating a Context must be called from the Main Thread");
+
             GLFW.WindowHint(GLFW.WindowHints.Visible, visible);
 
             GLFW_Context? shared = null;

@@ -15,6 +15,8 @@ namespace Foster.OpenGL
         internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
         internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
 
+        internal List<Context> disposedContexts = new List<Context>();
+
         protected override void Created()
         {
             Api = GraphicsApi.OpenGL;
@@ -35,6 +37,7 @@ namespace Foster.OpenGL
 
         protected override void Tick()
         {
+            // delete any GL graphics resources that are shared between contexts
             unsafe
             {
                 if (BuffersToDelete.Count > 0)
@@ -57,48 +60,70 @@ namespace Foster.OpenGL
                         GL.DeleteTextures(TexturesToDelete.Count, textures);
                     TexturesToDelete.Clear();
                 }
+            }
 
-                /*if (VertexArraysToDelete.Count > 0)
+            // check for any resources we're still tracking that are in disposed contexts
+            {
+                lock (VertexArraysToDelete)
                 {
-                    foreach (var kv in VertexArraysToDelete)
-                    {
-                        var context = kv.Key;
-                        if (!context.Disposed)
-                        {
-                            var list = kv.Value;
-
-                            context.MakeCurrent();
-
-                            fixed (uint* arrays = list.ToArray())
-                                GL.DeleteVertexArrays(list.Count, arrays);
-                        }
-                    }
-                    VertexArraysToDelete.Clear();
+                    foreach (var context in VertexArraysToDelete.Keys)
+                        if (context.Disposed)
+                            disposedContexts.Add(context);
                 }
 
-                if (FrameBuffersToDelete.Count > 0)
+                lock (FrameBuffersToDelete)
                 {
-                    foreach (var kv in FrameBuffersToDelete)
+                    foreach (var context in FrameBuffersToDelete.Keys)
+                        if (context.Disposed)
+                            disposedContexts.Add(context);
+                }
+
+                if (disposedContexts.Count > 0)
+                {
+                    foreach (var context in disposedContexts)
                     {
-                        var context = kv.Key;
-                        if (!context.Disposed)
-                        {
-                            var list = kv.Value;
-
-                            context.MakeCurrent();
-
-                            fixed (uint* buffers = list.ToArray())
-                                GL.DeleteFramebuffers(list.Count, buffers);
-                        }
+                        VertexArraysToDelete.Remove(context);
+                        FrameBuffersToDelete.Remove(context);
                     }
-                    FrameBuffersToDelete.Clear();
-                }*/
+
+                    disposedContexts.Clear();
+                }
             }
         }
 
-        protected override void AfterRender()
+        protected override void AfterRender(Window window)
         {
             GL.Flush();
+
+            // delete any VAOs or FrameBuffers associated with this context that need deleting
+            CleanupContextResources(window.Context);
+
+            // TODO:
+            // What if there is a context not associated with a window (ex. a background context) 
+            // that exists for a long time? how do we cleanup its deleted resources?
+        }
+
+        private unsafe void CleanupContextResources(Context context)
+        {
+            lock (VertexArraysToDelete)
+            {
+                if (VertexArraysToDelete.TryGetValue(context, out var vaoList))
+                {
+                    fixed (uint* buffers = vaoList.ToArray())
+                        GL.DeleteVertexArrays(vaoList.Count, buffers);
+                    vaoList.Clear();
+                }
+            }
+
+            lock (FrameBuffersToDelete)
+            {
+                if (FrameBuffersToDelete.TryGetValue(context, out var fbList))
+                {
+                    fixed (uint* buffers = fbList.ToArray())
+                        GL.DeleteVertexArrays(fbList.Count, buffers);
+                    fbList.Clear();
+                }
+            }
         }
 
         private RectInt viewport;
@@ -202,7 +227,7 @@ namespace Foster.OpenGL
             GL.Clear(GLEnum.COLOR_BUFFER_BIT);
         }
 
-        /*internal void PerformOnThread(Action action)
+        /*internal void PerformInThreadSafeContext(Action action)
         {
             if (MainThreadId == Thread.CurrentThread.ManagedThreadId)
             {

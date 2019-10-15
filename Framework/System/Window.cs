@@ -28,6 +28,8 @@ namespace Foster.Framework
         public abstract RectInt Bounds { get; set; }
         public abstract Vector2 PixelSize { get; }
 
+        public abstract Vector2 Mouse { get; }
+
         public abstract void Present();
         public abstract void Close();
 

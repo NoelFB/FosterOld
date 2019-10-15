@@ -47,9 +47,7 @@ namespace Foster.OpenGL
         public unsafe void Upload(object? value = null)
         {
             if (value == null)
-            {
                 value = this.value;
-            }
 
             switch (Type)
             {

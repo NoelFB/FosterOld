@@ -19,9 +19,9 @@ namespace Foster.Framework
         public static Audio Audio => Modules.Get<Audio>();
         public static Input Input => Modules.Get<Input>();
 
-        private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
+        public static TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
 
-        public static void Start(string title, int width, int height)
+        public static void Start()
         {
             if (Running)
                 throw new Exception("App is already running");
@@ -72,8 +72,8 @@ namespace Foster.Framework
                         }
 
                         // Do not allow any update to take longer than our maximum.
-                        if (accumulator > maxElapsedTime)
-                            accumulator = maxElapsedTime;
+                        if (accumulator > MaxElapsedTime)
+                            accumulator = MaxElapsedTime;
 
                         // do as many updates as we can
                         while (accumulator >= target)
@@ -98,18 +98,17 @@ namespace Foster.Framework
 
                 // render
                 {
-                    Modules.BeforeRender();
-
                     foreach (var window in System.Windows)
                     {
                         if (!window.Opened)
                             continue;
 
-                        System.SetCurrentContext(window.Context);
-                        Modules.Render(window);
-                    }
+                        window.Context.MakeCurrent();
 
-                    Modules.AfterRender();
+                        Modules.BeforeRender(window);
+                        Modules.Render(window);
+                        Modules.AfterRender(window);
+                    }
 
                     foreach (var window in System.Windows)
                         window.Present();

@@ -17,9 +17,9 @@
         protected internal virtual void Update() { }
         protected internal virtual void AfterUpdate() { }
 
-        protected internal virtual void BeforeRender() { }
+        protected internal virtual void BeforeRender(Window window) { }
         protected internal virtual void Render(Window window) { }
-        protected internal virtual void AfterRender() { }
+        protected internal virtual void AfterRender(Window window) { }
 
         protected internal virtual void Tick() { }
 

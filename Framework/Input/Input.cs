@@ -30,29 +30,35 @@ namespace Foster.Framework
             nextState.Step();
         }
 
-        protected void OnText(string value)
+        protected void OnText(char value)
         {
-
+            nextState.Keyboard.Text.Append(value);
         }
 
         protected void OnKeyDown(uint key, ulong timestamp)
         {
-
+            nextState.Keyboard.down[key] = true;
+            nextState.Keyboard.pressed[key] = true;
+            nextState.Keyboard.timestamp[key] = timestamp;
         }
 
         protected void OnKeyUp(uint key, ulong timestamp)
         {
-
+            nextState.Keyboard.down[key] = false;
+            nextState.Keyboard.released[key] = true;
         }
-
+        
         protected void OnMouseDown(MouseButtons button, ulong timestamp)
         {
-
+            nextState.Mouse.down[(int)button] = true;
+            nextState.Mouse.pressed[(int)button] = true;
+            nextState.Mouse.timestamp[(int)button] = timestamp;
         }
 
         protected void OnMouseUp(MouseButtons button, ulong timestamp)
         {
-
+            nextState.Mouse.down[(int)button] = false;
+            nextState.Mouse.released[(int)button] = true;
         }
 
         protected void OnJoystickConnect(uint index, string name, uint buttonCount, uint axisCount, bool isGamepad)

@@ -95,14 +95,10 @@ namespace Foster.OpenGL
                 foreach (ShaderUniform uni in uniforms.Values)
                 {
                     if (!(uni is GL_ShaderUniform uniform))
-                    {
                         continue;
-                    }
 
                     if (!uniform.Dirty)
-                    {
                         continue;
-                    }
 
                     if (uniform.Type == UniformType.Texture2D)
                     {

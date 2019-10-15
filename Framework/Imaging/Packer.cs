@@ -243,8 +243,8 @@ namespace Foster.Framework
                     }
 
                     int from = packed;
-                    int index = 0;
-                    var root = ResetNode(nodes + index++, 0, 0, sources[from].Packed.Width + Padding, sources[from].Packed.Height + Padding);
+                    var index = nodes;
+                    var root = ResetNode(index++, 0, 0, sources[from].Packed.Width + Padding, sources[from].Packed.Height + Padding);
 
                     while (packed < sources.Count)
                     {
@@ -271,18 +271,18 @@ namespace Foster.Framework
                                 // grow right
                                 if (shouldGrowRight || (!shouldGrowDown && canGrowRight))
                                 {
-                                    var next = ResetNode(nodes + index++, 0, 0, root->Rect.Width + w, root->Rect.Height);
+                                    var next = ResetNode(index++, 0, 0, root->Rect.Width + w, root->Rect.Height);
                                     next->Used = true;
                                     next->Down = root;
-                                    next->Right = node = ResetNode(nodes + index++, root->Rect.Width, 0, w, root->Rect.Height);
+                                    next->Right = node = ResetNode(index++, root->Rect.Width, 0, w, root->Rect.Height);
                                     root = next;
                                 }
                                 // grow down
                                 else
                                 {
-                                    var next = ResetNode(nodes + index++, 0, 0, root->Rect.Width, root->Rect.Height + h);
+                                    var next = ResetNode(index++, 0, 0, root->Rect.Width, root->Rect.Height + h);
                                     next->Used = true;
-                                    next->Down = node = ResetNode(nodes + index++, 0, root->Rect.Height, root->Rect.Width, h);
+                                    next->Down = node = ResetNode(index++, 0, root->Rect.Height, root->Rect.Width, h);
                                     next->Right = root;
                                     root = next;
                                 }
@@ -295,8 +295,8 @@ namespace Foster.Framework
 
                         // add
                         node->Used = true;
-                        node->Down = ResetNode(nodes + index++, node->Rect.X, node->Rect.Y + h, node->Rect.Width, node->Rect.Height - h);
-                        node->Right = ResetNode(nodes + index++, node->Rect.X + w, node->Rect.Y, node->Rect.Width - w, h);
+                        node->Down = ResetNode(index++, node->Rect.X, node->Rect.Y + h, node->Rect.Width, node->Rect.Height - h);
+                        node->Right = ResetNode(index++, node->Rect.X + w, node->Rect.Y, node->Rect.Width - w, h);
 
                         sources[packed].Packed.X = node->Rect.X;
                         sources[packed].Packed.Y = node->Rect.Y;

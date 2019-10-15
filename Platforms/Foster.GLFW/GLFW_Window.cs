@@ -83,6 +83,15 @@ namespace Foster.GLFW
             }
         }
 
+        public override Vector2 Mouse
+        {
+            get
+            {
+                GLFW.GetCursorPos(context.Handle, out var xpos, out var ypos);
+                return new Vector2((float)xpos, (float)ypos);
+            }
+        }
+
         public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible)
         {
             System = system;

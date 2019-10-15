@@ -55,7 +55,7 @@ namespace Foster.Framework
         internal void Step()
         {
             Array.Fill(pressed, false);
-            Array.Fill(down, false);
+            Array.Fill(released, false);
         }
 
         internal void Copy(Controller other)

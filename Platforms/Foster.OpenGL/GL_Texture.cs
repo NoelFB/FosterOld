@@ -98,11 +98,8 @@ namespace Foster.OpenGL
 
         public override void Dispose()
         {
-            if (!Disposed)
-            {
-                if (Graphics is GL_Graphics graphics)
-                    graphics.TexturesToDelete.Add(ID);
-            }
+            if (!Disposed && (Graphics is GL_Graphics graphics))
+                graphics.TexturesToDelete.Add(ID);
 
             base.Dispose();
         }

@@ -10,12 +10,12 @@ namespace Foster.Framework
         /// <summary>
         /// Underlying System implementation API Name
         /// </summary>
-        public string? ApiName { get; protected set; }
+        public string ApiName { get; protected set; } = "Unknown";
 
         /// <summary>
         /// Underlying System implementation API Version
         /// </summary>
-        public Version? ApiVersion { get; protected set; }
+        public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
         /// <summary>
         /// Whether the System can support Multiple Windows
@@ -34,7 +34,6 @@ namespace Foster.Framework
 
         /// <summary>
         /// Creates a new Rendering Context. This must be called from the Main Thread.
-        /// This will not make the new Context current.
         /// </summary>
         /// <returns></returns>
         public abstract Context CreateContext();

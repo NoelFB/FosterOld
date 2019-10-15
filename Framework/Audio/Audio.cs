@@ -6,8 +6,8 @@ namespace Foster.Framework
 {
     public abstract class Audio : Module
     {
-        public string? ApiName { get; protected set; }
-        public Version? ApiVersion { get; protected set; }
+        public string ApiName { get; protected set; } = "Unknown";
+        public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
         protected Audio()
         {

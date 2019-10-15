@@ -89,10 +89,10 @@ namespace Foster.Framework
                 module.AfterUpdate();
         }
 
-        internal void BeforeRender() 
+        internal void BeforeRender(Window window) 
         {
             foreach (var module in modules)
-                module.BeforeRender();
+                module.BeforeRender(window);
         }
 
         internal void Render(Window window)
@@ -101,10 +101,10 @@ namespace Foster.Framework
                 module.Render(window);
         }
 
-        internal void AfterRender() 
+        internal void AfterRender(Window window) 
         {
             foreach (var module in modules)
-                module.AfterRender();
+                module.AfterRender(window);
         }
 
         internal void Tick()

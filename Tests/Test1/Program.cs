@@ -1,5 +1,6 @@
 ﻿using Foster.Framework;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -10,10 +11,11 @@ namespace Test1
         private static void Main()
         {
             App.Modules.Register<Foster.GLFW.GLFW_System>();
+            App.Modules.Register<Foster.GLFW.GLFW_Input>();
             App.Modules.Register<Foster.OpenGL.GL_Graphics>();
             App.Modules.Register<Game>();
 
-            App.Start("Hello", 1280, 720);
+            App.Start();
         }
 
         class Game : Module
@@ -21,6 +23,9 @@ namespace Test1
             private Batch2D batch;
             private Batch2D batch2;
             private SpriteFont font;
+            private Context context;
+
+            List<Vector2> Dots = new List<Vector2>();
 
             protected override void Startup()
             {
@@ -30,11 +35,32 @@ namespace Test1
                 var win = App.System.CreateWindow("Hello!", 1280, 720);
                 win.OnClose += App.Exit;
 
-                //var win2 = App.System.CreateWindow("Hello!", 1280, 720);
-                //win2.VSync = false;
+                context = App.System.CreateContext();
+
+                var thread = new Thread(new ThreadStart(Load));
+                thread.Start();
+
+            }
+
+            private void Load()
+            {
+                App.System.SetCurrentContext(context);
 
                 font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
                 font.Charset['a'].Image.Texture.Filter = TextureFilter.Nearest;
+
+                var b = new Batch2D();
+                b.Rect(0, 0, 32, 32, Color.Red);
+                b.Render();
+                //b.Dispose();
+
+                context.Dispose();
+            }
+
+            protected override void Update()
+            {
+                if (App.Input.State.Mouse.Pressed(MouseButtons.Left))
+                    Dots.Add(App.System.Windows[0].Mouse);
             }
 
             protected override void Render(Window window)
@@ -50,14 +76,25 @@ namespace Test1
                     var p = 140f;
 
                     batch.Clear();
+
+                    foreach (var dot in Dots)
+                    {
+                        batch.Rect(dot.X - 8, dot.Y - 8, 16, 16, Color.Red);
+                    }
+
                     batch.PushMatrix(new Vector2(p, p), Vector2.One * 3f, Vector2.Zero, 0f);
-                    batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White * 0.9f);
+                    batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White * 1.0f);
                     batch.PopMatrix();
 
                     batch.PushMatrix(new Vector2(p, App.Graphics.Viewport.Height - p - font.LineHeight * 0.3f), Vector2.One * 0.3f, Vector2.Zero, 0f);
                     batch.Text(font, $"> FPS: {Time.FPS}", 0x44eeaa);
                     batch.PopMatrix();
+
+                    batch.PushMatrix(window.Mouse, Vector2.One * 0.3f, Vector2.Zero, 0f);
+                    batch.Text(font, $"> FPS: {Time.FPS}", 0x44eeaa);
+                    batch.PopMatrix();
                     batch.Render();
+
 
                     p *= 2;
 
