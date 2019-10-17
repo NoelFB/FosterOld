@@ -77,6 +77,9 @@ namespace Foster.Framework
         public bool Pressed(int buttonIndex) => buttonIndex >= 0 && buttonIndex < ButtonCount && pressed[buttonIndex];
         public bool Pressed(Buttons button) => Pressed((int)button);
 
+        public ulong Timestamp(int buttonIndex) => buttonIndex >= 0 && buttonIndex < ButtonCount ? timestamp[buttonIndex] : 0;
+        public ulong Timestamp(Buttons button) => Timestamp((int)button);
+
         public bool Down(int buttonIndex) => buttonIndex >= 0 && buttonIndex < ButtonCount && down[buttonIndex];
         public bool Down(Buttons button) => Down((int)button);
 
@@ -84,13 +87,13 @@ namespace Foster.Framework
         public bool Released(Buttons button) => Released((int)button);
 
         public float Axis(int axisIndex) => (axisIndex >= 0 && axisIndex < AxisCount) ? axis[axisIndex] : 0f;
-        public float Axis(ControllerAxis axis) => Axis((int)axis);
+        public float Axis(Axes axis) => Axis((int)axis);
 
         public Vector2 Axis(int axisX, int axisY) => new Vector2(Axis(axisX), Axis(axisY));
-        public Vector2 Axis(ControllerAxis axisX, ControllerAxis axisY) => new Vector2(Axis(axisX), Axis(axisY));
+        public Vector2 Axis(Axes axisX, Axes axisY) => new Vector2(Axis(axisX), Axis(axisY));
 
-        public Vector2 LeftStick => Axis(ControllerAxis.LeftX, ControllerAxis.LeftY);
-        public Vector2 RightStick => Axis(ControllerAxis.RightX, ControllerAxis.RightY);
+        public Vector2 LeftStick => Axis(Axes.LeftX, Axes.LeftY);
+        public Vector2 RightStick => Axis(Axes.RightX, Axes.RightY);
 
     }
 }

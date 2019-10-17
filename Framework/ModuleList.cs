@@ -52,7 +52,7 @@ namespace Foster.Framework
         public T Get<T>() where T : Module
         {
             if (!modulesByType.TryGetValue(typeof(T), out var module))
-                throw new Exception($"App is missing a Module of type {typeof(T).Name}");
+                throw new Exception($"App is does not have a {typeof(T).Name} Module registered");
 
             return (T)module;
         }

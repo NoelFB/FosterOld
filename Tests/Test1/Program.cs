@@ -35,31 +35,18 @@ namespace Test1
                 var win = App.System.CreateWindow("Hello!", 1280, 720);
                 win.OnClose += App.Exit;
 
-                context = App.System.CreateContext();
-
-                var thread = new Thread(new ThreadStart(Load));
-                thread.Start();
-
+                Load();
             }
 
             private void Load()
             {
-                App.System.SetCurrentContext(context);
-
                 font = new SpriteFont("RobotoMono-Medium.ttf", 128, Charsets.ASCII);
                 font.Charset['a'].Image.Texture.Filter = TextureFilter.Nearest;
-
-                var b = new Batch2D();
-                b.Rect(0, 0, 32, 32, Color.Red);
-                b.Render();
-                //b.Dispose();
-
-                context.Dispose();
             }
 
             protected override void Update()
             {
-                if (App.Input.State.Mouse.Pressed(MouseButtons.Left))
+                if (App.Input.Mouse.Pressed(MouseButtons.Left))
                     Dots.Add(App.System.Windows[0].Mouse);
             }
 
@@ -81,6 +68,10 @@ namespace Test1
                     {
                         batch.Rect(dot.X - 8, dot.Y - 8, 16, 16, Color.Red);
                     }
+
+                    var pos = new Vector2(128, 128) + App.Input.Controllers[0].LeftStick * 64f;
+
+                    batch.Rect(pos, new Vector2(8, 8), Color.Yellow);
 
                     batch.PushMatrix(new Vector2(p, p), Vector2.One * 3f, Vector2.Zero, 0f);
                     batch.Text(font, "Welcome to the world wide web\n\nI'm happy to be here :)", Color.White * 1.0f);

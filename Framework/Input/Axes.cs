@@ -1,7 +1,8 @@
 ﻿namespace Foster.Framework
 {
-    public enum ControllerAxis
+    public enum Axes
     {
+        None = -1,
         LeftX = 0,
         LeftY = 1,
         RightX = 2,

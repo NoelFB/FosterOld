@@ -20,9 +20,10 @@ namespace Foster.Framework
             controllers = new Controller[MaxControllers];
             for (int i = 0; i < controllers.Length; i++)
                 controllers[i] = new Controller();
+
+            Controllers = new ReadOnlyCollection<Controller>(controllers);
             Keyboard = new Keyboard();
             Mouse = new Mouse();
-            Controllers = new ReadOnlyCollection<Controller>(controllers);
         }
 
         internal void Step()
