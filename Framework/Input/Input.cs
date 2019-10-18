@@ -81,7 +81,7 @@ namespace Foster.Framework
 
         protected void OnJoystickButtonDown(uint index, uint button, ulong timestamp)
         {
-            if (index < InputState.MaxControllers)
+            if (index < InputState.MaxControllers && button < Controller.MaxButtons)
             {
                 nextState.Controllers[(int)index].down[button] = true;
                 nextState.Controllers[(int)index].pressed[button] = true;
@@ -91,7 +91,7 @@ namespace Foster.Framework
 
         protected void OnJoystickButtonUp(uint index, uint button, ulong timestamp)
         {
-            if (index < InputState.MaxControllers)
+            if (index < InputState.MaxControllers && button < Controller.MaxButtons)
             {
                 nextState.Controllers[(int)index].down[button] = false;
                 nextState.Controllers[(int)index].released[button] = true;
@@ -119,7 +119,7 @@ namespace Foster.Framework
 
         protected bool IsJoystickButtonDown(uint index, uint button)
         {
-            return (index < InputState.MaxControllers && nextState.Controllers[(int)index].down[button]);
+            return (index < InputState.MaxControllers && button < Controller.MaxButtons && nextState.Controllers[(int)index].down[button]);
         }
 
         protected bool IsGamepadButtonDown(uint index, Buttons button)
@@ -129,7 +129,7 @@ namespace Foster.Framework
 
         protected void OnJoystickAxis(uint index, uint axis, float value, ulong timestamp)
         {
-            if (index < InputState.MaxControllers)
+            if (index < InputState.MaxControllers && axis < Controller.MaxAxis)
             {
                 nextState.Controllers[(int)index].axis[axis] = value;
                 nextState.Controllers[(int)index].axisTimestamp[axis] = timestamp;
@@ -138,7 +138,7 @@ namespace Foster.Framework
 
         protected float GetJoystickAxis(uint index, uint axis)
         {
-            if (index < InputState.MaxControllers)
+            if (index < InputState.MaxControllers && axis < Controller.MaxAxis)
                 return nextState.Controllers[(int)index].axis[axis];
             return 0;
         }

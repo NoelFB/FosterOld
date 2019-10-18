@@ -29,6 +29,28 @@ namespace Foster.Framework
             Pixels = pixels;
         }
 
+        public Bitmap(Stream stream, ImageFormat format)
+        {
+            if (format.IsValid(stream))
+            {
+                if (format.Read(stream, out Width, out Height, out Pixels))
+                    return;
+            }
+
+            throw new Exception($"Stream is not a valid {format.Name} image format");
+        }
+
+        public Bitmap(Stream stream)
+        {
+            foreach (var format in ImageFormat.Formats)
+            {
+                if (format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels))
+                    return;
+            }
+
+            throw new NotImplementedException("Image stream is not a valid image format or is not implemented");
+        }
+
         public void Premultiply()
         {
             for (int i = 0; i < Pixels.Length; i++)

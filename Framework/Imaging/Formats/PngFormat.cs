@@ -49,30 +49,15 @@ namespace Foster.Framework
             }
         }
 
-        public override string Name => "PNG";
-
-        public override bool IsFormat(Stream stream)
+        public PngFormat() : base("PNG")
         {
-            return IsPng(stream);
+
         }
 
-        public override Bitmap Read(Stream stream)
-        {
-            if (Read(stream, out int width, out int height, out Color[] pixels, false))
-                return new Bitmap(width, height, pixels);
-
-            throw new Exception("Unable to read PNG from Stream");
-        }
-
-        public override void Write(Stream stream, Bitmap bitmap)
-        {
-            Write(stream, bitmap.Width, bitmap.Height, bitmap.Pixels);
-        }
-
-        public static bool IsPng(Stream stream)
+        public override bool IsValid(Stream stream)
         {
             // check PNG header
-            return
+            bool isPng =
                 stream.ReadByte() == header[0] && // 8-bit format
                 stream.ReadByte() == header[1] && // P
                 stream.ReadByte() == header[2] && // N
@@ -81,12 +66,16 @@ namespace Foster.Framework
                 stream.ReadByte() == header[5] && // Line Feed
                 stream.ReadByte() == header[6] && // Ctrl-Z
                 stream.ReadByte() == header[7];   // Line Feed
+
+            stream.Seek(-8, SeekOrigin.Current);
+
+            return isPng;
         }
 
         // This could likely be optimized a buuunch more
-        // We also ignore all checksums when reading because they don't seem super important for game usage
+        // We also ignore all checksums when reading because they don't seem super important f or game usage
 
-        public static unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels, bool premultiplyAlpha)
+        public override unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels)
         {
             width = height = 0;
 
@@ -107,8 +96,11 @@ namespace Foster.Framework
             bool hasIHDR = false, hasPLTE = false, hasIDAT = false;
 
             // Check PNG Header
-            if (!IsPng(stream))
+            if (!IsValid(stream))
                 throw new Exception("Stream is not PNG");
+
+            // Skip PNG header
+            stream.Seek(8, SeekOrigin.Current);
 
             // Read Chunks
             while (stream.Position < stream.Length)
@@ -380,7 +372,7 @@ namespace Foster.Framework
                 }
 
                 // premultiply alpha
-                if (hasTransparency && premultiplyAlpha)
+                /*if (hasTransparency && premultiplyAlpha)
                 {
                     for (int i = 0, l = width * height * 4; i < l; i += 4)
                     {
@@ -389,7 +381,7 @@ namespace Foster.Framework
                         buffer[i + 1] = (byte)((buffer[i + 1] * a + 0xFF) >> 8);
                         buffer[i + 2] = (byte)((buffer[i + 2] * a + 0xFF) >> 8);
                     }
-                }
+                }*/
 
                 // set RGBA data to Color array
                 {
@@ -406,7 +398,7 @@ namespace Foster.Framework
             return true;
         }
 
-        public static unsafe void Write(Stream stream, int width, int height, Color[] pixels)
+        public override unsafe bool Write(Stream stream, int width, int height, Color[] pixels)
         {
             const int MaxIDATChunkLength = 8192;
 
@@ -536,6 +528,7 @@ namespace Foster.Framework
 
             // IEND Chunk
             Chunk(writer, "IEND", new Span<byte>());
+            return true;
         }
 
         private static byte PaethPredictor(byte a, byte b, byte c)

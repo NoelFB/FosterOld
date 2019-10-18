@@ -87,6 +87,9 @@ namespace Foster.Framework
         /// </summary>
         public bool PowerOfTwo = false;
 
+
+        public int SourceImageCount { get; private set; } = 0;
+
         private class Source
         {
             public string Name;
@@ -127,6 +130,7 @@ namespace Foster.Framework
         private void AddSource(string name, int width, int height, Span<Color> pixels)
         {
             HasUnpackedData = true;
+            SourceImageCount++;
 
             var source = new Source(name);
             int top = 0, left = 0, right = width, bottom = height;
@@ -378,6 +382,7 @@ namespace Foster.Framework
         {
             sources.Clear();
             Packed = null;
+            SourceImageCount = 0;
             HasUnpackedData = false;
         }
 
