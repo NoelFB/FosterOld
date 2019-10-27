@@ -48,7 +48,7 @@ namespace Foster.Framework
                     return;
             }
 
-            throw new NotImplementedException("Image stream is not a valid image format or is not implemented");
+            throw new NotImplementedException("Stream is not a valid image format or is not implemented");
         }
 
         public void Premultiply()

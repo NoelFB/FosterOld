@@ -9,7 +9,7 @@ namespace Foster.GLFW
     public class GLFW_Input : Input
     {
 
-        private Stopwatch timer = new Stopwatch();
+        private readonly Stopwatch timer = new Stopwatch();
 
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState() 
         { 
@@ -35,11 +35,7 @@ namespace Foster.GLFW
         {
             base.Startup();
 
-            // TODO:
-            // Make GLFW_Input work even if the system is not a GLFW System
-
-            var system = App.System as GLFW_System;
-            if (system != null)
+            if (App.System is GLFW_System system)
             {
                 GLFW.SetKeyCallback(system.Contexts[0].Handle, OnKeyCallback);
                 GLFW.SetCharCallback(system.Contexts[0].Handle, OnCharCallback);
@@ -57,14 +53,19 @@ namespace Foster.GLFW
                     }
                 };
             }
+            else
+            {
+                // TODO:
+                // Make GLFW_Input work even if the system is not a GLFW System?
+
+                throw new NotSupportedException("GLFW_Input requires a GLFW_System to be registered");
+            }
 
             // find the already-connected joysticks
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
             {
                 if (GLFW.JoystickPresent(jid) != 0)
-                {
                     OnJoystickCallback(jid, GLFW_Enum.CONNECTED);
-                }
             }
         }
 

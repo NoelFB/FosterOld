@@ -7,22 +7,6 @@ namespace Foster.OpenGL
     {
         public readonly GL_Shader Shader;
         public readonly int Size;
-        public bool Dirty { get; private set; } = true;
-
-        private object? value = null;
-
-        public override object? Value
-        {
-            get => value;
-            set
-            {
-                if (this.value != value)
-                {
-                    this.value = value;
-                    Shader.dirty = Dirty = true;
-                }
-            }
-        }
 
         public GL_ShaderUniform(GL_Shader shader, string name, int size, int location, GLEnum type)
         {
@@ -44,11 +28,8 @@ namespace Foster.OpenGL
             }
         }
 
-        public unsafe void Upload(object? value = null)
+        public unsafe void Upload(object? value)
         {
-            if (value == null)
-                value = this.value;
-
             switch (Type)
             {
                 case UniformType.Int:
@@ -134,8 +115,6 @@ namespace Foster.OpenGL
                     GL.Uniform1i(Location, (int)(value ?? 0));
                     break;
             }
-
-            Dirty = false;
         }
     }
 }

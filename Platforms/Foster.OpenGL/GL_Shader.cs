@@ -7,7 +7,6 @@ namespace Foster.OpenGL
     {
 
         public readonly uint ID;
-        internal bool dirty = true;
 
         public GL_Shader(GL_Graphics graphics, string vertexSource, string fragmentSource) : base(graphics)
         {
@@ -19,9 +18,7 @@ namespace Foster.OpenGL
 
                 string? vertexError = GL.GetShaderInfoLog(vertex);
                 if (!string.IsNullOrEmpty(vertexError))
-                {
                     throw new Exception(vertexError);
-                }
             }
 
             // create fragment shader
@@ -32,9 +29,7 @@ namespace Foster.OpenGL
 
                 string? fragmentError = GL.GetShaderInfoLog(fragment);
                 if (!string.IsNullOrEmpty(fragmentError))
-                {
                     throw new Exception(fragmentError);
-                }
             }
 
             // create program
@@ -46,9 +41,7 @@ namespace Foster.OpenGL
 
                 string? programError = GL.GetProgramInfoLog(ID);
                 if (!string.IsNullOrEmpty(programError))
-                {
                     throw new Exception(programError);
-                }
             }
 
             // get uniforms
@@ -60,11 +53,6 @@ namespace Foster.OpenGL
 
                 GL_ShaderUniform uniform = new GL_ShaderUniform(this, name, size, location, type);
                 uniforms.Add(name, uniform);
-
-                if (uniform.Type == UniformType.Texture2D)
-                {
-                    textures.Add(uniform);
-                }
             }
 
             // dispose fragment and vertex shaders
@@ -74,44 +62,33 @@ namespace Foster.OpenGL
             GL.DeleteShader(fragment);
         }
 
-        public override void Use()
+        public void Use(Material material)
         {
             GL.UseProgram(ID);
 
-            // always rebind textures
-            for (int i = 0; i < textures.Count; i++)
-            {
-                uint id = (textures[i].Value as GL_Texture)?.ID ?? 0;
-
-                GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + i));
-                GL.BindTexture(GLEnum.TEXTURE_2D, id);
-            }
-
             // upload uniform values
-            if (dirty)
+            int textureSlot = 0;
+
+            foreach (var parameter in material.Parameters.Values)
             {
-                int textureSlot = 0;
+                if (!(parameter.Uniform is GL_ShaderUniform uniform))
+                    continue;
 
-                foreach (ShaderUniform uni in uniforms.Values)
+                if (uniform.Type == UniformType.Texture2D)
                 {
-                    if (!(uni is GL_ShaderUniform uniform))
-                        continue;
+                    var texture = parameter.Value as GL_Texture;
+                    var id = texture?.ID ?? 0;
 
-                    if (!uniform.Dirty)
-                        continue;
+                    GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));
+                    GL.BindTexture(GLEnum.TEXTURE_2D, id);
 
-                    if (uniform.Type == UniformType.Texture2D)
-                    {
-                        uniform.Upload(textureSlot);
-                        textureSlot++;
-                    }
-                    else
-                    {
-                        uniform.Upload();
-                    }
+                    uniform.Upload(textureSlot);
+                    textureSlot++;
                 }
-
-                dirty = false;
+                else
+                {
+                    uniform.Upload(parameter.Value);
+                }
             }
         }
 

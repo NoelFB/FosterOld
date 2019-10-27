@@ -11,7 +11,6 @@ namespace Foster.OpenGL
         internal List<uint> BuffersToDelete = new List<uint>();
         internal List<uint> ProgramsToDelete = new List<uint>();
         internal List<uint> TexturesToDelete = new List<uint>();
-
         internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
         internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
 

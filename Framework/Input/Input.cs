@@ -9,8 +9,8 @@ namespace Foster.Framework
         public string ApiName { get; protected set; } = "Unknown";
         public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
-        public InputState State { get; } = new InputState();
-        public InputState LastState { get; } = new InputState();
+        public readonly InputState State = new InputState();
+        public readonly InputState LastState = new InputState();
         private readonly InputState nextState = new InputState();
 
         public Keyboard Keyboard => State.Keyboard;

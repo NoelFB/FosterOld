@@ -94,6 +94,7 @@ void main(void)
         #endregion
 
         public readonly Shader DefaultShader;
+        public readonly Material DefaultMaterial;
         public readonly Mesh<Vertex> Mesh;
 
         public Matrix3x2 MatrixStack = Matrix3x2.Identity;
@@ -118,14 +119,16 @@ void main(void)
             public BlendMode BlendMode;
             public Matrix3x2 Matrix;
             public Texture? Texture;
+            public int Offset;
             public int Elements;
 
-            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix3x2 matrix, int elements)
+            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix3x2 matrix, int offset, int elements)
             {
                 Material = material;
                 BlendMode = blend;
                 Texture = texture;
                 Matrix = matrix;
+                Offset = offset;
                 Elements = elements;
             }
         }
@@ -138,6 +141,7 @@ void main(void)
         public Batch2D(Graphics graphics) : base(graphics)
         {
             DefaultShader = graphics.CreateShader(VertexSource, FragmentSource);
+            DefaultMaterial = new Material(DefaultShader);
             Mesh = graphics.CreateMesh<Vertex>();
 
             vertices = new Vertex[64];
@@ -158,7 +162,7 @@ void main(void)
         {
             vertexCount = 0;
             triangleCount = 0;
-            currentBatch = new Batch(null, BlendMode.Normal, null, Matrix3x2.Identity, 0);
+            currentBatch = new Batch(null, BlendMode.Normal, null, Matrix3x2.Identity, 0, 0);
             batches.Clear();
             matrixStack.Clear();
             MatrixStack = Matrix3x2.Identity;
@@ -170,6 +174,7 @@ void main(void)
         {
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
             Debug.Assert(!Disposed, "Batch was Disposed and cannot Render");
+            Debug.Assert(!Mesh.Disposed, "Batch Mesh was Disposed and cannont Render");
 
             if (batches.Count > 0 || currentBatch.Elements > 0)
             {
@@ -189,39 +194,28 @@ void main(void)
                     Matrix3x2.CreateTranslation(-1.0f, 1.0f);
 
                 // render batches
-                int start = 0;
                 for (int i = 0; i < batches.Count; i++)
-                {
-                    RenderBatch(batches[i], ortho, start);
-                    start += batches[i].Elements;
-                }
+                    RenderBatch(batches[i], ref ortho);
 
                 // remaining elements
                 if (currentBatch.Elements > 0)
-                {
-                    RenderBatch(currentBatch, ortho, start);
-                }
+                    RenderBatch(currentBatch, ref ortho);
             }
         }
 
-        private void RenderBatch(Batch batch, Matrix3x2 orthographic, int start = 0)
+        private void RenderBatch(Batch batch, ref Matrix3x2 orthographic)
         {
-            Shader shader = batch.Material?.Shader ?? DefaultShader;
-            Matrix3x2 world = batch.Matrix * orthographic;
-
-            // Apply the Parameters of the given material
-            batch.Material?.Apply();
-
-            // Set Texture & World Matrix to our own values
-            // The Material could also have these set ... but we don't care
-            if (shader.Textures.Count > 0)
-                shader.Textures[0].Value = batch.Texture;
-
-            shader.SetUniform("Matrix", world);
-            shader.Use();
-
+            // set BlendMode
             Graphics.BlendMode(batch.BlendMode);
-            Mesh.Draw(start, batch.Elements);
+
+            // Render the Mesh
+            // Note we apply the texture and matrix based on the current batch
+            // If the user set these on the Material themselves, they will be overwritten
+
+            Mesh.Material = batch.Material ?? DefaultMaterial;
+            Mesh.Material.SetTexture("Texture", batch.Texture);
+            Mesh.Material.SetMatrix("Matrix", batch.Matrix * orthographic);
+            Mesh.Draw(batch.Offset, batch.Elements);
         }
 
         #endregion
@@ -239,6 +233,7 @@ void main(void)
                 batches.Add(currentBatch);
 
                 currentBatch.Material = material;
+                currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
             }
         }
@@ -254,6 +249,7 @@ void main(void)
                 batches.Add(currentBatch);
 
                 currentBatch.BlendMode = blendmode;
+                currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
             }
         }
@@ -269,6 +265,7 @@ void main(void)
                 batches.Add(currentBatch);
 
                 currentBatch.Matrix = matrix;
+                currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
             }
         }
@@ -291,6 +288,7 @@ void main(void)
                 batches.Add(currentBatch);
 
                 currentBatch.Texture = texture;
+                currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
             }
         }

@@ -61,6 +61,10 @@ namespace Foster.OpenGL
         {
             if (BindVertexArray())
             {
+                // use the shader with the material parameters
+                if (Material != null && Material.Shader is GL_Shader shader)
+                    shader.Use(Material);
+
                 GL.BindBuffer(GLEnum.ARRAY_BUFFER, VertexBuffer);
                 GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, TriangleBuffer);
 

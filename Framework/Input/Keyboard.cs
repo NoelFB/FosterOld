@@ -31,8 +31,6 @@ namespace Foster.Framework
             Array.Fill(pressed, false);
             Array.Fill(released, false);
 
-            if (Text.Length > 0)
-                Console.WriteLine(Text.ToString());
             Text.Clear();
         }
 

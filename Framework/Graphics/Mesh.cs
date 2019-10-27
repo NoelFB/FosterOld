@@ -4,6 +4,8 @@ namespace Foster.Framework
 {
     public abstract class Mesh<TVertex> : GraphicsResource where TVertex : struct
     {
+        public Material? Material;
+
         protected Mesh(Graphics graphics) : base(graphics)
         {
             if (!VertexAttributeAttribute.TypeHasAttributes<TVertex>())
