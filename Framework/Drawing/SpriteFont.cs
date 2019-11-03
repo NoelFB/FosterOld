@@ -102,5 +102,34 @@ namespace Foster.Framework
             }
         }
 
+        public float WidthOf(string text)
+        {
+            return WidthOf(text.AsSpan());
+        }
+
+        public float WidthOf(ReadOnlySpan<char> text)
+        {
+            var width = 0f;
+            var line = 0f;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    if (line > width)
+                        width = line;
+                    line = 0;
+                    continue;
+                }
+
+                if (!Charset.TryGetValue(text[i], out var ch))
+                    continue;
+
+                line += ch.Advance;
+            }
+
+            return Math.Max(width, line);
+        }
+
     }
 }

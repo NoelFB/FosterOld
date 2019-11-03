@@ -14,10 +14,12 @@ namespace Foster.Framework
         public static bool Exiting { get; private set; } = false;
 
         public readonly static ModuleList Modules = new ModuleList();
+
         public static System System => Modules.Get<System>();
         public static Graphics Graphics => Modules.Get<Graphics>();
         public static Audio Audio => Modules.Get<Audio>();
         public static Input Input => Modules.Get<Input>();
+        public static Window? Window => System.Windows.Count > 0 ? System.Windows[0] : null;
 
         public static TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
 

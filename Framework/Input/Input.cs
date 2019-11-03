@@ -52,6 +52,7 @@ namespace Foster.Framework
         {
             nextState.Keyboard.down[key] = false;
             nextState.Keyboard.released[key] = true;
+
         }
         
         protected void OnMouseDown(MouseButtons button, ulong timestamp)

@@ -172,6 +172,11 @@ void main(void)
 
         public void Render()
         {
+            Render(Matrix3x2.Identity);
+        }
+
+        public void Render(Matrix3x2 matrix)
+        {
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
             Debug.Assert(!Disposed, "Batch was Disposed and cannot Render");
             Debug.Assert(!Mesh.Disposed, "Batch Mesh was Disposed and cannont Render");
@@ -189,32 +194,34 @@ void main(void)
                 Graphics.DepthTest(false);
                 Graphics.CullMode(Cull.None);
 
-                Matrix3x2 ortho =
+                var ortho =
                     Matrix3x2.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2) *
                     Matrix3x2.CreateTranslation(-1.0f, 1.0f);
 
+                var view = matrix * ortho;
+
                 // render batches
                 for (int i = 0; i < batches.Count; i++)
-                    RenderBatch(batches[i], ref ortho);
+                    RenderBatch(batches[i], ref view);
 
                 // remaining elements
                 if (currentBatch.Elements > 0)
-                    RenderBatch(currentBatch, ref ortho);
+                    RenderBatch(currentBatch, ref view);
             }
         }
 
-        private void RenderBatch(Batch batch, ref Matrix3x2 orthographic)
+        private void RenderBatch(Batch batch, ref Matrix3x2 matrix)
         {
             // set BlendMode
             Graphics.BlendMode(batch.BlendMode);
 
             // Render the Mesh
             // Note we apply the texture and matrix based on the current batch
-            // If the user set these on the Material themselves, they will be overwritten
+            // If the user set these on the Material themselves, they will be overwritten here
 
             Mesh.Material = batch.Material ?? DefaultMaterial;
             Mesh.Material.SetTexture("Texture", batch.Texture);
-            Mesh.Material.SetMatrix("Matrix", batch.Matrix * orthographic);
+            Mesh.Material.SetMatrix("Matrix", batch.Matrix * matrix);
             Mesh.Draw(batch.Offset, batch.Elements);
         }
 
@@ -650,9 +657,14 @@ void main(void)
 
         public void Text(SpriteFont font, string text, Color color)
         {
-            var position = new Vector2(0, font.Ascent + font.Descent);
+            Text(font, text.AsSpan(), color);
+        }
 
-            for (int i = 0; i < text.Length; i ++)
+        public void Text(SpriteFont font, ReadOnlySpan<char> text, Color color)
+        {
+            var position = new Vector2(0, font.Ascent);
+
+            for (int i = 0; i < text.Length; i++)
             {
                 if (text[i] == '\n')
                 {
