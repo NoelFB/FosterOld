@@ -16,6 +16,7 @@ namespace Foster.GLFW
 
         public override bool SupportsMultipleWindows => true;
         public event Action<GLFW_Window>? OnWindowCreated;
+        public event Action<GLFW_Window>? OnWindowClosed;
 
         public GLFW_System()
         {
@@ -92,6 +93,7 @@ namespace Foster.GLFW
                     {
                         if (windows[j].Context == context)
                         {
+                            OnWindowClosed?.Invoke((GLFW_Window)windows[j]);
                             windows[j].OnClose?.Invoke();
                             windows[j].Close();
                             windows.RemoveAt(j);

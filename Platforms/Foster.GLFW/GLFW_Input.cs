@@ -11,6 +11,11 @@ namespace Foster.GLFW
 
         private readonly Stopwatch timer = new Stopwatch();
 
+        // we need to keep track of delegates because otherwise they can be garbage collected
+        // and then the C++ GLFW stuff is calling garbage collected delegates. not good!
+        private readonly Dictionary<GLFW_Context, List<Delegate>> contextDelegates = new Dictionary<GLFW_Context, List<Delegate>>();
+        private readonly List<Delegate> contextlessDelegates = new List<Delegate>();
+
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState() 
         { 
             Buttons = new char[(int)GLFW_Enum.GAMEPAD_BUTTON_LAST + 1], 
@@ -37,20 +42,27 @@ namespace Foster.GLFW
 
             if (App.System is GLFW_System system)
             {
-                GLFW.SetKeyCallback(system.Contexts[0].Handle, OnKeyCallback);
-                GLFW.SetCharCallback(system.Contexts[0].Handle, OnCharCallback);
-                GLFW.SetMouseButtonCallback(system.Contexts[0].Handle, OnMouseCallback);
-                GLFW.SetJoystickCallback(OnJoystickCallback);
+                var context = system.Contexts[0];
+
+                GLFW.SetKeyCallback(context.Handle, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
+                GLFW.SetCharCallback(context.Handle, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
+                GLFW.SetMouseButtonCallback(context.Handle, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
+                GLFW.SetJoystickCallback(TrackDelegate<GLFW.JoystickFunc>(null, OnJoystickCallback));
 
                 system.OnWindowCreated += (window) =>
                 {
                     var context = (window.Context as GLFW_Context);
                     if (context != null)
                     {
-                        GLFW.SetKeyCallback(context.Handle, OnKeyCallback);
-                        GLFW.SetCharCallback(context.Handle, OnCharCallback);
-                        GLFW.SetMouseButtonCallback(context.Handle, OnMouseCallback);
+                        GLFW.SetKeyCallback(context.Handle, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
+                        GLFW.SetCharCallback(context.Handle, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
+                        GLFW.SetMouseButtonCallback(context.Handle, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
                     }
+                };
+
+                system.OnWindowClosed += (window) =>
+                {
+                    contextDelegates.Remove(window.context);
                 };
             }
             else
@@ -58,7 +70,7 @@ namespace Foster.GLFW
                 // TODO:
                 // Make GLFW_Input work even if the system is not a GLFW System?
 
-                throw new NotSupportedException("GLFW_Input requires a GLFW_System to be registered");
+                throw new NotSupportedException("GLFW_Input requires a GLFW_System");
             }
 
             // find the already-connected joysticks
@@ -67,6 +79,22 @@ namespace Foster.GLFW
                 if (GLFW.JoystickPresent(jid) != 0)
                     OnJoystickCallback(jid, GLFW_Enum.CONNECTED);
             }
+        }
+
+        private T TrackDelegate<T>(GLFW_Context? context, T method) where T : Delegate
+        {
+            if (context == null)
+            {
+                contextlessDelegates.Add(method);
+            }
+            else
+            {
+                if (!contextDelegates.TryGetValue(context, out var list))
+                    contextDelegates[context] = list = new List<Delegate>();
+                list.Add(method);
+            }
+
+            return method;
         }
 
         public override ulong Timestamp()
