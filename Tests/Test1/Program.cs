@@ -22,16 +22,17 @@ namespace Test1
         {
             private SpriteFont font;
             private ImguiContext imgui2;
+            private Window win;
 
             protected override void Startup()
             {
-                var win = App.System.CreateWindow("Hello!", 1280, 720);
+                win = App.System.CreateWindow("Hello!", 1280, 720);
                 win.OnRender += () => Render(win);
                 win.OnClose += App.Exit;
                 win.VSync = false;
 
-                font = new SpriteFont("RobotoMono-Medium.ttf", 64, Charsets.ASCII);
-
+                font = new SpriteFont("RobotoMono-Medium.ttf", 32, Charsets.ASCII);
+                
                 var enabled = true;
 
                 imgui2 = new ImguiContext(font);
@@ -100,6 +101,8 @@ namespace Test1
 
             protected override void Update()
             {
+                Console.WriteLine(win.PixelSize);
+                imgui2.ScreenBounds = new Rect(0, 0, 600, win.Context.BackbufferHeight);
                 imgui2.Update(App.Window!.Mouse);
             }
 

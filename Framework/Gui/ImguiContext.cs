@@ -160,12 +160,21 @@ namespace Foster.Framework
         }
 
         public Batch2D Batch;
+        public Vector2 PixelSize = Vector2.One;
+        public Action<ImguiContext>? Refresh;
+
         public Rect Bounds;
+        public Rect ScreenBounds
+        {
+            get => Bounds.Scale(PixelSize);
+            set => Bounds = value.Scale(1f / PixelSize);
+        }
+
         public Rect Scissor => group.Scissor;
+        public Rect ScreenScissor => group.Scissor.Scale(PixelSize);
+
         public Vector2 Mouse;
         public Vector2 DeltaMouse;
-        public Action<ImguiContext>? Refresh;
-        public Vector2 PixelSize = Vector2.One;
 
         public Stylesheet DefaultStyle;
         public Stylesheet Style => (styles.Count > 0 ? styles.Peek() : DefaultStyle);
@@ -176,7 +185,6 @@ namespace Foster.Framework
         public ID LastId;
 
         private Group group;
-
         private readonly Stack<Group> groups = new Stack<Group>();
         private readonly Stack<ID> ids = new Stack<ID>();
         private readonly Stack<Stylesheet> styles = new Stack<Stylesheet>();
@@ -219,13 +227,11 @@ namespace Foster.Framework
 
             // invoke refresh
             Batch.Clear();
-            Batch.PushMatrix(Matrix3x2.CreateScale(PixelSize));
             if (BeginGroup(0, 0))
             {
                 Refresh?.Invoke(this);
                 EndGroup();
             }
-            Batch.PopMatrix();
 
             // clear previous frame stored info with this frame's info
             lastStorage.Clear();
@@ -236,7 +242,7 @@ namespace Foster.Framework
 
         public void Render()
         {
-            Batch.Render();
+            Batch.Render(Matrix3x2.CreateScale(PixelSize));
         }
 
         public ID Id(UniqueInfo value) => LastId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : ID.Root));

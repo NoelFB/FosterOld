@@ -38,6 +38,16 @@ namespace Foster.Framework
             }
         }
 
+        public Vector2 Scale
+        {
+            get => new Vector2(M11, M22);
+            set
+            {
+                M11 = value.X;
+                M22 = value.Y;
+            }
+        }
+
         public Matrix3x2 Invert()
         {
             var det = (M11 * M22) - (M21 * M12);
