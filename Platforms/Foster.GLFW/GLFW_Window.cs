@@ -32,9 +32,11 @@ namespace Foster.GLFW
         {
             get
             {
-                IntPtr monitor = GLFW.GetWindowMonitor(context.Handle);
-                GLFW.GetMonitorContentScale(monitor, out float x, out float y);
-                return new Vector2(x, y);
+                var px = Vector2.One;
+                var monitor = GLFW.GetPrimaryMonitor();
+                if (monitor != IntPtr.Zero)
+                    GLFW.GetMonitorContentScale(monitor, out px.X, out px.Y);
+                return px;
             }
         }
 

@@ -165,6 +165,7 @@ namespace Foster.Framework
         public Vector2 Mouse;
         public Vector2 DeltaMouse;
         public Action<ImguiContext>? Refresh;
+        public Vector2 PixelSize = Vector2.One;
 
         public Stylesheet DefaultStyle;
         public Stylesheet Style => (styles.Count > 0 ? styles.Peek() : DefaultStyle);
@@ -192,16 +193,17 @@ namespace Foster.Framework
             DefaultStyle = new Stylesheet()
             {
                 Font = font,
-                FontSize = 32,
-                Spacing = 8,
-                ElementPadding = 8,
-                WindowPadding = 8,
+                FontSize = 16,
+                Spacing = 4,
+                ElementPadding = 4,
+                WindowPadding = 4,
                 TitleScale = 1.25f
             };
         }
 
         public void Update(Vector2 mouse)
         {
+            mouse /= PixelSize;
             DeltaMouse = mouse - Mouse;
             Mouse = mouse;
             HotId = ID.None;
@@ -215,15 +217,15 @@ namespace Foster.Framework
             group.Bounds = Bounds;
             group.Scissor = Bounds;
 
-            // clear our draw data
-            Batch.Clear();
-
             // invoke refresh
+            Batch.Clear();
+            Batch.PushMatrix(Matrix3x2.CreateScale(PixelSize));
             if (BeginGroup(0, 0))
             {
                 Refresh?.Invoke(this);
                 EndGroup();
             }
+            Batch.PopMatrix();
 
             // clear previous frame stored info with this frame's info
             lastStorage.Clear();
@@ -345,7 +347,7 @@ namespace Foster.Framework
                 group = new Group(id, scroll, bounds, screen, Style.WindowPadding, true);
 
                 // return true if we're visible
-                Batch.SetScissor(screen.Int());
+                Batch.SetScissor(screen.Scale(PixelSize).Int());
                 return true;
             }
             // keep track of scrolling value even if we're not displayed
@@ -372,7 +374,7 @@ namespace Foster.Framework
             if (group.ID != ID.Root)
                 group = groups.Pop();
 
-            Batch.SetScissor(group.Scissor.Int());
+            Batch.SetScissor(group.Scissor.Scale(PixelSize).Int());
         }
     }
 }

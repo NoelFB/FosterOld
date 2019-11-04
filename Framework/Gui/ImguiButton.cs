@@ -45,25 +45,31 @@ namespace Foster.Framework
 
         public static bool Button(this ImguiContext context, ImguiContext.UniqueInfo identifier, string label, Rect position)
         {
-            var style = context.Style;
-            var id = context.Id(identifier);
-            var result = context.ButtonBehaviour(id, position);
-            var scale = Vector2.One * style.FontScale;
-            var color = Color.White;
+            var result = false;
 
-            if (context.ActiveId == id)
+            if (position.Intersects(context.Scissor))
             {
-                color = Color.Red;
-            }
-            else if (context.HotId == id)
-            {
-                color = Color.Yellow;
-            }
+                var style = context.Style;
+                var id = context.Id(identifier);
+                var scale = Vector2.One * style.FontScale;
+                var color = Color.White;
 
-            context.Batch.Rect(position, color);
-            context.Batch.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
-            context.Batch.Text(style.Font, label, Color.Black);
-            context.Batch.PopMatrix();
+                result = context.ButtonBehaviour(id, position);
+
+                if (context.ActiveId == id)
+                {
+                    color = Color.Red;
+                }
+                else if (context.HotId == id)
+                {
+                    color = Color.Yellow;
+                }
+
+                context.Batch.Rect(position, color);
+                context.Batch.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
+                context.Batch.Text(style.Font, label, Color.Black);
+                context.Batch.PopMatrix();
+            }
 
             return result;
         }

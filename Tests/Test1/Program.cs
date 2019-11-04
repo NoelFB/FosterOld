@@ -26,7 +26,7 @@ namespace Test1
             protected override void Startup()
             {
                 var win = App.System.CreateWindow("Hello!", 1280, 720);
-                win.OnRender += Render;
+                win.OnRender += () => Render(win);
                 win.OnClose += App.Exit;
                 win.VSync = false;
 
@@ -35,7 +35,8 @@ namespace Test1
                 var enabled = true;
 
                 imgui2 = new ImguiContext(font);
-                imgui2.Bounds = new Rect(32, 32, 400, 800);
+                imgui2.PixelSize = Vector2.One * 2f;
+                imgui2.Bounds = new Rect(32, 32, 400, 400);
                 imgui2.Refresh = (imgui) =>
                 {
                     imgui.Title("Some nice Content");
@@ -44,8 +45,6 @@ namespace Test1
                     imgui.Row(3);
                     imgui.Button("Hello", ImguiContext.PreferredSize);
                     imgui.Button("What's up?");
-                    if (imgui.Button("OK"))
-                        Console.WriteLine("OK was pressed");
                     imgui.Separator();
                     imgui.Label("Other stuff");
 
@@ -104,7 +103,7 @@ namespace Test1
                 imgui2.Update(App.Window!.Mouse);
             }
 
-            void Render()
+            void Render(Window window)
             {
                 App.Graphics.Clear(0x113355);
                 imgui2.Render();

@@ -108,6 +108,16 @@ namespace Foster.Framework
             return new Rect(X - by, Y - by, Width + by * 2, Height + by * 2);
         }
 
+        public Rect Scale(float by)
+        {
+            return new Rect(X * by, Y * by, Width * by, Height * by);
+        }
+
+        public Rect Scale(Vector2 by)
+        {
+            return new Rect(X * by.X, Y * by.Y, Width * by.X, Height * by.Y);
+        }
+
         public void Project(Vector2 axis, out float min, out float max)
         {
             min = float.MaxValue;

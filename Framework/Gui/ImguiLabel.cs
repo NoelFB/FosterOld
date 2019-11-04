@@ -18,11 +18,14 @@ namespace Foster.Framework
 
         public static void Label(this ImguiContext context, ImguiContext.UniqueInfo identifier, string label, Rect position)
         {
-            var scale = Vector2.One * context.Style.FontScale;
+            if (position.Intersects(context.Scissor))
+            {
+                var scale = Vector2.One * context.Style.FontScale;
 
-            context.Batch.PushMatrix(new Vector2(position.X, position.Y + context.Style.ElementPadding), scale, Vector2.Zero, 0f);
-            context.Batch.Text(context.Style.Font, label, Color.White);
-            context.Batch.PopMatrix();
+                context.Batch.PushMatrix(new Vector2(position.X, position.Y + context.Style.ElementPadding), scale, Vector2.Zero, 0f);
+                context.Batch.Text(context.Style.Font, label, Color.White);
+                context.Batch.PopMatrix();
+            }
         }
     }
 }
