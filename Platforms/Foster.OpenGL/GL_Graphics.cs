@@ -171,6 +171,8 @@ namespace Foster.OpenGL
                 if (context != null)
                     Viewport = new RectInt(0, 0, context.BackbufferWidth, context.BackbufferHeight);
             }
+
+            DisableScissor();
         }
 
         public override void DepthTest(bool enabled)
@@ -224,6 +226,17 @@ namespace Foster.OpenGL
         {
             GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
             GL.Clear(GLEnum.COLOR_BUFFER_BIT);
+        }
+
+        public override void Scissor(RectInt scissor)
+        {
+            GL.Enable(GLEnum.SCISSOR_TEST);
+            GL.Scissor(scissor.X, viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);
+        }
+
+        public override void DisableScissor()
+        {
+            GL.Disable(GLEnum.SCISSOR_TEST);
         }
 
         /*internal void PerformInThreadSafeContext(Action action)

@@ -108,7 +108,7 @@ namespace Foster.Framework
                         window.Context.MakeCurrent();
 
                         Modules.BeforeRender(window);
-                        Modules.Render(window);
+                        window.OnRender?.Invoke();
                         Modules.AfterRender(window);
                     }
 

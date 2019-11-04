@@ -119,6 +119,7 @@ void main(void)
             public BlendMode BlendMode;
             public Matrix3x2 Matrix;
             public Texture? Texture;
+            public RectInt? Scissor;
             public int Offset;
             public int Elements;
 
@@ -128,6 +129,7 @@ void main(void)
                 BlendMode = blend;
                 Texture = texture;
                 Matrix = matrix;
+                Scissor = null;
                 Offset = offset;
                 Elements = elements;
             }
@@ -212,6 +214,11 @@ void main(void)
 
         private void RenderBatch(Batch batch, ref Matrix3x2 matrix)
         {
+            if (batch.Scissor != null)
+                Graphics.Scissor(batch.Scissor.Value);
+            else
+                Graphics.DisableScissor();
+
             // set BlendMode
             Graphics.BlendMode(batch.BlendMode);
 
@@ -277,11 +284,28 @@ void main(void)
             }
         }
 
-        public void SetState(Material? material, BlendMode blendmode, Matrix3x2 matrix)
+        public void SetScissor(RectInt? scissor)
+        {
+            if (currentBatch.Elements == 0)
+            {
+                currentBatch.Scissor = scissor;
+            }
+            else if (currentBatch.Scissor != scissor)
+            {
+                batches.Add(currentBatch);
+
+                currentBatch.Scissor = scissor;
+                currentBatch.Offset += currentBatch.Elements;
+                currentBatch.Elements = 0;
+            }
+        }
+
+        public void SetState(Material? material, BlendMode blendmode, Matrix3x2 matrix, RectInt? scissor)
         {
             SetMaterial(material);
             SetBlendMode(blendmode);
             SetMatrix(matrix);
+            SetScissor(scissor);
         }
 
         public void SetTexture(Texture? texture)

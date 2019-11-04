@@ -26,7 +26,9 @@ namespace Test1
             protected override void Startup()
             {
                 var win = App.System.CreateWindow("Hello!", 1280, 720);
+                win.OnRender += Render;
                 win.OnClose += App.Exit;
+                win.VSync = false;
 
                 font = new SpriteFont("RobotoMono-Medium.ttf", 64, Charsets.ASCII);
 
@@ -42,7 +44,8 @@ namespace Test1
                     imgui.Row(3);
                     imgui.Button("Hello", ImguiContext.PreferredSize);
                     imgui.Button("What's up?");
-                    imgui.Button("OK");
+                    if (imgui.Button("OK"))
+                        Console.WriteLine("OK was pressed");
                     imgui.Separator();
                     imgui.Label("Other stuff");
 
@@ -54,7 +57,15 @@ namespace Test1
                         imgui.PushIndent(32f);
                         imgui.Button("Hello!!");
                         imgui.Button("What's up?!");
-                        imgui.Button("OK interesting ...");
+                        imgui.Button("OK interesting ... 1");
+                        imgui.Button("OK interesting ... 2");
+                        imgui.Button("OK interesting ... 3");
+                        imgui.Button("OK interesting ... 4");
+                        imgui.Button("OK interesting ... 5");
+                        imgui.Button("OK interesting ... 6");
+                        imgui.Button("OK interesting ... 7");
+                        imgui.Button("OK interesting ... 8");
+                        imgui.Button("OK interesting ... 9");
                         imgui.PopIndent();
                     }
 
@@ -68,10 +79,22 @@ namespace Test1
                         imgui.EndHeader();
                     }
 
-                    imgui.BeginGroup("Hello", 200, true);
-                    imgui.Button("something");
-                    imgui.Button("another");
-                    imgui.EndGroup();
+                    if (imgui.BeginGroup("Hello", 190))
+                    {
+                        imgui.Button("something");
+                        imgui.Button("another1");
+                        imgui.Button("another2");
+                        imgui.Button("another3");
+                        imgui.Button("another4");
+                        imgui.Button("another5");
+                        imgui.Button("another6");
+                        imgui.Button("another7");
+                        imgui.EndGroup();
+                    }
+
+                    imgui.Button("another1");
+                    imgui.Button("another2");
+                    imgui.Button("another3");
                 };
 
             }
@@ -81,7 +104,7 @@ namespace Test1
                 imgui2.Update(App.Window!.Mouse);
             }
 
-            protected override void Render(Window window)
+            void Render()
             {
                 App.Graphics.Clear(0x113355);
                 imgui2.Render();

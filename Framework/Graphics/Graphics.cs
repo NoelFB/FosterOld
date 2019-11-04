@@ -31,6 +31,8 @@ namespace Foster.Framework
         public abstract void DepthTest(bool enabled);
         public abstract void CullMode(Cull mode);
         public abstract void BlendMode(BlendMode blendMode);
+        public abstract void Scissor(RectInt scissor);
+        public abstract void DisableScissor();
 
         protected Graphics()
         {
@@ -42,7 +44,7 @@ namespace Foster.Framework
             Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");
         }
 
-        protected internal override void Render(Window window)
+        protected internal override void BeforeRender(Window window)
         {
             Target(null);
             Clear(Color.Black);

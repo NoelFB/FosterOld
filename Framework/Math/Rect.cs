@@ -13,7 +13,7 @@ namespace Foster.Framework
         public float Y;
         public float Width;
         public float Height;
-        
+
         public float Left
         {
             get => X;
@@ -46,7 +46,7 @@ namespace Foster.Framework
             set => Height = value - Y;
         }
 
-        public float Area => Width * Height;
+        public float Area => Math.Abs(Width) * Math.Abs(Height);
 
         public Vector2 TopLeft => new Vector2(X, Y);
         public Vector2 TopRight => new Vector2(X + Width, Y);
@@ -81,6 +81,21 @@ namespace Foster.Framework
         public bool Intersects(Rect against)
         {
             return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
+        }
+
+        public Rect OverlapRect(Rect against)
+        {
+            if (Intersects(against))
+            {
+                var overlap = new Rect();
+                overlap.Left = Math.Max(Left, against.Left);
+                overlap.Top = Math.Max(Top, against.Top);
+                overlap.Right = Math.Min(Right, against.Right);
+                overlap.Bottom = Math.Min(Bottom, against.Bottom);
+                return overlap;
+            }
+
+            return new Rect(0, 0, 0, 0);
         }
 
         public RectInt Int()

@@ -45,6 +45,8 @@ namespace Foster.Framework
         {
             public ID ID;
             public Rect Bounds;
+            public Rect Scissor;
+            public Vector2 Scroll;
 
             public bool Overflow;
             public float Padding;
@@ -60,10 +62,12 @@ namespace Foster.Framework
             public float InnerWidth => Bounds.Width - Padding * 2f;
             public float InnerHeight => RowOffset + RowHeight + Padding * 2f;
 
-            public Group(ID id, Rect bounds, float padding, bool overflow)
+            public Group(ID id, Vector2 scroll, Rect bounds, Rect screenBounds, float padding, bool overflow)
             {
                 ID = id;
+                Scroll = scroll;
                 Bounds = bounds;
+                Scissor = screenBounds;
                 Columns = 0;
                 Row = 0;
                 Column = 0;
@@ -123,9 +127,9 @@ namespace Foster.Framework
                 // smaller than zero width
                 if (cellWidth < 0)
                     cellWidth = 0;
-                
+
                 // position
-                var position = new Rect(Bounds.X + Padding + ColumnOffset, Bounds.Y + Padding + RowOffset, cellWidth, height);
+                var position = new Rect(Bounds.X + Padding + ColumnOffset - Scroll.X, Bounds.Y + Padding + RowOffset - Scroll.Y, cellWidth, height);
 
                 // setup for next cell
                 ColumnOffset += cellWidth;
@@ -136,10 +140,11 @@ namespace Foster.Framework
             }
         }
 
-        private struct Storage
+        public struct Storage
         {
             public bool Toggled;
             public float InnerHeight;
+            public Vector2 Scroll;
         }
 
         public struct Stylesheet
@@ -156,7 +161,9 @@ namespace Foster.Framework
 
         public Batch2D Batch;
         public Rect Bounds;
+        public Rect Scissor => group.Scissor;
         public Vector2 Mouse;
+        public Vector2 DeltaMouse;
         public Action<ImguiContext>? Refresh;
 
         public Stylesheet DefaultStyle;
@@ -195,6 +202,7 @@ namespace Foster.Framework
 
         public void Update(Vector2 mouse)
         {
+            DeltaMouse = mouse - Mouse;
             Mouse = mouse;
             HotId = ID.None;
 
@@ -204,14 +212,18 @@ namespace Foster.Framework
             styles.Clear();
             ids.Clear();
             groups.Clear();
+            group.Bounds = Bounds;
+            group.Scissor = Bounds;
 
             // clear our draw data
             Batch.Clear();
 
             // invoke refresh
-            BeginGroup(0, 0);
-            Refresh?.Invoke(this);
-            EndGroup();
+            if (BeginGroup(0, 0))
+            {
+                Refresh?.Invoke(this);
+                EndGroup();
+            }
 
             // clear previous frame stored info with this frame's info
             lastStorage.Clear();
@@ -225,12 +237,15 @@ namespace Foster.Framework
             Batch.Render();
         }
 
-        #region Layout
-
         public ID Id(UniqueInfo value) => LastId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : ID.Root));
 
-        public void PushId(ID id) => ids.Push(id);
-        public void PushId(UniqueInfo info) => ids.Push(Id(info));
+        public ID PushId(ID id)
+        {
+            ids.Push(id);
+            return id;
+        }
+
+        public ID PushId(UniqueInfo info) => PushId(Id(info));
         public void PopId() => ids.Pop();
 
         public void PushStyle(Stylesheet style) => styles.Push(style);
@@ -248,189 +263,116 @@ namespace Foster.Framework
         public void Separator(float height) => Cell(height);
         public void Separator(float width, float height) => Cell(width, height);
 
-        private void Store(ID id, Storage info) => nextStorage[id] = info;
-        private bool Stored(ID id) => lastStorage.ContainsKey(id);
-        private bool Stored(ID id, out Storage info) => lastStorage.TryGetValue(id, out info);
+        public void Store(ID id, Storage info) => nextStorage[id] = info;
+        public bool Stored(ID id) => lastStorage.ContainsKey(id);
+        public bool Stored(ID id, out Storage info) => lastStorage.TryGetValue(id, out info);
 
-        public void BeginGroup(UniqueInfo info, float height, bool fitToChildren = false)
+        /// <summary>
+        /// Returns True of the Group is visible
+        /// Do not call EndGroup if this is false
+        /// </summary>
+        public bool BeginGroup(UniqueInfo info, float height, bool fitToChildren = false)
         {
-            var id = Id(info);
-            PushId(id);
+            var id = PushId(info);
 
-            if (fitToChildren && Stored(id, out var last))
-                height = last.InnerHeight;
+            // get inner height from last frame
+            var innerHeight = 0f;
+            var scroll = Vector2.Zero;
+            if (Stored(id, out var last))
+            {
+                innerHeight = last.InnerHeight;
+                scroll = last.Scroll;
+            }
 
+            // determine bounds
             Rect bounds;
+            Rect screen;
             if (id == ID.Root)
             {
                 bounds = Bounds;
+                screen = Bounds;
             }
             else
             {
+                if (fitToChildren && innerHeight > 0f)
+                    height = innerHeight;
+
                 bounds = Cell(height);
-                groups.Push(group);
+                screen = group.Bounds.OverlapRect(bounds);
             }
 
-            group = new Group(id, bounds, Style.WindowPadding, true);
+            // only do group if we're visible
+            if (screen.Area > 0)
+            {
+                // push last group onto stack
+                if (id != ID.Root)
+                    groups.Push(group);
 
-            Batch.Rect(bounds, Color.White * 0.2f);
+                // draw bg
+                Batch.Rect(bounds, Color.White * 0.2f);
+
+                // handle vertical scrolling
+                if (innerHeight > bounds.Height)
+                {
+                    bounds.Width -= 16;
+
+                    scroll.Y = Calc.Clamp(scroll.Y, 0, innerHeight - bounds.Height);
+
+                    var scrollId = Id("Scroll-Y");
+                    var scrollRect = VerticalScrollBar(bounds, scroll, innerHeight);
+                    var buttonRect = scrollRect.OverlapRect(screen);
+
+                    if (buttonRect.Area > 0)
+                    {
+                        ImguiButton.ButtonBehaviour(this, scrollId, buttonRect);
+
+                        if (ActiveId == scrollId)
+                        {
+                            var relativeSpeed = (bounds.Height / scrollRect.Height);
+                            scroll.Y = Calc.Clamp(scroll.Y + DeltaMouse.Y * relativeSpeed, 0, innerHeight - bounds.Height);
+                            scrollRect = VerticalScrollBar(bounds, scroll, innerHeight);
+                        }
+
+                        Batch.Rect(scrollRect, Color.Red);
+                    }
+
+                    screen.Width -= 16;
+                }
+                else
+                    scroll.Y = 0;
+
+                // create next group
+                group = new Group(id, scroll, bounds, screen, Style.WindowPadding, true);
+
+                // return true if we're visible
+                Batch.SetScissor(screen.Int());
+                return true;
+            }
+            // keep track of scrolling value even if we're not displayed
+            else
+            {
+                Store(id, new Storage() { InnerHeight = innerHeight, Scroll = scroll });
+                return false;
+            }
+        }
+
+        private Rect VerticalScrollBar(Rect bounds, Vector2 scroll, float innerHeight)
+        {
+            var barH = bounds.Height * (bounds.Height / innerHeight);
+            var barY = (bounds.Height - barH) * (scroll.Y / (innerHeight - bounds.Height));
+
+            return new Rect(bounds.Right + 2f, bounds.Y + barY, 14f, barH);
         }
 
         public void EndGroup()
         {
-            Store(group.ID, new Storage() { InnerHeight = group.InnerHeight });
+            Store(group.ID, new Storage() { InnerHeight = group.InnerHeight, Scroll = group.Scroll });
             PopId();
 
             if (group.ID != ID.Root)
                 group = groups.Pop();
+
+            Batch.SetScissor(group.Scissor.Int());
         }
-
-        #endregion
-
-        #region Button
-
-        private bool ButtonBehaviour(ID id, Rect position)
-        {
-            var performPress = false;
-
-            if (position.Contains(Mouse))
-                HotId = id;
-
-            if (HotId == id && App.Input.Mouse.Pressed(MouseButtons.Left))
-                ActiveId = id;
-
-            if (ActiveId == id && App.Input.Mouse.Released(MouseButtons.Left))
-            {
-                if (HotId == id)
-                    performPress = true;
-                ActiveId = ID.None;
-            }
-
-            return performPress;
-        }
-
-        public bool Button(string label, float width = 0f, float height = 0f)
-        {
-            return Button(label, label, width, height);
-        }
-
-        public bool Button(UniqueInfo identifier, string label, float width = 0f, float height = 0f)
-        {
-            if (width == PreferredSize)
-                width = Style.Font.WidthOf(label) * Style.FontScale + Style.ElementPadding * 2f;
-            if (height == 0f)
-                height = Style.FontSize + Style.ElementPadding * 2;
-
-            return Button(identifier, label, Cell(width, height));
-        }
-
-        public bool Button(UniqueInfo identifier, string label, Rect position)
-        {
-            var id = Id(identifier);
-            var result = ButtonBehaviour(id, position);
-            var scale = Vector2.One * Style.FontScale;
-            var color = Color.White;
-
-            if (ActiveId == id)
-            {
-                color = Color.Red;
-            }
-            else if (HotId == id)
-            {
-                color = Color.Yellow;
-            }
-
-            Batch.Rect(position, color);
-            Batch.PushMatrix(new Vector2(position.X + Style.ElementPadding, position.Y + Style.ElementPadding), scale, Vector2.Zero, 0f);
-            Batch.Text(Style.Font, label, Color.Black);
-            Batch.PopMatrix();
-
-            return result;
-        }
-
-        #endregion
-
-        #region Header
-
-        public bool Header(string label, bool startOpen = false)
-        {
-            var toggle = Button(label);
-            var id = LastId;
-            var enabled = (Stored(id, out var info) && info.Toggled) || (!Stored(id) && startOpen);
-
-            if (toggle)
-                enabled = !enabled;
-
-            Store(id, new Storage() { Toggled = enabled });
-
-            if (enabled)
-            {
-                PushId(id);
-                PushIndent(30f);
-            }
-
-            return enabled;
-        }
-
-        public void EndHeader()
-        {
-            PopIndent();
-            PopId();
-        }
-
-        #endregion
-
-        #region Label
-
-        public void Label(string label)
-        {
-            Label(label, label);
-        }
-
-        public void Label(UniqueInfo identifier, string label)
-        {
-            Label(identifier, label, Cell(Style.FontSize + Style.ElementPadding * 2f));
-        }
-
-        public void Label(UniqueInfo identifier, string label, Rect position)
-        {
-            var scale = Vector2.One * Style.FontScale;
-
-            Batch.PushMatrix(new Vector2(position.X, position.Y + Style.ElementPadding), scale, Vector2.Zero, 0f);
-            Batch.Text(Style.Font, label, Color.White);
-            Batch.PopMatrix();
-        }
-
-        #endregion
-
-        #region Title
-
-        public void Title(string label)
-        {
-            Title(label, label);
-        }
-
-        public void Title(UniqueInfo identifier, string label)
-        {
-            Title(identifier, label, Cell(Style.FontSize * Style.TitleScale + Style.ElementPadding * 2f));
-        }
-
-        public void Title(UniqueInfo identifier, string label, Rect position)
-        {
-            var scale = Vector2.One * Style.FontScale * Style.TitleScale;
-
-            Batch.PushMatrix(new Vector2(position.X, position.Y + Style.ElementPadding), scale, Vector2.Zero, 0f);
-            Batch.Text(Style.Font, label, Color.White);
-            Batch.PopMatrix();
-            Batch.Rect(position.X, position.Bottom - 4, position.Width, 4, Color.White);
-        }
-
-        #endregion
-
-        #region Textbox
-
-
-
-        #endregion
     }
 }

@@ -95,12 +95,6 @@ namespace Foster.Framework
                 module.BeforeRender(window);
         }
 
-        internal void Render(Window window)
-        {
-            foreach (var module in modules)
-                module.Render(window);
-        }
-
         internal void AfterRender(Window window) 
         {
             foreach (var module in modules)
