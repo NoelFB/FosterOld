@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -186,6 +187,8 @@ namespace Foster.GLFW
                 GLFW.MakeContextCurrent(IntPtr.Zero);
             }
         }
+
+        public override string AppDirectory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
     }
 
 }

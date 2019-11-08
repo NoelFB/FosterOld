@@ -54,6 +54,11 @@ namespace Foster.Framework
         public abstract void SetCurrentContext(Context? context);
 
         /// <summary>
+        /// The application directory
+        /// </summary>
+        public abstract string AppDirectory { get; }
+
+        /// <summary>
         /// Gets a Pointer to a Platform rendering method of the given name
         /// This is used internally by the Graphics
         /// </summary>

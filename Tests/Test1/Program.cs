@@ -27,7 +27,8 @@ namespace Test1
         {
             var enabled = false;
 
-            var font = new SpriteFont("RobotoMono-Medium.ttf", 64, Charsets.ASCII);
+            Console.WriteLine(App.System.AppDirectory);
+            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "RobotoMono-Medium.ttf"), 64, Charsets.ASCII);
 
             var gui = App.Modules.Register(new Gui(font, "Hello!", 1280, 720));
             gui.Workspace.OnClose = App.Exit;
@@ -35,8 +36,6 @@ namespace Test1
             var panel = gui.CreatePanel("Something", new RectInt(32, 32, 400, 500));
             panel.Imgui.Refresh = (imgui) =>
             {
-                Console.WriteLine(gui.Workspace.Bounds);
-
                 imgui.Title("Some nice Content");
                 imgui.Label("Lot's to talk about here ...");
 
