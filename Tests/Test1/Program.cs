@@ -35,6 +35,8 @@ namespace Test1
             var panel = gui.CreatePanel("Something", new RectInt(32, 32, 400, 500));
             panel.Imgui.Refresh = (imgui) =>
             {
+                Console.WriteLine(gui.Workspace.Bounds);
+
                 imgui.Title("Some nice Content");
                 imgui.Label("Lot's to talk about here ...");
 

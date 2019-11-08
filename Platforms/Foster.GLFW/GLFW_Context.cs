@@ -25,7 +25,7 @@ namespace Foster.GLFW
 
         public override bool Disposed => disposed;
 
-        public override int BackbufferWidth
+        public override int Width
         {
             get
             {
@@ -37,7 +37,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override int BackbufferHeight
+        public override int Height
         {
             get
             {

@@ -169,7 +169,7 @@ namespace Foster.OpenGL
             {
                 var context = App.System.GetCurrentContext();
                 if (context != null)
-                    Viewport = new RectInt(0, 0, context.BackbufferWidth, context.BackbufferHeight);
+                    Viewport = new RectInt(0, 0, context.Width, context.Height);
             }
 
             DisableScissor();

@@ -23,9 +23,11 @@ namespace Foster.Framework
 
         public void Update()
         {
-            Imgui.PixelSize = Gui.Workspace.PixelSize;
+            Imgui.DefaultStyle.Font = Gui.Font;
+            Imgui.PixelSize = Gui.Workspace.PixelScale;
             Imgui.Bounds = Bounds;
-            Imgui.Update(Gui.Workspace.Mouse);
+
+            Imgui.Update(Gui.Workspace.Mouse * Gui.Workspace.PixelScale);
         }
 
         public void Render()

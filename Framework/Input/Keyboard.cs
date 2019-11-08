@@ -6,7 +6,11 @@ namespace Foster.Framework
 {
     public class Keyboard
     {
-        public const int MaxKeys = 300;
+        // TODO
+        // find a better way to store the key state
+        // because giant arrays is dumb
+
+        public const int MaxKeys = 400;
 
         internal readonly bool[] pressed = new bool[MaxKeys];
         internal readonly bool[] down = new bool[MaxKeys];

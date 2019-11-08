@@ -9,20 +9,11 @@ namespace Foster.GLFW
 {
     public class GLFW_System : Framework.System
     {
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetProcessDPIAware();
-
         public List<GLFW_Context> Contexts = new List<GLFW_Context>();
 
         public override bool SupportsMultipleWindows => true;
         public event Action<GLFW_Window>? OnWindowCreated;
         public event Action<GLFW_Window>? OnWindowClosed;
-
-        public GLFW_System()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                SetProcessDPIAware();
-        }
 
         protected override void Initialized()
         {

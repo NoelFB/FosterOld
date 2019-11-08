@@ -42,7 +42,6 @@ namespace Foster.Framework
                 type = type.BaseType;
             }
 
-
             modules.Add(module);
             module.Registered = true;
             module.MainThreadId = Thread.CurrentThread.ManagedThreadId;

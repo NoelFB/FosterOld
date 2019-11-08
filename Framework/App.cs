@@ -109,15 +109,8 @@ namespace Foster.Framework
                         if (!window.Opened)
                             continue;
 
-                        window.Context.MakeCurrent();
-
-                        Modules.BeforeRender(window);
-                        window.OnRender?.Invoke();
-                        Modules.AfterRender(window);
+                        Redraw(window);
                     }
-
-                    foreach (var window in System.Windows)
-                        window.Present();
                 }
 
                 if (!Exiting)
@@ -139,6 +132,15 @@ namespace Foster.Framework
             Modules.Shutdown();
             Modules.Clear();
             Exiting = false;
+        }
+
+        public static void Redraw(Window window)
+        {
+            window.Context.MakeCurrent();
+            Modules.BeforeRender(window);
+            window.OnRender?.Invoke();
+            Modules.AfterRender(window);
+            window.Present();
         }
 
         private static void Update()

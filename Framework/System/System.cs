@@ -29,6 +29,8 @@ namespace Foster.Framework
         
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
+        /// Note that on High DPI displays the given width and height may not match
+        /// the resulting Window size.
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, bool visible = true);
 

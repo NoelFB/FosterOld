@@ -1,5 +1,7 @@
 ﻿using Foster.Framework;
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Foster.GLFW
 {
@@ -18,17 +20,62 @@ namespace Foster.GLFW
                 GLFW.GetWindowPos(context.Handle, out int x, out int y);
                 GLFW.GetWindowSize(context.Handle, out int w, out int h);
 
+                // glfwGetWindowSize returns different results depending on the platform and DPI.
+                // Ex. if our Content Scale is 2, on OSX a Window created at 1280x1080 will still
+                // return 1280x1080, where as on Windows and Linux this will return 2560x2160
+                
+                // The Foster API expects the OSX behaviour across platforms, so we must scale these
+                // values based on the Content Scale
+
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
+
+                    x = (int)(x / scaleX);
+                    y = (int)(y / scaleY);
+                    w = (int)(w / scaleX);
+                    h = (int)(h / scaleY);
+                }
+
                 return new RectInt(x, y, w, h);
             }
 
             set
             {
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
+
+                    value.X = (int)(value.X * scaleX);
+                    value.Y = (int)(value.Y * scaleY);
+                    value.Width = (int)(value.Width * scaleX);
+                    value.Height = (int)(value.Height * scaleY);
+                }
+
                 GLFW.SetWindowPos(context.Handle, value.X, value.Y);
                 GLFW.SetWindowSize(context.Handle, value.Width, value.Height);
             }
         }
 
-        public override Vector2 PixelSize
+        public override Vector2 Mouse
+        {
+            get
+            {
+                GLFW.GetCursorPos(context.Handle, out var xpos, out var ypos);
+
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
+
+                    xpos = (xpos / scaleX);
+                    ypos = (ypos / scaleY);
+                }
+
+                return new Vector2((float)xpos, (float)ypos);
+            }
+        }
+
+        public override Vector2 PixelScale
         {
             get
             {
@@ -82,14 +129,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Vector2 Mouse
-        {
-            get
-            {
-                GLFW.GetCursorPos(context.Handle, out var xpos, out var ypos);
-                return new Vector2((float)xpos, (float)ypos);
-            }
-        }
+        private GLFW.WindowSizeFunc windowSizeCallbackRef;
 
         public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible)
         {
@@ -101,6 +141,20 @@ namespace Foster.GLFW
 
             System.SetCurrentContext(context);
             GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
+            GLFW.SetWindowSizeCallback(context.Handle, windowSizeCallbackRef = OnWindowResize);
+        }
+
+        private void OnWindowResize(GLFW.Window window, int width, int height)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
+
+                width = (int)(width / scaleX);
+                height = (int)(height / scaleY);
+            }
+
+            OnResize?.Invoke(width, height);
         }
 
         public override void Present()
