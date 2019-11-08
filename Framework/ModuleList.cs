@@ -12,29 +12,46 @@ namespace Foster.Framework
         private readonly List<Module> modules = new List<Module>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
 
-        public void Register<T>() where T : Module
+        public T Register<T>() where T : Module
         {
-            Register(typeof(T));
+            return Register(Activator.CreateInstance<T>());
         }
 
-        public void Register(Type type)
+        public Module Register(Type type)
         {
             if (!(Activator.CreateInstance(type) is Module module))
                 throw new Exception("Type must inheirt from Module");
 
+            return Register(module);
+        }
+
+        public T Register<T>(T module) where T : Module
+        {
+            if (module.Registered)
+                throw new Exception("Module is already registered");
+
             // add Module to lookup
+            var type = module.GetType();
             while (type != typeof(Module))
             {
-                modulesByType.Add(type, module);
+                modulesByType[type] = module;
 
                 if (type.BaseType == null)
                     break;
+
                 type = type.BaseType;
             }
 
+
             modules.Add(module);
+            module.Registered = true;
             module.MainThreadId = Thread.CurrentThread.ManagedThreadId;
-            module.Created();
+            module.Initialized();
+
+            if (App.Running)
+                module.Startup();
+
+            return module;
         }
 
         public bool TryGet<T>(out T? module) where T : Module
@@ -57,54 +74,59 @@ namespace Foster.Framework
             return (T)module;
         }
 
+        public bool Has<T>() where T : Module
+        {
+            return modulesByType.ContainsKey(typeof(T));
+        }
+
         internal void Startup()
         {
             modules.Sort((a, b) => a.Priority - b.Priority);
 
-            foreach (var module in modules)
-                module.Startup();
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].Startup();
         }
 
         internal void Shutdown()
         {
-            foreach (var module in modules)
-                module.Shutdown();
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].Shutdown();
         }
 
         internal void BeforeUpdate() 
         {
-            foreach (var module in modules)
-                module.BeforeUpdate();
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].BeforeUpdate();
         }
 
         internal void Update() 
         {
-            foreach (var module in modules)
-                module.Update();
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].Update();
         }
 
         internal void AfterUpdate() 
         {
-            foreach (var module in modules)
-                module.AfterUpdate();
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].AfterUpdate();
         }
 
         internal void BeforeRender(Window window) 
         {
-            foreach (var module in modules)
-                module.BeforeRender(window);
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].BeforeRender(window);
         }
 
         internal void AfterRender(Window window) 
         {
-            foreach (var module in modules)
-                module.AfterRender(window);
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].AfterRender(window);
         }
 
         internal void Tick()
         {
-            foreach (var module in modules)
-                module.Tick();
+            for (int i = 0; i < modules.Count; i++)
+                modules[i].Tick();
         }
 
         public void Clear()

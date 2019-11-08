@@ -23,7 +23,7 @@ namespace Foster.Framework
 
         public static TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
 
-        public static void Start()
+        public static void Start(Action? callback = null)
         {
             if (Running)
                 throw new Exception("App is already running");
@@ -31,16 +31,19 @@ namespace Foster.Framework
             if (Exiting)
                 throw new Exception("App is still exiting");
 
+            if (!Modules.Has<System>())
+                throw new Exception("App requires a System Module to be registered before it can Start");
+
             Console.WriteLine($"FOSTER {Version}");
 
             Modules.Startup();
+            Running = true;
+            callback?.Invoke();
             Run();
         }
 
         private static void Run()
         {
-            Running = true;
-
             // timer
             var framecount = 0;
             var frameticks = 0L;
@@ -99,6 +102,7 @@ namespace Foster.Framework
                 }
 
                 // render
+                if (!Exiting)
                 {
                     foreach (var window in System.Windows)
                     {
@@ -116,16 +120,19 @@ namespace Foster.Framework
                         window.Present();
                 }
 
-                // determine fps
-                framecount++;
-                if (TimeSpan.FromTicks(timer.Elapsed.Ticks - frameticks).TotalSeconds >= 1)
+                if (!Exiting)
                 {
-                    Time.FPS = framecount;
-                    frameticks = timer.Elapsed.Ticks;
-                    framecount = 0;
-                }
+                    // determine fps
+                    framecount++;
+                    if (TimeSpan.FromTicks(timer.Elapsed.Ticks - frameticks).TotalSeconds >= 1)
+                    {
+                        Time.FPS = framecount;
+                        frameticks = timer.Elapsed.Ticks;
+                        framecount = 0;
+                    }
 
-                Modules.Tick();
+                    Modules.Tick();
+                }
             }
             
             // finalize

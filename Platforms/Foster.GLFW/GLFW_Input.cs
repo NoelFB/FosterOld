@@ -22,7 +22,7 @@ namespace Foster.GLFW
             Axes = new float[(int)GLFW_Enum.GAMEPAD_AXIS_LAST + 1]
         };
 
-        protected override void Created()
+        protected override void Initialized()
         {
             timer.Start();
 
@@ -33,7 +33,7 @@ namespace Foster.GLFW
                 ApiVersion = new Version(major, minor, rev);
             }
 
-            base.Created();
+            base.Initialized();
         }
 
         protected override void Startup()

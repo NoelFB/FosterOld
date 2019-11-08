@@ -16,12 +16,12 @@ namespace Foster.OpenGL
 
         internal List<Context> disposedContexts = new List<Context>();
 
-        protected override void Created()
+        protected override void Initialized()
         {
             Api = GraphicsApi.OpenGL;
             ApiName = "OpenGL";
 
-            base.Created();
+            base.Initialized();
         }
 
         protected override void Startup()

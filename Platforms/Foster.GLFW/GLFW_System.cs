@@ -24,7 +24,7 @@ namespace Foster.GLFW
                 SetProcessDPIAware();
         }
 
-        protected override void Created()
+        protected override void Initialized()
         {
             // get API info
             {
@@ -33,7 +33,7 @@ namespace Foster.GLFW
                 ApiVersion = new Version(major, minor, rev);
             }
 
-            base.Created();
+            base.Initialized();
         }
 
         protected override void Startup()

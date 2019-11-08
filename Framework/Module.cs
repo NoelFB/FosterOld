@@ -9,7 +9,9 @@
         protected internal int Priority = 10000;
         protected internal int MainThreadId = 0;
 
-        protected internal virtual void Created() { }
+        internal bool Registered = false;
+
+        protected internal virtual void Initialized() { }
         protected internal virtual void Startup() { }
         protected internal virtual void Shutdown() { }
 

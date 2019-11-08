@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Foster.Framework
@@ -23,12 +24,13 @@ namespace Foster.Framework
 
             public override bool Equals(object? obj) => obj != null && (obj is ID id) && (this == id);
             public override int GetHashCode() => Identifier;
+            public override string ToString() => Identifier.ToString();
 
             public static bool operator ==(ID a, ID b) => a.Identifier == b.Identifier;
             public static bool operator !=(ID a, ID b) => a.Identifier != b.Identifier;
 
             public static readonly ID Root = new ID(0, 0);
-            public static readonly ID None = new ID(-1, -1);
+            public static readonly ID None = new ID(0, -1);
         }
 
         public struct UniqueInfo
@@ -191,6 +193,7 @@ namespace Foster.Framework
         private readonly Stack<float> indents = new Stack<float>();
         private readonly Dictionary<ID, Storage> lastStorage = new Dictionary<ID, Storage>();
         private readonly Dictionary<ID, Storage> nextStorage = new Dictionary<ID, Storage>();
+        private bool refreshing;
 
         public static float PreferredSize = float.MinValue;
 
@@ -209,35 +212,45 @@ namespace Foster.Framework
             };
         }
 
-        public void Update(Vector2 mouse)
+        public void Update(Vector2 mouse, bool clearBatcher = true)
         {
             mouse /= PixelSize;
             DeltaMouse = mouse - Mouse;
             Mouse = mouse;
             HotId = ID.None;
 
-            // reset as safety
-            // these should be already empty from the previous frame
-            indents.Clear();
-            styles.Clear();
-            ids.Clear();
-            groups.Clear();
-            group.Bounds = Bounds;
-            group.Scissor = Bounds;
+            // reset the state
+            {
+                indents.Clear();
+                styles.Clear();
+                ids.Clear();
+                groups.Clear();
+                group.Bounds = Bounds;
+                group.Scissor = Bounds;
+            }
 
             // invoke refresh
-            Batch.Clear();
-            if (BeginGroup(0, 0))
             {
-                Refresh?.Invoke(this);
-                EndGroup();
+                refreshing = true;
+
+                if (clearBatcher)
+                    Batch.Clear();
+                if (BeginGroup(0, 0))
+                {
+                    Refresh?.Invoke(this);
+                    EndGroup();
+                }
+
+                refreshing = false;
             }
 
             // clear previous frame stored info with this frame's info
-            lastStorage.Clear();
-            foreach (var kv in nextStorage)
-                lastStorage.Add(kv.Key, kv.Value);
-            nextStorage.Clear();
+            {
+                lastStorage.Clear();
+                foreach (var kv in nextStorage)
+                    lastStorage.Add(kv.Key, kv.Value);
+                nextStorage.Clear();
+            }
         }
 
         public void Render()
@@ -281,6 +294,8 @@ namespace Foster.Framework
         /// </summary>
         public bool BeginGroup(UniqueInfo info, float height, bool fitToChildren = false)
         {
+            Debug.Assert(refreshing, "Element methods can only be called during Refresh");
+
             var id = PushId(info);
 
             // get inner height from last frame
@@ -374,6 +389,8 @@ namespace Foster.Framework
 
         public void EndGroup()
         {
+            Debug.Assert(refreshing, "Element methods can only be called during Refresh");
+
             Store(group.ID, new Storage() { InnerHeight = group.InnerHeight, Scroll = group.Scroll });
             PopId();
 
