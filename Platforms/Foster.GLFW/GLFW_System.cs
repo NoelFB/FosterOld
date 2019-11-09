@@ -187,8 +187,6 @@ namespace Foster.GLFW
                 GLFW.MakeContextCurrent(IntPtr.Zero);
             }
         }
-
-        public override string AppDirectory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
     }
 
 }

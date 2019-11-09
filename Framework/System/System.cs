@@ -56,7 +56,7 @@ namespace Foster.Framework
         /// <summary>
         /// The application directory
         /// </summary>
-        public abstract string AppDirectory { get; }
+        public virtual string AppDirectory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
 
         /// <summary>
         /// Gets a Pointer to a Platform rendering method of the given name
