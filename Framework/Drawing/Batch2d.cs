@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
-    public class Batch2D : GraphicsResource
+    public class Batch2d : GraphicsResource
     {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -135,12 +135,12 @@ void main(void)
             }
         }
 
-        public Batch2D() : this(App.Graphics)
+        public Batch2d() : this(App.Graphics)
         {
 
         }
 
-        public Batch2D(Graphics graphics) : base(graphics)
+        public Batch2d(Graphics graphics) : base(graphics)
         {
             DefaultShader = graphics.CreateShader(VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);

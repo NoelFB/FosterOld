@@ -7,32 +7,22 @@ namespace Foster.Framework
     public class GuiPanel
     {
 
-        public string Title;
-        public RectInt Bounds;
-
-        public readonly Gui Gui;
-        public readonly ImguiContext Imgui;
-
-        internal GuiPanel(Gui gui, string title, RectInt bounds)
+        public string Title = "";
+        public Action<Imgui>? OnRefresh;
+        
+        public GuiPanel(string title)
         {
-            Gui = gui;
             Title = title;
-            Imgui = new ImguiContext(gui.Font);
-            Bounds = bounds;
         }
 
-        public void Update()
+        public void Refresh(Imgui imgui, Rect bounds)
         {
-            Imgui.DefaultStyle.Font = Gui.Font;
-            Imgui.PixelSize = Gui.Workspace.PixelScale;
-            Imgui.Bounds = Bounds;
-
-            Imgui.Update(Gui.Workspace.Mouse * Gui.Workspace.PixelScale);
+            if (imgui.BeginFrame(Title, bounds))
+            {
+                OnRefresh?.Invoke(imgui);
+                imgui.EndFrame();
+            }
         }
 
-        public void Render()
-        {
-            Imgui.Render();
-        }
     }
 }

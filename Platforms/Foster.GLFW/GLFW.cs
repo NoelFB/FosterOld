@@ -107,7 +107,7 @@ namespace Foster.GLFW
         public delegate void WindowSizeFunc(Window window, int w, int h);
         public delegate void WindowCloseFunc(Window window);
         public delegate void WindowRefreshFunc(Window window);
-        public delegate void WindowFocusFunc(Window window);
+        public delegate void WindowFocusFunc(Window window, int focused);
         public delegate void WindowIconifyFunc(Window window, int iconified);
         public delegate void WindowMaximizeFunc(Window window, int maximized);
         public delegate void WindowFramebufferSizeFunc(Window window, int width, int height);

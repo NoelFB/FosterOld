@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public class ImguiContext
+    public class Imgui
     {
         public struct ID
         {
@@ -13,7 +13,6 @@ namespace Foster.Framework
             public readonly int Value;
             public readonly int Identifier;
 
-            public ID(int id) : this(id, Root.Identifier) { }
             public ID(int id, ID parent) : this(id, parent.Identifier) { }
             public ID(int id, int parent)
             {
@@ -29,7 +28,6 @@ namespace Foster.Framework
             public static bool operator ==(ID a, ID b) => a.Identifier == b.Identifier;
             public static bool operator !=(ID a, ID b) => a.Identifier != b.Identifier;
 
-            public static readonly ID Root = new ID(0, 0);
             public static readonly ID None = new ID(0, -1);
         }
 
@@ -147,6 +145,8 @@ namespace Foster.Framework
             public bool Toggled;
             public float InnerHeight;
             public Vector2 Scroll;
+            public Vector2 Mouse;
+            public ID FrameOver;
         }
 
         public struct Stylesheet
@@ -161,30 +161,30 @@ namespace Foster.Framework
             public float ElementHeight => FontSize + ElementPadding * 2;
         }
 
-        public Batch2D Batch;
-        public Vector2 PixelSize = Vector2.One;
-        public Action<ImguiContext>? Refresh;
-
-        public Rect Bounds;
-        public Rect ScreenBounds
-        {
-            get => Bounds.Scale(PixelSize);
-            set => Bounds = value.Scale(1f / PixelSize);
-        }
+        public Batch2d Batcher { get; private set; }
+        public Rect Viewport { get; private set; }
+        public Rect FrameBounds { get; private set; }
+        public Vector2 PixelScale { get; private set; }
 
         public Rect Scissor => group.Scissor;
-        public Rect ScreenScissor => group.Scissor.Scale(PixelSize);
-
         public Vector2 Mouse;
         public Vector2 DeltaMouse;
+        public bool MouseObstructed;
 
         public Stylesheet DefaultStyle;
         public Stylesheet Style => (styles.Count > 0 ? styles.Peek() : DefaultStyle);
         public float Indent => (indents.Count > 0 ? indents.Peek() : 0f);
 
-        public ID HotId;
-        public ID ActiveId;
-        public ID LastId;
+        public ID HotId = ID.None;
+        public ID ActiveId = ID.None;
+        public ID LastId = ID.None;
+
+        private ID viewportId;
+        private ID frameId;
+        private ID frameOverLastFrame;
+        private ID frameLastOver;
+        private bool frameOpen;
+        private bool firstGroup;
 
         private Group group;
         private readonly Stack<Group> groups = new Stack<Group>();
@@ -193,14 +193,11 @@ namespace Foster.Framework
         private readonly Stack<float> indents = new Stack<float>();
         private readonly Dictionary<ID, Storage> lastStorage = new Dictionary<ID, Storage>();
         private readonly Dictionary<ID, Storage> nextStorage = new Dictionary<ID, Storage>();
-        private bool refreshing;
 
         public static float PreferredSize = float.MinValue;
 
-        public ImguiContext(SpriteFont font)
+        public Imgui(SpriteFont font, Batch2d batcher)
         {
-            Batch = new Batch2D();
-
             DefaultStyle = new Stylesheet()
             {
                 Font = font,
@@ -210,55 +207,11 @@ namespace Foster.Framework
                 WindowPadding = 4,
                 TitleScale = 1.25f
             };
+
+            Batcher = batcher;
         }
 
-        public void Update(Vector2 mouse, bool clearBatcher = true)
-        {
-            mouse /= PixelSize;
-            DeltaMouse = mouse - Mouse;
-            Mouse = mouse;
-            HotId = ID.None;
-
-            // reset the state
-            {
-                indents.Clear();
-                styles.Clear();
-                ids.Clear();
-                groups.Clear();
-                group.Bounds = Bounds;
-                group.Scissor = Bounds;
-            }
-
-            // invoke refresh
-            {
-                refreshing = true;
-
-                if (clearBatcher)
-                    Batch.Clear();
-                if (BeginGroup(0, 0))
-                {
-                    Refresh?.Invoke(this);
-                    EndGroup();
-                }
-
-                refreshing = false;
-            }
-
-            // clear previous frame stored info with this frame's info
-            {
-                lastStorage.Clear();
-                foreach (var kv in nextStorage)
-                    lastStorage.Add(kv.Key, kv.Value);
-                nextStorage.Clear();
-            }
-        }
-
-        public void Render()
-        {
-            Batch.Render(Matrix3x2.CreateScale(PixelSize));
-        }
-
-        public ID Id(UniqueInfo value) => LastId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : ID.Root));
+        public ID Id(UniqueInfo value) => LastId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : new ID(0, 0)));
 
         public ID PushId(ID id)
         {
@@ -288,13 +241,120 @@ namespace Foster.Framework
         public bool Stored(ID id) => lastStorage.ContainsKey(id);
         public bool Stored(ID id, out Storage info) => lastStorage.TryGetValue(id, out info);
 
+        public void Step()
+        {
+            // reset the state
+            {
+                HotId = ID.None;
+                group.ID = ID.None;
+                indents.Clear();
+                styles.Clear();
+                ids.Clear();
+                groups.Clear();
+                group.Bounds = FrameBounds;
+                group.Scissor = FrameBounds;
+            }
+
+            // clear previous frame stored info with this frame's info
+            {
+                lastStorage.Clear();
+                foreach (var kv in nextStorage)
+                    lastStorage.Add(kv.Key, kv.Value);
+                nextStorage.Clear();
+            }
+        }
+
+        public void BeginViewport(Window window, Batch2d batcher)
+        {
+            BeginViewport(window.Title, batcher, window.ContentBounds, window.Mouse, window.PixelScale, !window.MouseOver);
+        }
+
+        public void BeginViewport(UniqueInfo info, Batch2d batcher, Rect viewport, Vector2 mouse, Vector2 pixelScale, bool mouseObstructed = false)
+        {
+            Batcher = batcher;
+            group.Scissor = viewport;
+
+            var lastMouse = Vector2.Zero;
+            viewportId = PushId(info);
+            frameOverLastFrame = ID.None;
+
+            if (Stored(viewportId, out var storage))
+            {
+                lastMouse = storage.Mouse;
+                frameOverLastFrame = storage.FrameOver;
+            }
+
+            Viewport = viewport;
+            Mouse = mouse;
+            DeltaMouse = Mouse - lastMouse;
+            MouseObstructed = mouseObstructed;
+            PixelScale = pixelScale;
+
+            frameOpen = false;
+            firstGroup = true;
+            frameLastOver = ID.None;
+
+            Batcher.PushMatrix(Matrix3x2.CreateScale(pixelScale));
+        }
+
+        public void EndViewport()
+        {
+            Batcher.PopMatrix();
+
+            PopId();
+            Store(viewportId, new Storage() { Mouse = Mouse, FrameOver = frameLastOver });
+        }
+
+        /// <summary>
+        /// Returns True of the Frame is visible
+        /// Do not call EndFrame if this is false
+        /// </summary>
+        public bool BeginFrame(UniqueInfo info, Rect bounds)
+        {
+            if (frameOpen)
+                throw new Exception("You must close the previous frame before opening a new one");
+
+            FrameBounds = bounds;
+            frameOpen = true;
+            firstGroup = true;
+            group.Scissor = bounds;
+
+            frameId = PushId(info);
+            if (bounds.Contains(Mouse))
+                frameLastOver = frameId;
+
+            if (BeginGroup(0, 0))
+            {
+                firstGroup = false;
+                return true;
+            }
+            else
+            {
+                Batcher.PopMatrix();
+                PopId();
+                frameOpen = false;
+                firstGroup = false;
+                return false;
+            }
+        }
+
+        public void EndFrame()
+        {
+            EndGroup();
+            PopId();
+            frameOpen = false;
+            firstGroup = false;
+            group.Scissor = Viewport;
+        }
+
         /// <summary>
         /// Returns True of the Group is visible
         /// Do not call EndGroup if this is false
         /// </summary>
-        public bool BeginGroup(UniqueInfo info, float height, bool fitToChildren = false)
+        public bool BeginGroup(UniqueInfo info, float height)
         {
-            Debug.Assert(refreshing, "Element methods can only be called during Refresh");
+            if (!frameOpen)
+                throw new Exception("You must open a Frame before using Element functions");
 
             var id = PushId(info);
 
@@ -310,16 +370,13 @@ namespace Foster.Framework
             // determine bounds
             Rect bounds;
             Rect screen;
-            if (id == ID.Root)
+            if (firstGroup)
             {
-                bounds = Bounds;
-                screen = Bounds;
+                bounds = FrameBounds;
+                screen = FrameBounds;
             }
             else
             {
-                if (fitToChildren && innerHeight > 0f)
-                    height = innerHeight;
-
                 bounds = Cell(height);
                 screen = group.Bounds.OverlapRect(bounds);
             }
@@ -328,11 +385,11 @@ namespace Foster.Framework
             if (screen.Area > 0)
             {
                 // push last group onto stack
-                if (id != ID.Root)
+                if (!firstGroup)
                     groups.Push(group);
 
                 // draw bg
-                Batch.Rect(bounds, Color.White * 0.2f);
+                Batcher.Rect(bounds, Color.White * 0.2f);
 
                 // handle vertical scrolling
                 if (innerHeight > bounds.Height)
@@ -356,7 +413,7 @@ namespace Foster.Framework
                             scrollRect = VerticalScrollBar(bounds, scroll, innerHeight);
                         }
 
-                        Batch.Rect(scrollRect, Color.Red);
+                        Batcher.Rect(scrollRect, Color.Red);
                     }
 
                     screen.Width -= 16;
@@ -368,7 +425,7 @@ namespace Foster.Framework
                 group = new Group(id, scroll, bounds, screen, Style.WindowPadding, true);
 
                 // return true if we're visible
-                Batch.SetScissor(screen.Scale(PixelSize).Int());
+                Batcher.SetScissor(screen.Scale(PixelScale).Int());
                 return true;
             }
             // keep track of scrolling value even if we're not displayed
@@ -389,15 +446,38 @@ namespace Foster.Framework
 
         public void EndGroup()
         {
-            Debug.Assert(refreshing, "Element methods can only be called during Refresh");
+            if (!frameOpen)
+                throw new Exception("You must open a Frame before using Element functions");
 
             Store(group.ID, new Storage() { InnerHeight = group.InnerHeight, Scroll = group.Scroll });
             PopId();
 
-            if (group.ID != ID.Root)
+            if (groups.Count > 0)
+            {
                 group = groups.Pop();
+                Batcher.SetScissor(group.Scissor.Scale(PixelScale).Int());
+            }
+            else
+            {
+                Batcher.SetScissor(null);
+            }
+        }
 
-            Batch.SetScissor(group.Scissor.Scale(PixelSize).Int());
+        public bool MouseOver(Rect position, bool log = false)
+        {
+            if (MouseObstructed || (frameOverLastFrame != ID.None && frameOverLastFrame != frameId))
+                return false;
+
+            if (ActiveId != ID.None)
+                return false;
+
+            if (App.Input.Mouse.Down(MouseButtons.Left) && !App.Input.Mouse.Pressed(MouseButtons.Left))
+                return false;
+
+            if (!Scissor.Contains(Mouse) || !position.Contains(Mouse))
+                return false;
+
+            return true;
         }
     }
 }

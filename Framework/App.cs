@@ -109,7 +109,15 @@ namespace Foster.Framework
                         if (!window.Opened)
                             continue;
 
-                        Redraw(window);
+                        window.Render();
+                    }
+
+                    foreach (var window in System.Windows)
+                    {
+                        if (!window.Opened)
+                            continue;
+
+                        window.Present();
                     }
                 }
 
@@ -132,15 +140,6 @@ namespace Foster.Framework
             Modules.Shutdown();
             Modules.Clear();
             Exiting = false;
-        }
-
-        public static void Redraw(Window window)
-        {
-            window.Context.MakeCurrent();
-            Modules.BeforeRender(window);
-            window.OnRender?.Invoke();
-            Modules.AfterRender(window);
-            window.Present();
         }
 
         private static void Update()

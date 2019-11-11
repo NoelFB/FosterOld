@@ -6,7 +6,7 @@ namespace Foster.Framework
 {
     public static class ImguiHeader
     {
-        public static bool Header(this ImguiContext context, string label, bool startOpen = false)
+        public static bool Header(this Imgui context, string label, bool startOpen = false)
         {
             var toggle = context.Button(label);
             var id = context.LastId;
@@ -15,7 +15,7 @@ namespace Foster.Framework
             if (toggle)
                 enabled = !enabled;
 
-            context.Store(id, new ImguiContext.Storage() { Toggled = enabled });
+            context.Store(id, new Imgui.Storage() { Toggled = enabled });
 
             if (enabled)
             {
@@ -26,7 +26,7 @@ namespace Foster.Framework
             return enabled;
         }
 
-        public static void EndHeader(this ImguiContext context)
+        public static void EndHeader(this Imgui context)
         {
             context.PopIndent();
             context.PopId();

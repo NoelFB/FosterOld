@@ -6,11 +6,11 @@ namespace Foster.Framework
 {
     public static class ImguiButton
     {
-        public static bool ButtonBehaviour(this ImguiContext context, ImguiContext.ID id, Rect position)
+        public static bool ButtonBehaviour(this Imgui context, Imgui.ID id, Rect position)
         {
             var performPress = false;
 
-            if (context.Scissor.Contains(context.Mouse) && position.Contains(context.Mouse))
+            if (context.MouseOver(position))
                 context.HotId = id;
 
             if (context.HotId == id && App.Input.Mouse.Pressed(MouseButtons.Left))
@@ -20,22 +20,22 @@ namespace Foster.Framework
             {
                 if (context.HotId == id)
                     performPress = true;
-                context.ActiveId = ImguiContext.ID.None;
+                context.ActiveId = Imgui.ID.None;
             }
 
             return performPress;
         }
 
-        public static bool Button(this ImguiContext context, string label, float width = 0f, float height = 0f)
+        public static bool Button(this Imgui context, string label, float width = 0f, float height = 0f)
         {
             return Button(context, label, label, width, height);
         }
 
-        public static bool Button(this ImguiContext context, ImguiContext.UniqueInfo identifier, string label, float width = 0f, float height = 0f)
+        public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, float width = 0f, float height = 0f)
         {
             var style = context.Style;
 
-            if (width == ImguiContext.PreferredSize)
+            if (width == Imgui.PreferredSize)
                 width = style.Font.WidthOf(label) * style.FontScale + style.ElementPadding * 2f;
             if (height == 0f)
                 height = style.FontSize + style.ElementPadding * 2;
@@ -43,7 +43,7 @@ namespace Foster.Framework
             return Button(context, identifier, label, context.Cell(width, height));
         }
 
-        public static bool Button(this ImguiContext context, ImguiContext.UniqueInfo identifier, string label, Rect position)
+        public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
         {
             var result = false;
 
@@ -65,10 +65,10 @@ namespace Foster.Framework
                     color = Color.Yellow;
                 }
 
-                context.Batch.Rect(position, color);
-                context.Batch.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
-                context.Batch.Text(style.Font, label, Color.Black);
-                context.Batch.PopMatrix();
+                context.Batcher.Rect(position, color);
+                context.Batcher.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
+                context.Batcher.Text(style.Font, label, Color.Black);
+                context.Batcher.PopMatrix();
             }
 
             return result;

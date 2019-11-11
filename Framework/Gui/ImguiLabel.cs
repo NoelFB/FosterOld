@@ -6,25 +6,25 @@ namespace Foster.Framework
 {
     public static class ImguiLabel
     {
-        public static void Label(this ImguiContext context, string label)
+        public static void Label(this Imgui context, string label)
         {
             context.Label(label, label);
         }
 
-        public static void Label(this ImguiContext context, ImguiContext.UniqueInfo identifier, string label)
+        public static void Label(this Imgui context, Imgui.UniqueInfo identifier, string label)
         {
             context.Label(identifier, label, context.Cell(context.Style.ElementHeight));
         }
 
-        public static void Label(this ImguiContext context, ImguiContext.UniqueInfo identifier, string label, Rect position)
+        public static void Label(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
         {
             if (position.Intersects(context.Scissor))
             {
                 var scale = Vector2.One * context.Style.FontScale;
 
-                context.Batch.PushMatrix(new Vector2(position.X, position.Y + context.Style.ElementPadding), scale, Vector2.Zero, 0f);
-                context.Batch.Text(context.Style.Font, label, Color.White);
-                context.Batch.PopMatrix();
+                context.Batcher.PushMatrix(new Vector2(position.X, position.Y + context.Style.ElementPadding), scale, Vector2.Zero, 0f);
+                context.Batcher.Text(context.Style.Font, label, Color.White);
+                context.Batcher.PopMatrix();
             }
         }
     }

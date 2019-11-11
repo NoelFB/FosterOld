@@ -9,22 +9,38 @@ namespace Foster.Framework
         /// <summary>
         /// The X position of the Window, in Screen coordinates
         /// </summary>
-        public int X => Bounds.X;
+        public int X
+        {
+            get => Bounds.X;
+            set => Bounds = new RectInt(value, Y, Width, Height);
+        }
 
         /// <summary>
         /// The X position of the Window, in Screen coordinates
         /// </summary>
-        public int Y => Bounds.Y;
+        public int Y
+        {
+            get => Bounds.Y;
+            set => Bounds = new RectInt(X, value, Width, Height);
+        }
 
         /// <summary>
         /// The Width of the Window, in Screen coordinates
         /// </summary>
-        public int Width => Bounds.Width;
+        public int Width
+        {
+            get => Bounds.Width;
+            set => Bounds = new RectInt(X, Y, value, Height);
+        }
 
         /// <summary>
         /// The Height of the Window, in Screen coordinates
         /// </summary>
-        public int Height => Bounds.Height;
+        public int Height
+        {
+            get => Bounds.Height;
+            set => Bounds = new RectInt(X, Y, Width, value);
+        }
 
         /// <summary>
         /// The Drawable Width of the Window, in Pixels
@@ -104,6 +120,12 @@ namespace Foster.Framework
         public abstract RectInt Bounds { get; set; }
 
         /// <summary>
+        /// Gets the Content Bounds
+        /// This is the same as Bounds, but with X and Y always 0
+        /// </summary>
+        public RectInt ContentBounds => new RectInt(0, 0, Bounds.Width, Bounds.Height);
+
+        /// <summary>
         /// The drawable bounds of the Window
         /// Note on High DPI displays, this may not match the Bounds of the window
         /// </summary>
@@ -118,6 +140,27 @@ namespace Foster.Framework
         /// The Mouse position relative to the top-left of the Window, in Screen coordinates
         /// </summary>
         public abstract Vector2 Mouse { get; }
+
+        /// <summary>
+        /// Whether the mouse is currently over this Window
+        /// </summary>
+        public abstract bool MouseOver { get; }
+
+        /// <summary>
+        /// Whether this is the currently focused Window
+        /// </summary>
+        public abstract bool Focused { get; }
+
+        /// <summary>
+        /// Renders the Window. Call Present afterwards to display the rendered contents
+        /// </summary>
+        public void Render()
+        {
+            Context.MakeCurrent();
+            App.Modules.BeforeRender(this);
+            OnRender?.Invoke();
+            App.Modules.AfterRender(this);
+        }
 
         /// <summary>
         /// Presents the drawn contents of the Window

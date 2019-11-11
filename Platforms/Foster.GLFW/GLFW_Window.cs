@@ -12,6 +12,8 @@ namespace Foster.GLFW
         private string title;
         private bool visible;
         private bool lastVsync;
+        private bool focused;
+        private bool mouseOver;
 
         public override RectInt Bounds
         {
@@ -90,6 +92,10 @@ namespace Foster.GLFW
 
         public override bool Opened => !context.Disposed;
 
+        public override bool Focused => focused;
+
+        public override bool MouseOver => mouseOver;
+
         public override string Title
         {
             get => title;
@@ -130,6 +136,8 @@ namespace Foster.GLFW
         }
 
         private GLFW.WindowSizeFunc windowSizeCallbackRef;
+        private GLFW.WindowFocusFunc windowFocusCallbackRef;
+        private GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
         public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible)
         {
@@ -142,6 +150,8 @@ namespace Foster.GLFW
             System.SetCurrentContext(context);
             GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             GLFW.SetWindowSizeCallback(context.Handle, windowSizeCallbackRef = OnWindowResize);
+            GLFW.SetWindowFocusCallback(context.Handle, windowFocusCallbackRef = OnWindowFocus);
+            GLFW.SetCursorEnterCallback(context.Handle, windowCursorEnterCallbackRef = OnCursorEnter);
         }
 
         private void OnWindowResize(GLFW.Window window, int width, int height)
@@ -155,6 +165,16 @@ namespace Foster.GLFW
             }
 
             OnResize?.Invoke(width, height);
+        }
+
+        private void OnWindowFocus(GLFW.Window window, int focused)
+        {
+            this.focused = (focused != 0);
+        }
+
+        private void OnCursorEnter(GLFW.Window window, int entered)
+        {
+            mouseOver = (entered != 0);
         }
 
         public override void Present()
