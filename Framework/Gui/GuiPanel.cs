@@ -15,14 +15,5 @@ namespace Foster.Framework
             Title = title;
         }
 
-        public void Refresh(Imgui imgui, Rect bounds)
-        {
-            if (imgui.BeginFrame(Title, bounds))
-            {
-                OnRefresh?.Invoke(imgui);
-                imgui.EndFrame();
-            }
-        }
-
     }
 }

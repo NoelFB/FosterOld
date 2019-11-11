@@ -22,7 +22,7 @@ namespace Foster.Framework
             Font = font;
 
             Batcher = new Batch2d();
-            Imgui = new Imgui(Font, Batcher);
+            Imgui = new Imgui(Font);
 
             Window = window;
             Window.OnRender = Render;
@@ -66,10 +66,22 @@ namespace Foster.Framework
                     imgui.Button($"What {i}");
             };
 
+            var dock8 = new GuiDock(this);
+            dock8.SetAsStandalone(new Rect(32, 32, 400, 400));
+            dock8.Panels.Add(p = new GuiPanel("what"));
+            dock8.Panels.Add(p = new GuiPanel("what 2"));
+            p.OnRefresh = (imgui) =>
+            {
+                for (int i = 0; i < 20; i++)
+                    imgui.Button($"What {i}");
+            };
+
             var dock7 = new GuiDock(this);
-            dock7.SetAsStandalone(new Rect(32, 32, 400, 400));
+            dock7.SetAsFloating(new Rect(200, 32, 300, 400));
             dock7.Panels.Add(p = new GuiPanel("what"));
             dock7.Panels.Add(p = new GuiPanel("what 2"));
+            dock7.Panels.Add(p = new GuiPanel("what 3"));
+            dock7.Panels.Add(p = new GuiPanel("what 4"));
             p.OnRefresh = (imgui) =>
             {
                 for (int i = 0; i < 20; i++)
@@ -77,7 +89,7 @@ namespace Foster.Framework
             };
 
             dock7 = new GuiDock(this);
-            dock7.SetAsFloating(new Rect(200, 32, 300, 400));
+            dock7.SetAsDock(dock8, GuiDock.SplitDirection.Bottom);
             dock7.Panels.Add(p = new GuiPanel("what"));
             dock7.Panels.Add(p = new GuiPanel("what 2"));
             dock7.Panels.Add(p = new GuiPanel("what 3"));
@@ -91,6 +103,12 @@ namespace Foster.Framework
 
         protected internal override void Update()
         {
+            UpdateWorkspace();
+            UpdateStandalone();
+        }
+
+        private void UpdateWorkspace()
+        {
             Batcher.Clear();
 
             Imgui.Step();
@@ -102,14 +120,17 @@ namespace Foster.Framework
                     Floating[i].Refresh();
             }
             Imgui.EndViewport();
+        }
 
-            foreach (var dock in Standalone)
-                dock.Refresh();
+        private void UpdateStandalone()
+        {
+            for (int i = 0; i < Standalone.Count; i++)
+                Standalone[i].Refresh();
         }
 
         private void Resize(int width, int height)
         {
-            Update();
+            UpdateWorkspace();
             Window.Render();
             Window.Present();
         }

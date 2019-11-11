@@ -18,7 +18,7 @@ namespace Foster.Framework
 
         public static void Label(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
         {
-            if (position.Intersects(context.Scissor))
+            if (position.Intersects(context.ActiveClip))
             {
                 var scale = Vector2.One * context.Style.FontScale;
 

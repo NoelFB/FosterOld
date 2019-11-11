@@ -45,13 +45,11 @@ namespace Foster.Framework
             Bottom
         }
 
+        public readonly int ID;
         public readonly Gui Gui;
+        public Imgui Imgui => Gui.Imgui;
+
         public Modes Mode { get; private set; } = Modes.None;
-
-        private Window? standaloneWindow;
-        private Batch2d? standaloneBatcher;
-        private Rect floatingBounds;
-
         public GuiDock? Parent { get; private set; }
         public GuiDock? Left { get; private set; }
         public GuiDock? Right { get; private set; }
@@ -60,12 +58,17 @@ namespace Foster.Framework
         public bool SplitHorizontally = true;
 
         public readonly List<GuiPanel> Panels = new List<GuiPanel>();
-        public int ActivePanelIndex { get; private set; } = 0;
-        public GuiPanel? ActivePanel => ActivePanelIndex >= 0 && ActivePanelIndex < Panels.Count ? Panels[ActivePanelIndex] : null;
+        public int PanelIndex;
+        public GuiPanel? Panel => PanelIndex >= 0 && PanelIndex < Panels.Count ? Panels[PanelIndex] : null;
+
+        private Window? standaloneWindow;
+        private Batch2d? standaloneBatcher;
+        private Rect floatingBounds;
 
         public GuiDock(Gui gui)
         {
             Gui = gui;
+            ID = Guid.NewGuid().GetHashCode();
         }
 
         public void SetAsRoot()
@@ -181,12 +184,12 @@ namespace Foster.Framework
                 {
                     other = new GuiDock(Gui);
                     other.Panels.AddRange(parent.Panels);
-                    other.ActivePanelIndex = parent.ActivePanelIndex;
+                    other.PanelIndex = parent.PanelIndex;
                     other.Parent = parent;
                     other.Mode = Modes.Docked;
 
                     parent.Panels.Clear();
-                    parent.ActivePanelIndex = -1;
+                    parent.PanelIndex = -1;
                 }
 
                 if (split == SplitDirection.Left || split == SplitDirection.Top)
@@ -288,7 +291,7 @@ namespace Foster.Framework
             {
                 var window = GetCurrentWindow();
                 if (window != null)
-                    return new Rect(0, 0, window.Width, window.Height);
+                    return window.ContentBounds;
             }
 
             return new Rect();
@@ -300,18 +303,27 @@ namespace Foster.Framework
             if (batcher == null)
                 throw new Exception("Gui Dock has no Batcher");
 
-            var window = GetCurrentWindow();
-            if (window == null)
-                throw new Exception("Gui Dock has no Window");
-
             if (Mode == Modes.Standalone)
             {
                 batcher.Clear();
-                Gui.Imgui.BeginViewport(window, batcher);
+
+                var window = GetCurrentWindow();
+                if (window == null)
+                    throw new Exception("Gui Dock has no Window");
+
+                Imgui.BeginViewport(window, batcher);
             }
 
-            var bounds = GetContentBounds();
+            InternalRefresh(batcher, GetContentBounds());
 
+            if (Mode == Modes.Standalone)
+            {
+                Imgui.EndViewport();
+            }
+        }
+
+        private void InternalRefresh(Batch2d batcher, Rect bounds)
+        {
             batcher.Rect(bounds.X, bounds.Y, bounds.Width, 1, Color.Red);
             batcher.Rect(bounds.X, bounds.Y + bounds.Height - 1, bounds.Width, 1, Color.Red);
             batcher.Rect(bounds.X, bounds.Y, 1, bounds.Height, Color.Red);
@@ -333,42 +345,29 @@ namespace Foster.Framework
             }
             else
             {
-                while (ActivePanelIndex >= Panels.Count)
-                    ActivePanelIndex--;
-                if (ActivePanelIndex < 0)
-                    ActivePanelIndex = 0;
+                while (PanelIndex >= Panels.Count)
+                    PanelIndex--;
+                if (PanelIndex < 0)
+                    PanelIndex = 0;
 
-                var left = 0f;
-                var bar = 20f;
-                var fs = bar / Gui.Font.Height;
-
-                var i = 0;
-                foreach (var panel in Panels)
+                Imgui.BeginFrame(ID, bounds, false);
                 {
-                    var width = Gui.Font.WidthOf(panel.Title) * fs + 10;
-                    var space = new Rect(left + bounds.X, bounds.Y, width, bar);
+                    Imgui.Row(Panels.Count);
 
-                    if (ActivePanelIndex == i)
-                        batcher.Rect(space, Color.White);
+                    for (int i = 0; i < Panels.Count; i++)
+                    {
+                        if (Imgui.Button(Panels[i].Title))
+                            PanelIndex = i;
+                    }
 
-                    batcher.PushMatrix(new Vector2(left + bounds.X, bounds.Y), Vector2.One * fs, Vector2.Zero, 0f);
-                    batcher.Text(Gui.Font, panel.Title, ActivePanelIndex == i ? Color.Black : Color.White);
-                    batcher.PopMatrix();
-
-                    if (App.Input.Mouse.Pressed(MouseButtons.Left) && space.Contains(window.Mouse))
-                        ActivePanelIndex = i;
-
-                    left += width;
-                    i++;
+                    if (Panel != null)
+                    {
+                        Imgui.BeginFrame(ID, Imgui.Remainder());
+                        Panel.OnRefresh?.Invoke(Imgui);
+                        Imgui.EndFrame();
+                    }
                 }
-
-                if (ActivePanel != null)
-                    ActivePanel.Refresh(Gui.Imgui, new Rect(bounds.X, bounds.Y + bar, bounds.Width, bounds.Height - bar));
-            }
-
-            if (Mode == Modes.Standalone)
-            {
-                Gui.Imgui.EndViewport();
+                Imgui.EndFrame();
             }
         }
     }

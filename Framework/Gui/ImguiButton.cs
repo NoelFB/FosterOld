@@ -10,7 +10,7 @@ namespace Foster.Framework
         {
             var performPress = false;
 
-            if (context.MouseOver(position))
+            if (context.MouseOver(id, position))
                 context.HotId = id;
 
             if (context.HotId == id && App.Input.Mouse.Pressed(MouseButtons.Left))
@@ -47,7 +47,7 @@ namespace Foster.Framework
         {
             var result = false;
 
-            if (position.Intersects(context.Scissor))
+            if (position.Intersects(context.ActiveClip))
             {
                 var style = context.Style;
                 var id = context.Id(identifier);
@@ -65,10 +65,13 @@ namespace Foster.Framework
                     color = Color.Yellow;
                 }
 
-                context.Batcher.Rect(position, color);
-                context.Batcher.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
-                context.Batcher.Text(style.Font, label, Color.Black);
-                context.Batcher.PopMatrix();
+                if (context.Batcher != null)
+                {
+                    context.Batcher.Rect(position, color);
+                    context.Batcher.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
+                    context.Batcher.Text(style.Font, label, Color.Black);
+                    context.Batcher.PopMatrix();
+                }
             }
 
             return result;

@@ -7,7 +7,7 @@ namespace Foster.Framework
 {
     public class InputState
     {
-        public const int MaxControllers = 32;
+        public const int MaxControllers = 8;
 
         public readonly Keyboard Keyboard;
         public readonly Mouse Mouse;
@@ -29,7 +29,10 @@ namespace Foster.Framework
         internal void Step()
         {
             for (int i = 0; i < Controllers.Count; i++)
-                Controllers[i].Step();
+            {
+                if (Controllers[i].Connected)
+                    Controllers[i].Step();
+            }
             Keyboard.Step();
             Mouse.Step();
         }
@@ -37,7 +40,11 @@ namespace Foster.Framework
         internal void Copy(InputState other)
         {
             for (int i = 0; i < Controllers.Count; i++)
-                Controllers[i].Copy(other.Controllers[i]);
+            {
+                if (other.Controllers[i].Connected || (Controllers[i].Connected != other.Controllers[i].Connected))
+                    Controllers[i].Copy(other.Controllers[i]);
+            }
+
             Keyboard.Copy(other.Keyboard);
             Mouse.Copy(other.Mouse);
         }

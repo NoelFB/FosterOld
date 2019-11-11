@@ -6,6 +6,7 @@ namespace Foster.Framework
 {
     public static class ImguiHeader
     {
+        /*
         public static bool Header(this Imgui context, string label, bool startOpen = false)
         {
             var toggle = context.Button(label);
@@ -31,5 +32,6 @@ namespace Foster.Framework
             context.PopIndent();
             context.PopId();
         }
+        */
     }
 }
