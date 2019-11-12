@@ -345,23 +345,22 @@ namespace Foster.Framework
         {
             if (Mode == Modes.Docked)
             {
-                var container = Parent!.GetContentBounds();
+                var bounds = Parent!.GetContentBounds();
+                var split = Parent.SplitPoint;
 
                 if (Parent.SplitHorizontally)
                 {
-                    var w = container.Width - 12;
                     if (Parent.Left == this)
-                        return new Rect(container.X, container.Y, w * Parent.SplitPoint, container.Height);
+                        return new Rect(bounds.X, bounds.Y, bounds.Width * split - 6, bounds.Height);
                     else if (Parent.Right == this)
-                        return new Rect(container.Right - w * (1f - Parent.SplitPoint), container.Y, w * (1f - Parent.SplitPoint), container.Height);
+                        return new Rect(bounds.X + bounds.Width * split + 6, bounds.Y, bounds.Width * (1 - split) - 6, bounds.Height);
                 }
                 else
                 {
-                    var h = container.Height - 12;
                     if (Parent.Left == this)
-                        return new Rect(container.X, container.Y, container.Width, h * Parent.SplitPoint);
+                        return new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height * split - 6);
                     else if (Parent.Right == this)
-                        return new Rect(container.X, container.Bottom - h * (1f - Parent.SplitPoint), container.Width, h * (1f - Parent.SplitPoint));
+                        return new Rect(bounds.X, bounds.Y + bounds.Height * split + 6, bounds.Width, bounds.Height * (1 - split) - 6);
                 }
             }
             else if (Mode == Modes.Floating)
@@ -445,19 +444,46 @@ namespace Foster.Framework
                 batcher.Rect(bounds.X + bounds.Width - 1, bounds.Y, 1, bounds.Height, Color.Red);
                 batcher.Rect(bounds.Inflate(-1), Color.Blue);
 
+                // Split Content
                 if (Left != null || Right != null)
                 {
                     if (SplitHorizontally)
-                        batcher.Rect(bounds.X + bounds.Width * SplitPoint, bounds.Y + 1, 1, bounds.Height - 2, Color.Yellow);
-                    else
-                        batcher.Rect(bounds.X + 1, bounds.Y + bounds.Height * SplitPoint, bounds.Width - 2, 1, Color.Yellow);
-                }
+                    {
+                        var split = new Rect(bounds.X + bounds.Width * SplitPoint - 4, bounds.Y + 1, 8, bounds.Height - 2);
 
-                if (Left != null || Right != null)
-                {
+                        var grabber = Imgui.Id(ID + 10);
+                        Imgui.ButtonBehaviour(grabber, split);
+
+                        if (Imgui.ActiveId == grabber)
+                        {
+                            var world = Math.Clamp(bounds.Width * SplitPoint + Imgui.ActiveMouseDelta.X, 64, bounds.Width - 64);
+                            SplitPoint = world / bounds.Width;
+                        }
+
+                        if (Imgui.HotId == grabber)
+                            batcher.Rect(new Rect(bounds.X + bounds.Width * SplitPoint - 4, bounds.Y + 1, 8, bounds.Height - 2), Color.Yellow);
+                    }
+                    else
+                    {
+                        var split = new Rect(bounds.X + 1, bounds.Y + bounds.Height * SplitPoint - 4, bounds.Width - 2, 8);
+
+                        var grabber = Imgui.Id(ID + 10);
+                        Imgui.ButtonBehaviour(grabber, split);
+
+                        if (Imgui.ActiveId == grabber)
+                        {
+                            var world = Math.Clamp(bounds.Height * SplitPoint + Imgui.ActiveMouseDelta.Y, 64, bounds.Height - 64);
+                            SplitPoint = world / bounds.Height;
+                        }
+
+                        if (Imgui.HotId == grabber)
+                            batcher.Rect(new Rect(bounds.X + 1, bounds.Y + bounds.Height * SplitPoint - 4, bounds.Width - 2, 8), Color.Yellow);
+                    }
+
                     Left?.Refresh();
                     Right?.Refresh();
                 }
+                // Main Content (Panels)
                 else
                 {
                     if (bounds.Contains(Imgui.ActiveMouse) && !IsChildOf(Manager.Dragging))

@@ -210,6 +210,7 @@ namespace Foster.Framework
             get => viewport.Mouse;
             set => viewport.Mouse = value;
         }
+        public Vector2 ActiveMouseDelta => viewport.MouseDelta;
 
         private readonly Stack<Frame> frames = new Stack<Frame>();
         private readonly Stack<ID> ids = new Stack<ID>();

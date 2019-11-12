@@ -35,6 +35,14 @@ namespace Test1
                     if (imgui.Button("What " + i))
                         Console.WriteLine("PRESSED " + i);
             };
+
+            panel = gui.CreatePanel("Hello World", new Rect(32, 32, 400, 400));
+            panel.OnRefresh = (imgui) =>
+            {
+                for (int i = 0; i < 4; i++)
+                    if (imgui.Button("What " + i))
+                        Console.WriteLine("PRESSED " + i);
+            };
         }
 
     }
