@@ -17,6 +17,14 @@ namespace Foster.Framework
         public bool Down(MouseButtons button) => down[(int)button];
         public bool Released(MouseButtons button) => released[(int)button];
 
+        public bool LeftPressed => Pressed(MouseButtons.Left);
+        public bool LeftDown => Down(MouseButtons.Left);
+        public bool LeftReleased => Released(MouseButtons.Left);
+
+        public bool RightPressed => Pressed(MouseButtons.Right);
+        public bool RightDown => Down(MouseButtons.Right);
+        public bool RightReleased => Released(MouseButtons.Right);
+
         internal void Copy(Mouse other)
         {
             Array.Copy(other.pressed, 0, pressed, 0, MaxButtons);

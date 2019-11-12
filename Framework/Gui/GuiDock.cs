@@ -149,16 +149,19 @@ namespace Foster.Framework
                     Mode = Modes.Standalone;
                     Manager.Standalone.Add(this);
 
-                    standaloneWindow = App.System.CreateWindow("Gui Dock", (int)bounds.Width, (int)bounds.Height);
+                    standaloneWindow = App.System.CreateWindow("Gui Dock", (int)bounds.Width, (int)bounds.Height, false);
                     standaloneWindow.X = (int)bounds.X;
                     standaloneWindow.Y = (int)bounds.Y;
                     standaloneWindow.VSync = false;
                     standaloneWindow.Bordered = false;
                     standaloneWindow.OnResize = (w, h) =>
                     {
-                        Refresh();
-                        standaloneWindow.Render();
-                        standaloneWindow.Present();
+                        if (Imgui.ActiveViewport.ID == Imgui.ID.None)
+                        {
+                            Refresh();
+                            standaloneWindow.Render();
+                            standaloneWindow.Present();
+                        }
                     };
                     standaloneWindow.OnRender = () =>
                     {
@@ -170,6 +173,7 @@ namespace Foster.Framework
                             UnsetLastMode();
                     };
 
+                    standaloneWindow.Visible = true;
                     standaloneBatcher = new Batch2d();
                 }
                 else
@@ -617,6 +621,7 @@ namespace Foster.Framework
                 var batcher = GetBatcher();
                 var window = GetWindow();
                 var other = Manager.LastDockable.GetWindow();
+                var splitable = Manager.LastDockable.Mode != Modes.Root || Manager.LastDockable.Panels.Count > 0;
 
                 var offset = other.Position - window.Position;
                 var bounds = Manager.LastDockable.GetContentBounds();
@@ -669,16 +674,24 @@ namespace Foster.Framework
                 var bottom = new Rect(center.X - 16, center.Y - 16 + 34, 32, 32);
 
                 DockHover(fill, DockTo.Fill);
-                DockHover(left, DockTo.Left);
-                DockHover(right, DockTo.Right);
-                DockHover(top, DockTo.Top);
-                DockHover(bottom, DockTo.Bottom);
+
+                if (splitable)
+                {
+                    DockHover(left, DockTo.Left);
+                    DockHover(right, DockTo.Right);
+                    DockHover(top, DockTo.Top);
+                    DockHover(bottom, DockTo.Bottom);
+                }
 
                 DockButton(fill, DockTo.Fill);
-                DockButton(left, DockTo.Left);
-                DockButton(right, DockTo.Right);
-                DockButton(top, DockTo.Top);
-                DockButton(bottom, DockTo.Bottom);
+
+                if (splitable)
+                {
+                    DockButton(left, DockTo.Left);
+                    DockButton(right, DockTo.Right);
+                    DockButton(top, DockTo.Top);
+                    DockButton(bottom, DockTo.Bottom);
+                }
             }
         }
     }

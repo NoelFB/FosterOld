@@ -46,7 +46,7 @@ namespace Foster.Framework
             UpdateWorkspace();
             UpdateStandalone();
 
-            if (!App.Input.Mouse.Down(MouseButtons.Left))
+            if (!App.Input.Mouse.LeftDown)
                 Dragging = null;
         }
 

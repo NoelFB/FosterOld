@@ -127,6 +127,11 @@ namespace Foster.Framework
         public abstract bool VSync { get; set; }
 
         /// <summary>
+        /// Whether this is the currently focused Window
+        /// </summary>
+        public abstract bool Focused { get; }
+
+        /// <summary>
         /// The Window bounds, in Screen coordinates
         /// Note on High DPI displays this may not match the Drawable Bounds of the window. 
         /// DrawableBounds should be used for all drawing.
@@ -159,11 +164,6 @@ namespace Foster.Framework
         /// Whether the mouse is currently over this Window
         /// </summary>
         public abstract bool MouseOver { get; }
-
-        /// <summary>
-        /// Whether this is the currently focused Window
-        /// </summary>
-        public abstract bool Focused { get; }
 
         /// <summary>
         /// Renders the Window. Call Present afterwards to display the rendered contents

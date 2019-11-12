@@ -129,6 +129,7 @@ namespace Foster.GLFW
                 throw new Exception("Creating a Context must be called from the Main Thread");
 
             GLFW.WindowHint(GLFW.WindowHints.Visible, visible);
+            GLFW.WindowHint(GLFW.WindowHints.FocusOnshow, false);
 
             GLFW_Context? shared = null;
             if (Contexts.Count > 0)

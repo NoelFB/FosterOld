@@ -537,7 +537,7 @@ namespace Foster.Framework
             if (viewport.LastHotFrame != ID.None && viewport.LastHotFrame != frame.ID)
                 return false;
 
-            if (App.Input.Mouse.Down(MouseButtons.Left) && !App.Input.Mouse.Pressed(MouseButtons.Left))
+            if (App.Input.Mouse.LeftDown && !App.Input.Mouse.LeftPressed)
                 return false;
 
             if (!ActiveClip.Contains(viewport.Mouse) || !position.Contains(viewport.Mouse))
