@@ -13,10 +13,10 @@ namespace Foster.Framework
             if (context.MouseOver(id, position))
                 context.HotId = id;
 
-            if (context.HotId == id && App.Input.Mouse.Pressed(MouseButtons.Left))
+            if (context.LastHotId == id && App.Input.Mouse.Pressed(MouseButtons.Left))
                 context.ActiveId = id;
 
-            if (context.ActiveId == id && !App.Input.Mouse.Down(MouseButtons.Left))
+            if (context.ActiveId == id && App.Input.Mouse.Released(MouseButtons.Left))
             {
                 if (context.HotId == id)
                     performPress = true;

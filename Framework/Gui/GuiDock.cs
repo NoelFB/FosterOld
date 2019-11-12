@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -48,12 +49,10 @@ namespace Foster.Framework
 
         public readonly int ID;
         public readonly Gui Gui;
-        public Imgui Imgui => Gui.Imgui;
+        public readonly GuiManager Manager;
 
+        public Imgui Imgui => Gui.Imgui;
         public Modes Mode { get; private set; } = Modes.None;
-        public GuiDock? Parent { get; private set; }
-        public GuiDock? Left { get; private set; }
-        public GuiDock? Right { get; private set; }
 
         public float SplitPoint = 0.5f;
         public bool SplitHorizontally = true;
@@ -61,15 +60,52 @@ namespace Foster.Framework
         public readonly List<GuiPanel> Panels = new List<GuiPanel>();
         public int PanelIndex;
         public GuiPanel? Panel => PanelIndex >= 0 && PanelIndex < Panels.Count ? Panels[PanelIndex] : null;
+        
+        public GuiDock? Parent => parent;
 
+        public GuiDock? Left
+        {
+            get => left;
+            set
+            {
+                if (left != null)
+                    left.parent = null;
+
+                left = value;
+
+                if (left != null)
+                    left.parent = this;
+            }
+        }
+
+        public GuiDock? Right
+        {
+            get => right;
+            set
+            {
+                if (right != null)
+                    right.parent = null;
+
+                right = value;
+
+                if (right != null)
+                    right.parent = this;
+            }
+        }
+
+        private GuiDock? parent;
+        private GuiDock? left;
+        private GuiDock? right;
         private Window? standaloneWindow;
         private Batch2d? standaloneBatcher;
         private Rect floatingBounds;
         private Vector2 draggingOffset;
+        private Point2 draggingBy;
 
-        public GuiDock(Gui gui)
+        public GuiDock(GuiManager manager)
         {
-            Gui = gui;
+            Gui = manager.Gui;
+            Manager = manager;
             ID = Guid.NewGuid().GetHashCode();
         }
 
@@ -79,10 +115,10 @@ namespace Foster.Framework
             {
                 UnsetLastMode();
 
-                if (Gui.Root != null && Gui.Root != this)
+                if (Manager.Root != null && Manager.Root != this)
                     throw new Exception("Workspace already has a Root Dock");
 
-                Parent = null;
+                parent = null;
                 Mode = Modes.Root;
             }
         }
@@ -93,9 +129,9 @@ namespace Foster.Framework
             {
                 UnsetLastMode();
 
-                Gui.Floating.Add(this);
+                Manager.Floating.Add(this);
 
-                Parent = null;
+                parent = null;
                 Mode = Modes.Floating;
                 floatingBounds = bounds;
             }
@@ -105,44 +141,51 @@ namespace Foster.Framework
         {
             if (Mode != Modes.Standalone)
             {
-                UnsetLastMode();
-
-                Parent = null;
-                Mode = Modes.Standalone;
-                Gui.Standalone.Add(this);
-
-                standaloneWindow = App.System.CreateWindow("Gui Dock", (int)bounds.Width, (int)bounds.Height);
-                standaloneWindow.X = (int)bounds.X;
-                standaloneWindow.Y = (int)bounds.Y;
-                standaloneWindow.VSync = false;
-                standaloneWindow.Bordered = false;
-                standaloneWindow.OnResize = (w, h) =>
+                if (App.System.SupportsMultipleWindows)
                 {
-                    Refresh();
-                    standaloneWindow.Render();
-                    standaloneWindow.Present();
-                };
-                standaloneWindow.OnRender = () =>
-                {
-                    GetBatcher()?.Render();
-                };
-                standaloneWindow.OnClose = () =>
-                {
-                    if (Mode == Modes.Standalone)
-                        UnsetLastMode();
-                };
+                    UnsetLastMode();
 
-                standaloneBatcher = new Batch2d();
+                    parent = null;
+                    Mode = Modes.Standalone;
+                    Manager.Standalone.Add(this);
+
+                    standaloneWindow = App.System.CreateWindow("Gui Dock", (int)bounds.Width, (int)bounds.Height);
+                    standaloneWindow.X = (int)bounds.X;
+                    standaloneWindow.Y = (int)bounds.Y;
+                    standaloneWindow.VSync = false;
+                    standaloneWindow.Bordered = false;
+                    standaloneWindow.OnResize = (w, h) =>
+                    {
+                        Refresh();
+                        standaloneWindow.Render();
+                        standaloneWindow.Present();
+                    };
+                    standaloneWindow.OnRender = () =>
+                    {
+                        GetBatcher()?.Render();
+                    };
+                    standaloneWindow.OnClose = () =>
+                    {
+                        if (Mode == Modes.Standalone)
+                            UnsetLastMode();
+                    };
+
+                    standaloneBatcher = new Batch2d();
+                }
+                else
+                {
+                    SetAsFloating(new Rect(0, 0, bounds.Width, bounds.Height));
+                }
             }
         }
 
         public void SetAsDock(GuiDock parent, DockTo split)
         {
             if (Mode == Modes.Docked)
-                throw new Exception("This Dock is already Docked");
+                throw new Exception("The Dock is already Docked");
 
             if (IsChildOf(parent))
-                throw new Exception("Parented to this element already");
+                throw new Exception("The Dock is already a child of this Dock");
 
             UnsetLastMode();
 
@@ -154,11 +197,7 @@ namespace Foster.Framework
                 if (parent.Panels.Count <= 0)
                 {
                     parent.Left = Left;
-                    if (parent.Left != null)
-                        parent.Left.Parent = parent;
                     parent.Right = Right;
-                    if (parent.Right != null)
-                        parent.Right.Parent = parent;
                     parent.SplitHorizontally = SplitHorizontally;
                     parent.SplitPoint = SplitPoint;
                     parent.Panels.AddRange(Panels);
@@ -170,26 +209,15 @@ namespace Foster.Framework
             }
             else
             {
-
-                var currentLeft = parent.Left;
-                var currentRight = parent.Right;
-
                 GuiDock? other = null;
 
                 // we must subdivide since the parent already has a left/right dock
-                if (currentLeft != null || currentRight != null)
+                if (parent.Left != null || parent.Right != null)
                 {
-                    other = new GuiDock(Gui);
+                    other = new GuiDock(Manager);
 
-                    other.Left = currentLeft;
-                    if (other.Left != null)
-                        other.Left.Parent = other;
-
-                    other.Right = currentRight;
-                    if (other.Right != null)
-                        other.Right.Parent = other;
-
-                    other.Parent = parent;
+                    other.Left = parent.Left;
+                    other.Right = parent.Right;
                     other.Mode = Modes.Docked;
                     other.SplitHorizontally = parent.SplitHorizontally;
                     other.SplitPoint = parent.SplitPoint;
@@ -197,10 +225,9 @@ namespace Foster.Framework
                 // move parent contents to a new child
                 else
                 {
-                    other = new GuiDock(Gui);
+                    other = new GuiDock(Manager);
                     other.Panels.AddRange(parent.Panels);
                     other.PanelIndex = parent.PanelIndex;
-                    other.Parent = parent;
                     other.Mode = Modes.Docked;
 
                     parent.Panels.Clear();
@@ -221,7 +248,6 @@ namespace Foster.Framework
                 parent.SplitPoint = 0.5f;
                 parent.SplitHorizontally = (split == DockTo.Left || split == DockTo.Right);
 
-                Parent = parent;
                 Mode = Modes.Docked;
             }
         }
@@ -234,77 +260,85 @@ namespace Foster.Framework
             }
             else if (Mode == Modes.Floating)
             {
-                Gui.Floating.Remove(this);
+                Manager.Floating.Remove(this);
             }
             else if (Mode == Modes.Standalone)
             {
-                standaloneWindow?.Close();
-                Gui.Standalone.Remove(this);
-                standaloneWindow = null;
+                if (standaloneWindow != null)
+                {
+                    standaloneWindow.OnClose = null;
+                    standaloneWindow.OnResize = null;
+                    standaloneWindow.OnRender = null;
+                    standaloneWindow.Close();
+                    standaloneWindow = null;
+                }
 
-                standaloneBatcher?.Dispose();
-                standaloneBatcher = null;
+                if (standaloneBatcher != null)
+                {
+                    standaloneBatcher.Dispose();
+                    standaloneBatcher = null;
+                }
+
+                Manager.Standalone.Remove(this);
             }
             else if (Mode == Modes.Docked)
             {
                 if (Parent != null)
                 {
-                    GuiDock? other = null;
-                    if (Parent.Left == this)
-                        other = Parent.Right;
-                    else if (Parent.Right == this)
-                        other = Parent.Left;
+                    var lastParent = Parent;
 
-                    Parent.Left = null;
-                    Parent.Right = null;
+                    GuiDock? other = null;
+                    if (lastParent.Left == this)
+                        other = lastParent.Right;
+                    else if (lastParent.Right == this)
+                        other = lastParent.Left;
+
+                    lastParent.Left = null;
+                    lastParent.Right = null;
 
                     if (other != null)
                     {
-                        Parent.SplitPoint = other.SplitPoint;
-                        Parent.SplitHorizontally = other.SplitHorizontally;
-                        Parent.Left = other.Left;
-                        Parent.Right = other.Right;
-
-                        if (Parent.Left != null)
-                            Parent.Left.Parent = Parent;
-                        if (Parent.Right != null)
-                            Parent.Right.Parent = Parent;
-
-                        Parent.Panels.Clear();
-                        Parent.Panels.AddRange(other.Panels);
+                        lastParent.SplitPoint = other.SplitPoint;
+                        lastParent.SplitHorizontally = other.SplitHorizontally;
+                        lastParent.Left = other.Left;
+                        lastParent.Right = other.Right;
+                        lastParent.Panels.Clear();
+                        lastParent.Panels.AddRange(other.Panels);
                     }
 
                     // parent now also has nothing in it ...
-                    if (Parent.Left == null && Parent.Right == null && Parent.Panels.Count <= 0 && Parent.Mode != Modes.Root)
-                        Parent.UnsetLastMode();
+                    if (lastParent.Left == null && lastParent.Right == null && lastParent.Panels.Count <= 0 && lastParent.Mode != Modes.Root)
+                        lastParent.UnsetLastMode();
                 }
 
-                Parent = null;
+                parent = null;
             }
 
             Mode = Modes.None;
         }
 
-        public Batch2d? GetBatcher()
+        public Batch2d GetBatcher()
         {
             if (Mode == Modes.Docked && Parent != null)
                 return Parent.GetBatcher();
             if (Mode == Modes.Floating || Mode == Modes.Root)
-                return Gui.Batcher;
-            if (Mode == Modes.Standalone)
+                return Manager.Batcher;
+            if (Mode == Modes.Standalone && standaloneBatcher != null)
                 return standaloneBatcher;
-            return null;
+
+            throw new Exception("Gui Dock doesn't have a Batcher");
         }
 
-        public Window? GetCurrentWindow()
+        public Window GetWindow()
         {
             if (Mode == Modes.Docked && Parent != null)
-                return Parent.GetCurrentWindow();
+                return Parent.GetWindow();
             if (Mode == Modes.Floating || Mode == Modes.Root)
-                return Gui.Window;
-            if (Mode == Modes.Standalone)
+                return Manager.Window;
+            if (Mode == Modes.Standalone && standaloneWindow != null)
                 return standaloneWindow;
-            return null;
+
+            throw new Exception("Gui Dock doesn't have a Window");
         }
 
         public Rect GetContentBounds()
@@ -336,7 +370,7 @@ namespace Foster.Framework
             }
             else if (Mode == Modes.Standalone || Mode == Modes.Root)
             {
-                var window = GetCurrentWindow();
+                var window = GetWindow();
                 if (window != null)
                     return window.ContentBounds;
             }
@@ -344,18 +378,11 @@ namespace Foster.Framework
             return new Rect();
         }
 
-        public Modes GetRootMode()
-        {
-            if (Parent == null)
-                return Mode;
-            return Parent.GetRootMode();
-        }
-
-        public GuiDock GetRootDock()
+        public GuiDock GetBaseDock()
         {
             if (Parent == null)
                 return this;
-            return Parent.GetRootDock();
+            return Parent.GetBaseDock();
         }
 
         public bool IsTopLeftDock()
@@ -392,121 +419,97 @@ namespace Foster.Framework
 
         public void Refresh()
         {
-            var batcher = GetBatcher();
-            if (batcher == null)
-                throw new Exception("Gui Dock has no Batcher");
+            draggingBy = Point2.Zero;
 
-            var standalone = Mode == Modes.Standalone;
-            if (standalone)
+            var batcher = GetBatcher();
+            var bounds = GetContentBounds();
+            var mode = Mode;
+
+            // standalone windows begin their own Viewport
+            if (mode == Modes.Standalone)
             {
                 batcher.Clear();
 
-                var window = GetCurrentWindow();
+                var window = GetWindow();
                 if (window == null)
                     throw new Exception("Gui Dock has no Window");
 
                 Imgui.BeginViewport(ID, batcher, window.ContentBounds, window.Mouse, window.PixelScale, !window.MouseOver);
             }
 
-            var bounds = GetContentBounds();
-            InternalRefresh(batcher, bounds);
-
-            if (standalone)
+            // Display internals
             {
-                Imgui.EndViewport();
-            }
-        }
+                batcher.Rect(bounds.X, bounds.Y, bounds.Width, 1, Color.Red);
+                batcher.Rect(bounds.X, bounds.Y + bounds.Height - 1, bounds.Width, 1, Color.Red);
+                batcher.Rect(bounds.X, bounds.Y, 1, bounds.Height, Color.Red);
+                batcher.Rect(bounds.X + bounds.Width - 1, bounds.Y, 1, bounds.Height, Color.Red);
+                batcher.Rect(bounds.Inflate(-1), Color.Blue);
 
-        private void InternalRefresh(Batch2d batcher, Rect bounds)
-        {
-            batcher.Rect(bounds.X, bounds.Y, bounds.Width, 1, Color.Red);
-            batcher.Rect(bounds.X, bounds.Y + bounds.Height - 1, bounds.Width, 1, Color.Red);
-            batcher.Rect(bounds.X, bounds.Y, 1, bounds.Height, Color.Red);
-            batcher.Rect(bounds.X + bounds.Width - 1, bounds.Y, 1, bounds.Height, Color.Red);
-            batcher.Rect(bounds.Inflate(-1), Color.Blue);
-
-            if (Left != null || Right != null)
-            {
-                if (SplitHorizontally)
-                    batcher.Rect(bounds.X + bounds.Width * SplitPoint, bounds.Y + 1, 1, bounds.Height - 2, Color.Yellow);
-                else
-                    batcher.Rect(bounds.X + 1, bounds.Y + bounds.Height * SplitPoint, bounds.Width - 2, 1, Color.Yellow);
-            }
-
-            if (Left != null || Right != null)
-            {
-                Left?.Refresh();
-                Right?.Refresh();
-            }
-            else
-            {
-                if (bounds.Contains(Imgui.ActiveMouse) && !IsChildOf(Gui.Dragging))
-                    Gui.Hot = this;
-
-                if (Panels.Count > 0)
+                if (Left != null || Right != null)
                 {
-                    while (PanelIndex >= Panels.Count)
-                        PanelIndex--;
-                    if (PanelIndex < 0)
-                        PanelIndex = 0;
+                    if (SplitHorizontally)
+                        batcher.Rect(bounds.X + bounds.Width * SplitPoint, bounds.Y + 1, 1, bounds.Height - 2, Color.Yellow);
+                    else
+                        batcher.Rect(bounds.X + 1, bounds.Y + bounds.Height * SplitPoint, bounds.Width - 2, 1, Color.Yellow);
+                }
 
-                    if (Imgui.BeginFrame(ID + 1, bounds, false))
+                if (Left != null || Right != null)
+                {
+                    Left?.Refresh();
+                    Right?.Refresh();
+                }
+                else
+                {
+                    if (bounds.Contains(Imgui.ActiveMouse) && !IsChildOf(Manager.Dragging))
+                        Manager.NextDockable = this;
+
+                    if (Panels.Count > 0)
                     {
-                        Imgui.Row(Panels.Count + 1);
-                        Imgui.Button("o", 16);
+                        while (PanelIndex >= Panels.Count)
+                            PanelIndex--;
+                        if (PanelIndex < 0)
+                            PanelIndex = 0;
 
-                        HandleDragging(bounds, null);
-
-                        for (int i = 0; i < Panels.Count; i++)
+                        if (Imgui.BeginFrame(ID + 1, bounds, false))
                         {
-                            if (Imgui.Button(Panels[i].Title))
-                                PanelIndex = i;
+                            // If they grab anywhere on the FRame
+                            HandleDragging(bounds, null);
 
-                            HandleDragging(bounds, Panels[i]);
-                        }
+                            Imgui.Row(Panels.Count + 1);
+                            Imgui.Button("o", 16);
 
-                        if (Panel != null)
-                        {
-                            if (Imgui.BeginFrame(ID, Imgui.Remainder()))
+                            // if they grab the "o" button
+                            HandleDragging(bounds, null);
+
+                            for (int i = 0; i < Panels.Count; i++)
                             {
-                                Panel.OnRefresh?.Invoke(Imgui);
-                                Imgui.EndFrame();
-                            }
-                        }
+                                if (Imgui.Button(Panels[i].Title, Imgui.PreferredSize))
+                                    PanelIndex = i;
 
-                        Imgui.EndFrame();
+                                // if they grab a single tab
+                                HandleDragging(bounds, Panels[i]);
+                            }
+
+                            if (Panel != null)
+                            {
+                                if (Imgui.BeginFrame(ID, Imgui.Remainder()))
+                                {
+                                    Panel.OnRefresh?.Invoke(Imgui);
+                                    Imgui.EndFrame();
+                                }
+                            }
+
+                            Imgui.EndFrame();
+                        }
                     }
                 }
             }
 
-            if (Gui.LastHot == this && Gui.Dragging != null && !IsChildOf(Gui.Dragging))
+            // End Viewport
+            if (mode == Modes.Standalone)
             {
-                batcher.Rect(bounds, Color.White * 0.25f);
-
-                var center = bounds.Center;
-
-                HoveringDockButton(batcher, new Rect(center.X - 16, center.Y - 16, 32, 32), DockTo.Fill);
-                HoveringDockButton(batcher, new Rect(center.X - 16 - 34, center.Y - 16, 32, 32), DockTo.Left);
-                HoveringDockButton(batcher, new Rect(center.X - 16 + 34, center.Y - 16, 32, 32), DockTo.Right);
-                HoveringDockButton(batcher, new Rect(center.X - 16, center.Y - 16 - 34, 32, 32), DockTo.Top);
-                HoveringDockButton(batcher, new Rect(center.X - 16, center.Y - 16 + 34, 32, 32), DockTo.Bottom);
-            }
-        }
-
-        private void HoveringDockButton(Batch2d batcher, Rect rect, DockTo split)
-        {
-            if (Gui.LastHot == this && Gui.Dragging != null)
-            {
-                batcher.Rect(rect.Inflate(1), Color.White);
-                batcher.Rect(rect, Color.Blue);
-
-                if (rect.Contains(Imgui.ActiveMouse))
-                {
-                    batcher.Rect(rect, Color.White * 0.5f);
-
-                    if (!App.Input.Mouse.Down(MouseButtons.Left))
-                        Gui.Dragging.SetAsDock(this, split);
-                }
+                DockingGui();
+                Imgui.EndViewport();
             }
         }
 
@@ -514,63 +517,142 @@ namespace Foster.Framework
         {
             if (Imgui.CurrentId == Imgui.ActiveId)
             {
+                // reset our floating drag offset
                 if (Imgui.LastActiveId != Imgui.ActiveId)
                     draggingOffset = Vector2.Zero;
 
+                // get the move by amount as an integer
                 draggingOffset += Imgui.ActiveViewport.MouseDelta;
-                var moveBy = draggingOffset.Floor();
-                draggingOffset -= moveBy;
+                draggingBy = draggingOffset.Floor();
+                draggingOffset -= draggingBy;
 
-                var window = GetCurrentWindow();
-                if (window == null)
-                    throw new Exception("Gui Dock Window is null");
-
-                if (moveBy.Length > 0)
+                // only move if we need to
+                if (draggingBy.Length > 0)
                 {
-                    // drag out a single panel
+                    var window = GetWindow();
+                    var root = GetBaseDock();
+                    var isTopLeft = IsTopLeftDock();
+
+                    // drag out a single panel from a list of panels
                     if (singlePanel != null && Panels.Count > 1)
                     {
-                        var dock = new GuiDock(Gui);
+                        var dock = new GuiDock(Manager);
                         dock.SetAsStandalone(new Rect(window.X + bounds.X, window.Y + bounds.Y, bounds.Width, bounds.Height));
                         dock.Panels.Add(singlePanel);
                         Panels.Remove(singlePanel);
                     }
-                    // drag the full window
-                    else if (IsTopLeftDock())
+                    // pop out of the root
+                    // The Root is allowed to be totally empty
+                    else if (Mode == Modes.Root)
                     {
-                        var root = GetRootDock();
-                        Gui.Dragging = root;
+                        var dock = new GuiDock(Manager);
+                        dock.SetAsStandalone(new Rect(window.X + bounds.X, window.Y + bounds.Y, bounds.Width, bounds.Height));
+                        dock.Panels.AddRange(Panels);
+                        dock.PanelIndex = PanelIndex;
+                        dock.SplitHorizontally = SplitHorizontally;
+                        dock.SplitPoint = SplitPoint;
+                        dock.Left = Left;
+                        dock.Right = Right;
+                        Panels.Clear();
+                    }
+                    // drag the standalone Window around normally
+                    else if (isTopLeft && root.Mode == Modes.Standalone)
+                    {
+                        Manager.Dragging = root;
+                        Imgui.ActiveMouse -= draggingBy;
+                        window.Position += draggingBy;
+                    }
+                    // drag the floating Window around normally
+                    else if (isTopLeft && root.Mode == Modes.Floating)
+                    {
+                        Manager.Dragging = root;
+                        root.floatingBounds.X += draggingBy.X;
+                        root.floatingBounds.Y += draggingBy.Y;
 
-                        var rootMode = GetRootMode();
-                        if (rootMode == Modes.Standalone)
+                        // pop out of the frame if it doesn't fit
+                        if (!Imgui.ActiveViewport.Bounds.Contains(root.floatingBounds))
                         {
-                            Imgui.ActiveMouse -= moveBy;
-                            window.Position += moveBy;
-                        }
-                        else if (rootMode == Modes.Floating)
-                        {
-                            root.floatingBounds.X += moveBy.X;
-                            root.floatingBounds.Y += moveBy.Y;
-
-                            if (!Imgui.ActiveViewport.Bounds.Contains(root.floatingBounds))
-                            {
-                                if (App.System.SupportsMultipleWindows)
-                                {
-                                    root.SetAsStandalone(new Rect(window.X + root.floatingBounds.X, window.Y + root.floatingBounds.Y, root.floatingBounds.Width, root.floatingBounds.Height));
-                                }
-                                else
-                                {
-
-                                }
-                            }
+                            root.SetAsStandalone(window.Position + root.floatingBounds);
                         }
                     }
-                    // pop out of parent
+                    // pop out of our parent
                     else
                     {
                         SetAsStandalone(new Rect(window.X + bounds.X, window.Y + bounds.Y, bounds.Width, bounds.Height));
                     }
                 }
+            }
+        }
+
+        public void DockingGui()
+        {
+            if (Manager.LastDockable != null && Manager.Dragging != null && !Manager.LastDockable.IsChildOf(Manager.Dragging))
+            {
+                var batcher = GetBatcher();
+                var window = GetWindow();
+                var other = Manager.LastDockable.GetWindow();
+
+                var offset = other.Position - window.Position;
+                var bounds = Manager.LastDockable.GetContentBounds();
+                bounds.X += offset.X;
+                bounds.Y += offset.Y;
+
+                void DockButton(Rect rect, DockTo split)
+                {
+                    if (Manager.Dragging != null)
+                    {
+                        batcher.Rect(rect.Inflate(1), Color.White);
+                        batcher.Rect(rect, Color.Blue);
+
+                        if (rect.Contains(Imgui.ActiveMouse))
+                        {
+                            batcher.Rect(rect, Color.White * 0.5f);
+
+                            if (!App.Input.Mouse.Down(MouseButtons.Left))
+                            {
+                                Manager.Dragging.SetAsDock(Manager.LastDockable!, split);
+                                Manager.Dragging = null;
+                            }
+                        }
+                    }
+                }
+
+                void DockHover(Rect rect, DockTo split)
+                {
+                    if (Manager.Dragging != null && rect.Contains(Imgui.ActiveMouse))
+                    {
+                        var color = Color.White * 0.5f;
+                        if (split == DockTo.Fill)
+                            batcher.Rect(bounds, color);
+                        else if (split == DockTo.Left)
+                            batcher.Rect(new Rect(bounds.X, bounds.Y, bounds.Width * 0.5f, bounds.Height), color);
+                        else if (split == DockTo.Right)
+                            batcher.Rect(new Rect(bounds.X + bounds.Width * 0.5f, bounds.Y, bounds.Width * 0.5f, bounds.Height), color);
+                        else if (split == DockTo.Top)
+                            batcher.Rect(new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height * 0.5f), color);
+                        else if (split == DockTo.Bottom)
+                            batcher.Rect(new Rect(bounds.X, bounds.Y + bounds.Height * 0.5f, bounds.Width, bounds.Height * 0.5f), color);
+                    }
+                }
+
+                var center = bounds.Center;
+                var fill = new Rect(center.X - 16, center.Y - 16, 32, 32);
+                var left = new Rect(center.X - 16 - 34, center.Y - 16, 32, 32);
+                var right = new Rect(center.X - 16 + 34, center.Y - 16, 32, 32);
+                var top = new Rect(center.X - 16, center.Y - 16 - 34, 32, 32);
+                var bottom = new Rect(center.X - 16, center.Y - 16 + 34, 32, 32);
+
+                DockHover(fill, DockTo.Fill);
+                DockHover(left, DockTo.Left);
+                DockHover(right, DockTo.Right);
+                DockHover(top, DockTo.Top);
+                DockHover(bottom, DockTo.Bottom);
+
+                DockButton(fill, DockTo.Fill);
+                DockButton(left, DockTo.Left);
+                DockButton(right, DockTo.Right);
+                DockButton(top, DockTo.Top);
+                DockButton(bottom, DockTo.Bottom);
             }
         }
     }

@@ -118,6 +118,9 @@ namespace Foster.Framework
         public static Vector2 operator *(Vector2 a, Vector2 b) => new Vector2(a.X * b.X, a.Y * b.Y);
         public static Vector2 operator /(Vector2 a, Vector2 b) => new Vector2(a.X / b.X, a.Y / b.Y);
 
+        public static Rect operator +(Vector2 a, Rect b) => new Rect(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
+        public static Rect operator +(Rect b, Vector2 a) => new Rect(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
+
         public static bool operator ==(Vector2 a, Vector2 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Vector2 a, Vector2 b) => a.X != b.X || a.Y != b.Y;
 

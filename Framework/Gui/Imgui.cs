@@ -192,6 +192,7 @@ namespace Foster.Framework
         public float Indent => (indents.Count > 0 ? indents.Peek() : 0f);
 
         public ID HotId = ID.None;
+        public ID LastHotId = ID.None;
         public ID ActiveId = ID.None;
         public ID LastActiveId = ID.None;
         public ID CurrentId = ID.None;
@@ -348,6 +349,7 @@ namespace Foster.Framework
             viewportStorage.Step();
             frameStorage.Step();
 
+            LastHotId = HotId;
             HotId = ID.None;
 
             // track active ID
@@ -424,7 +426,8 @@ namespace Foster.Framework
                     ID = PushId(info),
                     Bounds = bounds,
                     Clip = clip,
-                    Scrollable = scrollable
+                    Scrollable = scrollable,
+                    Padding = Style.WindowPadding,
                 };
 
                 if (!frameStorage.Retrieve(frame.ID, out var last))
@@ -476,6 +479,10 @@ namespace Foster.Framework
 
                     PushClip(frame.Clip);
                 }
+
+                // behave as a button
+                // this way stuff can check if it's the ActiveID
+                ImguiButton.ButtonBehaviour(this, frame.ID, frame.Clip);
 
                 return true;
             }
