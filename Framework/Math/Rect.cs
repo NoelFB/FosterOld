@@ -72,10 +72,12 @@ namespace Foster.Framework
 
         public bool Contains(Vector2 point)
         {
-            var t = new Transform3D();
-            var n = (t as ITransform3D);
-
             return (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);
+        }
+
+        public bool Contains(Rect rect)
+        {
+            return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
         }
 
         public bool Intersects(Rect against)

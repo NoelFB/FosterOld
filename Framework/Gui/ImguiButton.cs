@@ -16,7 +16,7 @@ namespace Foster.Framework
             if (context.HotId == id && App.Input.Mouse.Pressed(MouseButtons.Left))
                 context.ActiveId = id;
 
-            if (context.ActiveId == id && App.Input.Mouse.Released(MouseButtons.Left))
+            if (context.ActiveId == id && !App.Input.Mouse.Down(MouseButtons.Left))
             {
                 if (context.HotId == id)
                     performPress = true;
@@ -53,6 +53,9 @@ namespace Foster.Framework
                 var id = context.Id(identifier);
                 var scale = Vector2.One * style.FontScale;
                 var color = Color.White;
+
+                if (label[0] == 'w')
+                    color = Color.Green;
 
                 result = context.ButtonBehaviour(id, position);
 

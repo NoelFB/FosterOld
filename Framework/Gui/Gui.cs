@@ -17,6 +17,10 @@ namespace Foster.Framework
         public readonly List<GuiDock> Floating = new List<GuiDock>();
         public readonly List<GuiDock> Standalone = new List<GuiDock>();
 
+        public GuiDock? Dragging;
+        public GuiDock? LastHot;
+        public GuiDock? Hot;
+
         public Gui(SpriteFont font, Window window)
         {
             Font = font;
@@ -42,38 +46,15 @@ namespace Foster.Framework
 
         private void test()
         {
-            var dock0 = new GuiDock(this);
-            var dock1 = new GuiDock(this);
-            var dock2 = new GuiDock(this);
-
-            dock0.SetAsDock(Root, GuiDock.SplitDirection.Left);
-            dock1.SetAsDock(Root, GuiDock.SplitDirection.Right);
-            dock2.SetAsDock(dock1, GuiDock.SplitDirection.Top);
-
-            var dock5 = new GuiDock(this);
-
-            var dock6 = new GuiDock(this);
-            dock6.SetAsDock(dock5, GuiDock.SplitDirection.Right);
-
-            dock5.SetAsDock(Root, GuiDock.SplitDirection.Bottom);
-
             GuiPanel p;
-            dock5.Left.Panels.Add(p = new GuiPanel("Hello 1"));
-            dock5.Left.Panels.Add(p = new GuiPanel("Hello 2"));
-            p.OnRefresh = (imgui) =>
-            {
-                for (int i = 0; i < 20; i++)
-                    imgui.Button($"What {i}");
-            };
 
             var dock8 = new GuiDock(this);
             dock8.SetAsStandalone(new Rect(32, 32, 400, 400));
             dock8.Panels.Add(p = new GuiPanel("what"));
-            dock8.Panels.Add(p = new GuiPanel("what 2"));
             p.OnRefresh = (imgui) =>
             {
                 for (int i = 0; i < 20; i++)
-                    imgui.Button($"What {i}");
+                    imgui.Button($"Button {i}");
             };
 
             var dock7 = new GuiDock(this);
@@ -85,11 +66,11 @@ namespace Foster.Framework
             p.OnRefresh = (imgui) =>
             {
                 for (int i = 0; i < 20; i++)
-                    imgui.Button($"What {i}");
+                    imgui.Button($"Button {i}");
             };
 
             dock7 = new GuiDock(this);
-            dock7.SetAsDock(dock8, GuiDock.SplitDirection.Bottom);
+            dock7.SetAsDock(dock8, GuiDock.DockTo.Bottom);
             dock7.Panels.Add(p = new GuiPanel("what"));
             dock7.Panels.Add(p = new GuiPanel("what 2"));
             dock7.Panels.Add(p = new GuiPanel("what 3"));
@@ -97,14 +78,20 @@ namespace Foster.Framework
             p.OnRefresh = (imgui) =>
             {
                 for (int i = 0; i < 20; i++)
-                    imgui.Button($"What {i}");
+                    imgui.Button($"Button {i}");
             };
         }
 
         protected internal override void Update()
         {
+            LastHot = Hot;
+            Hot = null;
+
             UpdateWorkspace();
             UpdateStandalone();
+
+            if (!App.Input.Mouse.Down(MouseButtons.Left))
+                Dragging = null;
         }
 
         private void UpdateWorkspace()

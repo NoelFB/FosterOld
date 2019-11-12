@@ -193,15 +193,22 @@ namespace Foster.Framework
 
         public ID HotId = ID.None;
         public ID ActiveId = ID.None;
-        public ID LastId = ID.None;
+        public ID LastActiveId = ID.None;
+        public ID CurrentId = ID.None;
 
         private Viewport viewport;
         private Frame frame;
+        private bool lastActiveIdExists;
 
         public Viewport ActiveViewport => viewport;
         public Frame ActiveFrame => frame;
         public Rect ActiveClip => clips.Count > 0 ? clips.Peek() : new Rect();
         public Batch2d? Batcher => viewport.Batcher;
+        public Vector2 ActiveMouse
+        {
+            get => viewport.Mouse;
+            set => viewport.Mouse = value;
+        }
 
         private readonly Stack<Frame> frames = new Stack<Frame>();
         private readonly Stack<ID> ids = new Stack<ID>();
@@ -229,7 +236,10 @@ namespace Foster.Framework
 
         public ID Id(UniqueInfo value)
         {
-            return LastId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : new ID(0, 0)));
+            CurrentId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : new ID(0, 0)));
+            if (LastActiveId == CurrentId)
+                lastActiveIdExists = true;
+            return CurrentId;
         }
 
         public ID PushId(ID id)
@@ -330,7 +340,6 @@ namespace Foster.Framework
         {
             viewport = new Viewport();
             frame = new Frame();
-            HotId = ID.None;
             indents.Clear();
             styles.Clear();
             ids.Clear();
@@ -338,6 +347,22 @@ namespace Foster.Framework
             clips.Clear();
             viewportStorage.Step();
             frameStorage.Step();
+
+            HotId = ID.None;
+
+            // track active ID
+            // if the active ID no longer exists, unset it
+            {
+                if (LastActiveId == ID.None && ActiveId != ID.None)
+                    lastActiveIdExists = true;
+
+                LastActiveId = ActiveId;
+
+                if (!lastActiveIdExists)
+                    ActiveId = ID.None;
+
+                lastActiveIdExists = false;
+            }
         }
 
         public void BeginViewport(Window window, Batch2d batcher)
@@ -352,7 +377,7 @@ namespace Foster.Framework
 
             viewport = new Viewport
             {
-                ID = PushId(info),
+                ID = new ID(info.Value, 0),
                 Bounds = bounds,
                 Mouse = mouse,
                 MouseObstructed = mouseObstructed,
@@ -378,7 +403,7 @@ namespace Foster.Framework
                 throw new Exception("The previous Group must be closed before closing the Viewport");
 
             PopClip();
-            PopId();
+            // PopId();
 
             viewportStorage.Store(viewport.ID, viewport);
             viewport.Batcher.PopMatrix();

@@ -24,6 +24,20 @@ namespace Foster.Framework
             set => Bounds = new RectInt(X, value, Width, Height);
         }
 
+        public Point2 Position
+        {
+            get
+            {
+                var bounds = Bounds;
+                return new Point2(bounds.X, bounds.Y);
+            }
+            set
+            {
+                var bounds = Bounds;
+                Bounds = new RectInt(value.X, value.Y, bounds.Width, bounds.Height);
+            }
+        }
+
         /// <summary>
         /// The Width of the Window, in Screen coordinates
         /// </summary>

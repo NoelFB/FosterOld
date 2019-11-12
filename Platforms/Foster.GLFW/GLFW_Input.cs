@@ -160,7 +160,6 @@ namespace Foster.GLFW
         protected override void AfterUpdate()
         {
             var timestamp = (ulong)timer.ElapsedMilliseconds;
-
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
             {
                 uint index = (uint)jid;
