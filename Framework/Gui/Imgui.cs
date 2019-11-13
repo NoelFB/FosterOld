@@ -228,10 +228,10 @@ namespace Foster.Framework
             DefaultStyle = new Stylesheet()
             {
                 Font = font,
-                FontSize = 16,
+                FontSize = 14,
                 Spacing = 4,
-                ElementPadding = 4,
-                WindowPadding = 4,
+                ElementPadding = 2,
+                WindowPadding = 0,
                 TitleScale = 1.25f
             };
         }
@@ -534,7 +534,7 @@ namespace Foster.Framework
             if (ActiveId != ID.None && ActiveId != id)
                 return false;
 
-            if (viewport.LastHotFrame != ID.None && viewport.LastHotFrame != frame.ID)
+            if (frame.ID != ID.None && viewport.LastHotFrame != ID.None && viewport.LastHotFrame != frame.ID)
                 return false;
 
             if (App.Input.Mouse.LeftDown && !App.Input.Mouse.LeftPressed)

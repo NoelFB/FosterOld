@@ -28,21 +28,17 @@ namespace Test1
             var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "RobotoMono-Medium.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
             
-            var panel = gui.CreatePanel("Hello World", new Rect(32, 32, 400, 400));
-            panel.OnRefresh = (imgui) =>
-            {
-                for (int i = 0; i < 4; i++)
-                    if (imgui.Button("What " + i))
-                        Console.WriteLine("PRESSED " + i);
-            };
 
-            panel = gui.CreatePanel("Hello World", new Rect(32, 32, 400, 400));
-            panel.OnRefresh = (imgui) =>
+            for (int i = 0; i < 5; i++)
             {
-                for (int i = 0; i < 4; i++)
-                    if (imgui.Button("What " + i))
-                        Console.WriteLine("PRESSED " + i);
-            };
+                var panel = gui.CreatePanel($"Hello World {i}", new Rect(32, 32, 400, 400));
+                panel.OnRefresh = (imgui) =>
+                {
+                    for (int i = 0; i < 4; i++)
+                        if (imgui.Button("What " + i))
+                            Console.WriteLine("PRESSED " + i);
+                };
+            }
         }
 
     }

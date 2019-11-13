@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Foster.Framework
 {
+
     public struct RectInt
     {
 
@@ -13,6 +16,16 @@ namespace Foster.Framework
         public int Y;
         public int Width;
         public int Height;
+
+        public Point2 Position
+        {
+            get => new Point2(X, Y);
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+            }
+        }
 
         public int Left
         {
@@ -44,6 +57,46 @@ namespace Foster.Framework
         {
             get => Y + Height;
             set => Height = value - Y;
+        }
+
+        public Point2 TopLeft
+        {
+            get => new Point2(Left, Top);
+            set
+            {
+                Left = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Point2 TopRight
+        {
+            get => new Point2(Right, Top);
+            set
+            {
+                Right = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Point2 BottomLeft
+        {
+            get => new Point2(Left, Bottom);
+            set
+            {
+                Left = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        public Point2 BottomRight
+        {
+            get => new Point2(Right, Bottom);
+            set
+            {
+                Right = value.X;
+                Bottom = value.Y;
+            }
         }
 
         public Point2 Center => new Point2(X + Width / 2, Y + Height / 2);

@@ -6,6 +6,20 @@ namespace Foster.Framework
 {
     public static class ImguiButton
     {
+        public static bool GrabbingBehaviour(this Imgui context, Imgui.ID id, Rect position)
+        {
+            if (context.MouseOver(id, position))
+                context.HotId = id;
+
+            if (context.LastHotId == id && App.Input.Mouse.LeftPressed)
+                context.ActiveId = id;
+
+            if (context.ActiveId == id && App.Input.Mouse.LeftReleased)
+                context.ActiveId = Imgui.ID.None;
+
+            return context.ActiveId == id;
+        }
+
         public static bool ButtonBehaviour(this Imgui context, Imgui.ID id, Rect position)
         {
             var performPress = false;

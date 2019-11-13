@@ -43,8 +43,15 @@ namespace Foster.Framework
             LastDockable = NextDockable;
             NextDockable = null;
 
+            foreach (var standalone in Standalone)
+                standalone.UpdateWindow();
+            foreach (var floating in Floating)
+                floating.UpdateWindow();
+
             UpdateWorkspace();
-            UpdateStandalone();
+
+            for (int i = 0; i < Standalone.Count; i++)
+                Standalone[i].Refresh();
 
             if (!App.Input.Mouse.LeftDown)
                 Dragging = null;
@@ -65,12 +72,6 @@ namespace Foster.Framework
                 Root.DockingGui();
             }
             Gui.Imgui.EndViewport();
-        }
-
-        private void UpdateStandalone()
-        {
-            for (int i = 0; i < Standalone.Count; i++)
-                Standalone[i].Refresh();
         }
 
         private void Resize(int width, int height)
