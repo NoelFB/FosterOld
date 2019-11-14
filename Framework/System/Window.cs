@@ -6,6 +6,9 @@ namespace Foster.Framework
 {
     public abstract class Window
     {
+
+        public abstract IntPtr PlatformPtr { get; }
+
         /// <summary>
         /// The X position of the Window, in Screen coordinates
         /// </summary>

@@ -6,8 +6,6 @@ namespace Foster.Framework
 {
     public class Gui : Module
     {
-
-
         public SpriteFont Font;
         public readonly Imgui Imgui;
 

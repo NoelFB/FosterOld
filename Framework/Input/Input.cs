@@ -36,6 +36,8 @@ namespace Foster.Framework
             nextState.Step();
         }
 
+        public abstract void SetMouseCursor(Cursors cursors);
+
         protected void OnText(char value)
         {
             nextState.Keyboard.Text.Append(value);

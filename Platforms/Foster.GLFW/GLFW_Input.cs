@@ -16,6 +16,8 @@ namespace Foster.GLFW
         private readonly Dictionary<GLFW_Context, List<Delegate>> contextDelegates = new Dictionary<GLFW_Context, List<Delegate>>();
         private readonly List<Delegate> contextlessDelegates = new List<Delegate>();
 
+        private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
+
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState() 
         { 
             Buttons = new char[(int)GLFW_Enum.GAMEPAD_BUTTON_LAST + 1], 
@@ -100,6 +102,47 @@ namespace Foster.GLFW
         public override ulong Timestamp()
         {
             return (ulong)timer.ElapsedMilliseconds;
+        }
+
+        public override void SetMouseCursor(Cursors fosterCursor)
+        {
+            var cursor = GetCursor(fosterCursor);
+            foreach (var window in App.System.Windows)
+                GLFW.SetCursor(window.PlatformPtr, cursor);
+        }
+
+        private IntPtr GetCursor(Cursors fosterCursor)
+        {
+            if (!cursors.TryGetValue(fosterCursor, out var ptr))
+            {
+                GLFW_Enum cursor;
+                switch (fosterCursor)
+                {
+                    default:
+                    case Cursors.Default:
+                        cursor = GLFW_Enum.ARROW_CURSOR;
+                        break;
+                    case Cursors.IBeam:
+                        cursor = GLFW_Enum.IBEAM_CURSOR;
+                        break;
+                    case Cursors.Crosshair:
+                        cursor = GLFW_Enum.CROSSHAIR_CURSOR;
+                        break;
+                    case Cursors.Hand:
+                        cursor = GLFW_Enum.HAND_CURSOR;
+                        break;
+                    case Cursors.HorizontalResize:
+                        cursor = GLFW_Enum.HRESIZE_CURSOR;
+                        break;
+                    case Cursors.VerticalResize:
+                        cursor = GLFW_Enum.VRESIZE_CURSOR;
+                        break;
+                }
+
+                cursors.Add(fosterCursor, ptr = GLFW.CreateStandardCursor((int)cursor));
+            }
+
+            return ptr;
         }
 
         private void OnJoystickCallback(int jid, GLFW_Enum eventType)

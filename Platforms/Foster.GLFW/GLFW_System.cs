@@ -99,12 +99,12 @@ namespace Foster.GLFW
             }
         }
 
-        public override Window CreateWindow(string title, int width, int height, bool visible = true)
+        public override Window CreateWindow(string title, int width, int height, bool visible = true, bool transparent = false)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");
 
-            var context = CreateContextInternal(width, height, title, visible);
+            var context = CreateContextInternal(width, height, title, visible, transparent);
             var window = new GLFW_Window(this, context, title, visible);
             windows.Add(window);
 
@@ -120,16 +120,17 @@ namespace Foster.GLFW
 
         public override Context CreateContext()
         {
-            return CreateContextInternal(128, 128, "hidden-context", false);
+            return CreateContextInternal(128, 128, "hidden-context", false, false);
         }
 
-        private GLFW_Context CreateContextInternal(int width, int height, string title, bool visible)
+        private GLFW_Context CreateContextInternal(int width, int height, string title, bool visible, bool transparent)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Context must be called from the Main Thread");
 
             GLFW.WindowHint(GLFW.WindowHints.Visible, visible);
             GLFW.WindowHint(GLFW.WindowHints.FocusOnshow, false);
+            GLFW.WindowHint(GLFW.WindowHints.TransparentFramebuffer, transparent);
 
             GLFW_Context? shared = null;
             if (Contexts.Count > 0)

@@ -65,7 +65,7 @@ namespace Foster.Framework
 
             public bool Scrollable;
             public bool Overflow;
-            public float Padding;
+            public Vector2 Padding;
 
             public int Columns;
             public int Column;
@@ -75,8 +75,8 @@ namespace Foster.Framework
             public float RowHeight;
             public float RowOffset;
 
-            public float InnerWidth => Bounds.Width - Padding * 2f;
-            public float InnerHeight => RowOffset + RowHeight + Padding * 2f;
+            public float InnerWidth => Bounds.Width - Padding.X * 2f;
+            public float InnerHeight => RowOffset + RowHeight + Padding.Y * 2f;
 
             public void NextRow(int columns, float indent, float spacing)
             {
@@ -133,14 +133,14 @@ namespace Foster.Framework
                 // determine cell height
                 float cellHeight;
                 if (height < 0)
-                    cellHeight = Bounds.Height - RowOffset - Padding * 2 + height;
+                    cellHeight = Bounds.Height - RowOffset - Padding.Y * 2 + height;
                 else if (height > 0)
                     cellHeight = height;
                 else
-                    cellHeight = Bounds.Height - RowOffset - Padding * 2;
+                    cellHeight = Bounds.Height - RowOffset - Padding.Y * 2;
 
                 // position
-                var position = new Rect(Bounds.X + Padding + ColumnOffset - Scroll.X, Bounds.Y + Padding + RowOffset - Scroll.Y, cellWidth, cellHeight);
+                var position = new Rect(Bounds.X + Padding.X + ColumnOffset - Scroll.X, Bounds.Y + Padding.Y + RowOffset - Scroll.Y, cellWidth, cellHeight);
 
                 // setup for next cell
                 ColumnOffset += cellWidth;
@@ -155,12 +155,38 @@ namespace Foster.Framework
         {
             public SpriteFont Font;
             public float FontSize;
-            public float Spacing;
-            public float ElementPadding;
-            public float WindowPadding;
-            public float TitleScale;
             public float FontScale => FontSize / Font.Height;
-            public float ElementHeight => FontSize + ElementPadding * 2;
+
+            public Vector2 WindowPadding;
+            public Color WindowBorderColor;
+            public float WindowBorderWeight;
+            public Color WindowBackgroundColor;
+
+            public Vector2 FramePadding;
+            public Color FrameBorderColor;
+            public float FrameBorderWeight;
+            public Color FrameBackgroundColor;
+
+            public float ScrollbarWeight;
+            public Color ScrollbarColor;
+            public Color ScrollbarHotColor;
+            public Color ScrollbarActiveColor;
+
+            public Color ItemTextColor;
+            public Color ItemTextHotColor;
+            public Color ItemTextActiveColor;
+            public Color ItemBackgroundColor;
+            public Color ItemBackgroundHotColor;
+            public Color ItemBackgroundActiveColor;
+            public Color ItemBorderColor;
+            public Color ItemBorderHotColor;
+            public Color ItemBorderActiveColor;
+            public float ItemBorderWeight;
+            public float ItemSpacing;
+            public Vector2 ItemPadding;
+            public float ItemHeight => FontSize + ItemPadding.Y * 2;
+
+            public float TitleScale;
         }
 
         private class Storage<T>
@@ -228,11 +254,37 @@ namespace Foster.Framework
             DefaultStyle = new Stylesheet()
             {
                 Font = font,
-                FontSize = 14,
-                Spacing = 4,
-                ElementPadding = 2,
-                WindowPadding = 0,
-                TitleScale = 1.25f
+                FontSize = 16,
+
+                WindowPadding = new Vector2(1, 1),
+                WindowBorderColor = 0x5c6063,
+                WindowBorderWeight = 1f,
+                WindowBackgroundColor = 0x171c20,
+
+                FramePadding = new Vector2(4, 4),
+                FrameBorderColor = 0x45494f,
+                FrameBorderWeight = 0f,
+                FrameBackgroundColor = 0x45494f,
+
+                ScrollbarWeight = 8f,
+                ScrollbarColor = 0x639ec0,
+                ScrollbarHotColor = 0xa8e5f6,
+                ScrollbarActiveColor = 0xee9ec0,
+
+                ItemTextColor = 0xc3c5cf,
+                ItemTextHotColor = 0xffffff,
+                ItemTextActiveColor = 0x000000,
+                ItemBackgroundColor = 0x374953,
+                ItemBackgroundHotColor = 0x374953,
+                ItemBackgroundActiveColor = 0xee9ec0,
+                ItemBorderColor = 0x639ec0,
+                ItemBorderHotColor = 0xffffff,
+                ItemBorderActiveColor = 0xee9ec0,
+                ItemBorderWeight = 1f,
+                ItemSpacing = 4,
+                ItemPadding = new Vector2(6, 2),
+
+                TitleScale = 1.25f,
             };
         }
 
@@ -300,14 +352,14 @@ namespace Foster.Framework
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
-            frame.NextRow(1, Indent, Style.Spacing);
+            frame.NextRow(1, Indent, Style.ItemSpacing);
         }
         public void Row(int columns)
         {
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
-            frame.NextRow(columns, Indent, Style.Spacing);
+            frame.NextRow(columns, Indent, Style.ItemSpacing);
         }
 
         public Rect Remainder()
@@ -315,7 +367,7 @@ namespace Foster.Framework
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(0, 0, Indent, Style.Spacing);
+            return frame.NextCell(0, 0, Indent, Style.ItemSpacing);
         }
 
         public Rect Cell(float height)
@@ -323,7 +375,7 @@ namespace Foster.Framework
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(0f, height, Indent, Style.Spacing);
+            return frame.NextCell(0f, height, Indent, Style.ItemSpacing);
         }
 
         public Rect Cell(float width, float height)
@@ -331,10 +383,10 @@ namespace Foster.Framework
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(width, height, Indent, Style.Spacing);
+            return frame.NextCell(width, height, Indent, Style.ItemSpacing);
         }
 
-        public void Separator() => Cell(Style.Spacing);
+        public void Separator() => Cell(Style.ItemSpacing);
         public void Separator(float height) => Cell(height);
         public void Separator(float width, float height) => Cell(width, height);
 
@@ -418,7 +470,10 @@ namespace Foster.Framework
             if (viewport.ID == ID.None)
                 throw new Exception("You must open a Viewport before beginning a Frame");
 
+            var isWindow = frames.Count <= 0;
             var clip = bounds.OverlapRect(clips.Peek());
+            clip = clip.Inflate(-(isWindow ? Style.WindowBorderWeight : Style.FrameBorderWeight));
+
             if (clip.Area > 0)
             {
                 frames.Push(frame);
@@ -428,7 +483,7 @@ namespace Foster.Framework
                     Bounds = bounds,
                     Clip = clip,
                     Scrollable = scrollable,
-                    Padding = Style.WindowPadding,
+                    Padding = (isWindow ? Style.WindowPadding : Style.FramePadding),
                 };
 
                 if (!frameStorage.Retrieve(frame.ID, out var last))
@@ -437,8 +492,16 @@ namespace Foster.Framework
                 if (frame.Clip.Contains(viewport.Mouse))
                     viewport.NextHotFrame = frame.ID;
 
-                // draw bg
-                viewport.Batcher.Rect(bounds, Color.White * 0.2f);
+                if (isWindow)
+                {
+                    viewport.Batcher.Rect(bounds, Style.WindowBackgroundColor);
+                    viewport.Batcher.HollowRect(bounds, Style.WindowBorderWeight, Style.WindowBorderColor);
+                }
+                else
+                {
+                    viewport.Batcher.Rect(bounds, Style.FrameBackgroundColor);
+                    viewport.Batcher.HollowRect(bounds, Style.FrameBorderWeight, Style.FrameBorderColor);
+                }
 
                 // handle vertical scrolling
                 if (frame.Scrollable)
@@ -456,6 +519,7 @@ namespace Foster.Framework
                         var scrollId = Id("Scroll-Y");
                         var scrollRect = VerticalScrollBar(bounds, frame.Scroll, last.InnerHeight);
                         var buttonRect = scrollRect.OverlapRect(frame.Clip);
+                        var scrollColor = Style.ScrollbarColor;
 
                         if (buttonRect.Area > 0)
                         {
@@ -466,9 +530,14 @@ namespace Foster.Framework
                                 var relativeSpeed = (bounds.Height / scrollRect.Height);
                                 frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + viewport.MouseDelta.Y * relativeSpeed, 0, last.InnerHeight - bounds.Height);
                                 scrollRect = VerticalScrollBar(bounds, frame.Scroll, last.InnerHeight);
+                                scrollColor = Style.ScrollbarActiveColor;
+                            }
+                            else if (HotId == scrollId)
+                            {
+                                scrollColor = Style.ScrollbarHotColor;
                             }
 
-                            viewport.Batcher.Rect(scrollRect, Color.Red);
+                            viewport.Batcher.Rect(scrollRect.Inflate(-4), scrollColor);
                         }
 
                         frame.Clip.Width -= 16;
@@ -523,7 +592,7 @@ namespace Foster.Framework
             var barH = bounds.Height * (bounds.Height / innerHeight);
             var barY = (bounds.Height - barH) * (scroll.Y / (innerHeight - bounds.Height));
 
-            return new Rect(bounds.Right + 2f, bounds.Y + barY, 14f, barH);
+            return new Rect(bounds.Right, bounds.Y + barY, 16f, barH);
         }
 
         public bool MouseOver(ID id, Rect position)
@@ -544,6 +613,11 @@ namespace Foster.Framework
                 return false;
 
             return true;
+        }
+
+        public bool HoveringOrDragging(ID id)
+        {
+            return LastHotId == id || LastActiveId == id;
         }
     }
 }

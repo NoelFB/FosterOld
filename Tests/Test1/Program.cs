@@ -25,7 +25,7 @@ namespace Test1
 
         private static void Ready()
         {
-            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "RobotoMono-Medium.ttf"), 64, Charsets.ASCII);
+            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "SourceSansPro-SemiBold.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
             
 

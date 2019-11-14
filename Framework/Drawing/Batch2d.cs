@@ -551,6 +551,24 @@ void main(void)
 
         #endregion
 
+        #region Hollow Rect
+
+        public void HollowRect(Rect rect, float t, Color color)
+        {
+            if (t > 0)
+            {
+                var tx = Math.Min(t, rect.Width / 2f);
+                var ty = Math.Min(t, rect.Height / 2f);
+
+                Rect(rect.X, rect.Y, rect.Width, ty, color);
+                Rect(rect.X, rect.Bottom - ty, rect.Width, ty, color);
+                Rect(rect.X, rect.Y + ty, tx, rect.Height - ty * 2, color);
+                Rect(rect.Right - tx, rect.Y + ty, tx, rect.Height - ty * 2, color);
+            }
+        }
+
+        #endregion
+
         #region Image
 
         public void Image(Texture texture,

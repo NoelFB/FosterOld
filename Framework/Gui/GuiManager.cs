@@ -18,6 +18,8 @@ namespace Foster.Framework
         public GuiDock? Dragging;
         public GuiDock? LastDockable;
         public GuiDock? NextDockable;
+        public Cursors? NextCursor;
+        public Cursors? LastCursor;
 
         public GuiManager(Gui gui, Window window)
         {
@@ -42,6 +44,8 @@ namespace Foster.Framework
         {
             LastDockable = NextDockable;
             NextDockable = null;
+            LastCursor = NextCursor;
+            NextCursor = null;
 
             foreach (var standalone in Standalone)
                 standalone.UpdateWindow();
@@ -55,6 +59,11 @@ namespace Foster.Framework
 
             if (!App.Input.Mouse.LeftDown)
                 Dragging = null;
+
+            if (NextCursor != null)
+                App.Input.SetMouseCursor(NextCursor.Value);
+            else if (LastCursor != null)
+                App.Input.SetMouseCursor(Cursors.Default);
         }
 
         private void UpdateWorkspace()
@@ -76,6 +85,7 @@ namespace Foster.Framework
 
         private void Resize(int width, int height)
         {
+            App.Graphics.Clear(Color.Black);
             UpdateWorkspace();
             Window.Render();
             Window.Present();
@@ -83,6 +93,7 @@ namespace Foster.Framework
 
         private void Render()
         {
+            App.Graphics.Clear(Color.Black);
             Batcher.Render();
         }
     }

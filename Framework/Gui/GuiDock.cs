@@ -176,7 +176,7 @@ namespace Foster.Framework
                     Mode = Modes.Standalone;
                     Manager.Standalone.Add(this);
 
-                    standaloneWindow = App.System.CreateWindow("Gui Dock", (int)bounds.Width, (int)bounds.Height, false);
+                    standaloneWindow = App.System.CreateWindow("Gui Dock", (int)bounds.Width + 4, (int)bounds.Height + 4, false, true);
                     standaloneWindow.X = (int)bounds.X;
                     standaloneWindow.Y = (int)bounds.Y;
                     standaloneWindow.VSync = false;
@@ -192,6 +192,7 @@ namespace Foster.Framework
                     };
                     standaloneWindow.OnRender = () =>
                     {
+                        App.Graphics.Clear(Color.Transparent);
                         standaloneBatcher?.Render();
                     };
                     standaloneWindow.OnClose = () =>
@@ -407,7 +408,14 @@ namespace Foster.Framework
             {
                 return floatingBounds;
             }
-            else if (Mode == Modes.Standalone || Mode == Modes.Root)
+            else if (Mode == Modes.Standalone)
+            {
+                var rect = GetWindow().ContentBounds;
+                rect.Width -= 4;
+                rect.Height -= 4;
+                return rect;
+            }
+            else if (Mode == Modes.Root)
             {
                 return GetWindow().ContentBounds;
             }
@@ -429,6 +437,15 @@ namespace Foster.Framework
             else if (Parent.Left == this)
                 return Parent.IsTopLeftDock();
             return false;
+        }
+
+        public GuiPanel? GetTopLeftMostChildPanel()
+        {
+            if (Left != null)
+                return Left.GetTopLeftMostChildPanel();
+            if (Panels.Count > 0)
+                return Panel;
+            return null;
         }
 
         private bool IsChildOf(GuiDock? dock)
@@ -463,6 +480,7 @@ namespace Foster.Framework
             if (Mode == Modes.Standalone)
             {
                 var window = GetWindow();
+                window.Title = GetTopLeftMostChildPanel()?.Title ?? "Empty Gui Window";
 
                 if (windowMoving)
                 {
@@ -472,12 +490,12 @@ namespace Foster.Framework
                 {
                     var resized = new RectInt();
                     resized.TopLeft = windowTopLeft;
-                    resized.BottomRight = windowBottomRight;
+                    resized.BottomRight = windowBottomRight + Point2.One * 4;
                     window.Bounds = resized;
                 }
 
                 windowTopLeft = window.Bounds.TopLeft;
-                windowBottomRight = window.Bounds.BottomRight;
+                windowBottomRight = window.Bounds.BottomRight - Point2.One * 4;
             }
             else if (Mode == Modes.Floating)
             {
@@ -524,6 +542,9 @@ namespace Foster.Framework
 
             void Display()
             {
+                if (mode == Modes.Floating || mode == Modes.Standalone)
+                    batcher.Rect(bounds + new Vector2(4, 4), Color.Black * 0.25f);
+
                 // Split Content
                 if (Left != null || Right != null)
                 {
@@ -538,15 +559,22 @@ namespace Foster.Framework
                             var world = Math.Clamp(bounds.Width * SplitPoint + Imgui.ActiveMouseDelta.X, 64, bounds.Width - 64);
                             SplitPoint = world / bounds.Width;
                         }
+
+                        if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                            Manager.NextCursor = Cursors.HorizontalResize;
                     }
                     else
                     {
                         var split = new Rect(bounds.X + 1, bounds.Y + bounds.Height * SplitPoint - splitGrabSize / 2, bounds.Width - 2, splitGrabSize);
                         if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 10), split))
                         {
+
                             var world = Math.Clamp(bounds.Height * SplitPoint + Imgui.ActiveMouseDelta.Y, 64, bounds.Height - 64);
                             SplitPoint = world / bounds.Height;
                         }
+
+                        if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                            Manager.NextCursor = Cursors.VerticalResize;
                     }
 
                 }
@@ -570,6 +598,11 @@ namespace Foster.Framework
 
                             Imgui.Row(Panels.Count);
 
+                            var style = Imgui.Style;
+                            style.ItemBackgroundColor = style.FrameBackgroundColor;
+                            style.ItemBorderWeight = 0f;
+                            Imgui.PushStyle(style);
+
                             for (int i = 0; i < Panels.Count; i++)
                             {
                                 if (Imgui.Button(Panels[i].Title, Imgui.PreferredSize))
@@ -579,9 +612,15 @@ namespace Foster.Framework
                                 HandleDragging(bounds, Panels.Count <= 1 && Parent == null, Panels[i]);
                             }
 
+                            style.ItemSpacing = 0;
+                            Imgui.PushStyle(style);
+                            var remainder = Imgui.Remainder();
+                            Imgui.PopStyle();
+                            Imgui.PopStyle();
+
                             if (Panel != null)
                             {
-                                if (Imgui.BeginFrame(ID, Imgui.Remainder()))
+                                if (Imgui.BeginFrame(ID, remainder))
                                 {
                                     Panel.OnRefresh?.Invoke(Imgui);
                                     Imgui.EndFrame();
@@ -592,31 +631,42 @@ namespace Foster.Framework
                         }
                     }
                 }
-
-                if (mode == Modes.Standalone || mode == Modes.Floating)
-                {
-                    batcher.Rect(bounds.X, bounds.Y, bounds.Width, 1, Color.Red);
-                    batcher.Rect(bounds.X, bounds.Y + bounds.Height - 1, bounds.Width, 1, Color.Red);
-                    batcher.Rect(bounds.X, bounds.Y, 1, bounds.Height, Color.Red);
-                    batcher.Rect(bounds.X + bounds.Width - 1, bounds.Y, 1, bounds.Height, Color.Red);
-                }
             }
 
             void Resizing()
             {
                 if (mode == Modes.Standalone || mode == Modes.Floating)
                 {
-                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 11), new Rect(bounds.X, bounds.Y, 8, bounds.Height)))
+                    // left
+                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 11), new Rect(bounds.X - 3, bounds.Y, 6, bounds.Height)))
                     {
                         var draggingBy = GetDraggingDelta();
                         windowDragging = true;
                         windowTopLeft.X += draggingBy.X;
 
                         if (mode == Modes.Standalone)
-                            Imgui.ActiveMouse -= draggingBy;
+                            Imgui.ActiveMouse -= Point2.Right * draggingBy.X;
                     }
 
-                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 13), new Rect(bounds.Right - 8, bounds.Y, 8, bounds.Height)))
+                    if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                        Manager.NextCursor = Cursors.HorizontalResize;
+
+                    // top
+                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 12), new Rect(bounds.X, bounds.Y - 3, bounds.Width, 6)))
+                    {
+                        var draggingBy = GetDraggingDelta();
+                        windowDragging = true;
+                        windowTopLeft.Y += draggingBy.Y;
+
+                        if (mode == Modes.Standalone)
+                            Imgui.ActiveMouse -= Point2.Down * draggingBy.Y;
+                    }
+
+                    if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                        Manager.NextCursor = Cursors.VerticalResize;
+
+                    // right
+                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 13), new Rect(bounds.Right - 3, bounds.Y, 6, bounds.Height)))
                     {
                         var draggingBy = GetDraggingDelta();
                         windowDragging = true;
@@ -626,12 +676,33 @@ namespace Foster.Framework
                             floatingBounds.Right += draggingBy.X;
                     }
 
-                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 15), new Rect(bounds.Right - 8, bounds.Bottom - 8, 8, 8)))
+                    if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                        Manager.NextCursor = Cursors.HorizontalResize;
+
+                    // bottom
+                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 14), new Rect(bounds.X, bounds.Bottom - 3, bounds.Width, 6)))
+                    {
+                        var draggingBy = GetDraggingDelta();
+                        windowDragging = true;
+                        windowBottomRight.Y += draggingBy.Y;
+
+                        if (mode == Modes.Standalone)
+                            floatingBounds.Bottom += draggingBy.Y;
+                    }
+
+                    if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                        Manager.NextCursor = Cursors.VerticalResize;
+
+                    // bottom right
+                    if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 15), new Rect(bounds.Right - 3, bounds.Bottom - 3, 6, 6)))
                     {
                         var draggingBy = GetDraggingDelta();
                         windowDragging = true;
                         windowBottomRight += draggingBy;
                     }
+
+                    if (Imgui.HoveringOrDragging(Imgui.CurrentId))
+                        Manager.NextCursor = Cursors.Crosshair;
                 }
             }
 
@@ -751,12 +822,15 @@ namespace Foster.Framework
                 bounds.X += offset.X;
                 bounds.Y += offset.Y;
 
+                var color = new Color(0x4f98ff);
+                var back = new Color(0x2b0c91);
                 var center = bounds.Center.Floor();
-                var fill = new Rect(center.X - 16, center.Y - 16, 32, 32);
-                var left = new Rect(center.X - 16 - 34, center.Y - 16, 32, 32);
-                var right = new Rect(center.X - 16 + 34, center.Y - 16, 32, 32);
-                var top = new Rect(center.X - 16, center.Y - 16 - 34, 32, 32);
-                var bottom = new Rect(center.X - 16, center.Y - 16 + 34, 32, 32);
+                var size = 50f;
+                var fill = new Rect(center.X - size / 2f, center.Y - size / 2f, size, size);
+                var left = new Rect(center.X - size / 2f - size, center.Y - size / 2f, size, size);
+                var right = new Rect(center.X - size / 2f + size, center.Y - size / 2f, size, size);
+                var top = new Rect(center.X - size / 2f, center.Y - size / 2f - size, size, size);
+                var bottom = new Rect(center.X - size / 2f, center.Y - size / 2f + size, size, size);
 
                 DockHover(fill, DockTo.Fill);
 
@@ -782,19 +856,32 @@ namespace Foster.Framework
                 {
                     if (Manager.Dragging != null)
                     {
-                        batcher.Rect(rect.Inflate(1), Color.White);
-                        batcher.Rect(rect, Color.Blue);
+                        var hover = false;
 
+                        batcher.Rect(rect.Inflate(-3), back);
+                        
                         if (rect.Contains(Imgui.ActiveMouse))
                         {
-                            batcher.Rect(rect, Color.White * 0.5f);
-
+                            hover = true;
                             if (!App.Input.Mouse.Down(MouseButtons.Left))
                             {
                                 Manager.Dragging.SetAsDock(Manager.LastDockable!, split);
                                 Manager.Dragging = null;
                             }
                         }
+
+                        var line = color * 0.75f;
+                        if (hover)
+                            line = Color.Lerp(color, Color.White, 0.5f);
+
+                        var box = rect.Inflate(-4f);
+                        batcher.HollowRect(box, 1f, line);
+                        batcher.Rect(box.X + 1, box.Y + 1, box.Width - 2, 4f, line);
+
+                        if (split == DockTo.Left || split == DockTo.Right)
+                            batcher.Rect(box.Center.X - 0.5f, box.Y + 6, 1f, box.Height - 7, line);
+                        if (split == DockTo.Top || split == DockTo.Bottom)
+                            batcher.Rect(box.X + 1, box.Center.Y - 0.5f, box.Width - 2f, 1f, line);
                     }
                 }
 
@@ -802,17 +889,33 @@ namespace Foster.Framework
                 {
                     if (Manager.Dragging != null && rect.Contains(Imgui.ActiveMouse))
                     {
-                        var color = Color.White * 0.5f;
-                        if (split == DockTo.Fill)
-                            batcher.Rect(bounds, color);
-                        else if (split == DockTo.Left)
-                            batcher.Rect(new Rect(bounds.X, bounds.Y, bounds.Width * 0.5f, bounds.Height), color);
+                        var fill = bounds;
+
+                        if (split == DockTo.Left)
+                            fill = new Rect(bounds.X, bounds.Y, bounds.Width * 0.5f, bounds.Height);
                         else if (split == DockTo.Right)
-                            batcher.Rect(new Rect(bounds.X + bounds.Width * 0.5f, bounds.Y, bounds.Width * 0.5f, bounds.Height), color);
+                            fill = new Rect(bounds.X + bounds.Width * 0.5f, bounds.Y, bounds.Width * 0.5f, bounds.Height);
                         else if (split == DockTo.Top)
-                            batcher.Rect(new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height * 0.5f), color);
+                            fill = new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height * 0.5f);
                         else if (split == DockTo.Bottom)
-                            batcher.Rect(new Rect(bounds.X, bounds.Y + bounds.Height * 0.5f, bounds.Width, bounds.Height * 0.5f), color);
+                            fill = new Rect(bounds.X, bounds.Y + bounds.Height * 0.5f, bounds.Width, bounds.Height * 0.5f);
+
+                        fill = fill.Inflate(-5);
+
+                        var w = Math.Min(fill.Width * 0.25f, 32f);
+                        var h = Math.Min(fill.Height * 0.25f, 32f);
+                        var t = 5f;
+
+                        batcher.Rect(fill, color * 0.5f);
+                        batcher.HollowRect(fill, 1f, color);
+                        batcher.Rect(fill.X, fill.Y, w, t, color);
+                        batcher.Rect(fill.X, fill.Y, t, h, color);
+                        batcher.Rect(fill.Right - w, fill.Y, w, t, color);
+                        batcher.Rect(fill.Right - t, fill.Y, t, h, color);
+                        batcher.Rect(fill.X, fill.Bottom - t, w, t, color);
+                        batcher.Rect(fill.X, fill.Bottom - h, t, h, color);
+                        batcher.Rect(fill.Right - w, fill.Bottom - t, w, t, color);
+                        batcher.Rect(fill.Right - t, fill.Bottom - h, t, h, color);
                     }
                 }
             }

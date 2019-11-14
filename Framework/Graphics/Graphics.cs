@@ -112,7 +112,6 @@ namespace Foster.Framework
         protected internal override void BeforeRender(Window window)
         {
             Target(null);
-            Clear(Color.Black);
         }
     }
 }

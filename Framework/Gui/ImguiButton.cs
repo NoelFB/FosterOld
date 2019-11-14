@@ -50,9 +50,9 @@ namespace Foster.Framework
             var style = context.Style;
 
             if (width == Imgui.PreferredSize)
-                width = style.Font.WidthOf(label) * style.FontScale + style.ElementPadding * 2f;
+                width = style.Font.WidthOf(label) * style.FontScale + style.ItemPadding.X * 2f;
             if (height == 0f)
-                height = style.FontSize + style.ElementPadding * 2;
+                height = style.FontSize + style.ItemPadding.X * 2;
 
             return Button(context, identifier, label, context.Cell(width, height));
         }
@@ -66,27 +66,32 @@ namespace Foster.Framework
                 var style = context.Style;
                 var id = context.Id(identifier);
                 var scale = Vector2.One * style.FontScale;
-                var color = Color.White;
 
-                if (label[0] == 'w')
-                    color = Color.Green;
+                var color = style.ItemTextColor;
+                var background = style.ItemBackgroundColor;
+                var border = style.ItemBorderColor;
 
                 result = context.ButtonBehaviour(id, position);
 
                 if (context.ActiveId == id)
                 {
-                    color = Color.Red;
+                    color = style.ItemTextActiveColor;
+                    background = style.ItemBackgroundActiveColor;
+                    border = style.ItemBorderActiveColor;
                 }
                 else if (context.HotId == id)
                 {
-                    color = Color.Yellow;
+                    color = style.ItemTextHotColor;
+                    background = style.ItemBackgroundHotColor;
+                    border = style.ItemBorderHotColor;
                 }
 
                 if (context.Batcher != null)
                 {
-                    context.Batcher.Rect(position, color);
-                    context.Batcher.PushMatrix(new Vector2(position.X + style.ElementPadding, position.Y + style.ElementPadding), scale, Vector2.Zero, 0f);
-                    context.Batcher.Text(style.Font, label, Color.Black);
+                    context.Batcher.Rect(position, background);
+                    context.Batcher.HollowRect(position, style.ItemBorderWeight, border);
+                    context.Batcher.PushMatrix(new Vector2(position.X + style.ItemPadding.X, position.Center.Y - style.FontSize * 0.5f), scale, Vector2.Zero, 0f);
+                    context.Batcher.Text(style.Font, label, color);
                     context.Batcher.PopMatrix();
                 }
             }

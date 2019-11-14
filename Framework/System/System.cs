@@ -32,7 +32,7 @@ namespace Foster.Framework
         /// Note that on High DPI displays the given width and height may not match
         /// the resulting Window size.
         /// </summary>
-        public abstract Window CreateWindow(string title, int width, int height, bool visible = true);
+        public abstract Window CreateWindow(string title, int width, int height, bool visible = true, bool transparent = false);
 
         /// <summary>
         /// Creates a new Rendering Context. This must be called from the Main Thread.

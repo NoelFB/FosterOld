@@ -135,6 +135,8 @@ namespace Foster.GLFW
             }
         }
 
+        public override IntPtr PlatformPtr => context.Handle.Ptr;
+
         private GLFW.WindowSizeFunc windowSizeCallbackRef;
         private GLFW.WindowFocusFunc windowFocusCallbackRef;
         private GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
