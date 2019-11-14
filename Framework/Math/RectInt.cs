@@ -111,6 +111,21 @@ namespace Foster.Framework
             Height = h;
         }
 
+        public bool Contains(Point2 point)
+        {
+            return (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);
+        }
+
+        public bool Contains(RectInt rect)
+        {
+            return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
+        }
+
+        public bool Intersects(RectInt against)
+        {
+            return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
+        }
+
         public RectInt CropTo(RectInt other)
         {
             if (Left < other.Left)

@@ -496,6 +496,9 @@ namespace Foster.Framework
 
                 windowTopLeft = window.Bounds.TopLeft;
                 windowBottomRight = window.Bounds.BottomRight - Point2.One * 4;
+
+                if (Manager.Window.Bounds.Contains(window.Bounds))
+                    SetAsFloating(new RectInt(window.X - Manager.Window.X, window.Y - Manager.Window.Y, window.Width, window.Height));
             }
             else if (Mode == Modes.Floating)
             {
@@ -537,6 +540,7 @@ namespace Foster.Framework
                 {
                     batcher.Clear();
                     Imgui.BeginViewport(ID, batcher, window.ContentBounds, window.Mouse, window.PixelScale, !window.MouseOver);
+                    batcher.Rect(bounds, Color.Black);
                 }
             }
 

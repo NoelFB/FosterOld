@@ -47,8 +47,8 @@ namespace Foster.Framework
             LastCursor = NextCursor;
             NextCursor = null;
 
-            foreach (var standalone in Standalone)
-                standalone.UpdateWindow();
+            for (int i = Standalone.Count - 1; i >= 0; i--)
+                Standalone[i].UpdateWindow();
             foreach (var floating in Floating)
                 floating.UpdateWindow();
 
@@ -85,7 +85,6 @@ namespace Foster.Framework
 
         private void Resize(int width, int height)
         {
-            App.Graphics.Clear(Color.Black);
             UpdateWorkspace();
             Window.Render();
             Window.Present();

@@ -31,12 +31,18 @@ namespace Test1
 
             for (int i = 0; i < 5; i++)
             {
+                var n = i;
                 var panel = gui.CreatePanel($"Hello World {i}", new Rect(32, 32, 400, 400));
                 panel.OnRefresh = (imgui) =>
                 {
-                    for (int i = 0; i < 4; i++)
-                        if (imgui.Button("What " + i))
-                            Console.WriteLine("PRESSED " + i);
+                    for (int k = 0; k < n + 1; k++)
+                    {
+                        imgui.Label($"a nice label #{k + 1}!");
+
+                        for (int j = 0; j < 4; j++)
+                            if (imgui.Button($"What {k * 4 + j}"))
+                                Console.WriteLine("PRESSED " + j);
+                    }
                 };
             }
         }
