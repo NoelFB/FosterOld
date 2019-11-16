@@ -40,6 +40,8 @@ namespace Foster.Framework
         public readonly int Height;
         public readonly int LineHeight;
 
+        public bool Disposed { get; private set; } = false;
+
         public Font(string path) : this(File.ReadAllBytes(path))
         {
             
@@ -89,6 +91,9 @@ namespace Foster.Framework
 
         public float GetScale(int height)
         {
+            if (Disposed)
+                throw new Exception("Cannot get Font data as it is disposed");
+
             return StbTrueType.stbtt_ScaleForPixelHeight(fontInfo, height);
         }
 
@@ -96,6 +101,9 @@ namespace Foster.Framework
         {
             if (!glyphs.TryGetValue(unicode, out var glyph))
             {
+                if (Disposed)
+                    throw new Exception("Cannot get Font data as it is disposed");
+
                 glyph = StbTrueType.stbtt_FindGlyphIndex(fontInfo, unicode);
                 glyphs[unicode] = glyph;
             }
@@ -105,6 +113,8 @@ namespace Foster.Framework
 
         public void Dispose()
         {
+            Disposed = true;
+
             if (fontHandle.IsAllocated)
                 fontHandle.Free();
         }

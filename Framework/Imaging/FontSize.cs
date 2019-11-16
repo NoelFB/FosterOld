@@ -33,6 +33,9 @@ namespace Foster.Framework
 
         public FontSize(Font font, int size, string charset)
         {
+            if (font.Disposed)
+                throw new Exception("Cannot get Font data as it is disposed");
+
             Font = font;
             Size = size;
             Scale = font.GetScale(size);
@@ -82,6 +85,9 @@ namespace Foster.Framework
         {
             if (Charset.TryGetValue(unicode0, out var char0) && Charset.TryGetValue(unicode1, out var char1))
             {
+                if (Font.Disposed)
+                    throw new Exception("Cannot get Font data as it is disposed");
+
                 return StbTrueType.stbtt_GetGlyphKernAdvance(Font.fontInfo, char0.Glyph, char1.Glyph) * Scale;
             }
 
@@ -108,6 +114,9 @@ namespace Foster.Framework
             {
                 if (buffer.Length < ch.Width * ch.Height)
                     throw new Exception("Buffer provided isn't large enough to store rendered data");
+
+                if (Font.Disposed)
+                    throw new Exception("Cannot get Font data as it is disposed");
 
                 fixed (Color* ptr = buffer)
                 {

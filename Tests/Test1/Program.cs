@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.GuiSystem;
 using Foster.GLFW;
 using Foster.OpenGL;
 using System;

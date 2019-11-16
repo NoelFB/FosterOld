@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test1", "Test1.csproj", "{7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.OpenGL", "..\..\Platforms\Foster.OpenGL\Foster.OpenGL.csproj", "{21AA6D96-4561-45FC-9C40-3F2C4280109E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.Gui", "..\..\Gui\Foster.Gui.csproj", "{80A2B35C-8453-491D-B481-F44C660B421E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{21AA6D96-4561-45FC-9C40-3F2C4280109E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21AA6D96-4561-45FC-9C40-3F2C4280109E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21AA6D96-4561-45FC-9C40-3F2C4280109E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80A2B35C-8453-491D-B481-F44C660B421E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80A2B35C-8453-491D-B481-F44C660B421E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80A2B35C-8453-491D-B481-F44C660B421E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80A2B35C-8453-491D-B481-F44C660B421E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

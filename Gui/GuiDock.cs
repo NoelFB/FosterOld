@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Foster.Framework;
 
-namespace Foster.Framework
+namespace Foster.GuiSystem
 {
     public class GuiDock
     {

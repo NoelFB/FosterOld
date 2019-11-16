@@ -21,12 +21,12 @@ namespace Foster.Framework
         {
             if (width <= 0 || height <= 0)
                 throw new Exception("Width and Height must be larger than 0");
-            if (pixels.Length != width * height)
+            if (pixels.Length < width * height)
                 throw new Exception("Pixels array doesn't fit the Bitmap size");
 
+            Pixels = pixels;
             Width = width;
             Height = height;
-            Pixels = pixels;
         }
 
         public Bitmap(Stream stream, ImageFormat format)
