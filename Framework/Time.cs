@@ -34,17 +34,17 @@ namespace Foster.Framework
         /// </summary>
         public static int FPS { get; internal set; }
 
-        public static bool OnInterval(float time, float delta, float interval, float offset = 0f)
+        public static bool OnInterval(double time, double delta, double interval, double offset = 0f)
         {
             return Math.Floor((time - offset - delta) / interval) < Math.Floor((time - offset) / interval);
         }
 
-        public static bool OnInterval(float interval, float delta, float offset = 0f)
+        public static bool OnInterval(double interval, double delta, double offset = 0f)
         {
             return Math.Floor((Duration.TotalSeconds - offset - delta) / interval) < Math.Floor((Duration.TotalSeconds - offset) / interval);
         }
 
-        public static bool OnInterval(float interval, float offset = 0f)
+        public static bool OnInterval(double interval, double offset = 0f)
         {
             return Math.Floor((Duration.TotalSeconds - offset - Delta) / interval) < Math.Floor((Duration.TotalSeconds - offset) / interval);
         }

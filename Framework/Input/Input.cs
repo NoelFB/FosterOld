@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Foster.Framework
@@ -9,17 +10,25 @@ namespace Foster.Framework
         public string ApiName { get; protected set; } = "Unknown";
         public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
-        public readonly InputState State = new InputState();
-        public readonly InputState LastState = new InputState();
-        private readonly InputState nextState = new InputState();
+        public readonly InputState State;
+        public readonly InputState LastState;
+        private readonly InputState nextState;
 
         public Keyboard Keyboard => State.Keyboard;
         public Mouse Mouse => State.Mouse;
         public ReadOnlyCollection<Controller> Controllers => State.Controllers;
 
+        public float RepeatDelay = 0.4f;
+        public float RepeatInterval = 0.03f;
+
+        internal List<WeakReference<VirtualButton>> virtualButtons = new List<WeakReference<VirtualButton>>();
+
         protected Input()
         {
             Priority = 300;
+            State = new InputState(this);
+            LastState = new InputState(this);
+            nextState = new InputState(this);
         }
 
         public abstract ulong Timestamp();
@@ -34,6 +43,15 @@ namespace Foster.Framework
             LastState.Copy(State);
             State.Copy(nextState);
             nextState.Step();
+
+            for (int i = virtualButtons.Count - 1; i >= 0; i --)
+            {
+                var button = virtualButtons[i];
+                if (button.TryGetTarget(out var target))
+                    target.Update();
+                else
+                    virtualButtons.RemoveAt(i);
+            }
         }
 
         public abstract void SetMouseCursor(Cursors cursors);

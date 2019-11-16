@@ -8,6 +8,9 @@ namespace Foster.Framework
 {
     public class Imgui
     {
+
+        #region Structs
+
         public struct ID
         {
             public readonly int Parent;
@@ -63,7 +66,6 @@ namespace Foster.Framework
             public Rect Clip;
             public Vector2 Scroll;
 
-            public bool Scrollable;
             public bool Overflow;
             public Vector2 Padding;
 
@@ -213,6 +215,10 @@ namespace Foster.Framework
             }
         }
 
+        #endregion
+
+        #region Public Variables
+
         public Stylesheet DefaultStyle;
         public Stylesheet Style => (styles.Count > 0 ? styles.Peek() : DefaultStyle);
         public float Indent => (indents.Count > 0 ? indents.Peek() : 0f);
@@ -238,6 +244,12 @@ namespace Foster.Framework
         }
         public Vector2 ActiveMouseDelta => viewport.MouseDelta;
 
+        public static float PreferredSize = float.MinValue;
+
+        #endregion
+
+        #region Private Variables
+
         private readonly Stack<Frame> frames = new Stack<Frame>();
         private readonly Stack<ID> ids = new Stack<ID>();
         private readonly Stack<Rect> clips = new Stack<Rect>();
@@ -247,7 +259,9 @@ namespace Foster.Framework
         private readonly Storage<Viewport> viewportStorage = new Storage<Viewport>();
         private readonly Storage<Frame> frameStorage = new Storage<Frame>();
 
-        public static float PreferredSize = float.MinValue;
+        #endregion
+
+        #region Constructor
 
         public Imgui(SpriteFont font)
         {
@@ -287,6 +301,10 @@ namespace Foster.Framework
                 TitleScale = 1.25f,
             };
         }
+
+        #endregion
+
+        #region State Changing
 
         public ID Id(UniqueInfo value)
         {
@@ -420,6 +438,10 @@ namespace Foster.Framework
             }
         }
 
+        #endregion
+
+        #region Viewports / Frames
+
         public void BeginViewport(Window window, Batch2d batcher)
         {
             BeginViewport(window.Title, batcher, window.ContentBounds, window.Mouse, window.PixelScale, !window.MouseOver);
@@ -458,14 +480,13 @@ namespace Foster.Framework
                 throw new Exception("The previous Group must be closed before closing the Viewport");
 
             PopClip();
-            // PopId();
 
             viewportStorage.Store(viewport.ID, viewport);
             viewport.Batcher.PopMatrix();
             viewport = new Viewport();
         }
 
-        public bool BeginFrame(UniqueInfo info, Rect bounds, bool scrollable = true)
+        public bool BeginFrame(UniqueInfo info, Rect bounds)
         {
             if (viewport.ID == ID.None)
                 throw new Exception("You must open a Viewport before beginning a Frame");
@@ -482,7 +503,6 @@ namespace Foster.Framework
                     ID = PushId(info),
                     Bounds = bounds,
                     Clip = clip,
-                    Scrollable = scrollable,
                     Padding = (isWindow ? Style.WindowPadding : Style.FramePadding),
                 };
 
@@ -504,20 +524,19 @@ namespace Foster.Framework
                 }
 
                 // handle vertical scrolling
-                if (frame.Scrollable)
                 {
                     frame.Scroll = Vector2.Zero;
                     if (last.ID != ID.None)
                         frame.Scroll = last.Scroll;
 
-                    if (last.InnerHeight > bounds.Height)
+                    if (last.InnerHeight > frame.Bounds.Height)
                     {
-                        bounds.Width -= 16;
+                        frame.Bounds.Width -= 16;
 
-                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, last.InnerHeight - bounds.Height);
+                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, last.InnerHeight - frame.Bounds.Height);
 
                         var scrollId = Id("Scroll-Y");
-                        var scrollRect = VerticalScrollBar(bounds, frame.Scroll, last.InnerHeight);
+                        var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, last.InnerHeight);
                         var buttonRect = scrollRect.OverlapRect(frame.Clip);
                         var scrollColor = Style.ScrollbarColor;
 
@@ -527,9 +546,9 @@ namespace Foster.Framework
 
                             if (ActiveId == scrollId)
                             {
-                                var relativeSpeed = (bounds.Height / scrollRect.Height);
+                                var relativeSpeed = (frame.Bounds.Height / scrollRect.Height);
                                 frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + viewport.MouseDelta.Y * relativeSpeed, 0, last.InnerHeight - bounds.Height);
-                                scrollRect = VerticalScrollBar(bounds, frame.Scroll, last.InnerHeight);
+                                scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, last.InnerHeight);
                                 scrollColor = Style.ScrollbarActiveColor;
                             }
                             else if (HotId == scrollId)
@@ -577,9 +596,7 @@ namespace Foster.Framework
 
             frameStorage.Store(frame.ID, frame);
             PopId();
-
-            if (frame.Scrollable)
-                PopClip();
+            PopClip();
 
             if (frames.Count > 0)
                 frame = frames.Pop();
@@ -594,6 +611,10 @@ namespace Foster.Framework
 
             return new Rect(bounds.Right, bounds.Y + barY, 16f, barH);
         }
+
+        #endregion
+
+        #region Utils
 
         public bool MouseOver(ID id, Rect position)
         {
@@ -619,5 +640,7 @@ namespace Foster.Framework
         {
             return LastHotId == id || LastActiveId == id;
         }
+
+        #endregion
     }
 }

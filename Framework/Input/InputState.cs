@@ -9,20 +9,23 @@ namespace Foster.Framework
     {
         public const int MaxControllers = 8;
 
+        public readonly Input Input;
         public readonly Keyboard Keyboard;
         public readonly Mouse Mouse;
 
         private readonly Controller[] controllers;
         public readonly ReadOnlyCollection<Controller> Controllers;
 
-        public InputState()
+        public InputState(Input input)
         {
+            Input = input;
+
             controllers = new Controller[MaxControllers];
             for (int i = 0; i < controllers.Length; i++)
-                controllers[i] = new Controller();
+                controllers[i] = new Controller(input);
 
             Controllers = new ReadOnlyCollection<Controller>(controllers);
-            Keyboard = new Keyboard();
+            Keyboard = new Keyboard(input);
             Mouse = new Mouse();
         }
 

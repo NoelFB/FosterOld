@@ -595,7 +595,7 @@ namespace Foster.Framework
                         if (PanelIndex < 0)
                             PanelIndex = 0;
 
-                        if (Imgui.BeginFrame(ID + 1, bounds, false))
+                        if (Imgui.BeginFrame(ID + 1, bounds))
                         {
                             // If they grab anywhere on the Frame
                             HandleDragging(bounds, true, null);

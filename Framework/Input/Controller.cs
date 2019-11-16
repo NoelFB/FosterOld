@@ -9,6 +9,8 @@ namespace Foster.Framework
         public const int MaxButtons = 64;
         public const int MaxAxis = 64;
 
+        public readonly Input Input;
+
         public string Name { get; private set; } = "Unknown";
         public bool Connected { get; private set; } = false;
         public bool IsGamepad { get; private set; } = false;
@@ -73,6 +75,7 @@ namespace Foster.Framework
 
         public ulong Timestamp(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons ? timestamp[buttonIndex] : 0;
         public ulong Timestamp(Buttons button) => Timestamp((int)button);
+        public ulong Timestamp(Axes axis) => axisTimestamp[(int)axis];
 
         public bool Down(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons && down[buttonIndex];
         public bool Down(Buttons button) => Down((int)button);
@@ -88,6 +91,30 @@ namespace Foster.Framework
 
         public Vector2 LeftStick => Axis(Framework.Axes.LeftX, Framework.Axes.LeftY);
         public Vector2 RightStick => Axis(Framework.Axes.RightX, Framework.Axes.RightY);
+
+        public bool Repeated(Buttons button)
+        {
+            return Repeated(button, Input.RepeatDelay, Input.RepeatInterval);
+        }
+
+        public bool Repeated(Buttons button, float delay, float interval)
+        {
+            if (Pressed(button))
+                return true;
+
+            if (Down(button))
+            {
+                var time = Timestamp(button) / 1000.0;
+                return (Time.Duration.TotalSeconds - time) > delay && Time.OnInterval(interval, time);
+            }
+
+            return false;
+        }
+
+        public Controller(Input input)
+        {
+            Input = input;
+        }
 
     }
 }
