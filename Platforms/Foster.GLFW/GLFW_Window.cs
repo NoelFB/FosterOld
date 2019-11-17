@@ -37,6 +37,7 @@ namespace Foster.GLFW
                     y = (int)(y / scaleY);
                     w = (int)(w / scaleX);
                     h = (int)(h / scaleY);
+
                 }
 
                 return new RectInt(x, y, w, h);
@@ -64,6 +65,9 @@ namespace Foster.GLFW
             get
             {
                 GLFW.GetCursorPos(context.Handle, out var xpos, out var ypos);
+
+                xpos = Math.Floor(xpos);
+                ypos = Math.Floor(ypos);
 
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
