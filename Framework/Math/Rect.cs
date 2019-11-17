@@ -48,10 +48,56 @@ namespace Foster.Framework
 
         public float Area => Math.Abs(Width) * Math.Abs(Height);
 
-        public Vector2 TopLeft => new Vector2(X, Y);
-        public Vector2 TopRight => new Vector2(X + Width, Y);
-        public Vector2 BottomLeft => new Vector2(X, Y + Height);
-        public Vector2 BottomRight => new Vector2(X + Width, Y + Height);
+        public Vector2 Position
+        {
+            get => new Vector2(X, Y);
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+            }
+        }
+
+        public Vector2 TopLeft
+        {
+            get => new Vector2(Left, Top);
+            set
+            {
+                Left = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Vector2 TopRight
+        {
+            get => new Vector2(Right, Top);
+            set
+            {
+                Right = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Vector2 BottomLeft
+        {
+            get => new Vector2(Left, Bottom);
+            set
+            {
+                Left = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        public Vector2 BottomRight
+        {
+            get => new Vector2(Right, Bottom);
+            set
+            {
+                Right = value.X;
+                Bottom = value.Y;
+            }
+        }
+
         public Vector2 Center => new Vector2(X + Width / 2, Y + Height / 2);
 
         public Rect(float x, float y, float w, float h)

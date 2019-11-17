@@ -7,17 +7,19 @@ namespace Foster.GuiSystem
 {
     public static class ImguiHeader
     {
-        /*
         public static bool Header(this Imgui context, string label, bool startOpen = false)
         {
+            const string StorageKey = "TOGGLED";
+
             var toggle = context.Button(label);
-            var id = context.LastId;
-            var enabled = (context.Stored(id, out var info) && info.Toggled) || (!context.Stored(id) && startOpen);
+            var id = context.CurrentId;
+            var has = context.Retreive(id, StorageKey, out bool toggled);
+            var enabled = (has && toggled) || (!has && startOpen);
 
             if (toggle)
                 enabled = !enabled;
 
-            context.Store(id, new Imgui.Storage() { Toggled = enabled });
+            context.Store(id, StorageKey, enabled);
 
             if (enabled)
             {
@@ -33,6 +35,5 @@ namespace Foster.GuiSystem
             context.PopIndent();
             context.PopId();
         }
-        */
     }
 }

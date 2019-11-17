@@ -7,6 +7,11 @@ namespace Foster.GuiSystem
 {
     public class Gui : Module
     {
+        // TODO:
+        // You should be able to set the GUI pixel scale different
+        // from the Window.PixelScale. Shouldn't be a hard refactor but
+        // window bounds/mouse input stuff will need to be tweaked
+
         public SpriteFont Font;
         public readonly Imgui Imgui;
 

@@ -41,12 +41,24 @@ namespace Foster.GuiSystem
             return performPress;
         }
 
+
+
+        public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
+        {
+            return Button(context, context.Id(identifier), label, position);
+        }
+
         public static bool Button(this Imgui context, string label, float width = 0f, float height = 0f)
         {
             return Button(context, label, label, width, height);
         }
 
         public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, float width = 0f, float height = 0f)
+        {
+            return Button(context, context.Id(identifier), label, width, height);
+        }
+
+        public static bool Button(this Imgui context, Imgui.ID id, string label, float width = 0f, float height = 0f)
         {
             var style = context.Style;
 
@@ -55,17 +67,17 @@ namespace Foster.GuiSystem
             if (height == 0f)
                 height = style.FontSize + style.ItemPadding.X * 2;
 
-            return Button(context, identifier, label, context.Cell(width, height));
+            return Button(context, id, label, context.Cell(width, height));
         }
 
-        public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
+        public static bool Button(this Imgui context, Imgui.ID id, string label, Rect position)
         {
             var result = false;
+            context.CurrentId = id;
 
             if (position.Intersects(context.ActiveClip))
             {
                 var style = context.Style;
-                var id = context.Id(identifier);
                 var scale = Vector2.One * style.FontScale;
 
                 var color = style.ItemTextColor;

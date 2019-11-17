@@ -493,9 +493,11 @@ namespace Foster.GuiSystem
                     resized.BottomRight = windowBottomRight + Point2.One * 4;
                     window.Bounds = resized;
                 }
-
-                windowTopLeft = window.Bounds.TopLeft;
-                windowBottomRight = window.Bounds.BottomRight - Point2.One * 4;
+                else
+                {
+                    windowTopLeft = window.Bounds.TopLeft;
+                    windowBottomRight = window.Bounds.BottomRight - Point2.One * 4;
+                }
 
                 if (Manager.Window.Bounds.Contains(window.Bounds))
                     SetAsFloating(new RectInt(window.X - Manager.Window.X, window.Y - Manager.Window.Y, window.Width, window.Height));
@@ -595,7 +597,7 @@ namespace Foster.GuiSystem
                         if (PanelIndex < 0)
                             PanelIndex = 0;
 
-                        if (Imgui.BeginFrame(ID + 1, bounds))
+                        if (Imgui.BeginFrame(ID + 1, bounds, false))
                         {
                             // If they grab anywhere on the Frame
                             HandleDragging(bounds, true, null);
@@ -609,7 +611,8 @@ namespace Foster.GuiSystem
 
                             for (int i = 0; i < Panels.Count; i++)
                             {
-                                if (Imgui.Button(Panels[i].Title, Imgui.PreferredSize))
+                                var id = new Imgui.ID(Panels[i].ID, 0);
+                                if (Imgui.Button(id, Panels[i].Title, Imgui.PreferredSize))
                                     PanelIndex = i;
 
                                 // if they grab a single tab

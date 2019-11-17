@@ -8,6 +8,7 @@ namespace Foster.GuiSystem
     public class GuiPanel
     {
 
+        public int ID = Guid.NewGuid().GetHashCode();
         public string Title = "";
         public Action<Imgui>? OnRefresh;
         

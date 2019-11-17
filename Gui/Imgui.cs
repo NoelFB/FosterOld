@@ -67,6 +67,7 @@ namespace Foster.GuiSystem
             public Rect Clip;
             public Vector2 Scroll;
 
+            public bool Scrollable;
             public bool Overflow;
             public Vector2 Padding;
 
@@ -228,7 +229,18 @@ namespace Foster.GuiSystem
         public ID LastHotId = ID.None;
         public ID ActiveId = ID.None;
         public ID LastActiveId = ID.None;
-        public ID CurrentId = ID.None;
+
+        private ID currentId;
+        public ID CurrentId
+        {
+            get => currentId;
+            set
+            {
+                currentId = value;
+                if (LastActiveId == currentId)
+                    lastActiveIdExists = true;
+            }
+        }
 
         private Viewport viewport;
         private Frame frame;
@@ -259,6 +271,8 @@ namespace Foster.GuiSystem
 
         private readonly Storage<Viewport> viewportStorage = new Storage<Viewport>();
         private readonly Storage<Frame> frameStorage = new Storage<Frame>();
+        private readonly Storage<float> floatStorage = new Storage<float>();
+        private readonly Storage<bool> boolStorage = new Storage<bool>();
 
         #endregion
 
@@ -310,8 +324,7 @@ namespace Foster.GuiSystem
         public ID Id(UniqueInfo value)
         {
             CurrentId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : new ID(0, 0)));
-            if (LastActiveId == CurrentId)
-                lastActiveIdExists = true;
+
             return CurrentId;
         }
 
@@ -329,6 +342,26 @@ namespace Foster.GuiSystem
         public void PopId()
         {
             ids.Pop();
+        }
+
+        public void Store(ID id, UniqueInfo key, float value)
+        {
+            floatStorage.Store(new ID(key.Value, id), value);
+        }
+
+        public void Store(ID id, UniqueInfo key, bool value)
+        {
+            boolStorage.Store(new ID(key.Value, id), value);
+        }
+
+        public bool Retreive(ID id, UniqueInfo key, out float value)
+        {
+            return floatStorage.Retrieve(new ID(key.Value, id), out value);
+        }
+
+        public bool Retreive(ID id, UniqueInfo key, out bool value)
+        {
+            return boolStorage.Retrieve(new ID(key.Value, id), out value);
         }
 
         public void PushStyle(Stylesheet style)
@@ -420,6 +453,8 @@ namespace Foster.GuiSystem
             clips.Clear();
             viewportStorage.Step();
             frameStorage.Step();
+            floatStorage.Step();
+            boolStorage.Step();
 
             LastHotId = HotId;
             HotId = ID.None;
@@ -487,7 +522,7 @@ namespace Foster.GuiSystem
             viewport = new Viewport();
         }
 
-        public bool BeginFrame(UniqueInfo info, Rect bounds)
+        public bool BeginFrame(UniqueInfo info, Rect bounds, bool scrollable = true)
         {
             if (viewport.ID == ID.None)
                 throw new Exception("You must open a Viewport before beginning a Frame");
@@ -505,6 +540,7 @@ namespace Foster.GuiSystem
                     Bounds = bounds,
                     Clip = clip,
                     Padding = (isWindow ? Style.WindowPadding : Style.FramePadding),
+                    Scrollable = scrollable
                 };
 
                 if (!frameStorage.Retrieve(frame.ID, out var last))
@@ -525,6 +561,7 @@ namespace Foster.GuiSystem
                 }
 
                 // handle vertical scrolling
+                if (frame.Scrollable)
                 {
                     frame.Scroll = Vector2.Zero;
                     if (last.ID != ID.None)
@@ -597,7 +634,9 @@ namespace Foster.GuiSystem
 
             frameStorage.Store(frame.ID, frame);
             PopId();
-            PopClip();
+
+            if (frame.Scrollable)
+                PopClip();
 
             if (frames.Count > 0)
                 frame = frames.Pop();
