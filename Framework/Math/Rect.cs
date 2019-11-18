@@ -217,6 +217,11 @@ namespace Foster.Framework
             return !(a == b);
         }
 
+        public static Rect operator *(Rect a, Vector2 scaler)
+        {
+            return new Rect(a.X * scaler.X, a.Y * scaler.Y, a.Width * scaler.X, a.Height * scaler.Y);
+        }
+
 
     }
 }

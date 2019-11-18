@@ -22,6 +22,14 @@ namespace Foster.GuiSystem
         public Cursors? NextCursor;
         public Cursors? LastCursor;
 
+        private Vector2 pixelMouse;
+        private Vector2 pixelMouseRemainder;
+        public Point2 PixelMouseDrag;
+
+        private Vector2 screenMouse;
+        private Vector2 screenMouseRemainder;
+        public Point2 ScreenMouseDrag;
+
         public GuiManager(Gui gui, Window window)
         {
             Gui = gui;
@@ -43,24 +51,47 @@ namespace Foster.GuiSystem
 
         public void Update()
         {
+            // active dock we're hovering over
             LastDockable = NextDockable;
             NextDockable = null;
+
+            // unset the next cursor
             LastCursor = NextCursor;
             NextCursor = null;
 
-            for (int i = Standalone.Count - 1; i >= 0; i--)
-                Standalone[i].UpdateWindow();
-            foreach (var floating in Floating)
-                floating.UpdateWindow();
+            // get the mouse deltas
+            {
+                var nextScreenMouse = Window.ScreenMouse;
+                screenMouseRemainder += nextScreenMouse - screenMouse;
+                ScreenMouseDrag = screenMouseRemainder.Floor();
+                screenMouseRemainder -= ScreenMouseDrag;
+                screenMouse = nextScreenMouse;
 
+                var nextFloatingMouse = Window.DrawableMouse;
+                pixelMouseRemainder += nextFloatingMouse - pixelMouse;
+                PixelMouseDrag = pixelMouseRemainder.Floor();
+                pixelMouseRemainder -= PixelMouseDrag;
+                pixelMouse = nextFloatingMouse;
+            }
+
+            // Update Window bounds of Standalone and Floating windows
+            for (int i = Standalone.Count - 1; i >= 0; i--)
+                Standalone[i].DoWindowDragging();
+            for (int i = Floating.Count - 1; i >= 0; i --)
+                Floating[i].DoWindowDragging();
+
+            // Update the primary worksapce
             UpdateWorkspace();
 
+            // Refresh Standalone Windows
             for (int i = 0; i < Standalone.Count; i++)
                 Standalone[i].Refresh();
 
+            // Unset the Dock we're dragging
             if (!App.Input.Mouse.LeftDown)
                 Dragging = null;
 
+            // Set the Cursor
             if (NextCursor != null)
                 App.Input.SetMouseCursor(NextCursor.Value);
             else if (LastCursor != null)
@@ -72,7 +103,7 @@ namespace Foster.GuiSystem
             Batcher.Clear();
 
             Gui.Imgui.Step();
-            Gui.Imgui.BeginViewport(Window, Batcher);
+            Gui.Imgui.BeginViewport(Window, Batcher, Gui.ContentScale);
             {
                 Root.Refresh();
 
@@ -84,7 +115,7 @@ namespace Foster.GuiSystem
             Gui.Imgui.EndViewport();
         }
 
-        private void Resize(int width, int height)
+        private void Resize()
         {
             UpdateWorkspace();
             Window.Render();

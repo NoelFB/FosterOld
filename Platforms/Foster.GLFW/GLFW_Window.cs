@@ -15,48 +15,31 @@ namespace Foster.GLFW
         private bool focused;
         private bool mouseOver;
 
-        public override RectInt Bounds
+        public override Point2 Position
         {
             get
             {
                 GLFW.GetWindowPos(context.Handle, out int x, out int y);
-                GLFW.GetWindowSize(context.Handle, out int w, out int h);
-
-                // glfwGetWindowSize returns different results depending on the platform and DPI.
-                // Ex. if our Content Scale is 2, on OSX a Window created at 1280x1080 will still
-                // return 1280x1080, where as on Windows and Linux this will return 2560x2160
-                
-                // The Foster API expects the OSX behaviour across platforms, so we must scale these
-                // values based on the Content Scale
-
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
-
-                    x = (int)(x / scaleX);
-                    y = (int)(y / scaleY);
-                    w = (int)(w / scaleX);
-                    h = (int)(h / scaleY);
-
-                }
-
-                return new RectInt(x, y, w, h);
+                return new Point2(x, y);
             }
 
             set
             {
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
-
-                    value.X = (int)(value.X * scaleX);
-                    value.Y = (int)(value.Y * scaleY);
-                    value.Width = (int)(value.Width * scaleX);
-                    value.Height = (int)(value.Height * scaleY);
-                }
-
                 GLFW.SetWindowPos(context.Handle, value.X, value.Y);
-                GLFW.SetWindowSize(context.Handle, value.Width, value.Height);
+            }
+        }
+
+        public override Point2 Size
+        {
+            get
+            {
+                GLFW.GetWindowSize(context.Handle, out int w, out int h);
+                return new Point2(w, h);
+            }
+
+            set
+            {
+                GLFW.SetWindowSize(context.Handle, value.X, value.Y);
             }
         }
 
@@ -65,23 +48,21 @@ namespace Foster.GLFW
             get
             {
                 GLFW.GetCursorPos(context.Handle, out var xpos, out var ypos);
-
-                xpos = Math.Floor(xpos);
-                ypos = Math.Floor(ypos);
-
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
-
-                    xpos = (xpos / scaleX);
-                    ypos = (ypos / scaleY);
-                }
-
                 return new Vector2((float)xpos, (float)ypos);
             }
         }
 
-        public override Vector2 PixelScale
+        public override Vector2 ScreenMouse
+        {
+            get
+            {
+                GLFW.GetCursorPos(context.Handle, out var curX, out var curY);
+                GLFW.GetWindowPos(context.Handle, out var winX, out var winY);
+                return new Vector2((float)curX + winX, (float)curY + winY);
+            }
+        }
+
+        public override Vector2 ContentScale
         {
             get
             {
@@ -139,7 +120,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override IntPtr PlatformPtr => context.Handle.Ptr;
+        public override IntPtr Pointer => context.Handle.Ptr;
 
         private GLFW.WindowSizeFunc windowSizeCallbackRef;
         private GLFW.WindowFocusFunc windowFocusCallbackRef;
@@ -162,15 +143,7 @@ namespace Foster.GLFW
 
         private void OnWindowResize(GLFW.Window window, int width, int height)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                GLFW.GetWindowContentScale(context.Handle, out float scaleX, out float scaleY);
-
-                width = (int)(width / scaleX);
-                height = (int)(height / scaleY);
-            }
-
-            OnResize?.Invoke(width, height);
+            OnResize?.Invoke();
         }
 
         private void OnWindowFocus(GLFW.Window window, int focused)

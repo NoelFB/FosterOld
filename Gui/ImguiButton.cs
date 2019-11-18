@@ -75,7 +75,7 @@ namespace Foster.GuiSystem
             var result = false;
             context.CurrentId = id;
 
-            if (position.Intersects(context.ActiveClip))
+            if (position.Intersects(context.Clip))
             {
                 var style = context.Style;
                 var scale = Vector2.One * style.FontScale;

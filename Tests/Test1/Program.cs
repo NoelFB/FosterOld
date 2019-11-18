@@ -28,7 +28,6 @@ namespace Test1
         {
             var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "SourceSansPro-SemiBold.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
-            
 
             for (int i = 0; i < 5; i++)
             {
@@ -36,6 +35,12 @@ namespace Test1
                 var panel = gui.CreatePanel($"Hello World {i}", new Rect(32, 32, 400, 400));
                 panel.OnRefresh = (imgui) =>
                 {
+                    imgui.Row(2);
+                    if (imgui.Button("SIZE DOWN [-]"))
+                        gui.ContentScale -= Vector2.One * 0.1f;
+                    if (imgui.Button("SIZE UP [+]"))
+                        gui.ContentScale += Vector2.One * 0.1f;
+
                     for (int k = 0; k < n + 1; k++)
                     {
                         imgui.Label($"a nice label #{k + 1}!");

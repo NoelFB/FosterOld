@@ -4,18 +4,38 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A platform Window
+    /// 
+    /// Note that Screen Coordinates may be different on each platform.
+    /// For example, on Windows High DPI displays, this is always 1-1 with
+    /// the pixel size of the Window. On MacOS Retina displays, this is
+    /// usually 1-2 with the pixel size of the Window.
+    /// </summary>
     public abstract class Window
     {
+        /// <summary>
+        /// A pointer to the underlying System Window
+        /// </summary>
+        public abstract IntPtr Pointer { get; }
 
-        public abstract IntPtr PlatformPtr { get; }
+        /// <summary>
+        /// Position of the Window, in Screen coordinates
+        /// </summary>
+        public abstract Point2 Position { get; set; }
+
+        /// <summary>
+        /// The size of the Window, in Screen coordinates
+        /// </summary>
+        public abstract Point2 Size { get; set; }
 
         /// <summary>
         /// The X position of the Window, in Screen coordinates
         /// </summary>
         public int X
         {
-            get => Bounds.X;
-            set => Bounds = new RectInt(value, Y, Width, Height);
+            get => Position.X;
+            set => Position = new Point2(value, Y);
         }
 
         /// <summary>
@@ -23,22 +43,8 @@ namespace Foster.Framework
         /// </summary>
         public int Y
         {
-            get => Bounds.Y;
-            set => Bounds = new RectInt(X, value, Width, Height);
-        }
-
-        public Point2 Position
-        {
-            get
-            {
-                var bounds = Bounds;
-                return new Point2(bounds.X, bounds.Y);
-            }
-            set
-            {
-                var bounds = Bounds;
-                Bounds = new RectInt(value.X, value.Y, bounds.Width, bounds.Height);
-            }
+            get => Position.Y;
+            set => Position = new Point2(X, value);
         }
 
         /// <summary>
@@ -46,8 +52,8 @@ namespace Foster.Framework
         /// </summary>
         public int Width
         {
-            get => Bounds.Width;
-            set => Bounds = new RectInt(X, Y, value, Height);
+            get => Size.X;
+            set => Size = new Point2(value, Size.Y);
         }
 
         /// <summary>
@@ -55,19 +61,57 @@ namespace Foster.Framework
         /// </summary>
         public int Height
         {
-            get => Bounds.Height;
-            set => Bounds = new RectInt(X, Y, Width, value);
+            get => Size.Y;
+            set => Size = new Point2(Size.X, value);
+        }
+
+        /// <summary>
+        /// The Window bounds, in Screen coordinates
+        /// </summary>
+        public RectInt Bounds
+        {
+            get
+            {
+                var position = Position;
+                var size = Size;
+
+                return new RectInt(position.X, position.Y, size.X, size.Y);
+            }
+            set
+            {
+                Position = value.Position;
+                Size = value.Size;
+            }
         }
 
         /// <summary>
         /// The Drawable Width of the Window, in Pixels
         /// </summary>
-        public int DrawableWidth => DrawableBounds.Width;
+        public int DrawableWidth => Context.Width;
 
         /// <summary>
         /// The Drawable Height of the Window, in Pixels
         /// </summary>
-        public int DrawableHeight => DrawableBounds.Height;
+        public int DrawableHeight => Context.Height;
+
+        /// <summary>
+        /// The drawable bounds of the Window, in Pixels
+        /// </summary>
+        public RectInt DrawableBounds => new RectInt(0, 0, Context.Width, Context.Height);
+
+        /// <summary>
+        /// The scale of the Drawable size compared to the Window size
+        /// On Windows and Linux this is always 1.
+        /// On MacOS Retina displays this is 2.
+        /// </summary>
+        public Vector2 DrawableScale => new Vector2(Context.Width / (float)Width, Context.Height / (float)Height);
+
+        /// <summary>
+        /// The Content Scale of the Window
+        /// On High DPI displays this may be larger than 1
+        /// Use this to appropriately scale UI
+        /// </summary>
+        public abstract Vector2 ContentScale { get; }
 
         /// <summary>
         /// A callback when the Window is about to close
@@ -82,7 +126,7 @@ namespace Foster.Framework
         /// <summary>
         /// A callback when the Window is resized by the user
         /// </summary>
-        public Action<int, int>? OnResize;
+        public Action? OnResize;
 
         /// <summary>
         /// The System this Window belongs to
@@ -135,33 +179,19 @@ namespace Foster.Framework
         public abstract bool Focused { get; }
 
         /// <summary>
-        /// The Window bounds, in Screen coordinates
-        /// Note on High DPI displays this may not match the Drawable Bounds of the window. 
-        /// DrawableBounds should be used for all drawing.
-        /// </summary>
-        public abstract RectInt Bounds { get; set; }
-
-        /// <summary>
-        /// Gets the Content Bounds
-        /// This is the same as Bounds, but with X and Y always 0
-        /// </summary>
-        public RectInt ContentBounds => new RectInt(0, 0, Bounds.Width, Bounds.Height);
-
-        /// <summary>
-        /// The drawable bounds of the Window
-        /// Note on High DPI displays, this may not match the Bounds of the window
-        /// </summary>
-        public RectInt DrawableBounds => new RectInt(0, 0, Context.Width, Context.Height);
-
-        /// <summary>
-        /// The Pixel Scale of the Window. On non-High DPI displays this should always be 1.
-        /// </summary>
-        public abstract Vector2 PixelScale { get; }
-
-        /// <summary>
         /// The Mouse position relative to the top-left of the Window, in Screen coordinates
         /// </summary>
         public abstract Vector2 Mouse { get; }
+
+        /// <summary>
+        /// The position of the Mouse in pixels, relative to the top-left of the Window
+        /// </summary>
+        public Vector2 DrawableMouse => Mouse * DrawableScale;
+
+        /// <summary>
+        /// The position of the mouse relative to the top-left of the Screen, in Screen coordinates
+        /// </summary>
+        public abstract Vector2 ScreenMouse { get; }
 
         /// <summary>
         /// Whether the mouse is currently over this Window
@@ -189,9 +219,5 @@ namespace Foster.Framework
         /// </summary>
         public abstract void Close();
 
-        public static Window Create(string title, int width, int height, bool visible = true)
-        {
-            return App.System.CreateWindow(title, width, height, visible);
-        }
     }
 }

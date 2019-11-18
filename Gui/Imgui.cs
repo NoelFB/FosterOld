@@ -46,11 +46,11 @@ namespace Foster.GuiSystem
             public static implicit operator UniqueInfo(string text) => new UniqueInfo(text.GetHashCode());
         }
 
-        public struct Viewport
+        public struct ViewportState
         {
             public ID ID;
             public Batch2d Batcher;
-            public Vector2 PixelScale;
+            public Vector2 Scale;
             public Rect Bounds;
             public Vector2 Mouse;
             public Vector2 MouseDelta;
@@ -60,7 +60,7 @@ namespace Foster.GuiSystem
             public int Groups;
         }
 
-        public struct Frame
+        public struct FrameState
         {
             public ID ID;
             public Rect Bounds;
@@ -242,20 +242,14 @@ namespace Foster.GuiSystem
             }
         }
 
-        private Viewport viewport;
-        private Frame frame;
+        private ViewportState viewport;
+        private FrameState frame;
         private bool lastActiveIdExists;
 
-        public Viewport ActiveViewport => viewport;
-        public Frame ActiveFrame => frame;
-        public Rect ActiveClip => clips.Count > 0 ? clips.Peek() : new Rect();
-        public Batch2d? Batcher => viewport.Batcher;
-        public Vector2 ActiveMouse
-        {
-            get => viewport.Mouse;
-            set => viewport.Mouse = value;
-        }
-        public Vector2 ActiveMouseDelta => viewport.MouseDelta;
+        public ViewportState Viewport => viewport;
+        public FrameState Frame => frame;
+        public Rect Clip => clips.Count > 0 ? clips.Peek() : new Rect();
+        public Batch2d Batcher => viewport.Batcher;
 
         public static float PreferredSize = float.MinValue;
 
@@ -263,14 +257,14 @@ namespace Foster.GuiSystem
 
         #region Private Variables
 
-        private readonly Stack<Frame> frames = new Stack<Frame>();
+        private readonly Stack<FrameState> frames = new Stack<FrameState>();
         private readonly Stack<ID> ids = new Stack<ID>();
         private readonly Stack<Rect> clips = new Stack<Rect>();
         private readonly Stack<Stylesheet> styles = new Stack<Stylesheet>();
         private readonly Stack<float> indents = new Stack<float>();
 
-        private readonly Storage<Viewport> viewportStorage = new Storage<Viewport>();
-        private readonly Storage<Frame> frameStorage = new Storage<Frame>();
+        private readonly Storage<ViewportState> viewportStorage = new Storage<ViewportState>();
+        private readonly Storage<FrameState> frameStorage = new Storage<FrameState>();
         private readonly Storage<float> floatStorage = new Storage<float>();
         private readonly Storage<bool> boolStorage = new Storage<bool>();
 
@@ -387,14 +381,14 @@ namespace Foster.GuiSystem
         private void PushClip(Rect rect)
         {
             clips.Push(rect);
-            viewport.Batcher.SetScissor(rect.Scale(viewport.PixelScale).Int());
+            viewport.Batcher.SetScissor(rect.Scale(viewport.Scale).Int());
         }
 
         private void PopClip()
         {
             clips.Pop();
             if (clips.Count > 0)
-                viewport.Batcher.SetScissor(clips.Peek().Scale(viewport.PixelScale).Int());
+                viewport.Batcher.SetScissor(clips.Peek().Scale(viewport.Scale).Int());
             else
                 viewport.Batcher.SetScissor(null);
         }
@@ -444,8 +438,8 @@ namespace Foster.GuiSystem
 
         public void Step()
         {
-            viewport = new Viewport();
-            frame = new Frame();
+            viewport = new ViewportState();
+            frame = new FrameState();
             indents.Clear();
             styles.Clear();
             ids.Clear();
@@ -478,23 +472,27 @@ namespace Foster.GuiSystem
 
         #region Viewports / Frames
 
-        public void BeginViewport(Window window, Batch2d batcher)
+        public void BeginViewport(Window window, Batch2d batcher, Vector2? contentScale = null)
         {
-            BeginViewport(window.Title, batcher, window.ContentBounds, window.Mouse, window.PixelScale, !window.MouseOver);
+            var scale = window.ContentScale * (contentScale ?? Vector2.One);
+            var bounds = new Rect(0, 0, window.DrawableWidth / scale.X, window.DrawableHeight / scale.Y);
+            var mouse = window.DrawableMouse / scale;
+
+            BeginViewport(window.Title, batcher, bounds, mouse, scale, !window.MouseOver);
         }
 
-        public void BeginViewport(UniqueInfo info, Batch2d batcher, Rect bounds, Vector2 mouse, Vector2 pixelScale, bool mouseObstructed = false)
+        public void BeginViewport(UniqueInfo info, Batch2d batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
         {
             if (viewport.ID != ID.None)
                 throw new Exception("The previous Viewport must be ended before beginning a new one");
 
-            viewport = new Viewport
+            viewport = new ViewportState
             {
                 ID = new ID(info.Value, 0),
                 Bounds = bounds,
                 Mouse = mouse,
                 MouseObstructed = mouseObstructed,
-                PixelScale = pixelScale,
+                Scale = scale,
                 Batcher = batcher
             };
 
@@ -505,7 +503,7 @@ namespace Foster.GuiSystem
             }
 
             PushClip(viewport.Bounds);
-            viewport.Batcher.PushMatrix(Matrix3x2.CreateScale(pixelScale));
+            viewport.Batcher.PushMatrix(Matrix3x2.CreateScale(scale));
         }
 
         public void EndViewport()
@@ -519,7 +517,7 @@ namespace Foster.GuiSystem
 
             viewportStorage.Store(viewport.ID, viewport);
             viewport.Batcher.PopMatrix();
-            viewport = new Viewport();
+            viewport = new ViewportState();
         }
 
         public bool BeginFrame(UniqueInfo info, Rect bounds, bool scrollable = true)
@@ -534,7 +532,7 @@ namespace Foster.GuiSystem
             if (clip.Area > 0)
             {
                 frames.Push(frame);
-                frame = new Frame
+                frame = new FrameState
                 {
                     ID = PushId(info),
                     Bounds = bounds,
@@ -641,7 +639,7 @@ namespace Foster.GuiSystem
             if (frames.Count > 0)
                 frame = frames.Pop();
             else
-                frame = new Frame();
+                frame = new FrameState();
         }
 
         private Rect VerticalScrollBar(Rect bounds, Vector2 scroll, float innerHeight)
@@ -670,7 +668,7 @@ namespace Foster.GuiSystem
             if (App.Input.Mouse.LeftDown && !App.Input.Mouse.LeftPressed)
                 return false;
 
-            if (!ActiveClip.Contains(viewport.Mouse) || !position.Contains(viewport.Mouse))
+            if (!Clip.Contains(viewport.Mouse) || !position.Contains(viewport.Mouse))
                 return false;
 
             return true;

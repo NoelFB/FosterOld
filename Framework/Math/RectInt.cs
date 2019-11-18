@@ -27,6 +27,16 @@ namespace Foster.Framework
             }
         }
 
+        public Point2 Size
+        {
+            get => new Point2(Width, Height);
+            set
+            {
+                Width = value.X;
+                Height = value.Y;
+            }
+        }
+
         public int Left
         {
             get => X;

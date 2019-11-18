@@ -108,7 +108,7 @@ namespace Foster.GLFW
         {
             var cursor = GetCursor(fosterCursor);
             foreach (var window in App.System.Windows)
-                GLFW.SetCursor(window.PlatformPtr, cursor);
+                GLFW.SetCursor(window.Pointer, cursor);
         }
 
         private IntPtr GetCursor(Cursors fosterCursor)
