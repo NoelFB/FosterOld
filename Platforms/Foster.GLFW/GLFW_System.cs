@@ -96,9 +96,7 @@ namespace Foster.GLFW
             // check for closing contexts
             for (int i = contexts.Count - 1; i >= 0; i--)
             {
-                var context = contexts[i] as GLFW_Context;
-
-                if (context != null && GLFW.WindowShouldClose(context.Handle))
+                if (contexts[i] is GLFW_Context context && GLFW.WindowShouldClose(context.Handle))
                 {
                     // see if we have a displayed window associated with this context
                     for (int j = 0; j < windows.Count; j++)
