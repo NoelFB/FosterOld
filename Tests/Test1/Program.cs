@@ -1,6 +1,7 @@
 ﻿using Foster.Framework;
 using Foster.GuiSystem;
 using Foster.GLFW;
+using Foster.SDL2;
 using Foster.OpenGL;
 using System;
 using System.Collections.Generic;

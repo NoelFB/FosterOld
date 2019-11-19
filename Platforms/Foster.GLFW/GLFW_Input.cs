@@ -44,13 +44,6 @@ namespace Foster.GLFW
 
             if (App.System is GLFW_System system)
             {
-                var context = system.Contexts[0];
-
-                GLFW.SetKeyCallback(context.Handle, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
-                GLFW.SetCharCallback(context.Handle, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
-                GLFW.SetMouseButtonCallback(context.Handle, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
-                GLFW.SetJoystickCallback(TrackDelegate<GLFW.JoystickFunc>(null, OnJoystickCallback));
-
                 system.OnWindowCreated += (window) =>
                 {
                     var context = (window.Context as GLFW_Context);

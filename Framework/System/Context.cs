@@ -8,6 +8,11 @@ namespace Foster.Framework
     {
 
         /// <summary>
+        /// The Thread this Context is active on
+        /// </summary>
+        public int ActiveThreadId { get; internal set; } = 0;
+
+        /// <summary>
         /// The System this Context belongs to
         /// </summary>
         public abstract System System { get; }

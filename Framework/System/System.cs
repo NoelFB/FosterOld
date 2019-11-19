@@ -1,9 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace Foster.Framework
 {
+    [Flags]
+    public enum WindowFlags
+    {
+        None = 0,
+        Hidden = 1,
+        Transparent = 2,
+        ScaleToMonitor = 4
+    }
+
     public abstract class System : Module
     {
 
@@ -25,14 +35,24 @@ namespace Foster.Framework
         /// <summary>
         /// A list of all opened Windows
         /// </summary>
-        public readonly ReadOnlyCollection<Window> Windows;
-        
+        public abstract ReadOnlyCollection<Window> Windows { get; }
+
+        /// <summary>
+        /// A list of active Monitors
+        /// </summary>
+        public abstract ReadOnlyCollection<Monitor> Monitors { get; }
+
+        /// <summary>
+        /// A list of all the Rendering Contexts
+        /// </summary>
+        protected abstract ReadOnlyCollection<Context> Contexts { get; }
+
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
         /// Note that on High DPI displays the given width and height may not match
         /// the resulting Window size.
         /// </summary>
-        public abstract Window CreateWindow(string title, int width, int height, bool visible = true, bool transparent = false);
+        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         /// <summary>
         /// Creates a new Rendering Context. This must be called from the Main Thread.
@@ -44,14 +64,57 @@ namespace Foster.Framework
         /// Gets the current Rendering Context on the current Thread
         /// </summary>
         /// <returns></returns>
-        public abstract Context? GetCurrentContext();
+        public Context? GetCurrentContext()
+        {
+            var threadId = Thread.CurrentThread.ManagedThreadId;
+
+            for (int i = 0; i < Contexts.Count; i++)
+                if (Contexts[i].ActiveThreadId == threadId)
+                    return Contexts[i];
+
+            return null;
+        }
 
         /// <summary>
         /// Sets the current Rendering Context on the current Thread
         /// Note that this will fail if the context is current on another thread
         /// </summary>
         /// <param name="context"></param>
-        public abstract void SetCurrentContext(Context? context);
+        public void SetCurrentContext(Context? context)
+        {
+            // context is already set on this thread
+            if (context != null && context.ActiveThreadId == Thread.CurrentThread.ManagedThreadId)
+                return;
+
+            // unset existing context
+            {
+                var current = GetCurrentContext();
+                if (current != null)
+                    current.ActiveThreadId = 0;
+            }
+
+            if (context != null)
+            {
+                if (context.Disposed)
+                    throw new Exception("The Context is Disposed");
+
+                // currently assigned to a different thread
+                if (context.ActiveThreadId != 0)
+                    throw new Exception("The Context is active on another Thread. A Context can only be current for a single Thread at a time. You must make it non-current on the old Thread before making setting it on another.");
+
+                context.ActiveThreadId = Thread.CurrentThread.ManagedThreadId;
+                SetCurrentContextInternal(context);
+            }
+            else
+            {
+                SetCurrentContextInternal(null);
+            }
+        }
+
+        /// <summary>
+        /// Sets the current Rendering Context on the current Thread
+        /// </summary>
+        protected abstract void SetCurrentContextInternal(Context? context);
 
         /// <summary>
         /// The application directory
@@ -66,12 +129,9 @@ namespace Foster.Framework
         /// <returns></returns>
         public abstract IntPtr GetProcAddress(string name);
 
-        protected List<Window> windows = new List<Window>();
-
         protected System()
         {
             Priority = 100;
-            Windows = windows.AsReadOnly();
         }
 
         protected internal override void Startup()

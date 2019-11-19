@@ -145,7 +145,7 @@ namespace Foster.GLFW
         public static extern ErrorFunc SetErrorCallback(ErrorFunc callback);
 
         [DllImport(DLL, EntryPoint = "glfwGetMonitors", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr[] GetMonitors(out int count);
+        public static unsafe extern IntPtr* GetMonitors(out int count);
 
         [DllImport(DLL, EntryPoint = "glfwGetPrimaryMonitor", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetPrimaryMonitor();

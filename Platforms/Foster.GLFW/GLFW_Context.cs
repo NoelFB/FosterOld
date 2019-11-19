@@ -8,7 +8,6 @@ namespace Foster.GLFW
     public class GLFW_Context : Context
     {
         internal readonly GLFW.Window Handle;
-        internal int ActiveThreadId = 0;
 
         private bool disposed;
 

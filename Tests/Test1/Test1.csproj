@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\Gui\Foster.Gui.csproj" />
     <ProjectReference Include="..\..\Platforms\Foster.GLFW\Foster.GLFW.csproj" />
     <ProjectReference Include="..\..\Platforms\Foster.OpenGL\Foster.OpenGL.csproj" />
+    <ProjectReference Include="..\..\Platforms\Foster.SDL2\Foster.SDL2.csproj" />
   </ItemGroup>
 
   <ItemGroup>

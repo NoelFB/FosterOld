@@ -10,11 +10,24 @@ namespace Foster.GLFW
 {
     public class GLFW_System : Framework.System
     {
-        public List<GLFW_Context> Contexts = new List<GLFW_Context>();
-
         public override bool SupportsMultipleWindows => true;
         public event Action<GLFW_Window>? OnWindowCreated;
         public event Action<GLFW_Window>? OnWindowClosed;
+
+        internal readonly List<Window> windows = new List<Window>();
+        internal readonly List<Framework.Monitor> monitors = new List<Framework.Monitor>();
+        internal readonly List<Context> contexts = new List<Context>();
+
+        public override ReadOnlyCollection<Window> Windows { get; }
+        public override ReadOnlyCollection<Framework.Monitor> Monitors { get; }
+        protected override ReadOnlyCollection<Context> Contexts { get; }
+
+        public GLFW_System()
+        {
+            Windows = new ReadOnlyCollection<Window>(windows);
+            Monitors = new ReadOnlyCollection<Framework.Monitor>(monitors);
+            Contexts = new ReadOnlyCollection<Context>(contexts);
+        }
 
         protected override void Initialized()
         {
@@ -53,8 +66,15 @@ namespace Foster.GLFW
             }
 
             // Various Window Hints
-            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
             GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
+
+            // Monitors
+            unsafe
+            {
+                var monitorPtrs = GLFW.GetMonitors(out int count);
+                for (int i = 0; i < count; i++)
+                    monitors.Add(new GLFW_Monitor(monitorPtrs[i]));
+            }
 
             // Our default shared context
             CreateContext();
@@ -74,11 +94,11 @@ namespace Foster.GLFW
             GLFW.PollEvents();
 
             // check for closing contexts
-            for (int i = Contexts.Count - 1; i >= 0; i--)
+            for (int i = contexts.Count - 1; i >= 0; i--)
             {
-                var context = Contexts[i];
+                var context = contexts[i] as GLFW_Context;
 
-                if (GLFW.WindowShouldClose(context.Handle))
+                if (context != null && GLFW.WindowShouldClose(context.Handle))
                 {
                     // see if we have a displayed window associated with this context
                     for (int j = 0; j < windows.Count; j++)
@@ -93,19 +113,23 @@ namespace Foster.GLFW
                         }
                     }
 
-                    Contexts.RemoveAt(i);
+                    contexts.RemoveAt(i);
                     GLFW.DestroyWindow(context.Handle);
                 }
             }
+
+            // Update Monitors
+            foreach (var monitor in monitors)
+                ((GLFW_Monitor)monitor).Update();
         }
 
-        public override Window CreateWindow(string title, int width, int height, bool visible = true, bool transparent = false)
+        public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");
 
-            var context = CreateContextInternal(width, height, title, visible, transparent);
-            var window = new GLFW_Window(this, context, title, visible);
+            var context = CreateContextInternal(title, width, height, flags);
+            var window = new GLFW_Window(this, context, title, !flags.HasFlag(WindowFlags.Hidden));
             windows.Add(window);
 
             OnWindowCreated?.Invoke(window);
@@ -120,75 +144,39 @@ namespace Foster.GLFW
 
         public override Context CreateContext()
         {
-            return CreateContextInternal(128, 128, "hidden-context", false, false);
+            return CreateContextInternal("hidden-context", 128, 128, WindowFlags.Hidden);
         }
 
-        private GLFW_Context CreateContextInternal(int width, int height, string title, bool visible, bool transparent)
+        private GLFW_Context CreateContextInternal(string title, int width, int height, WindowFlags flags)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Context must be called from the Main Thread");
 
-            GLFW.WindowHint(GLFW.WindowHints.Visible, visible);
+            GLFW.WindowHint(GLFW.WindowHints.Visible, !flags.HasFlag(WindowFlags.Hidden));
             GLFW.WindowHint(GLFW.WindowHints.FocusOnshow, false);
-            GLFW.WindowHint(GLFW.WindowHints.TransparentFramebuffer, transparent);
-            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, true);
+            GLFW.WindowHint(GLFW.WindowHints.TransparentFramebuffer, flags.HasFlag(WindowFlags.Transparent));
+            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, flags.HasFlag(WindowFlags.ScaleToMonitor));
 
             GLFW_Context? shared = null;
             if (Contexts.Count > 0)
-                shared = Contexts[0];
+                shared = Contexts[0] as GLFW_Context;
 
             // GLFW has no way to create a context without a window
             // so any background contexts also just create a hidden window
 
             var window = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared ?? IntPtr.Zero);
             var context = new GLFW_Context(this, window);
-            Contexts.Add(context);
+            contexts.Add(context);
 
             return context;
         }
 
-        public override Context? GetCurrentContext()
+        protected override void SetCurrentContextInternal(Context? context)
         {
-            var ptr = GLFW.GetCurrentContext();
-
-            for (int i = 0; i < Contexts.Count; i++)
-                if (Contexts[i].Handle.Ptr == ptr)
-                    return Contexts[i];
-
-            return null;
-        }
-
-        public override void SetCurrentContext(Context? context)
-        {
-            // set current context
-            if (context is GLFW_Context ctx)
-            {
-                if (ctx.Disposed)
-                    throw new Exception("The Context is Disposed");
-
-                // already on the current thread
-                if (ctx.ActiveThreadId == Thread.CurrentThread.ManagedThreadId)
-                    return;
-
-                // currently assigned to a different thread
-                if (ctx.ActiveThreadId != 0)
-                    throw new Exception("The Context is active on another Thread. A Context can only be current for a single Thread at a time. You must make it non-current on the old Thread before making setting it on another.");
-
-                // unset existing
-                if (GetCurrentContext() is GLFW_Context current)
-                    current.ActiveThreadId = 0;
-
-                ctx.ActiveThreadId = Thread.CurrentThread.ManagedThreadId;
+            if (context is GLFW_Context ctx && ctx != null)
                 GLFW.MakeContextCurrent(ctx.Handle);
-            }
-            // unset existing context if we're setting to null
-            else 
-            {
-                if (GetCurrentContext() is GLFW_Context current)
-                    current.ActiveThreadId = 0;
-
+            else
                 GLFW.MakeContextCurrent(IntPtr.Zero);
-            }
         }
     }
 

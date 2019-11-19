@@ -23,7 +23,7 @@ namespace Foster.GuiSystem
         }
 
         public Gui(SpriteFont font, string title, int width, int height) :
-            this(font, App.System.CreateWindow(title, width, height))
+            this(font, App.System.CreateWindow(title, width, height, WindowFlags.ScaleToMonitor))
         {
 
         }

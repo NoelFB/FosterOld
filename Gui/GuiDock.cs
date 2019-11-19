@@ -177,11 +177,7 @@ namespace Foster.GuiSystem
                 Mode = Modes.Standalone;
                 Manager.Standalone.Add(this);
 
-                // when we create a window we ask for it in non-High-DPI units
-                var width = (int)(bounds.Width / Manager.Window.ContentScale.X);
-                var height = (int)(bounds.Height / Manager.Window.ContentScale.Y);
-
-                Window = App.System.CreateWindow("Gui Dock", width + standaloneWindowEdge, height + standaloneWindowEdge, false, true);
+                Window = App.System.CreateWindow("Gui Dock", bounds.Width + standaloneWindowEdge, bounds.Height + standaloneWindowEdge, WindowFlags.Hidden | WindowFlags.Transparent);
                 Window.Position = bounds.TopLeft;
                 Window.VSync = false;
                 Window.Bordered = false;
@@ -210,6 +206,9 @@ namespace Foster.GuiSystem
                 throw new Exception("The Dock is already a child of this Dock");
 
             UnsetLastMode();
+
+            Window = parent.Window;
+            Batcher = parent.Batcher;
 
             if (split == DockTo.Fill)
             {
@@ -269,6 +268,9 @@ namespace Foster.GuiSystem
 
                 parent.SplitPoint = 0.5f;
                 parent.SplitHorizontally = (split == DockTo.Left || split == DockTo.Right);
+
+                other.Window = parent.Window;
+                other.Batcher = parent.Batcher;
 
                 Mode = Modes.Docked;
             }
