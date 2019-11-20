@@ -155,6 +155,15 @@ namespace Foster.GuiSystem
             }
         }
 
+        public struct ElementStyle
+        {
+            public BorderRadius BorderRadius;
+            public BorderWeight BorderWeight;
+            public Color BorderColor;
+            public Color BackgroundColor;
+            public Color ContentColor;
+        }
+
         public struct Stylesheet
         {
             public SpriteFont Font;
@@ -162,11 +171,13 @@ namespace Foster.GuiSystem
             public float FontScale => FontSize / Font.Height;
 
             public Vector2 WindowPadding;
+            public BorderRadius WindowRadius;
             public Color WindowBorderColor;
             public float WindowBorderWeight;
             public Color WindowBackgroundColor;
 
             public Vector2 FramePadding;
+            public BorderRadius FrameRadius;
             public Color FrameBorderColor;
             public float FrameBorderWeight;
             public Color FrameBackgroundColor;
@@ -176,16 +187,10 @@ namespace Foster.GuiSystem
             public Color ScrollbarHotColor;
             public Color ScrollbarActiveColor;
 
-            public Color ItemTextColor;
-            public Color ItemTextHotColor;
-            public Color ItemTextActiveColor;
-            public Color ItemBackgroundColor;
-            public Color ItemBackgroundHotColor;
-            public Color ItemBackgroundActiveColor;
-            public Color ItemBorderColor;
-            public Color ItemBorderHotColor;
-            public Color ItemBorderActiveColor;
-            public float ItemBorderWeight;
+            public ElementStyle ItemIdle;
+            public ElementStyle ItemHot;
+            public ElementStyle ItemActive;
+
             public float ItemSpacing;
             public Vector2 ItemPadding;
             public float ItemHeight => FontSize + ItemPadding.Y * 2;
@@ -280,11 +285,13 @@ namespace Foster.GuiSystem
                 FontSize = 16,
 
                 WindowPadding = new Vector2(1, 1),
+                WindowRadius = new BorderRadius(4),
                 WindowBorderColor = 0x5c6063,
                 WindowBorderWeight = 1f,
-                WindowBackgroundColor = 0x171c20,
+                WindowBackgroundColor = 0x2b333b,
 
                 FramePadding = new Vector2(4, 4),
+                FrameRadius = new BorderRadius(0),
                 FrameBorderColor = 0x45494f,
                 FrameBorderWeight = 0f,
                 FrameBackgroundColor = 0x45494f,
@@ -294,16 +301,30 @@ namespace Foster.GuiSystem
                 ScrollbarHotColor = 0xa8e5f6,
                 ScrollbarActiveColor = 0xee9ec0,
 
-                ItemTextColor = 0xc3c5cf,
-                ItemTextHotColor = 0xffffff,
-                ItemTextActiveColor = 0x000000,
-                ItemBackgroundColor = 0x374953,
-                ItemBackgroundHotColor = 0x374953,
-                ItemBackgroundActiveColor = 0xee9ec0,
-                ItemBorderColor = 0x639ec0,
-                ItemBorderHotColor = 0xffffff,
-                ItemBorderActiveColor = 0xee9ec0,
-                ItemBorderWeight = 1f,
+                ItemIdle = new ElementStyle
+                {
+                    BorderRadius = new BorderRadius(3),
+                    BorderWeight = new BorderWeight(0, 0, 0, 1),
+                    BorderColor = 0x252e36,
+                    BackgroundColor = 0x626d78,
+                    ContentColor = 0xc3c5cf
+                },
+                ItemHot = new ElementStyle
+                {
+                    BorderRadius = new BorderRadius(3),
+                    BorderWeight = new BorderWeight(0, 0, 0, 1),
+                    BorderColor = 0x252e36,
+                    BackgroundColor = 0x83949e,
+                    ContentColor = 0xc3c5cf
+                },
+                ItemActive = new ElementStyle
+                {
+                    BorderRadius = new BorderRadius(3),
+                    BorderWeight = new BorderWeight(0),
+                    BorderColor = 0xd95bad,
+                    BackgroundColor = 0xd95bad,
+                    ContentColor = 0x000000
+                },
                 ItemSpacing = 4,
                 ItemPadding = new Vector2(6, 2),
 
@@ -549,13 +570,11 @@ namespace Foster.GuiSystem
 
                 if (isWindow)
                 {
-                    viewport.Batcher.Rect(bounds, Style.WindowBackgroundColor);
-                    viewport.Batcher.HollowRect(bounds, Style.WindowBorderWeight, Style.WindowBorderColor);
+                    Box(bounds, Style.WindowRadius, Style.WindowBorderWeight, Style.WindowBorderColor, Style.WindowBackgroundColor);
                 }
                 else
                 {
-                    viewport.Batcher.Rect(bounds, Style.FrameBackgroundColor);
-                    viewport.Batcher.HollowRect(bounds, Style.FrameBorderWeight, Style.FrameBorderColor);
+                    Box(bounds, Style.FrameRadius, Style.FrameBorderWeight, Style.FrameBorderColor, Style.FrameBackgroundColor);
                 }
 
                 // handle vertical scrolling
@@ -592,7 +611,7 @@ namespace Foster.GuiSystem
                                 scrollColor = Style.ScrollbarHotColor;
                             }
 
-                            viewport.Batcher.Rect(scrollRect.Inflate(-4), scrollColor);
+                            viewport.Batcher.RoundedRect(scrollRect.Inflate(-4), 16f, scrollColor);
                         }
 
                         frame.Clip.Width -= 16;
@@ -653,6 +672,36 @@ namespace Foster.GuiSystem
         #endregion
 
         #region Utils
+
+        public void Box(Rect rect, BorderRadius radius, BorderWeight borderWeight, Color border, Color background)
+        {
+            if (radius.Rounded)
+            {
+                if (borderWeight.Weighted && border.A > 0)
+                {
+                    var inner = rect.Inflate(-borderWeight.Left, -borderWeight.Top, -borderWeight.Right, -borderWeight.Bottom);
+                    Batcher.RoundedRect(rect, radius.TopLeft, radius.TopRight, radius.BottomRight, radius.BottomLeft, border);
+                    Batcher.RoundedRect(inner, radius.TopLeft - 1, radius.TopRight - 1, radius.BottomRight - 1, radius.BottomLeft - 1, background);
+                }
+                else
+                {
+                    Batcher.RoundedRect(rect, radius.TopLeft, radius.TopRight, radius.BottomRight, radius.BottomLeft, background);
+                }
+            }
+            else
+            {
+                if (borderWeight.Weighted && border.A > 0)
+                {
+                    var inner = rect.Inflate(-borderWeight.Left, -borderWeight.Top, -borderWeight.Right, -borderWeight.Bottom);
+                    Batcher.Rect(rect, border);
+                    Batcher.Rect(inner, background);
+                }
+                else
+                {
+                    Batcher.Rect(rect, background);
+                }
+            }
+        }
 
         public bool MouseOver(ID id, Rect position)
         {

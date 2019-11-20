@@ -154,6 +154,7 @@ namespace Foster.GLFW
             GLFW.WindowHint(GLFW.WindowHints.FocusOnshow, false);
             GLFW.WindowHint(GLFW.WindowHints.TransparentFramebuffer, flags.HasFlag(WindowFlags.Transparent));
             GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, flags.HasFlag(WindowFlags.ScaleToMonitor));
+            GLFW.WindowHint(GLFW.WindowHints.Samples, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
 
             GLFW_Context? shared = null;
             if (Contexts.Count > 0)

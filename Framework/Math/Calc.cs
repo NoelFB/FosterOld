@@ -172,6 +172,29 @@ namespace Foster.Framework
             return Atan2(to.Y - from.Y, to.X - from.X);
         }
 
+        public static float AngleApproach(float val, float target, float maxMove)
+        {
+            var diff = AngleDiff(val, target);
+            if (Math.Abs(diff) < maxMove)
+                return target;
+            return val + Calc.Clamp(diff, -maxMove, maxMove);
+        }
+
+        public static float AngleLerp(float startAngle, float endAngle, float percent)
+        {
+            return startAngle + AngleDiff(startAngle, endAngle) * percent;
+        }
+
+        public static float AngleDiff(float radiansA, float radiansB)
+        {
+            float diff = radiansB - radiansA;
+
+            while (diff > MathF.PI) { diff -= MathF.PI * 2; }
+            while (diff <= -MathF.PI) { diff += MathF.PI * 2; }
+
+            return diff;
+        }
+
         public static float Atan2(float y, float x)
         {
             return (float)Math.Atan2(y, x);

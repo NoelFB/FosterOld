@@ -177,7 +177,11 @@ namespace Foster.GuiSystem
                 Mode = Modes.Standalone;
                 Manager.Standalone.Add(this);
 
-                Window = App.System.CreateWindow("Gui Dock", bounds.Width + standaloneWindowEdge, bounds.Height + standaloneWindowEdge, WindowFlags.Hidden | WindowFlags.Transparent);
+                var width = bounds.Width + standaloneWindowEdge;
+                var height = bounds.Height + standaloneWindowEdge;
+                var flags = WindowFlags.Hidden | WindowFlags.Transparent | WindowFlags.MultiSampling;
+
+                Window = App.System.CreateWindow("Gui Dock", width, height, flags);
                 Window.Position = bounds.TopLeft;
                 Window.VSync = false;
                 Window.Bordered = false;
@@ -520,14 +524,13 @@ namespace Foster.GuiSystem
                 {
                     Batcher.Clear();
                     Imgui.BeginViewport(Window, Batcher, Gui.ContentScale);
-                    Batcher.Rect(bounds, Color.Black);
                 }
             }
 
             void Display()
             {
                 if (mode == Modes.Floating || mode == Modes.Standalone)
-                    Batcher.Rect(bounds + new Vector2(4, 4), Color.Black * 0.25f);
+                    Batcher.RoundedRect(bounds + new Vector2(4, 4), 4f, Color.Black * 0.25f);
 
                 // Split Content
                 if (Left != null || Right != null)
@@ -582,16 +585,30 @@ namespace Foster.GuiSystem
 
                             Imgui.Row(Panels.Count);
 
+                            // This styling is a huge ugly hack for now
                             var style = Imgui.Style;
-                            style.ItemBackgroundColor = style.FrameBackgroundColor;
-                            style.ItemBorderWeight = 0f;
+                            style.ItemIdle.BackgroundColor = style.FrameBackgroundColor;
+                            style.ItemIdle.BorderWeight = new BorderWeight(0, 4, 0, 0);
+                            style.ItemIdle.BorderColor = style.WindowBackgroundColor;
+                            style.ItemIdle.BorderRadius = new BorderRadius(3f, 3f, 0, 0);
+                            style.ItemHot.BorderRadius = new BorderRadius(3f, 3f, 0, 0);
+                            style.ItemActive.BorderRadius = new BorderRadius(3f, 3f, 0, 0);
+                            style.ItemPadding = new Vector2(16, 0);
+                            style.ItemSpacing = 1;
                             Imgui.PushStyle(style);
 
                             for (int i = 0; i < Panels.Count; i++)
                             {
+                                style.ItemIdle.BorderWeight = new BorderWeight(0, (PanelIndex == i ? 0 : 6), 0, 0);
+                                style.ItemIdle.BackgroundColor = (PanelIndex == i ? style.FrameBackgroundColor : style.FrameBackgroundColor * 0.5f);
+                                style.FontSize = (PanelIndex == i ? 16 : 14);
+                                Imgui.PushStyle(style);
+
                                 var id = new Imgui.ID(Panels[i].ID, 0);
-                                if (Imgui.Button(id, Panels[i].Title, Imgui.PreferredSize))
+                                if (Imgui.Button(id, Panels[i].Title, Imgui.PreferredSize, 24))
                                     PanelIndex = i;
+
+                                Imgui.PopStyle();
 
                                 // if they grab a single tab
                                 HandleDragging(bounds, Panels.Count <= 1 && Parent == null, Panels[i]);

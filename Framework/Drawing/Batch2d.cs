@@ -551,6 +551,189 @@ void main(void)
 
         #endregion
 
+        #region Rounded Rect
+
+        public void RoundedRect(float x, float y, float width, float height, float r0, float r1, float r2, float r3, Color color)
+        {
+            RoundedRect(new Rect(x, y, width, height), r0, r1, r2, r3, color);
+        }
+
+        public void RoundedRect(float x, float y, float width, float height, float radius, Color color)
+        {
+            RoundedRect(new Rect(x, y, width, height), radius, radius, radius, radius, color);
+        }
+
+        public void RoundedRect(Rect rect, float radius, Color color)
+        {
+            RoundedRect(rect, radius, radius, radius, radius, color);
+        }
+
+        public void RoundedRect(Rect rect, float r0, float r1, float r2, float r3, Color color)
+        {
+            // clamp
+            r0 = Math.Min(Math.Min(Math.Max(0, r0), rect.Width / 2f), rect.Height / 2f);
+            r1 = Math.Min(Math.Min(Math.Max(0, r1), rect.Width / 2f), rect.Height / 2f);
+            r2 = Math.Min(Math.Min(Math.Max(0, r2), rect.Width / 2f), rect.Height / 2f);
+            r3 = Math.Min(Math.Min(Math.Max(0, r3), rect.Width / 2f), rect.Height / 2f);
+
+            if (r0 <= 0 && r1 <= 0 && r2 <= 0 && r3 <= 0)
+            {
+                Rect(rect, color);
+            }
+            else
+            {
+                // get corners
+                var r0_tl = rect.TopLeft;
+                var r0_tr = r0_tl + new Vector2(r0, 0);
+                var r0_br = r0_tl + new Vector2(r0, r0);
+                var r0_bl = r0_tl + new Vector2(0, r0);
+
+                var r1_tl = rect.TopRight + new Vector2(-r1, 0);
+                var r1_tr = r1_tl + new Vector2(r1, 0);
+                var r1_br = r1_tl + new Vector2(r1, r1);
+                var r1_bl = r1_tl + new Vector2(0, r1);
+
+                var r2_tl = rect.BottomRight + new Vector2(-r2, -r2);
+                var r2_tr = r2_tl + new Vector2(r2, 0);
+                var r2_bl = r2_tl + new Vector2(0, r2);
+                var r2_br = r2_tl + new Vector2(r2, r2);
+
+                var r3_tl = rect.BottomLeft + new Vector2(0, -r3);
+                var r3_tr = r3_tl + new Vector2(r3, 0);
+                var r3_bl = r3_tl + new Vector2(0, r3);
+                var r3_br = r3_tl + new Vector2(r3, r3);
+
+                // set tris
+                {
+                    while (triangleCount + 30 >= triangles.Length)
+                        Array.Resize(ref triangles, triangles.Length * 2);
+
+                    // top quad
+                    {
+                        triangles[triangleCount + 00] = vertexCount + 00; // r0b
+                        triangles[triangleCount + 01] = vertexCount + 03; // r1a
+                        triangles[triangleCount + 02] = vertexCount + 05; // r1d
+
+                        triangles[triangleCount + 03] = vertexCount + 00; // r0b
+                        triangles[triangleCount + 04] = vertexCount + 05; // r1d
+                        triangles[triangleCount + 05] = vertexCount + 01; // r0c
+                    }
+
+                    // left quad
+                    {
+                        triangles[triangleCount + 06] = vertexCount + 02; // r0d
+                        triangles[triangleCount + 07] = vertexCount + 01; // r0c
+                        triangles[triangleCount + 08] = vertexCount + 10; // r3b
+
+                        triangles[triangleCount + 09] = vertexCount + 02; // r0d
+                        triangles[triangleCount + 10] = vertexCount + 10; // r3b
+                        triangles[triangleCount + 11] = vertexCount + 09; // r3a
+                    }
+
+                    // right quad
+                    {
+                        triangles[triangleCount + 12] = vertexCount + 05; // r1d
+                        triangles[triangleCount + 13] = vertexCount + 04; // r1c
+                        triangles[triangleCount + 14] = vertexCount + 07; // r2b
+
+                        triangles[triangleCount + 15] = vertexCount + 05; // r1d
+                        triangles[triangleCount + 16] = vertexCount + 07; // r2b
+                        triangles[triangleCount + 17] = vertexCount + 06; // r2a
+                    }
+
+                    // bottom quad
+                    {
+                        triangles[triangleCount + 18] = vertexCount + 10; // r3b
+                        triangles[triangleCount + 19] = vertexCount + 06; // r2a
+                        triangles[triangleCount + 20] = vertexCount + 08; // r2d
+
+                        triangles[triangleCount + 21] = vertexCount + 10; // r3b
+                        triangles[triangleCount + 22] = vertexCount + 08; // r2d
+                        triangles[triangleCount + 23] = vertexCount + 11; // r3c
+                    }
+
+                    // center quad
+                    {
+                        triangles[triangleCount + 24] = vertexCount + 01; // r0c
+                        triangles[triangleCount + 25] = vertexCount + 05; // r1d
+                        triangles[triangleCount + 26] = vertexCount + 06; // r2a
+
+                        triangles[triangleCount + 27] = vertexCount + 01; // r0c
+                        triangles[triangleCount + 28] = vertexCount + 06; // r2a
+                        triangles[triangleCount + 29] = vertexCount + 10; // r3b
+                    }
+
+                    triangleCount += 30;
+                    currentBatch.Elements += 10;
+                    dirty = true;
+                }
+
+                // set verts
+                {
+                    ExpandVertices(vertexCount + 12);
+
+                    Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 12);
+
+                    Transform(ref vertices[vertexCount + 00].Pos, ref r0_tr, ref MatrixStack); // 0
+                    Transform(ref vertices[vertexCount + 01].Pos, ref r0_br, ref MatrixStack); // 1
+                    Transform(ref vertices[vertexCount + 02].Pos, ref r0_bl, ref MatrixStack); // 2
+
+                    Transform(ref vertices[vertexCount + 03].Pos, ref r1_tl, ref MatrixStack); // 3
+                    Transform(ref vertices[vertexCount + 04].Pos, ref r1_br, ref MatrixStack); // 4
+                    Transform(ref vertices[vertexCount + 05].Pos, ref r1_bl, ref MatrixStack); // 5
+
+                    Transform(ref vertices[vertexCount + 06].Pos, ref r2_tl, ref MatrixStack); // 6
+                    Transform(ref vertices[vertexCount + 07].Pos, ref r2_tr, ref MatrixStack); // 7
+                    Transform(ref vertices[vertexCount + 08].Pos, ref r2_bl, ref MatrixStack); // 8
+
+                    Transform(ref vertices[vertexCount + 09].Pos, ref r3_tl, ref MatrixStack); // 9
+                    Transform(ref vertices[vertexCount + 10].Pos, ref r3_tr, ref MatrixStack); // 10
+                    Transform(ref vertices[vertexCount + 11].Pos, ref r3_br, ref MatrixStack); // 11
+
+                    vertexCount += 12;
+                }
+
+                // top-left corner
+                if (r0 > 0)
+                    SemiCircle(r0_br, Vector2.Left.Angle(), Vector2.Up.Angle(), r0, Math.Max(3, (int)(r0 / 4)), color);
+                else
+                    Quad(r0_tl, r0_tr, r0_br, r0_bl, color);
+
+                // top-right corner
+                if (r1 > 0)
+                    SemiCircle(r1_bl, Vector2.Up.Angle(), Vector2.Right.Angle(), r1, Math.Max(3, (int)(r1 / 4)), color);
+                else
+                    Quad(r1_tl, r1_tr, r1_br, r1_bl, color);
+
+                // bottom-right corner
+                if (r2 > 0)
+                    SemiCircle(r2_tl, Vector2.Right.Angle(), Vector2.Down.Angle(), r2, Math.Max(3, (int)(r2 / 4)), color);
+                else
+                    Quad(r2_tl, r2_tr, r2_br, r2_bl, color);
+
+                // bottom-left corner
+                if (r3 > 0)
+                    SemiCircle(r3_tr, Vector2.Down.Angle(), Vector2.Left.Angle(), r3, Math.Max(3, (int)(r3 / 4)), color);
+                else
+                    Quad(r3_tl, r3_tr, r3_br, r3_bl, color);
+            }
+
+        }
+
+        public void SemiCircle(Vector2 center, float start, float end, float radius, int steps, Color color)
+        {
+            var last = Vector2.Angle(start, radius);
+
+            for (int i = 1; i <= steps; i ++)
+            {
+                var next = Vector2.Angle(Calc.AngleLerp(start, end, (i / (float)steps)), radius);
+                Triangle(center + last, center + next, center, color);
+                last = next;
+            }
+        }
+
+        #endregion
+
         #region Hollow Rect
 
         public void HollowRect(Rect rect, float t, Color color)

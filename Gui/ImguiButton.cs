@@ -79,32 +79,28 @@ namespace Foster.GuiSystem
             {
                 var style = context.Style;
                 var scale = Vector2.One * style.FontScale;
-
-                var color = style.ItemTextColor;
-                var background = style.ItemBackgroundColor;
-                var border = style.ItemBorderColor;
+                var element = style.ItemIdle;
 
                 result = context.ButtonBehaviour(id, position);
 
                 if (context.ActiveId == id)
                 {
-                    color = style.ItemTextActiveColor;
-                    background = style.ItemBackgroundActiveColor;
-                    border = style.ItemBorderActiveColor;
+                    element = style.ItemActive;
                 }
                 else if (context.HotId == id)
                 {
-                    color = style.ItemTextHotColor;
-                    background = style.ItemBackgroundHotColor;
-                    border = style.ItemBorderHotColor;
+                    element = style.ItemHot;
                 }
 
                 if (context.Batcher != null)
                 {
-                    context.Batcher.Rect(position, background);
-                    context.Batcher.HollowRect(position, style.ItemBorderWeight, border);
-                    context.Batcher.PushMatrix(new Vector2(position.X + style.ItemPadding.X, position.Center.Y - style.FontSize * 0.5f), scale, Vector2.Zero, 0f);
-                    context.Batcher.Text(style.Font, label, color);
+                    context.Box(position, element.BorderRadius, element.BorderWeight, element.BorderColor, element.BackgroundColor);
+
+                    var left = position.X + style.ItemPadding.X + element.BorderWeight.Left;
+                    var middle = position.Y + element.BorderWeight.Top + (position.Height - element.BorderWeight.Height) * 0.5f - style.FontSize * 0.5f;
+
+                    context.Batcher.PushMatrix(new Vector2(left, middle), scale, Vector2.Zero, 0f);
+                    context.Batcher.Text(style.Font, label, element.ContentColor);
                     context.Batcher.PopMatrix();
                 }
             }

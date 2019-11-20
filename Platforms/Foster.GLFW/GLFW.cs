@@ -94,6 +94,7 @@ namespace Foster.GLFW
             ContextVersionMajor = 0x00022002,
             ContextVersionMinor = 0x00022003,
             ContextVersionRevision = 0x00022004,
+            Samples = 0x0002100D,
 
             OpenGLVersionMajor = 0x00022002,
             OpenGLVersionMinor = 0x00022003,

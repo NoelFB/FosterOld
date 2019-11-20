@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -154,6 +155,16 @@ namespace Foster.Framework
         public Rect Inflate(float by)
         {
             return new Rect(X - by, Y - by, Width + by * 2, Height + by * 2);
+        }
+
+        public Rect Inflate(float left, float top, float right, float bottom)
+        {
+            var rect = new Rect(X, Y, Width, Height);
+            rect.Left -= left;
+            rect.Top -= top;
+            rect.Right += right;
+            rect.Bottom += bottom;
+            return rect;
         }
 
         public Rect Scale(float by)

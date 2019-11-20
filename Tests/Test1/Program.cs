@@ -30,10 +30,19 @@ namespace Test1
             var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "SourceSansPro-SemiBold.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
 
+            var strs = new string[]
+            {
+                "Scene",
+                "Inspector",
+                "Assets",
+                "Game",
+                "Log"
+            };
+
             for (int i = 0; i < 5; i++)
             {
                 var n = i;
-                var panel = gui.CreatePanel($"Hello World {i}", new Rect(32, 32, 400, 400));
+                var panel = gui.CreatePanel(strs[i], new Rect(32, 32, 400, 400));
                 panel.OnRefresh = (imgui) =>
                 {
                     imgui.Row(2);
