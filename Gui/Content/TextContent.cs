@@ -17,18 +17,18 @@ namespace Foster.GuiSystem
 
         public void Draw(Imgui imgui, Batch2d batcher, StyleState style, Rect position)
         {
-            var scale = Vector2.One * imgui.Style.FontScale;
-            var align = new Vector2(position.X, position.Center.Y - imgui.Style.FontSize * 0.5f);
+            var scale = Vector2.One * imgui.FontScale;
+            var align = new Vector2(position.X, position.Center.Y - imgui.FontSize * 0.5f);
 
             batcher.PushMatrix(align, scale, Vector2.Zero, 0f);
-            batcher.Text(imgui.Style.Font, Text, style.ContentColor);
+            batcher.Text(imgui.Font, Text, style.ContentColor);
             batcher.PopMatrix();
         }
 
         public Vector2 PreferredSize(Imgui imgui)
         {
-            var width = imgui.Style.Font.WidthOf(Text) * imgui.Style.FontScale;
-            var height = imgui.Style.FontSize;
+            var width = imgui.Font.WidthOf(Text) * imgui.FontScale;
+            var height = imgui.FontSize;
 
             return new Vector2(width, height);
         }

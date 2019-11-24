@@ -183,9 +183,20 @@ namespace Foster.GuiSystem
 
         #region Public Variables
 
-        public Stylesheet DefaultStyle;
         public Stylesheet Style;
-        public float Indent => (indents.Count > 0 ? indents.Peek() : 0f);
+        public SpriteFont DefaultFont;
+        public float DefaultFontSize;
+        public float DefaultSpacing;
+
+        public SpriteFont Font => (fontStack.Count > 0 ? fontStack.Peek() : DefaultFont);
+        public float FontSize => (fontSizeStack.Count > 0 ? fontSizeStack.Peek() : DefaultFontSize);
+        public float FontScale => FontSize / Font.Height;
+        public float Spacing => (spacingStack.Count > 0 ? spacingStack.Peek() : DefaultSpacing);
+        public float Indent => (indentStack.Count > 0 ? indentStack.Peek() : 0f);
+        public ViewportState Viewport => viewport;
+        public FrameState Frame => frame;
+        public Rect Clip => clipStack.Count > 0 ? clipStack.Peek() : new Rect();
+        public Batch2d Batcher => viewport.Batcher;
 
         public ID HotId = ID.None;
         public ID LastHotId = ID.None;
@@ -208,19 +219,17 @@ namespace Foster.GuiSystem
         private FrameState frame;
         private bool lastActiveIdExists;
 
-        public ViewportState Viewport => viewport;
-        public FrameState Frame => frame;
-        public Rect Clip => clips.Count > 0 ? clips.Peek() : new Rect();
-        public Batch2d Batcher => viewport.Batcher;
-
         #endregion
 
         #region Private Variables
 
-        private readonly Stack<FrameState> frames = new Stack<FrameState>();
-        private readonly Stack<ID> ids = new Stack<ID>();
-        private readonly Stack<Rect> clips = new Stack<Rect>();
-        private readonly Stack<float> indents = new Stack<float>();
+        private readonly Stack<FrameState> frameStack = new Stack<FrameState>();
+        private readonly Stack<ID> idStack = new Stack<ID>();
+        private readonly Stack<Rect> clipStack = new Stack<Rect>();
+        private readonly Stack<float> indentStack = new Stack<float>();
+        private readonly Stack<SpriteFont> fontStack = new Stack<SpriteFont>();
+        private readonly Stack<float> fontSizeStack = new Stack<float>();
+        private readonly Stack<float> spacingStack = new Stack<float>();
 
         private readonly Storage<ViewportState> viewportStorage = new Storage<ViewportState>();
         private readonly Storage<FrameState> frameStorage = new Storage<FrameState>();
@@ -233,10 +242,10 @@ namespace Foster.GuiSystem
 
         public Imgui(SpriteFont font)
         {
-            DefaultStyle = Stylesheets.Default;
-            DefaultStyle.Font = font;
-
-            Style = DefaultStyle;
+            Style = Stylesheets.Default;
+            DefaultFont = font;
+            DefaultFontSize = 16;
+            DefaultSpacing = 4;
         }
 
         #endregion
@@ -245,14 +254,14 @@ namespace Foster.GuiSystem
 
         public ID Id(UniqueInfo value)
         {
-            CurrentId = new ID(value.Value, (ids.Count > 0 ? ids.Peek() : new ID(0, 0)));
+            CurrentId = new ID(value.Value, (idStack.Count > 0 ? idStack.Peek() : new ID(0, 0)));
 
             return CurrentId;
         }
 
         public ID PushId(ID id)
         {
-            ids.Push(id);
+            idStack.Push(id);
             return id;
         }
 
@@ -263,8 +272,35 @@ namespace Foster.GuiSystem
 
         public void PopId()
         {
-            ids.Pop();
+            idStack.Pop();
         }
+
+        private void PushClip(Rect rect)
+        {
+            clipStack.Push(rect);
+            viewport.Batcher.SetScissor(rect.Scale(viewport.Scale).Int());
+        }
+
+        private void PopClip()
+        {
+            clipStack.Pop();
+            if (clipStack.Count > 0)
+                viewport.Batcher.SetScissor(clipStack.Peek().Scale(viewport.Scale).Int());
+            else
+                viewport.Batcher.SetScissor(null);
+        }
+
+        public void PushIndent(float amount) => indentStack.Push(Indent + amount);
+        public void PopIndent() => indentStack.Pop();
+
+        public void PushSpacing(float spacing) => spacingStack.Push(spacing);
+        public void PopSpacing() => spacingStack.Pop();
+
+        public void PushFont(SpriteFont font) => fontStack.Push(font);
+        public void PopFont() => fontStack.Pop();
+
+        public void PushFontSize(float size) => fontSizeStack.Push(size);
+        public void PopFontSize() => fontSizeStack.Pop();
 
         public void Store(ID id, UniqueInfo key, float value)
         {
@@ -286,44 +322,19 @@ namespace Foster.GuiSystem
             return boolStorage.Retrieve(new ID(key.Value, id), out value);
         }
 
-        public void PushIndent(float amount)
-        {
-            indents.Push(Indent + amount);
-        }
-
-        public void PopIndent()
-        {
-            indents.Pop();
-        }
-
-        private void PushClip(Rect rect)
-        {
-            clips.Push(rect);
-            viewport.Batcher.SetScissor(rect.Scale(viewport.Scale).Int());
-        }
-
-        private void PopClip()
-        {
-            clips.Pop();
-            if (clips.Count > 0)
-                viewport.Batcher.SetScissor(clips.Peek().Scale(viewport.Scale).Int());
-            else
-                viewport.Batcher.SetScissor(null);
-        }
-
         public void Row()
         {
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
-            frame.NextRow(1, Indent, Style.Spacing);
+            frame.NextRow(1, Indent, Spacing);
         }
         public void Row(int columns)
         {
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
-            frame.NextRow(columns, Indent, Style.Spacing);
+            frame.NextRow(columns, Indent, Spacing);
         }
 
         public Rect Remainder()
@@ -331,7 +342,7 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(0, 0, Indent, Style.Spacing);
+            return frame.NextCell(0, 0, Indent, Spacing);
         }
 
         public Rect Cell(float width, float height)
@@ -339,10 +350,10 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(width, height, Indent, Style.Spacing);
+            return frame.NextCell(width, height, Indent, Spacing);
         }
 
-        public void Separator() => Cell(0, Style.Spacing);
+        public void Separator() => Cell(0, Spacing);
         public void Separator(float height) => Cell(0, height);
         public void Separator(float width, float height) => Cell(width, height);
 
@@ -350,10 +361,17 @@ namespace Foster.GuiSystem
         {
             viewport = new ViewportState();
             frame = new FrameState();
-            indents.Clear();
-            ids.Clear();
-            frames.Clear();
-            clips.Clear();
+
+            // These should have been all cleared by the end of last frame
+            // but we do this for safety
+            indentStack.Clear();
+            idStack.Clear();
+            frameStack.Clear();
+            clipStack.Clear();
+            fontStack.Clear();
+            fontSizeStack.Clear();
+            spacingStack.Clear();
+
             viewportStorage.Step();
             frameStorage.Step();
             floatStorage.Step();
@@ -453,12 +471,12 @@ namespace Foster.GuiSystem
             edge.Top += style.Padding.Y;
             edge.Bottom += style.Padding.Y;
 
-            var clip = bounds.OverlapRect(clips.Peek());
+            var clip = bounds.OverlapRect(clipStack.Peek());
             clip = clip.Inflate(-edge.Left, -edge.Top, -edge.Right, -edge.Bottom);
 
             if (clip.Area > 0)
             {
-                frames.Push(frame);
+                frameStack.Push(frame);
                 frame = new FrameState
                 {
                     ID = PushId(info),
@@ -540,8 +558,8 @@ namespace Foster.GuiSystem
             if (frame.Scrollable)
                 PopClip();
 
-            if (frames.Count > 0)
-                frame = frames.Pop();
+            if (frameStack.Count > 0)
+                frame = frameStack.Pop();
             else
                 frame = new FrameState();
         }

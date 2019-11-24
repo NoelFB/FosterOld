@@ -30,7 +30,7 @@ namespace Foster.GuiSystem
 
         public GuiPanel CreatePanel(string title, Rect bounds)
         {
-            var panel = new GuiPanel(title);
+            var panel = new GuiPanel(this, title);
 
             var dock = new GuiDock(manager);
             dock.SetAsFloating(bounds);

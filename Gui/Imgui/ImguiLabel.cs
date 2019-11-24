@@ -9,7 +9,7 @@ namespace Foster.GuiSystem
     {
         public static void Label(this Imgui imgui, string label)
         {
-            Label(imgui, label, imgui.Style.Item.Idle);
+            Label(imgui, label, imgui.Style.Generic.Idle);
         }
 
         public static void Label(this Imgui imgui, string label, StyleState style)

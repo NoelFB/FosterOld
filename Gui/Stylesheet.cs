@@ -45,11 +45,7 @@ namespace Foster.GuiSystem
 
     public struct Stylesheet
     {
-        public SpriteFont Font;
-        public float FontSize;
-        public float FontScale => FontSize / Font.Height;
         public float TitleScale;
-        public float Spacing;
 
         public StyleWindow Window;
         public StyleWindow Docked;
@@ -60,16 +56,15 @@ namespace Foster.GuiSystem
         public StyleElement Scrollbar;
         public float ScrollbarWeight;
 
-        public StyleElement Item;
+        public StyleElement Generic;
+        public StyleState Label;
     }
 
     public static class Stylesheets
     {
         public static Stylesheet Default = new Stylesheet
         {
-            FontSize = 16,
             TitleScale = 1.25f,
-            Spacing = 4,
 
             Window = new StyleWindow
             {
@@ -178,7 +173,7 @@ namespace Foster.GuiSystem
                 },
             },
 
-            Item = new StyleElement
+            Generic = new StyleElement
             {
                 Idle = new StyleState
                 {

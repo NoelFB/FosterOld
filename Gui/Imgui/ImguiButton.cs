@@ -12,7 +12,7 @@ namespace Foster.GuiSystem
         {
             var content = new TextContent(label);
             var info = content.UniqueInfo();
-            var style = imgui.Style.Item;
+            var style = imgui.Style.Generic;
 
             var size = content.PreferredSize(imgui);
             size.X += style.Idle.Padding.X * 2;
@@ -35,7 +35,7 @@ namespace Foster.GuiSystem
 
         public static bool Button(this Imgui imgui, IContent content)
         {
-            return Button(imgui, content, imgui.Style.Item);
+            return Button(imgui, content, imgui.Style.Generic);
         }
 
         public static bool Button(this Imgui imgui, IContent content, StyleElement style)
@@ -45,7 +45,7 @@ namespace Foster.GuiSystem
 
         public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content)
         {
-            return Button(imgui, info, content, imgui.Style.Item);
+            return Button(imgui, info, content, imgui.Style.Generic);
         }
 
         public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, StyleElement style)

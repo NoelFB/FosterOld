@@ -4,12 +4,7 @@ using Foster.GLFW;
 using Foster.SDL2;
 using Foster.OpenGL;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Test1
 {

@@ -5,13 +5,14 @@ using Foster.Framework;
 
 namespace Foster.GuiSystem
 {
-    public class GuiManager
+    internal class GuiManager
     {
 
         public readonly Gui Gui;
         public readonly Window Window;
         public readonly Batch2d Batcher;
 
+        public readonly GuiDockNode RootNode;
         public readonly GuiDock Root;
         public readonly List<GuiDock> Floating = new List<GuiDock>();
         public readonly List<GuiDock> Standalone = new List<GuiDock>();

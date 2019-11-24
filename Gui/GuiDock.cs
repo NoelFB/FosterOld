@@ -4,7 +4,7 @@ using Foster.Framework;
 
 namespace Foster.GuiSystem
 {
-    public class GuiDock
+    internal class GuiDock
     {
         #region Enums
 
@@ -379,9 +379,6 @@ namespace Foster.GuiSystem
                     bounds.Height -= standaloneWindowEdge;
                 }
 
-                if (Mode == Modes.Root)
-                    bounds.Top += 64;
-
                 return bounds;
             }
 
@@ -586,12 +583,11 @@ namespace Foster.GuiSystem
                         {
                             var windowId = Imgui.CurrentId;
                             var grabbingPanel = -1;
-                            var spacing = Imgui.Style.Spacing;
 
                             // The Tabs
                             {
                                 Imgui.Row(Panels.Count);
-                                Imgui.Style.Spacing = Imgui.Style.Window.TabSpacing;
+                                Imgui.PushSpacing(Imgui.Style.Window.TabSpacing);
 
                                 for (int i = 0; i < Panels.Count; i++)
                                 {
@@ -603,14 +599,16 @@ namespace Foster.GuiSystem
                                     if (Imgui.ActiveId == Imgui.CurrentId)
                                         grabbingPanel = i;
                                 }
+
+                                Imgui.PopSpacing();
                             }
 
                             // The Content
                             if (Panel != null)
                             {
-                                Imgui.Style.Spacing = 0;
+                                Imgui.PushSpacing(0);
                                 var remainder = Imgui.Remainder();
-                                Imgui.Style.Spacing = spacing;
+                                Imgui.PopSpacing();
 
                                 if (Imgui.BeginFrame("CONTENT", remainder, Imgui.Style.Window.Frame, true))
                                 {
