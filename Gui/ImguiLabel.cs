@@ -7,25 +7,26 @@ namespace Foster.GuiSystem
 {
     public static class ImguiLabel
     {
-        public static void Label(this Imgui context, string label)
+        public static void Label(this Imgui imgui, string label)
         {
-            context.Label(label, label);
+            Label(imgui, label, imgui.Style.Item.Idle);
         }
 
-        public static void Label(this Imgui context, Imgui.UniqueInfo identifier, string label)
+        public static void Label(this Imgui imgui, string label, StyleState style)
         {
-            context.Label(identifier, label, context.Cell(context.Style.ItemHeight));
+            var content = new TextContent(label);
+            var size = content.PreferredSize(imgui);
+            var position = imgui.Cell(size.X, size.Y);
+
+            imgui.Label(content, position, style);
         }
 
-        public static void Label(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
+        public static void Label(this Imgui imgui, IContent label, Rect position, StyleState style)
         {
-            if (position.Intersects(context.Clip))
+            if (position.Intersects(imgui.Clip))
             {
-                var scale = Vector2.One * context.Style.FontScale;
-
-                context.Batcher.PushMatrix(new Vector2(position.X, position.Y + context.Style.ItemPadding.Y), scale, Vector2.Zero, 0f);
-                context.Batcher.Text(context.Style.Font, label, Color.White);
-                context.Batcher.PopMatrix();
+                var inner = position.Inflate(-style.Padding.X, -style.Padding.Y, -style.Padding.X, -style.Padding.Y);
+                label.Draw(imgui, imgui.Batcher, style, inner);
             }
         }
     }

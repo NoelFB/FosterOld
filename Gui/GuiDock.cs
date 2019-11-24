@@ -379,6 +379,9 @@ namespace Foster.GuiSystem
                     bounds.Height -= standaloneWindowEdge;
                 }
 
+                if (Mode == Modes.Root)
+                    bounds.Top += 64;
+
                 return bounds;
             }
 
@@ -578,51 +581,38 @@ namespace Foster.GuiSystem
                         if (PanelIndex < 0)
                             PanelIndex = 0;
 
-                        if (Imgui.BeginFrame(ID + 1, bounds, false))
+                        // The Window
+                        if (Imgui.BeginFrame(ID, bounds, Imgui.Style.Window.Window, false))
                         {
-                            // If they grab anywhere on the Frame
-                            HandleDragging(bounds, true, null);
+                            var windowId = Imgui.CurrentId;
+                            var grabbingPanel = -1;
+                            var spacing = Imgui.Style.Spacing;
 
-                            Imgui.Row(Panels.Count);
-
-                            // This styling is a huge ugly hack for now
-                            var style = Imgui.Style;
-                            style.ItemIdle.BackgroundColor = style.FrameBackgroundColor;
-                            style.ItemIdle.BorderWeight = new BorderWeight(0, 4, 0, 0);
-                            style.ItemIdle.BorderColor = style.WindowBackgroundColor;
-                            style.ItemIdle.BorderRadius = new BorderRadius(3f, 3f, 0, 0);
-                            style.ItemHot.BorderRadius = new BorderRadius(3f, 3f, 0, 0);
-                            style.ItemActive.BorderRadius = new BorderRadius(3f, 3f, 0, 0);
-                            style.ItemPadding = new Vector2(16, 0);
-                            style.ItemSpacing = 1;
-                            Imgui.PushStyle(style);
-
-                            for (int i = 0; i < Panels.Count; i++)
+                            // The Tabs
                             {
-                                style.ItemIdle.BorderWeight = new BorderWeight(0, (PanelIndex == i ? 0 : 6), 0, 0);
-                                style.ItemIdle.BackgroundColor = (PanelIndex == i ? style.FrameBackgroundColor : style.FrameBackgroundColor * 0.5f);
-                                style.FontSize = (PanelIndex == i ? 16 : 14);
-                                Imgui.PushStyle(style);
+                                Imgui.Row(Panels.Count);
+                                Imgui.Style.Spacing = Imgui.Style.Window.TabSpacing;
 
-                                var id = new Imgui.ID(Panels[i].ID, 0);
-                                if (Imgui.Button(id, Panels[i].Title, Imgui.PreferredSize, 24))
-                                    PanelIndex = i;
+                                for (int i = 0; i < Panels.Count; i++)
+                                {
+                                    var tabStyle = (PanelIndex == i ? Imgui.Style.Window.CurrentTab : Imgui.Style.Window.Tab);
 
-                                Imgui.PopStyle();
+                                    if (Imgui.Button(Panels[i].Title, tabStyle))
+                                        PanelIndex = i;
 
-                                // if they grab a single tab
-                                HandleDragging(bounds, Panels.Count <= 1 && Parent == null, Panels[i]);
+                                    if (Imgui.ActiveId == Imgui.CurrentId)
+                                        grabbingPanel = i;
+                                }
                             }
 
-                            style.ItemSpacing = 0;
-                            Imgui.PushStyle(style);
-                            var remainder = Imgui.Remainder();
-                            Imgui.PopStyle();
-                            Imgui.PopStyle();
-
+                            // The Content
                             if (Panel != null)
                             {
-                                if (Imgui.BeginFrame(ID, remainder))
+                                Imgui.Style.Spacing = 0;
+                                var remainder = Imgui.Remainder();
+                                Imgui.Style.Spacing = spacing;
+
+                                if (Imgui.BeginFrame("CONTENT", remainder, Imgui.Style.Window.Frame, true))
                                 {
                                     Panel.OnRefresh?.Invoke(Imgui);
                                     Imgui.EndFrame();
@@ -630,6 +620,12 @@ namespace Foster.GuiSystem
                             }
 
                             Imgui.EndFrame();
+
+                            // Handle Dragging or Popping Out
+                            if (Manager.PixelMouseDrag.Length > 0 && (Imgui.ActiveId == windowId || grabbingPanel >= 0))
+                            {
+                                HandleDragging(bounds, grabbingPanel >= 0 ? Panels[grabbingPanel] : null);
+                            }
                         }
                     }
                 }
@@ -696,68 +692,59 @@ namespace Foster.GuiSystem
             }
         }
 
-        private void HandleDragging(Rect bounds, bool draggingWindow, GuiPanel? draggingSinglePanel)
+        private void HandleDragging(Rect bounds, GuiPanel? panel)
         {
-            if (Imgui.CurrentId == Imgui.ActiveId)
+            var root = GetBaseDock();
+
+            // pop out a single panel
+            if (panel != null && Panels.Count > 1)
             {
-                // only move if we need to
-                if (Manager.PixelMouseDrag.Length > 0)
-                {
-                    var root = GetBaseDock();
+                var dock = new GuiDock(Manager);
 
-                    // drag out a single panel from a list of panels
-                    if (draggingSinglePanel != null && Panels.Count > 1)
-                    {
-                        var dock = new GuiDock(Manager);
+                MakePopout(dock, bounds);
 
-                        if (App.System.SupportsMultipleWindows)
-                            dock.SetAsStandalone(BoundsToScreen(bounds));
-                        else
-                            dock.SetAsFloating(bounds);
+                Manager.Dragging = dock;
+                Imgui.ActiveId = Imgui.Id(dock.ID);
 
-                        dock.Panels.Add(draggingSinglePanel);
-                        Panels.Remove(draggingSinglePanel);
-                    }
-                    // pop out of the root
-                    // The Root is allowed to be totally empty
-                    else if (Mode == Modes.Root)
-                    {
-                        var dock = new GuiDock(Manager);
+                dock.Panels.Add(panel);
+                Panels.Remove(panel);
+            }
+            // pop out of the root
+            // The Root is allowed to be totally empty
+            else if (Mode == Modes.Root)
+            {
+                var dock = new GuiDock(Manager);
 
-                        if (App.System.SupportsMultipleWindows)
-                            dock.SetAsStandalone(BoundsToScreen(bounds));
-                        else
-                            dock.SetAsFloating(bounds);
+                MakePopout(dock, bounds);
 
-                        dock.Panels.AddRange(Panels);
-                        dock.PanelIndex = PanelIndex;
-                        dock.SplitHorizontally = SplitHorizontally;
-                        dock.SplitPoint = SplitPoint;
-                        dock.Left = Left;
-                        dock.Right = Right;
-                        Panels.Clear();
-                    }
-                    // drag the standalone Window around normally
-                    else if (draggingWindow && root.Mode == Modes.Standalone)
-                    {
-                        Manager.Dragging = root;
-                        root.dragging = Dragging.Position;
-                    }
-                    // drag the floating Window around normally
-                    else if (draggingWindow && root.Mode == Modes.Floating)
-                    {
-                        Manager.Dragging = root;
-                        root.dragging = Dragging.Position;
-                    }
-                    // pop out of our parent
-                    else
-                    {
-                        if (App.System.SupportsMultipleWindows)
-                            SetAsStandalone(BoundsToScreen(bounds));
-                        else
-                            SetAsFloating(bounds);
-                    }
-                }
+                dock.Panels.AddRange(Panels);
+                dock.PanelIndex = PanelIndex;
+                dock.SplitHorizontally = SplitHorizontally;
+                dock.SplitPoint = SplitPoint;
+                dock.Left = Left;
+                dock.Right = Right;
+                Panels.Clear();
+            }
+            // drag the Window around normally
+            else if ((this == root || panel == null) && (root.Mode == Modes.Standalone || root.Mode == Modes.Floating))
+            {
+                Manager.Dragging = root;
+                root.dragging = Dragging.Position;
+            }
+            // pop out of our parent
+            else
+            {
+                MakePopout(this, bounds);
+            }
+
+            void MakePopout(GuiDock dock, Rect bounds)
+            {
+                var screen = BoundsToScreen(bounds);
+
+                if (App.System.SupportsMultipleWindows && !Manager.Window.Bounds.Contains(screen))
+                    dock.SetAsStandalone(screen);
+                else
+                    dock.SetAsFloating(bounds);
             }
         }
 

@@ -7,102 +7,72 @@ namespace Foster.GuiSystem
 {
     public static class ImguiButton
     {
-        public static bool GrabbingBehaviour(this Imgui context, Imgui.ID id, Rect position)
+
+        public static bool WideButton(this Imgui imgui, string label)
         {
-            if (context.MouseOver(id, position))
-                context.HotId = id;
+            var content = new TextContent(label);
+            var info = content.UniqueInfo();
+            var style = imgui.Style.Item;
 
-            if (context.LastHotId == id && App.Input.Mouse.LeftPressed)
-                context.ActiveId = id;
+            var size = content.PreferredSize(imgui);
+            size.X += style.Idle.Padding.X * 2;
+            size.Y += style.Idle.Padding.Y * 2;
 
-            if (context.ActiveId == id && App.Input.Mouse.LeftReleased)
-                context.ActiveId = Imgui.ID.None;
+            var position = imgui.Cell(0, size.Y);
 
-            return context.ActiveId == id;
+            return Button(imgui, info, content, position, style);
         }
 
-        public static bool ButtonBehaviour(this Imgui context, Imgui.ID id, Rect position)
+        public static bool Button(this Imgui imgui, string label)
         {
-            var performPress = false;
-
-            if (context.MouseOver(id, position))
-                context.HotId = id;
-
-            if (context.LastHotId == id && App.Input.Mouse.LeftPressed)
-                context.ActiveId = id;
-
-            if (context.ActiveId == id && App.Input.Mouse.LeftReleased)
-            {
-                if (context.HotId == id)
-                    performPress = true;
-                context.ActiveId = Imgui.ID.None;
-            }
-
-            return performPress;
+            return Button(imgui, new TextContent(label));
         }
 
-
-
-        public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, Rect position)
+        public static bool Button(this Imgui imgui, string label, StyleElement style)
         {
-            return Button(context, context.Id(identifier), label, position);
+            return Button(imgui, new TextContent(label), style);
         }
 
-        public static bool Button(this Imgui context, string label, float width = 0f, float height = 0f)
+        public static bool Button(this Imgui imgui, IContent content)
         {
-            return Button(context, label, label, width, height);
+            return Button(imgui, content, imgui.Style.Item);
         }
 
-        public static bool Button(this Imgui context, Imgui.UniqueInfo identifier, string label, float width = 0f, float height = 0f)
+        public static bool Button(this Imgui imgui, IContent content, StyleElement style)
         {
-            return Button(context, context.Id(identifier), label, width, height);
+            return Button(imgui, content.UniqueInfo(), content, style);
         }
 
-        public static bool Button(this Imgui context, Imgui.ID id, string label, float width = 0f, float height = 0f)
+        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content)
         {
-            var style = context.Style;
-
-            if (width == Imgui.PreferredSize)
-                width = style.Font.WidthOf(label) * style.FontScale + style.ItemPadding.X * 2f;
-            if (height == 0f)
-                height = style.FontSize + style.ItemPadding.X * 2;
-
-            return Button(context, id, label, context.Cell(width, height));
+            return Button(imgui, info, content, imgui.Style.Item);
         }
 
-        public static bool Button(this Imgui context, Imgui.ID id, string label, Rect position)
+        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, StyleElement style)
+        {
+            var size = content.PreferredSize(imgui);
+            size.X += style.Idle.Padding.X * 2;
+            size.Y += style.Idle.Padding.Y * 2;
+
+            var position = imgui.Cell(size.X, size.Y);
+
+            return Button(imgui, info, content, position, style);
+        }
+
+        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, Rect position, StyleElement style)
         {
             var result = false;
-            context.CurrentId = id;
+            var id = imgui.Id(info);
+            imgui.CurrentId = id;
 
-            if (position.Intersects(context.Clip))
+            if (position.Intersects(imgui.Clip))
             {
-                var style = context.Style;
-                var scale = Vector2.One * style.FontScale;
-                var element = style.ItemIdle;
+                result = imgui.ButtonBehaviour(id, position);
 
-                result = context.ButtonBehaviour(id, position);
+                var inner = imgui.Box(position, style, id);
+                var styleState = style.Current(imgui.ActiveId, imgui.HotId, id);
 
-                if (context.ActiveId == id)
-                {
-                    element = style.ItemActive;
-                }
-                else if (context.HotId == id)
-                {
-                    element = style.ItemHot;
-                }
-
-                if (context.Batcher != null)
-                {
-                    context.Box(position, element.BorderRadius, element.BorderWeight, element.BorderColor, element.BackgroundColor);
-
-                    var left = position.X + style.ItemPadding.X + element.BorderWeight.Left;
-                    var middle = position.Y + element.BorderWeight.Top + (position.Height - element.BorderWeight.Height) * 0.5f - style.FontSize * 0.5f;
-
-                    context.Batcher.PushMatrix(new Vector2(left, middle), scale, Vector2.Zero, 0f);
-                    context.Batcher.Text(style.Font, label, element.ContentColor);
-                    context.Batcher.PopMatrix();
-                }
+                content.Draw(imgui, imgui.Batcher, styleState, inner);
             }
 
             return result;

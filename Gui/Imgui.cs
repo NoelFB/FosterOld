@@ -69,7 +69,7 @@ namespace Foster.GuiSystem
 
             public bool Scrollable;
             public bool Overflow;
-            public Vector2 Padding;
+            public BorderWeight Padding;
 
             public int Columns;
             public int Column;
@@ -79,8 +79,8 @@ namespace Foster.GuiSystem
             public float RowHeight;
             public float RowOffset;
 
-            public float InnerWidth => Bounds.Width - Padding.X * 2f;
-            public float InnerHeight => RowOffset + RowHeight + Padding.Y * 2f;
+            public float InnerWidth => Bounds.Width - Padding.Width;
+            public float InnerHeight => RowOffset + RowHeight + Padding.Height;
 
             public void NextRow(int columns, float indent, float spacing)
             {
@@ -137,14 +137,14 @@ namespace Foster.GuiSystem
                 // determine cell height
                 float cellHeight;
                 if (height < 0)
-                    cellHeight = Bounds.Height - RowOffset - Padding.Y * 2 + height;
+                    cellHeight = Bounds.Height - RowOffset - Padding.Height + height;
                 else if (height > 0)
                     cellHeight = height;
                 else
-                    cellHeight = Bounds.Height - RowOffset - Padding.Y * 2;
+                    cellHeight = Bounds.Height - RowOffset - Padding.Height;
 
                 // position
-                var position = new Rect(Bounds.X + Padding.X + ColumnOffset - Scroll.X, Bounds.Y + Padding.Y + RowOffset - Scroll.Y, cellWidth, cellHeight);
+                var position = new Rect(Bounds.X + Padding.Left + ColumnOffset - Scroll.X, Bounds.Y + Padding.Top + RowOffset - Scroll.Y, cellWidth, cellHeight);
 
                 // setup for next cell
                 ColumnOffset += cellWidth;
@@ -153,49 +153,6 @@ namespace Foster.GuiSystem
 
                 return position;
             }
-        }
-
-        public struct ElementStyle
-        {
-            public BorderRadius BorderRadius;
-            public BorderWeight BorderWeight;
-            public Color BorderColor;
-            public Color BackgroundColor;
-            public Color ContentColor;
-        }
-
-        public struct Stylesheet
-        {
-            public SpriteFont Font;
-            public float FontSize;
-            public float FontScale => FontSize / Font.Height;
-
-            public Vector2 WindowPadding;
-            public BorderRadius WindowRadius;
-            public Color WindowBorderColor;
-            public float WindowBorderWeight;
-            public Color WindowBackgroundColor;
-
-            public Vector2 FramePadding;
-            public BorderRadius FrameRadius;
-            public Color FrameBorderColor;
-            public float FrameBorderWeight;
-            public Color FrameBackgroundColor;
-
-            public float ScrollbarWeight;
-            public Color ScrollbarColor;
-            public Color ScrollbarHotColor;
-            public Color ScrollbarActiveColor;
-
-            public ElementStyle ItemIdle;
-            public ElementStyle ItemHot;
-            public ElementStyle ItemActive;
-
-            public float ItemSpacing;
-            public Vector2 ItemPadding;
-            public float ItemHeight => FontSize + ItemPadding.Y * 2;
-
-            public float TitleScale;
         }
 
         private class Storage<T>
@@ -227,7 +184,7 @@ namespace Foster.GuiSystem
         #region Public Variables
 
         public Stylesheet DefaultStyle;
-        public Stylesheet Style => (styles.Count > 0 ? styles.Peek() : DefaultStyle);
+        public Stylesheet Style;
         public float Indent => (indents.Count > 0 ? indents.Peek() : 0f);
 
         public ID HotId = ID.None;
@@ -256,8 +213,6 @@ namespace Foster.GuiSystem
         public Rect Clip => clips.Count > 0 ? clips.Peek() : new Rect();
         public Batch2d Batcher => viewport.Batcher;
 
-        public static float PreferredSize = float.MinValue;
-
         #endregion
 
         #region Private Variables
@@ -265,7 +220,6 @@ namespace Foster.GuiSystem
         private readonly Stack<FrameState> frames = new Stack<FrameState>();
         private readonly Stack<ID> ids = new Stack<ID>();
         private readonly Stack<Rect> clips = new Stack<Rect>();
-        private readonly Stack<Stylesheet> styles = new Stack<Stylesheet>();
         private readonly Stack<float> indents = new Stack<float>();
 
         private readonly Storage<ViewportState> viewportStorage = new Storage<ViewportState>();
@@ -279,57 +233,10 @@ namespace Foster.GuiSystem
 
         public Imgui(SpriteFont font)
         {
-            DefaultStyle = new Stylesheet()
-            {
-                Font = font,
-                FontSize = 16,
+            DefaultStyle = Stylesheets.Default;
+            DefaultStyle.Font = font;
 
-                WindowPadding = new Vector2(1, 1),
-                WindowRadius = new BorderRadius(4),
-                WindowBorderColor = 0x5c6063,
-                WindowBorderWeight = 1f,
-                WindowBackgroundColor = 0x2b333b,
-
-                FramePadding = new Vector2(4, 4),
-                FrameRadius = new BorderRadius(0),
-                FrameBorderColor = 0x45494f,
-                FrameBorderWeight = 0f,
-                FrameBackgroundColor = 0x45494f,
-
-                ScrollbarWeight = 8f,
-                ScrollbarColor = 0x639ec0,
-                ScrollbarHotColor = 0xa8e5f6,
-                ScrollbarActiveColor = 0xee9ec0,
-
-                ItemIdle = new ElementStyle
-                {
-                    BorderRadius = new BorderRadius(3),
-                    BorderWeight = new BorderWeight(0, 0, 0, 1),
-                    BorderColor = 0x252e36,
-                    BackgroundColor = 0x626d78,
-                    ContentColor = 0xc3c5cf
-                },
-                ItemHot = new ElementStyle
-                {
-                    BorderRadius = new BorderRadius(3),
-                    BorderWeight = new BorderWeight(0, 0, 0, 1),
-                    BorderColor = 0x252e36,
-                    BackgroundColor = 0x83949e,
-                    ContentColor = 0xc3c5cf
-                },
-                ItemActive = new ElementStyle
-                {
-                    BorderRadius = new BorderRadius(3),
-                    BorderWeight = new BorderWeight(0),
-                    BorderColor = 0xd95bad,
-                    BackgroundColor = 0xd95bad,
-                    ContentColor = 0x000000
-                },
-                ItemSpacing = 4,
-                ItemPadding = new Vector2(6, 2),
-
-                TitleScale = 1.25f,
-            };
+            Style = DefaultStyle;
         }
 
         #endregion
@@ -379,16 +286,6 @@ namespace Foster.GuiSystem
             return boolStorage.Retrieve(new ID(key.Value, id), out value);
         }
 
-        public void PushStyle(Stylesheet style)
-        {
-            styles.Push(style);
-        }
-
-        public void PopStyle()
-        {
-            styles.Pop();
-        }
-
         public void PushIndent(float amount)
         {
             indents.Push(Indent + amount);
@@ -419,14 +316,14 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
-            frame.NextRow(1, Indent, Style.ItemSpacing);
+            frame.NextRow(1, Indent, Style.Spacing);
         }
         public void Row(int columns)
         {
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
-            frame.NextRow(columns, Indent, Style.ItemSpacing);
+            frame.NextRow(columns, Indent, Style.Spacing);
         }
 
         public Rect Remainder()
@@ -434,15 +331,7 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(0, 0, Indent, Style.ItemSpacing);
-        }
-
-        public Rect Cell(float height)
-        {
-            if (frame.ID == ID.None)
-                throw new Exception("You must begin a Frame before creating a Cell");
-
-            return frame.NextCell(0f, height, Indent, Style.ItemSpacing);
+            return frame.NextCell(0, 0, Indent, Style.Spacing);
         }
 
         public Rect Cell(float width, float height)
@@ -450,11 +339,11 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(width, height, Indent, Style.ItemSpacing);
+            return frame.NextCell(width, height, Indent, Style.Spacing);
         }
 
-        public void Separator() => Cell(Style.ItemSpacing);
-        public void Separator(float height) => Cell(height);
+        public void Separator() => Cell(0, Style.Spacing);
+        public void Separator(float height) => Cell(0, height);
         public void Separator(float width, float height) => Cell(width, height);
 
         public void Step()
@@ -462,7 +351,6 @@ namespace Foster.GuiSystem
             viewport = new ViewportState();
             frame = new FrameState();
             indents.Clear();
-            styles.Clear();
             ids.Clear();
             frames.Clear();
             clips.Clear();
@@ -541,14 +429,32 @@ namespace Foster.GuiSystem
             viewport = new ViewportState();
         }
 
+        public bool BeginFrame(UniqueInfo info, float height)
+        {
+            if (frame.ID != ID.None)
+                return BeginFrame(info, Cell(0, height));
+            else
+                return BeginFrame(info, viewport.Bounds);
+        }
+
         public bool BeginFrame(UniqueInfo info, Rect bounds, bool scrollable = true)
+        {
+            return BeginFrame(info, bounds, Style.Frame, scrollable);
+        }
+
+        public bool BeginFrame(UniqueInfo info, Rect bounds, StyleState style, bool scrollable = true)
         {
             if (viewport.ID == ID.None)
                 throw new Exception("You must open a Viewport before beginning a Frame");
 
-            var isWindow = frames.Count <= 0;
+            var edge = style.BorderWeight;
+            edge.Left += style.Padding.X;
+            edge.Right += style.Padding.X;
+            edge.Top += style.Padding.Y;
+            edge.Bottom += style.Padding.Y;
+
             var clip = bounds.OverlapRect(clips.Peek());
-            clip = clip.Inflate(-(isWindow ? Style.WindowBorderWeight : Style.FrameBorderWeight));
+            clip = clip.Inflate(-edge.Left, -edge.Top, -edge.Right, -edge.Bottom);
 
             if (clip.Area > 0)
             {
@@ -558,7 +464,7 @@ namespace Foster.GuiSystem
                     ID = PushId(info),
                     Bounds = bounds,
                     Clip = clip,
-                    Padding = (isWindow ? Style.WindowPadding : Style.FramePadding),
+                    Padding = edge,
                     Scrollable = scrollable
                 };
 
@@ -568,14 +474,7 @@ namespace Foster.GuiSystem
                 if (frame.Clip.Contains(viewport.Mouse))
                     viewport.NextHotFrame = frame.ID;
 
-                if (isWindow)
-                {
-                    Box(bounds, Style.WindowRadius, Style.WindowBorderWeight, Style.WindowBorderColor, Style.WindowBackgroundColor);
-                }
-                else
-                {
-                    Box(bounds, Style.FrameRadius, Style.FrameBorderWeight, Style.FrameBorderColor, Style.FrameBackgroundColor);
-                }
+                Box(bounds, style);
 
                 // handle vertical scrolling
                 if (frame.Scrollable)
@@ -593,25 +492,19 @@ namespace Foster.GuiSystem
                         var scrollId = Id("Scroll-Y");
                         var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, last.InnerHeight);
                         var buttonRect = scrollRect.OverlapRect(frame.Clip);
-                        var scrollColor = Style.ScrollbarColor;
 
                         if (buttonRect.Area > 0)
                         {
-                            ImguiButton.ButtonBehaviour(this, scrollId, buttonRect);
+                            ButtonBehaviour(scrollId, buttonRect);
 
                             if (ActiveId == scrollId)
                             {
                                 var relativeSpeed = (frame.Bounds.Height / scrollRect.Height);
                                 frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + viewport.MouseDelta.Y * relativeSpeed, 0, last.InnerHeight - bounds.Height);
                                 scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, last.InnerHeight);
-                                scrollColor = Style.ScrollbarActiveColor;
-                            }
-                            else if (HotId == scrollId)
-                            {
-                                scrollColor = Style.ScrollbarHotColor;
                             }
 
-                            viewport.Batcher.RoundedRect(scrollRect.Inflate(-4), 16f, scrollColor);
+                            Box(scrollRect.Inflate(-4), Style.Scrollbar, scrollId);
                         }
 
                         frame.Clip.Width -= 16;
@@ -626,7 +519,7 @@ namespace Foster.GuiSystem
 
                 // behave as a button
                 // this way stuff can check if it's the ActiveID
-                ImguiButton.ButtonBehaviour(this, frame.ID, frame.Clip);
+                ButtonBehaviour(frame.ID, frame.Clip);
 
                 return true;
             }
@@ -634,14 +527,6 @@ namespace Foster.GuiSystem
             {
                 return false;
             }
-        }
-
-        public bool BeginFrame(UniqueInfo info, float height)
-        {
-            if (frame.ID != ID.None)
-                return BeginFrame(info, Cell(height));
-            else
-                return BeginFrame(info, viewport.Bounds);
         }
 
         public void EndFrame()
@@ -671,9 +556,87 @@ namespace Foster.GuiSystem
 
         #endregion
 
-        #region Utils
+        #region Button Behaviours
 
-        public void Box(Rect rect, BorderRadius radius, BorderWeight borderWeight, Color border, Color background)
+        public bool GrabbingBehaviour(ID id, Rect position)
+        {
+            if (HoverBehaviour(id, position))
+                HotId = id;
+
+            if (LastHotId == id && App.Input.Mouse.LeftPressed)
+                ActiveId = id;
+
+            if (ActiveId == id && App.Input.Mouse.LeftReleased)
+                ActiveId = Imgui.ID.None;
+
+            return ActiveId == id;
+        }
+
+        public bool ButtonBehaviour(ID id, Rect position)
+        {
+            var performPress = false;
+
+            if (HoverBehaviour(id, position))
+                HotId = id;
+
+            if (LastHotId == id && App.Input.Mouse.LeftPressed)
+                ActiveId = id;
+
+            if (ActiveId == id && App.Input.Mouse.LeftReleased)
+            {
+                if (HotId == id)
+                    performPress = true;
+                ActiveId = Imgui.ID.None;
+            }
+
+            return performPress;
+        }
+
+        public bool HoverBehaviour(ID id, Rect position)
+        {
+            if (viewport.MouseObstructed)
+                return false;
+
+            if (ActiveId != ID.None && ActiveId != id)
+                return false;
+
+            if (frame.ID != ID.None && viewport.LastHotFrame != ID.None && viewport.LastHotFrame != frame.ID)
+                return false;
+
+            if (App.Input.Mouse.LeftDown && !App.Input.Mouse.LeftPressed)
+                return false;
+
+            if (!Clip.Contains(viewport.Mouse) || !position.Contains(viewport.Mouse))
+                return false;
+
+            return true;
+        }
+
+        public bool HoveringOrDragging(ID id)
+        {
+            return LastHotId == id || LastActiveId == id;
+        }
+
+        #endregion
+
+        #region Drawing
+
+        public Rect Box(Rect rect, StyleElement style, ID id)
+        {
+            if (id == ActiveId)
+                return Box(rect, style.Active);
+            else if (id == HotId)
+                return Box(rect, style.Hot);
+            else
+                return Box(rect, style.Idle);
+        }
+
+        public Rect Box(Rect rect, StyleState style)
+        {
+            return Box(rect, style.Padding, style.BorderRadius, style.BorderWeight, style.BorderColor, style.BackgroundColor);
+        }
+
+        public Rect Box(Rect rect, Vector2 padding, BorderRadius radius, BorderWeight borderWeight, Color border, Color background)
         {
             if (radius.Rounded)
             {
@@ -701,31 +664,8 @@ namespace Foster.GuiSystem
                     Batcher.Rect(rect, background);
                 }
             }
-        }
 
-        public bool MouseOver(ID id, Rect position)
-        {
-            if (viewport.MouseObstructed)
-                return false;
-
-            if (ActiveId != ID.None && ActiveId != id)
-                return false;
-
-            if (frame.ID != ID.None && viewport.LastHotFrame != ID.None && viewport.LastHotFrame != frame.ID)
-                return false;
-
-            if (App.Input.Mouse.LeftDown && !App.Input.Mouse.LeftPressed)
-                return false;
-
-            if (!Clip.Contains(viewport.Mouse) || !position.Contains(viewport.Mouse))
-                return false;
-
-            return true;
-        }
-
-        public bool HoveringOrDragging(ID id)
-        {
-            return LastHotId == id || LastActiveId == id;
+            return new Rect(rect.X + borderWeight.Left + padding.X, rect.Y + borderWeight.Top + padding.Y, rect.Width - borderWeight.Width - padding.X * 2, rect.Height - borderWeight.Height - padding.Y * 2);
         }
 
         #endregion

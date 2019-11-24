@@ -46,9 +46,9 @@ namespace Test1
                 panel.OnRefresh = (imgui) =>
                 {
                     imgui.Row(2);
-                    if (imgui.Button("SIZE DOWN [-]"))
+                    if (imgui.WideButton("SIZE DOWN [-]"))
                         gui.ContentScale -= Vector2.One * 0.1f;
-                    if (imgui.Button("SIZE UP [+]"))
+                    if (imgui.WideButton("SIZE UP [+]"))
                         gui.ContentScale += Vector2.One * 0.1f;
 
                     for (int k = 0; k < n + 1; k++)
