@@ -25,37 +25,29 @@ namespace Test1
             var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "SourceSansPro-SemiBold.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
 
-            var strs = new string[]
+            var scene = gui.CreatePanel("Assets", new Rect(32, 32, 200, 200));
+            scene = gui.CreatePanel("Inspector", new Rect(32, 32, 200, 200));
+            scene = gui.CreatePanel("Log", new Rect(32, 32, 200, 200));
+            scene = gui.CreatePanel("Scene", new Rect(32, 32, 200, 200));
+            var game = gui.CreatePanel("Game", new Rect(200, 32, 200, 200));
+
+            game.OnRefresh = (imgui) =>
             {
-                "Scene",
-                "Inspector",
-                "Assets",
-                "Game",
-                "Log"
+                imgui.Row(2);
+                if (imgui.Button("Snap Left"))
+                    game.DockLeftOf(scene);
+                if (imgui.Button("Snap Right"))
+                    game.DockRightOf(scene);
+                imgui.Row(2);
+                if (imgui.Button("Snap Top"))
+                    game.DockTopOf(scene);
+                if (imgui.Button("Snap Bottom"))
+                    game.DockBottomOf(scene);
+                if (imgui.Button("Popout"))
+                    game.Popout();
+                if (imgui.Button("Close"))
+                    game.Close();
             };
-
-            for (int i = 0; i < 5; i++)
-            {
-                var n = i;
-                var panel = gui.CreatePanel(strs[i], new Rect(32, 32, 400, 400));
-                panel.OnRefresh = (imgui) =>
-                {
-                    imgui.Row(2);
-                    if (imgui.WideButton("SIZE DOWN [-]"))
-                        gui.ContentScale -= Vector2.One * 0.1f;
-                    if (imgui.WideButton("SIZE UP [+]"))
-                        gui.ContentScale += Vector2.One * 0.1f;
-
-                    for (int k = 0; k < n + 1; k++)
-                    {
-                        imgui.Label($"a nice label #{k + 1}!");
-
-                        for (int j = 0; j < 4; j++)
-                            if (imgui.Button($"What {k * 4 + j}"))
-                                Console.WriteLine("PRESSED " + j);
-                    }
-                };
-            }
         }
 
     }

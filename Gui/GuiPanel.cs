@@ -14,7 +14,7 @@ namespace Foster.GuiSystem
         public string Title = "";
         public Action<Imgui>? OnRefresh;
 
-        internal GuiDockNode Node;
+        internal GuiDockNode? Node;
 
         public GuiPanel(Gui gui, string title)
         {
@@ -24,32 +24,29 @@ namespace Foster.GuiSystem
 
         public void Popout()
         {
-            throw new NotImplementedException();
+            Node?.PopoutPanel(this);
         }
 
-        public void DockWith(GuiPanel panel)
+        public void Close()
         {
-            throw new NotImplementedException();
+            Node?.RemovePanel(this);
         }
 
-        public void DockLeftOf(GuiPanel panel)
-        {
-            throw new NotImplementedException();
-        }
+        public void DockWith(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Center);
+        public void DockLeftOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Left);
+        public void DockRightOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Right);
+        public void DockBottomOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Bottom);
+        public void DockTopOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Top);
 
-        public void DockRightOf(GuiPanel panel)
+        private void Dock(GuiPanel? panel, GuiDockNode.Placings placing)
         {
-            throw new NotImplementedException();
-        }
+            Node?.RemovePanel(this);
 
-        public void DockDownOf(GuiPanel panel)
-        {
-            throw new NotImplementedException();
-        }
+            var node = panel?.Node;
+            if (node == null)
+                node = Gui.Manager.Root;
 
-        public void DockUpOf(GuiPanel panel)
-        {
-            throw new NotImplementedException();
+            node.InsertPanel(placing, this);
         }
 
     }

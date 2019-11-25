@@ -65,6 +65,7 @@ namespace Foster.GuiSystem
             public ID ID;
             public Rect Bounds;
             public Rect Clip;
+            public Rect LastCell;
             public Vector2 Scroll;
 
             public bool Scrollable;
@@ -151,6 +152,8 @@ namespace Foster.GuiSystem
                 RowHeight = Math.Max(RowHeight, cellHeight);
                 Column++;
 
+                LastCell = position;
+
                 return position;
             }
         }
@@ -197,6 +200,7 @@ namespace Foster.GuiSystem
         public FrameState Frame => frame;
         public Rect Clip => clipStack.Count > 0 ? clipStack.Peek() : new Rect();
         public Batch2d Batcher => viewport.Batcher;
+        public Rect LastCell => frame.LastCell;
 
         public ID HotId = ID.None;
         public ID LastHotId = ID.None;

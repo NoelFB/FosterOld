@@ -12,14 +12,14 @@ namespace Foster.GuiSystem
         public readonly Window Window;
         public readonly Batch2d Batcher;
 
-        public readonly GuiDockNode RootNode;
-        public readonly GuiDock Root;
-        public readonly List<GuiDock> Floating = new List<GuiDock>();
-        public readonly List<GuiDock> Standalone = new List<GuiDock>();
+        public readonly GuiDockNode Root;
+        public readonly List<GuiDockNode> Floating = new List<GuiDockNode>();
+        public readonly List<GuiDockNode> Standalone = new List<GuiDockNode>();
 
-        public GuiDock? Dragging;
-        public GuiDock? LastDockable;
-        public GuiDock? NextDockable;
+        public GuiDockNode? Dragging;
+        public GuiDockNode? LastDockable;
+        public GuiDockNode? NextDockable;
+
         public Cursors? NextCursor;
         public Cursors? LastCursor;
 
@@ -40,8 +40,7 @@ namespace Foster.GuiSystem
             Window.OnRender = Render;
             Window.OnResize = Resize;
 
-            Root = new GuiDock(this);
-            Root.SetAsRoot();
+            Root = new GuiDockNode(this, GuiDockNode.Modes.Root);
         }
 
         public GuiManager(Gui gui, string title, int width, int height) :
@@ -52,7 +51,6 @@ namespace Foster.GuiSystem
 
         public void Update()
         {
-            // active dock we're hovering over
             LastDockable = NextDockable;
             NextDockable = null;
 
@@ -75,11 +73,10 @@ namespace Foster.GuiSystem
                 pixelMouse = nextFloatingMouse;
             }
 
-            // Update Window bounds of Standalone and Floating windows
             for (int i = Standalone.Count - 1; i >= 0; i--)
-                Standalone[i].DoWindowDragging();
-            for (int i = Floating.Count - 1; i >= 0; i --)
-                Floating[i].DoWindowDragging();
+                Standalone[i].Positioning();
+            for (int i = Floating.Count - 1; i >= 0; i--)
+                Floating[i].Positioning();
 
             // Update the primary worksapce
             UpdateWorkspace();

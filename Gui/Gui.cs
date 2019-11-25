@@ -13,13 +13,13 @@ namespace Foster.GuiSystem
 
         public readonly Imgui Imgui;
 
-        private readonly GuiManager manager;
+        internal readonly GuiManager Manager;
 
         public Gui(SpriteFont font, Window window)
         {
             Font = font;
             Imgui = new Imgui(font);
-            manager = new GuiManager(this, window);
+            Manager = new GuiManager(this, window);
         }
 
         public Gui(SpriteFont font, string title, int width, int height) :
@@ -28,20 +28,29 @@ namespace Foster.GuiSystem
 
         }
 
+        public GuiPanel CreatePanel(string title, GuiPanel with)
+        {
+            var panel = new GuiPanel(this, title);
+
+            if (with.Node != null)
+                with.Node.InsertPanel(GuiDockNode.Placings.Center, panel);
+
+            return panel;
+        }
+
         public GuiPanel CreatePanel(string title, Rect bounds)
         {
             var panel = new GuiPanel(this, title);
 
-            var dock = new GuiDock(manager);
-            dock.SetAsFloating(bounds);
-            dock.Panels.Add(panel);
+            var node = new GuiDockNode(Manager, GuiDockNode.Modes.Floating, bounds.Int());
+            node.InsertPanel(GuiDockNode.Placings.Center, panel);
 
             return panel;
         }
 
         protected override void Update()
         {
-            manager.Update();
+            Manager.Update();
         }
     }
 }
