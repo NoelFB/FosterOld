@@ -155,21 +155,21 @@ namespace Foster.GuiSystem
                 {
                     BorderRadius = 8,
                     BorderWeight = new BorderWeight(0, 0, 0, 1),
-                    BorderColor = 0x252e36,
-                    BackgroundColor = 0x639ec0
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x8b918f
                 },
                 Hot = new StyleState
                 {
                     BorderRadius = 8,
                     BorderWeight = new BorderWeight(0, 0, 0, 1),
-                    BorderColor = 0x252e36,
-                    BackgroundColor = 0xa8e5f6
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0xafc1bb
                 },
                 Active = new StyleState
                 {
                     BorderRadius = 8,
                     BorderWeight = 0,
-                    BackgroundColor = 0xee9ec0
+                    BackgroundColor = 0x4cd4b6
                 },
             },
 
@@ -179,30 +179,40 @@ namespace Foster.GuiSystem
                 {
                     BorderRadius = new BorderRadius(3),
                     BorderWeight = new BorderWeight(0, 0, 0, 1),
-                    BorderColor = 0x252e36,
-                    BackgroundColor = 0x626d78,
-                    ContentColor = 0xc3c5cf,
-                    Padding = new Vector2(6, 2)
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x757a78,
+                    ContentColor = 0xf0f0f0,
+                    Padding = new Vector2(6, 4)
                 },
                 Hot = new StyleState
                 {
                     BorderRadius = new BorderRadius(3),
                     BorderWeight = new BorderWeight(0, 0, 0, 1),
-                    BorderColor = 0x252e36,
-                    BackgroundColor = 0x83949e,
-                    ContentColor = 0xc3c5cf,
-                    Padding = new Vector2(6, 2)
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x858a88,
+                    ContentColor = 0xffffff,
+                    Padding = new Vector2(6, 4)
                 },
                 Active = new StyleState
                 {
                     BorderRadius = new BorderRadius(3),
-                    BorderWeight = new BorderWeight(0),
-                    BorderColor = 0xd95bad,
-                    BackgroundColor = 0xd95bad,
+                    BorderWeight = new BorderWeight(0, 1, 0, 0),
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x4cd4b6,
                     ContentColor = 0x000000,
-                    Padding = new Vector2(6, 2)
+                    Padding = new Vector2(6, 4)
                 },
             },
+
+            Label = new StyleState
+            {
+                BorderColor = 0,
+                BorderRadius = 0,
+                BorderWeight = 0,
+                BackgroundColor = 0,
+                ContentColor = 0xa0a0a0,
+                Padding = new Vector2(0, 4)
+            }
 
         };
     }

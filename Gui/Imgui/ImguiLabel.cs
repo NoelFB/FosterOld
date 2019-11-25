@@ -9,16 +9,20 @@ namespace Foster.GuiSystem
     {
         public static void Label(this Imgui imgui, string label)
         {
-            Label(imgui, label, imgui.Style.Generic.Idle);
+            Label(imgui, label, Sizing.Preferred(), imgui.Style.Label);
         }
 
-        public static void Label(this Imgui imgui, string label, StyleState style)
+        public static void Label(this Imgui imgui, string label, Sizing sizing)
         {
-            var content = new TextContent(label);
-            var size = content.PreferredSize(imgui);
-            var position = imgui.Cell(size.X, size.Y);
+            Label(imgui, label, sizing, imgui.Style.Label);
+        }
 
-            imgui.Label(content, position, style);
+        public static void Label(this Imgui imgui, string label, Sizing sizing, StyleState style)
+        {
+            var content = new Text(label);
+            var size = sizing.SizeOf(imgui, content, style.Padding);
+
+            Label(imgui, content, imgui.Cell(size), style);
         }
 
         public static void Label(this Imgui imgui, IContent label, Rect position, StyleState style)

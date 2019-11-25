@@ -78,6 +78,10 @@ namespace Foster.Framework
         /// </summary>
         public Rect FrameRect;
 
+
+        public float Width => DrawRect.Width;
+        public float Height => DrawRect.Height;
+
         private Rect drawRect;
         private Rect sourceRect;
 

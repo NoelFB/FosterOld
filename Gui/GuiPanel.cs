@@ -9,28 +9,21 @@ namespace Foster.GuiSystem
     {
 
         public readonly Gui Gui;
-        public readonly int ID = Guid.NewGuid().GetHashCode();
 
         public string Title = "";
         public Action<Imgui>? OnRefresh;
+        public bool Opened => Node != null;
 
         internal GuiDockNode? Node;
 
-        public GuiPanel(Gui gui, string title)
+        internal GuiPanel(Gui gui, string title)
         {
             Gui = gui;
             Title = title;
         }
 
-        public void Popout()
-        {
-            Node?.PopoutPanel(this);
-        }
-
-        public void Close()
-        {
-            Node?.RemovePanel(this);
-        }
+        public void Popout() => Node?.PopoutPanel(this);
+        public void Close() => Node?.RemovePanel(this);
 
         public void DockWith(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Center);
         public void DockLeftOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Left);

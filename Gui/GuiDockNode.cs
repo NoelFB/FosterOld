@@ -102,6 +102,10 @@ namespace Foster.GuiSystem
                     App.Graphics.Clear(Color.Transparent);
                     Batcher.Render();
                 };
+                Window.OnClose = () =>
+                {
+                    Discard();
+                };
 
                 Window.Visible = true;
 
@@ -271,35 +275,38 @@ namespace Foster.GuiSystem
         {
             // we have no more panels so we shouldn't exist ...
             if (panels.Count <= 0 && left == null && right == null && !modifyingContent)
-            {
-                if (Mode == Modes.Docked)
-                {
-                    if (parent != null)
-                    {
-                        GuiDockNode? absorbing = null;
-                        if (parent.left == this)
-                            absorbing = parent.right;
-                        else if (parent.right == this)
-                            absorbing = parent.left;
+                Discard();
+        }
 
-                        if (absorbing != null)
-                            parent.TakeContent(absorbing);
-                    }
-                }
-                else if (Mode == Modes.Standalone)
+        private void Discard()
+        {
+            if (Mode == Modes.Docked)
+            {
+                if (parent != null)
                 {
-                    Window.Close();
-                    Batcher.Dispose();
-                    Manager.Standalone.Remove(this);
+                    GuiDockNode? absorbing = null;
+                    if (parent.left == this)
+                        absorbing = parent.right;
+                    else if (parent.right == this)
+                        absorbing = parent.left;
+
+                    if (absorbing != null)
+                        parent.TakeContent(absorbing);
                 }
-                else if (Mode == Modes.Floating)
-                {
-                    Manager.Floating.Remove(this);
-                }
-                else if (Mode == Modes.Root)
-                {
-                    // .. we just chill
-                }
+            }
+            else if (Mode == Modes.Standalone)
+            {
+                Window.Close();
+                Batcher.Dispose();
+                Manager.Standalone.Remove(this);
+            }
+            else if (Mode == Modes.Floating)
+            {
+                Manager.Floating.Remove(this);
+            }
+            else if (Mode == Modes.Root)
+            {
+                // .. we just chill
             }
         }
 
@@ -454,16 +461,13 @@ namespace Foster.GuiSystem
                             floatingBounds.Bottom += drag.Y;
 
                         // pop out of the frame if it doesn't fit
-                        if (App.System.SupportsMultipleWindows)
+                        if (App.System.SupportsMultipleWindows && !Manager.Window.Bounds.Contains(BoundsToScreen(floatingBounds)))
                         {
-                            if (!Manager.Window.Bounds.Contains(BoundsToScreen(floatingBounds)))
-                            {
-                                var rect = BoundsToScreen(floatingBounds);
-                                var dock = new GuiDockNode(Manager, Modes.Standalone, rect);
+                            var rect = BoundsToScreen(floatingBounds);
+                            var dock = new GuiDockNode(Manager, Modes.Standalone, rect);
 
-                                dock.ID = ID;
-                                dock.TakeContent(this);
-                            }
+                            dock.ID = ID;
+                            dock.TakeContent(this);
                         }
                     }
                 }
@@ -553,7 +557,7 @@ namespace Foster.GuiSystem
                                 {
                                     var tabStyle = (panel == activePanel ? Imgui.Style.Window.CurrentTab : Imgui.Style.Window.Tab);
 
-                                    if (Imgui.Button(panel.Title, tabStyle))
+                                    if (Imgui.Button(panel.Title, new Text(panel.Title), Sizing.Preferred(), tabStyle))
                                         activePanel = panel;
 
                                     if (Imgui.ActiveId == Imgui.CurrentId)

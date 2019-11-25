@@ -111,16 +111,16 @@ namespace Foster.GuiSystem
                         // fill to the right (negative width)
                         cellWidth = InnerWidth - ColumnOffset + width;
                     }
-                    else if (width > 0)
-                    {
-                        // explicit width
-                        cellWidth = width;
-                    }
-                    else
+                    else if (width == float.MaxValue)
                     {
                         // fill based on our remaining space, divided by remaining elements
                         var remaining = (Columns - Column);
                         cellWidth = (InnerWidth - (remaining - 1) * spacing - ColumnOffset) / remaining;
+                    }
+                    else
+                    {
+                        // explicit width
+                        cellWidth = width;
                     }
 
                     // can't overflow, clamp cell width
@@ -139,10 +139,10 @@ namespace Foster.GuiSystem
                 float cellHeight;
                 if (height < 0)
                     cellHeight = Bounds.Height - RowOffset - Padding.Height + height;
-                else if (height > 0)
-                    cellHeight = height;
-                else
+                else if (height == float.MaxValue)
                     cellHeight = Bounds.Height - RowOffset - Padding.Height;
+                else
+                    cellHeight = height;
 
                 // position
                 var position = new Rect(Bounds.X + Padding.Left + ColumnOffset - Scroll.X, Bounds.Y + Padding.Top + RowOffset - Scroll.Y, cellWidth, cellHeight);
@@ -248,7 +248,7 @@ namespace Foster.GuiSystem
         {
             Style = Stylesheets.Default;
             DefaultFont = font;
-            DefaultFontSize = 16;
+            DefaultFontSize = 14;
             DefaultSpacing = 4;
         }
 
@@ -346,7 +346,12 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(0, 0, Indent, Spacing);
+            return frame.NextCell(float.MaxValue, float.MaxValue, Indent, Spacing);
+        }
+
+        public Rect Cell(Vector2 size)
+        {
+            return Cell(size.X, size.Y);
         }
 
         public Rect Cell(float width, float height)
@@ -357,8 +362,8 @@ namespace Foster.GuiSystem
             return frame.NextCell(width, height, Indent, Spacing);
         }
 
-        public void Separator() => Cell(0, Spacing);
-        public void Separator(float height) => Cell(0, height);
+        public void Separator() => Cell(float.MaxValue, Spacing);
+        public void Separator(float height) => Cell(float.MaxValue, height);
         public void Separator(float width, float height) => Cell(width, height);
 
         public void Step()
@@ -542,6 +547,7 @@ namespace Foster.GuiSystem
                 // behave as a button
                 // this way stuff can check if it's the ActiveID
                 ButtonBehaviour(frame.ID, frame.Clip);
+                CurrentId = frame.ID;
 
                 return true;
             }
@@ -666,7 +672,12 @@ namespace Foster.GuiSystem
                 {
                     var inner = rect.Inflate(-borderWeight.Left, -borderWeight.Top, -borderWeight.Right, -borderWeight.Bottom);
                     Batcher.RoundedRect(rect, radius.TopLeft, radius.TopRight, radius.BottomRight, radius.BottomLeft, border);
-                    Batcher.RoundedRect(inner, radius.TopLeft - 1, radius.TopRight - 1, radius.BottomRight - 1, radius.BottomLeft - 1, background);
+                    Batcher.RoundedRect(inner, 
+                        radius.TopLeft - (borderWeight.Top > 0 && borderWeight.Left > 0 ? 1 : 0), 
+                        radius.TopRight - (borderWeight.Top > 0 && borderWeight.Right > 0 ? 1 : 0), 
+                        radius.BottomRight - (borderWeight.Bottom > 0 && borderWeight.Right > 0 ? 1 : 0), 
+                        radius.BottomLeft - (borderWeight.Bottom > 0 && borderWeight.Left > 0 ? 1 : 0), 
+                        background);
                 }
                 else
                 {

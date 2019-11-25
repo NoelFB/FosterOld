@@ -22,7 +22,7 @@ namespace Test1
 
         private static void Ready()
         {
-            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "SourceSansPro-SemiBold.ttf"), 64, Charsets.ASCII);
+            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Roboto-Medium.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
 
             var scene = gui.CreatePanel("Assets", new Rect(32, 32, 200, 200));
@@ -33,20 +33,31 @@ namespace Test1
 
             game.OnRefresh = (imgui) =>
             {
-                imgui.Row(2);
-                if (imgui.Button("Snap Left"))
-                    game.DockLeftOf(scene);
-                if (imgui.Button("Snap Right"))
-                    game.DockRightOf(scene);
-                imgui.Row(2);
-                if (imgui.Button("Snap Top"))
-                    game.DockTopOf(scene);
-                if (imgui.Button("Snap Bottom"))
-                    game.DockBottomOf(scene);
-                if (imgui.Button("Popout"))
-                    game.Popout();
-                if (imgui.Button("Close"))
-                    game.Close();
+                if (imgui.Header("WHAT"))
+                {
+                    imgui.Row(3);
+                    imgui.Label("Position X");
+                    if (imgui.Button("Snap Left"))
+                        game.DockLeftOf(scene);
+                    if (imgui.Button("Snap Right"))
+                        game.DockRightOf(scene);
+
+                    imgui.Row(3);
+                    imgui.Label("Position Y");
+                    if (imgui.Button("Snap Top"))
+                        game.DockTopOf(scene);
+                    if (imgui.Button("Snap Bottom"))
+                        game.DockBottomOf(scene);
+
+                    if (imgui.Button("Popout"))
+                        game.Popout();
+                    if (imgui.Button("Close"))
+                        game.Close();
+
+                    imgui.EndHeader();
+                }
+
+                imgui.Button(new Icon(font.Charset['o'].Image));
             };
         }
 

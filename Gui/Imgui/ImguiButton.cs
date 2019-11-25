@@ -8,53 +8,33 @@ namespace Foster.GuiSystem
     public static class ImguiButton
     {
 
-        public static bool WideButton(this Imgui imgui, string label)
-        {
-            var content = new TextContent(label);
-            var info = content.UniqueInfo();
-            var style = imgui.Style.Generic;
-
-            var size = content.PreferredSize(imgui);
-            size.X += style.Idle.Padding.X * 2;
-            size.Y += style.Idle.Padding.Y * 2;
-
-            var position = imgui.Cell(0, size.Y);
-
-            return Button(imgui, info, content, position, style);
-        }
 
         public static bool Button(this Imgui imgui, string label)
         {
-            return Button(imgui, new TextContent(label));
+            var content = new Text(label);
+            return Button(imgui, content.UniqueInfo(), content, Sizing.FillX(), imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, string label, StyleElement style)
+        public static bool Button(this Imgui imgui, string label, Sizing sizing)
         {
-            return Button(imgui, new TextContent(label), style);
+            var content = new Text(label);
+            return Button(imgui, content.UniqueInfo(), content, sizing, imgui.Style.Generic);
         }
 
         public static bool Button(this Imgui imgui, IContent content)
         {
-            return Button(imgui, content, imgui.Style.Generic);
+            return Button(imgui, content.UniqueInfo(), content, Sizing.FillX(), imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, IContent content, StyleElement style)
+        public static bool Button(this Imgui imgui, IContent content, Sizing sizing)
         {
-            return Button(imgui, content.UniqueInfo(), content, style);
+            return Button(imgui, content.UniqueInfo(), content, sizing, imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content)
+        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, Sizing sizing, StyleElement style)
         {
-            return Button(imgui, info, content, imgui.Style.Generic);
-        }
-
-        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, StyleElement style)
-        {
-            var size = content.PreferredSize(imgui);
-            size.X += style.Idle.Padding.X * 2;
-            size.Y += style.Idle.Padding.Y * 2;
-
-            var position = imgui.Cell(size.X, size.Y);
+            var size = sizing.SizeOf(imgui, content, style.Idle.Padding);
+            var position = imgui.Cell(size);
 
             return Button(imgui, info, content, position, style);
         }
