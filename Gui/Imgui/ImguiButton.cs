@@ -43,16 +43,15 @@ namespace Foster.GuiSystem
         {
             var result = false;
             var id = imgui.Id(info);
-            imgui.CurrentId = id;
 
             if (position.Intersects(imgui.Clip))
             {
                 result = imgui.ButtonBehaviour(id, position);
 
                 var inner = imgui.Box(position, style, id);
-                var styleState = style.Current(imgui.ActiveId, imgui.HotId, id);
+                var state = style.Current(imgui.ActiveId, imgui.HotId, id);
 
-                content.Draw(imgui, imgui.Batcher, styleState, inner);
+                content.Draw(imgui, imgui.Batcher, state, inner);
             }
 
             return result;

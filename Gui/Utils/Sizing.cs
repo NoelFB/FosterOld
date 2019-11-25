@@ -41,6 +41,23 @@ namespace Foster.GuiSystem
             return size;
         }
 
+        public Vector2 SizeOfEmpty()
+        {
+            var size = Vector2.Zero;
+
+            if (ModeX == Modes.Fill)
+                size.X = float.MaxValue;
+            else if (ModeX == Modes.Explicit)
+                size.X = ExplicitWidth;
+
+            if (ModeY == Modes.Fill)
+                size.Y = float.MaxValue;
+            else if (ModeY == Modes.Explicit)
+                size.Y = ExplicitHeight;
+
+            return size;
+        }
+
         public static Sizing Preferred() => new Sizing 
         { 
             ModeX = Modes.Preferred, 

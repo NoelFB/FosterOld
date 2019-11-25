@@ -57,6 +57,7 @@ namespace Foster.GuiSystem
         public float ScrollbarWeight;
 
         public StyleElement Generic;
+        public StyleElement Header;
         public StyleState Label;
     }
 
@@ -196,6 +197,37 @@ namespace Foster.GuiSystem
                 Active = new StyleState
                 {
                     BorderRadius = new BorderRadius(3),
+                    BorderWeight = new BorderWeight(0, 1, 0, 0),
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x4cd4b6,
+                    ContentColor = 0x000000,
+                    Padding = new Vector2(6, 4)
+                },
+            },
+
+            Header = new StyleElement
+            {
+                Idle = new StyleState
+                {
+                    BorderRadius = 0,
+                    BorderWeight = new BorderWeight(0, 0, 0, 1),
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x757a78,
+                    ContentColor = 0xf0f0f0,
+                    Padding = new Vector2(6, 4)
+                },
+                Hot = new StyleState
+                {
+                    BorderRadius = 0,
+                    BorderWeight = new BorderWeight(0, 0, 0, 1),
+                    BorderColor = 0x383838,
+                    BackgroundColor = 0x858a88,
+                    ContentColor = 0xffffff,
+                    Padding = new Vector2(6, 4)
+                },
+                Active = new StyleState
+                {
+                    BorderRadius = 0,
                     BorderWeight = new BorderWeight(0, 1, 0, 0),
                     BorderColor = 0x383838,
                     BackgroundColor = 0x4cd4b6,

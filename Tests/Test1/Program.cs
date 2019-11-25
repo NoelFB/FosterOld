@@ -25,39 +25,51 @@ namespace Test1
             var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Roboto-Medium.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
 
-            var scene = gui.CreatePanel("Assets", new Rect(32, 32, 200, 200));
-            scene = gui.CreatePanel("Inspector", new Rect(32, 32, 200, 200));
-            scene = gui.CreatePanel("Log", new Rect(32, 32, 200, 200));
-            scene = gui.CreatePanel("Scene", new Rect(32, 32, 200, 200));
-            var game = gui.CreatePanel("Game", new Rect(200, 32, 200, 200));
+            var scene = gui.CreatePanel("Scene", new Rect(32, 32, 200, 200));
+            scene.DockWith(null);
+            var game = gui.CreatePanel("Game", scene);
+
+            var assets = gui.CreatePanel("Assets", new Rect(32, 32, 200, 200));
+            assets.DockLeftOf(scene);
+            var inspector = gui.CreatePanel("Inspector", new Rect(32, 32, 200, 200));
+            inspector.DockRightOf(scene);
+            var log = gui.CreatePanel("Log", new Rect(32, 32, 200, 200));
+            log.DockBottomOf(scene);
 
             game.OnRefresh = (imgui) =>
             {
-                if (imgui.Header("WHAT"))
+                for (int i = 0; i < 10; i++)
                 {
-                    imgui.Row(3);
-                    imgui.Label("Position X");
-                    if (imgui.Button("Snap Left"))
-                        game.DockLeftOf(scene);
-                    if (imgui.Button("Snap Right"))
-                        game.DockRightOf(scene);
+                    imgui.PushId(i);
 
-                    imgui.Row(3);
-                    imgui.Label("Position Y");
-                    if (imgui.Button("Snap Top"))
-                        game.DockTopOf(scene);
-                    if (imgui.Button("Snap Bottom"))
-                        game.DockBottomOf(scene);
+                    if (imgui.Header("WHAT"))
+                    {
+                        imgui.Title("Something");
+                        imgui.Row(3);
+                        imgui.Label("Position X");
+                        if (imgui.Button("Snap Left"))
+                            game.DockLeftOf(scene);
+                        if (imgui.Button("Snap Right"))
+                            game.DockRightOf(scene);
 
-                    if (imgui.Button("Popout"))
-                        game.Popout();
-                    if (imgui.Button("Close"))
-                        game.Close();
+                        imgui.Row(3);
+                        imgui.Label("Position Y");
+                        if (imgui.Button("Snap Top"))
+                            game.DockTopOf(scene);
+                        if (imgui.Button("Snap Bottom"))
+                            game.DockBottomOf(scene);
 
-                    imgui.EndHeader();
+                        imgui.Title("Dangerous");
+                        if (imgui.Button("Popout"))
+                            game.Popout();
+                        if (imgui.Button("Close"))
+                            game.Close();
+
+                        imgui.EndHeader();
+                    }
+
+                    imgui.PopId();
                 }
-
-                imgui.Button(new Icon(font.Charset['o'].Image));
             };
         }
 

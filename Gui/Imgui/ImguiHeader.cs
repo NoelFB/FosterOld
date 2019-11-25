@@ -11,29 +11,45 @@ namespace Foster.GuiSystem
         {
             const string StorageKey = "TOGGLED";
 
-            var toggle = imgui.Button(label);
-            var id = imgui.CurrentId;
+            var style = imgui.Style.Header;
+
+            var id = imgui.Id(label);
             var has = imgui.Retreive(id, StorageKey, out bool toggled);
             var enabled = (has && toggled) || (!has && startOpen);
 
-            if (toggle)
+            imgui.PushSpacing(0);
+
+            // do button behavour first
+            var position = imgui.Cell(float.MaxValue, imgui.FontSize + style.Idle.Padding.Y * 2);
+            if (imgui.ButtonBehaviour(id, position))
                 enabled = !enabled;
 
+            imgui.PopSpacing();
+
+            // draw
+            var inner = imgui.Box(position, style, id);
+            var state = style.Current(imgui.ActiveId, imgui.HotId, id);
+            var content = new Text((enabled ? "v " : "> ") + label);
+            content.Draw(imgui, imgui.Batcher, state, inner);
+
+            // store result
             imgui.Store(id, StorageKey, enabled);
 
+            // indent tab
             if (enabled)
             {
+                imgui.PushIndent(imgui.Spacing);
                 imgui.PushId(id);
-                imgui.PushIndent(20f);
             }
 
             return enabled;
         }
 
-        public static void EndHeader(this Imgui context)
+        public static void EndHeader(this Imgui imgui)
         {
-            context.PopIndent();
-            context.PopId();
+            imgui.Separator();
+            imgui.PopIndent();
+            imgui.PopId();
         }
     }
 }
