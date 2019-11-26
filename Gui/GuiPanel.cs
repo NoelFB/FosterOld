@@ -9,6 +9,7 @@ namespace Foster.GuiSystem
     {
 
         public readonly Gui Gui;
+        public readonly int ID = Guid.NewGuid().GetHashCode();
 
         public string Title = "";
         public Action<Imgui>? OnRefresh;

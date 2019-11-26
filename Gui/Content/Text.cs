@@ -33,7 +33,7 @@ namespace Foster.GuiSystem
             return new Vector2(width, height);
         }
 
-        public Imgui.UniqueInfo UniqueInfo()
+        public Imgui.Name UniqueInfo()
         {
             return Value;
         }

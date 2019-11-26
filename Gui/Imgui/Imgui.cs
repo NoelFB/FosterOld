@@ -7,6 +7,10 @@ using Foster.Framework;
 
 namespace Foster.GuiSystem
 {
+
+    // TODO:
+    // Value Storage needs to exist
+
     public class Imgui
     {
 
@@ -14,36 +18,28 @@ namespace Foster.GuiSystem
 
         public struct ID
         {
-            public readonly int Parent;
             public readonly int Value;
-            public readonly int Identifier;
-
-            public ID(int id, ID parent) : this(id, parent.Identifier) { }
-            public ID(int id, int parent)
-            {
-                Parent = parent;
-                Value = id;
-                Identifier = (Parent + Value).GetHashCode();
-            }
+            public ID(int value) => Value = value;
+            public ID(Name name, ID parent) => Value = HashCode.Combine(name.Value, parent.Value);
 
             public override bool Equals(object? obj) => obj != null && (obj is ID id) && (this == id);
-            public override int GetHashCode() => Identifier;
-            public override string ToString() => Identifier.ToString();
+            public override int GetHashCode() => Value;
+            public override string ToString() => Value.ToString();
 
-            public static bool operator ==(ID a, ID b) => a.Identifier == b.Identifier;
-            public static bool operator !=(ID a, ID b) => a.Identifier != b.Identifier;
+            public static bool operator ==(ID a, ID b) => a.Value == b.Value;
+            public static bool operator !=(ID a, ID b) => a.Value != b.Value;
 
-            public static readonly ID None = new ID(0, 0);
+            public static readonly ID None = new ID(0);
         }
 
-        public struct UniqueInfo
+        public struct Name
         {
             public int Value;
-            public UniqueInfo(int value) => Value = value;
+            public Name(int value) => Value = value;
 
-            public static implicit operator UniqueInfo(int id) => new UniqueInfo(id);
-            public static implicit operator UniqueInfo(float id) => new UniqueInfo(id.GetHashCode());
-            public static implicit operator UniqueInfo(string text) => new UniqueInfo(text.GetHashCode());
+            public static implicit operator Name(int id) => new Name(id);
+            public static implicit operator Name(float id) => new Name(id.GetHashCode());
+            public static implicit operator Name(string text) => new Name(text.GetHashCode());
         }
 
         public struct ViewportState
@@ -57,7 +53,6 @@ namespace Foster.GuiSystem
             public bool MouseObstructed;
             public ID LastHotFrame;
             public ID NextHotFrame;
-            public int Groups;
         }
 
         public struct FrameState
@@ -158,28 +153,22 @@ namespace Foster.GuiSystem
             }
         }
 
-        private class Storage<T>
+        public class StorageData
         {
-            private Dictionary<ID, T> lastData = new Dictionary<ID, T>();
-            private Dictionary<ID, T> nextData = new Dictionary<ID, T>();
+            private Dictionary<ID, float> numbers = new Dictionary<ID, float>();
+            private Dictionary<ID, bool> bools = new Dictionary<ID, bool>();
+            private Dictionary<ID, ID> ids = new Dictionary<ID, ID>();
 
-            public void Store(ID id, T value)
-            {
-                nextData[id] = value;
-            }
+            public bool Used;
 
-            public bool Retrieve(ID id, out T value)
-            {
-                return lastData.TryGetValue(id, out value);
-            }
+            public void SetBool(ID id, Name name, bool value) => bools[new ID(name, id)] = value;
+            public bool GetBool(ID id, Name name, bool defaultValue) => bools.TryGetValue(new ID(name, id), out var v) ? v : defaultValue;
 
-            public void Step()
-            {
-                lastData.Clear();
-                foreach (var kv in nextData)
-                    lastData[kv.Key] = kv.Value;
-                nextData.Clear();
-            }
+            public void SetNumber(ID id, Name name, float value) => numbers[new ID(name, id)] = value;
+            public float GetNumber(ID id, Name name, float defaultValue) => numbers.TryGetValue(new ID(name, id), out var v) ? v : defaultValue;
+
+            public void SetId(ID id, Name name, ID value) => ids[new ID(name, id)] = value;
+            public ID GetId(ID id, Name name, ID defaultValue) => ids.TryGetValue(new ID(name, id), out var v) ? v : defaultValue;
         }
 
         #endregion
@@ -196,18 +185,20 @@ namespace Foster.GuiSystem
         public float FontScale => FontSize / Font.Height;
         public float Spacing => (spacingStack.Count > 0 ? spacingStack.Peek() : DefaultSpacing);
         public float Indent => (indentStack.Count > 0 ? indentStack.Peek() : 0f);
+
         public ViewportState Viewport => viewport;
         public FrameState Frame => frame;
         public Rect Clip => clipStack.Count > 0 ? clipStack.Peek() : new Rect();
         public Batch2d Batcher => viewport.Batcher;
         public Rect LastCell => frame.LastCell;
+        public StorageData Storage => storageStack.Peek();
 
         public ID HotId = ID.None;
         public ID LastHotId = ID.None;
         public ID ActiveId = ID.None;
         public ID LastActiveId = ID.None;
+        public ID ParentId => (idStack.Count > 0 ? idStack.Peek() : ID.None);
 
-        private ID currentId;
         public ID CurrentId
         {
             get => currentId;
@@ -219,13 +210,15 @@ namespace Foster.GuiSystem
             }
         }
 
-        private ViewportState viewport;
-        private FrameState frame;
-        private bool lastActiveIdExists;
-
         #endregion
 
         #region Private Variables
+
+        private ID currentId;
+        private bool lastActiveIdExists;
+
+        private ViewportState viewport;
+        private FrameState frame;
 
         private readonly Stack<FrameState> frameStack = new Stack<FrameState>();
         private readonly Stack<ID> idStack = new Stack<ID>();
@@ -234,11 +227,8 @@ namespace Foster.GuiSystem
         private readonly Stack<SpriteFont> fontStack = new Stack<SpriteFont>();
         private readonly Stack<float> fontSizeStack = new Stack<float>();
         private readonly Stack<float> spacingStack = new Stack<float>();
-
-        private readonly Storage<ViewportState> viewportStorage = new Storage<ViewportState>();
-        private readonly Storage<FrameState> frameStorage = new Storage<FrameState>();
-        private readonly Storage<float> floatStorage = new Storage<float>();
-        private readonly Storage<bool> boolStorage = new Storage<bool>();
+        private readonly Stack<StorageData> storageStack = new Stack<StorageData>();
+        private readonly Dictionary<ID, StorageData> storages = new Dictionary<ID, StorageData>();
 
         #endregion
 
@@ -256,11 +246,9 @@ namespace Foster.GuiSystem
 
         #region State Changing
 
-        public ID Id(UniqueInfo value)
+        public ID Id(Name name)
         {
-            CurrentId = new ID(value.Value, (idStack.Count > 0 ? idStack.Peek() : new ID(0, 0)));
-
-            return CurrentId;
+            return CurrentId = new ID(name, idStack.Count > 0 ? idStack.Peek() : ID.None);
         }
 
         public ID PushId(ID id)
@@ -269,9 +257,9 @@ namespace Foster.GuiSystem
             return id;
         }
 
-        public ID PushId(UniqueInfo info)
+        public ID PushId(Name name)
         {
-            return PushId(Id(info));
+            return PushId(Id(name));
         }
 
         public void PopId()
@@ -279,19 +267,25 @@ namespace Foster.GuiSystem
             idStack.Pop();
         }
 
-        private void PushClip(Rect rect)
+        /// <summary>
+        /// Begins a new Storage Group
+        /// If this Storage Group doesn't exist next frame, its data will be discarded
+        /// </summary>
+        public void BeginStorage(Name name)
         {
-            clipStack.Push(rect);
-            viewport.Batcher.SetScissor(rect.Scale(viewport.Scale).Int());
+            var id = new ID(name, ParentId);
+            if (!storages.TryGetValue(id, out var storage))
+                storage = storages[id] = new StorageData();
+            storage.Used = true;
+            storageStack.Push(storage);
         }
 
-        private void PopClip()
+        /// <summary>
+        /// Ends a Storage Group
+        /// </summary>
+        public void EndStorage()
         {
-            clipStack.Pop();
-            if (clipStack.Count > 0)
-                viewport.Batcher.SetScissor(clipStack.Peek().Scale(viewport.Scale).Int());
-            else
-                viewport.Batcher.SetScissor(null);
+            storageStack.Pop();
         }
 
         public void PushIndent(float amount) => indentStack.Push(Indent + amount);
@@ -306,24 +300,19 @@ namespace Foster.GuiSystem
         public void PushFontSize(float size) => fontSizeStack.Push(size);
         public void PopFontSize() => fontSizeStack.Pop();
 
-        public void Store(ID id, UniqueInfo key, float value)
+        private void PushClip(Rect rect)
         {
-            floatStorage.Store(new ID(key.Value, id), value);
+            clipStack.Push(rect);
+            Batcher.SetScissor(rect.Scale(viewport.Scale).Int());
         }
 
-        public void Store(ID id, UniqueInfo key, bool value)
+        private void PopClip()
         {
-            boolStorage.Store(new ID(key.Value, id), value);
-        }
-
-        public bool Retreive(ID id, UniqueInfo key, out float value)
-        {
-            return floatStorage.Retrieve(new ID(key.Value, id), out value);
-        }
-
-        public bool Retreive(ID id, UniqueInfo key, out bool value)
-        {
-            return boolStorage.Retrieve(new ID(key.Value, id), out value);
+            clipStack.Pop();
+            if (clipStack.Count > 0)
+                Batcher.SetScissor(clipStack.Peek().Scale(viewport.Scale).Int());
+            else
+                Batcher.SetScissor(null);
         }
 
         public void Row()
@@ -333,6 +322,7 @@ namespace Foster.GuiSystem
 
             frame.NextRow(1, Indent, Spacing);
         }
+
         public void Row(int columns)
         {
             if (frame.ID == ID.None)
@@ -370,6 +360,8 @@ namespace Foster.GuiSystem
         {
             viewport = new ViewportState();
             frame = new FrameState();
+            LastHotId = HotId;
+            HotId = ID.None;
 
             // These should have been all cleared by the end of last frame
             // but we do this for safety
@@ -380,14 +372,25 @@ namespace Foster.GuiSystem
             fontStack.Clear();
             fontSizeStack.Clear();
             spacingStack.Clear();
+            storageStack.Clear();
 
-            viewportStorage.Step();
-            frameStorage.Step();
-            floatStorage.Step();
-            boolStorage.Step();
+            // destroy storage that was not used
+            {
+                List<ID>? removing = null;
+                foreach (var kv in storages)
+                    if (!kv.Value.Used)
+                    {
+                        if (removing == null)
+                            removing = new List<ID>();
+                        removing.Add(kv.Key);
+                    }
 
-            LastHotId = HotId;
-            HotId = ID.None;
+                if (removing != null)
+                {
+                    foreach (var id in removing)
+                        storages.Remove(id);
+                }
+            }
 
             // track active ID
             // if the active ID no longer exists, unset it
@@ -417,14 +420,14 @@ namespace Foster.GuiSystem
             BeginViewport(window.Title, batcher, bounds, mouse, scale, !window.MouseOver);
         }
 
-        public void BeginViewport(UniqueInfo info, Batch2d batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
+        public void BeginViewport(Name name, Batch2d batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
         {
             if (viewport.ID != ID.None)
                 throw new Exception("The previous Viewport must be ended before beginning a new one");
 
             viewport = new ViewportState
             {
-                ID = new ID(info.Value, 0),
+                ID = Id(name),
                 Bounds = bounds,
                 Mouse = mouse,
                 MouseObstructed = mouseObstructed,
@@ -432,11 +435,11 @@ namespace Foster.GuiSystem
                 Batcher = batcher
             };
 
-            if (viewportStorage.Retrieve(viewport.ID, out var lastViewport))
-            {
-                viewport.MouseDelta = mouse - lastViewport.Mouse;
-                viewport.LastHotFrame = lastViewport.NextHotFrame;
-            }
+            BeginStorage(0);
+
+            viewport.MouseDelta.X = mouse.X - Storage.GetNumber(viewport.ID, 0, mouse.X);
+            viewport.MouseDelta.Y = mouse.Y - Storage.GetNumber(viewport.ID, 1, mouse.Y);
+            viewport.LastHotFrame = Storage.GetId(viewport.ID, 2, ID.None);
 
             PushClip(viewport.Bounds);
             viewport.Batcher.PushMatrix(Matrix3x2.CreateScale(scale));
@@ -449,14 +452,18 @@ namespace Foster.GuiSystem
             if (frame.ID != ID.None)
                 throw new Exception("The previous Group must be closed before closing the Viewport");
 
-            PopClip();
+            Storage.SetNumber(viewport.ID, 0, viewport.Mouse.X);
+            Storage.SetNumber(viewport.ID, 1, viewport.Mouse.Y);
+            Storage.SetId(viewport.ID, 2, viewport.NextHotFrame);
 
-            viewportStorage.Store(viewport.ID, viewport);
+            PopClip();
+            EndStorage();
+
             viewport.Batcher.PopMatrix();
             viewport = new ViewportState();
         }
 
-        public bool BeginFrame(UniqueInfo info, float height)
+        public bool BeginFrame(Name info, float height)
         {
             if (frame.ID != ID.None)
                 return BeginFrame(info, Cell(0, height));
@@ -464,12 +471,12 @@ namespace Foster.GuiSystem
                 return BeginFrame(info, viewport.Bounds);
         }
 
-        public bool BeginFrame(UniqueInfo info, Rect bounds, bool scrollable = true)
+        public bool BeginFrame(Name name, Rect bounds, bool scrollable = true)
         {
-            return BeginFrame(info, bounds, Style.Frame, scrollable);
+            return BeginFrame(name, bounds, Style.Frame, scrollable);
         }
 
-        public bool BeginFrame(UniqueInfo info, Rect bounds, StyleState style, bool scrollable = true)
+        public bool BeginFrame(Name name, Rect bounds, StyleState style, bool scrollable = true)
         {
             if (viewport.ID == ID.None)
                 throw new Exception("You must open a Viewport before beginning a Frame");
@@ -488,15 +495,17 @@ namespace Foster.GuiSystem
                 frameStack.Push(frame);
                 frame = new FrameState
                 {
-                    ID = PushId(info),
+                    ID = PushId(name),
                     Bounds = bounds,
                     Clip = clip,
                     Padding = edge,
                     Scrollable = scrollable
                 };
 
-                if (!frameStorage.Retrieve(frame.ID, out var last))
-                    last.ID = ID.None;
+                // using constant numbers since it's fast (I presume)
+                // see EndFrame for lookups
+                var lastInnerHeight = Storage.GetNumber(frame.ID, 1, 0f);
+                var lastScrollY = Storage.GetNumber(frame.ID, 3, 0f);
 
                 if (frame.Clip.Contains(viewport.Mouse))
                     viewport.NextHotFrame = frame.ID;
@@ -507,17 +516,16 @@ namespace Foster.GuiSystem
                 if (frame.Scrollable)
                 {
                     frame.Scroll = Vector2.Zero;
-                    if (last.ID != ID.None)
-                        frame.Scroll = last.Scroll;
+                    frame.Scroll = new Vector2(0, lastScrollY);
 
-                    if (last.InnerHeight > frame.Bounds.Height)
+                    if (lastInnerHeight > frame.Bounds.Height)
                     {
                         frame.Bounds.Width -= 16;
 
-                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, last.InnerHeight - frame.Bounds.Height);
+                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, lastInnerHeight - frame.Bounds.Height);
 
                         var scrollId = Id("Scroll-Y");
-                        var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, last.InnerHeight);
+                        var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
                         var buttonRect = scrollRect.OverlapRect(frame.Clip);
 
                         if (buttonRect.Area > 0)
@@ -527,8 +535,8 @@ namespace Foster.GuiSystem
                             if (ActiveId == scrollId)
                             {
                                 var relativeSpeed = (frame.Bounds.Height / scrollRect.Height);
-                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + viewport.MouseDelta.Y * relativeSpeed, 0, last.InnerHeight - bounds.Height);
-                                scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, last.InnerHeight);
+                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + viewport.MouseDelta.Y * relativeSpeed, 0, lastInnerHeight - bounds.Height);
+                                scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
                             }
 
                             Box(scrollRect.Inflate(-4), Style.Scrollbar, scrollId);
@@ -562,7 +570,11 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must Begin a Frame before ending it");
 
-            frameStorage.Store(frame.ID, frame);
+            Storage.SetNumber(frame.ID, 0, frame.InnerWidth);
+            Storage.SetNumber(frame.ID, 1, frame.InnerHeight);
+            Storage.SetNumber(frame.ID, 2, frame.Scroll.X);
+            Storage.SetNumber(frame.ID, 3, frame.Scroll.Y);
+
             PopId();
 
             if (frame.Scrollable)

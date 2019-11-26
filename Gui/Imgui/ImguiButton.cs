@@ -31,7 +31,7 @@ namespace Foster.GuiSystem
             return Button(imgui, content.UniqueInfo(), content, sizing, imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, Sizing sizing, StyleElement style)
+        public static bool Button(this Imgui imgui, Imgui.Name info, IContent content, Sizing sizing, StyleElement style)
         {
             var size = sizing.SizeOf(imgui, content, style.Idle.Padding);
             var position = imgui.Cell(size);
@@ -39,7 +39,7 @@ namespace Foster.GuiSystem
             return Button(imgui, info, content, position, style);
         }
 
-        public static bool Button(this Imgui imgui, Imgui.UniqueInfo info, IContent content, Rect position, StyleElement style)
+        public static bool Button(this Imgui imgui, Imgui.Name info, IContent content, Rect position, StyleElement style)
         {
             var result = false;
             var id = imgui.Id(info);

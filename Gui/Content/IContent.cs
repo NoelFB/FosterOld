@@ -10,7 +10,7 @@ namespace Foster.GuiSystem
 
         Vector2 PreferredSize(Imgui imgui);
         void Draw(Imgui imgui, Batch2d batcher, StyleState style, Rect position);
-        Imgui.UniqueInfo UniqueInfo();
+        Imgui.Name UniqueInfo();
 
         public Vector2 PreferredPaddedSize(Imgui imgui, Vector2 padding)
         {

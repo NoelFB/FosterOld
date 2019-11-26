@@ -32,7 +32,7 @@ namespace Foster.GuiSystem
             return new Vector2(imgui.FontSize, imgui.FontSize);
         }
 
-        public Imgui.UniqueInfo UniqueInfo()
+        public Imgui.Name UniqueInfo()
         {
             return Image.GetHashCode();
         }

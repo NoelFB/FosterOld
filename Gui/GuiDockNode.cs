@@ -577,12 +577,18 @@ namespace Foster.GuiSystem
                                 var remainder = Imgui.Remainder();
                                 Imgui.PopSpacing();
 
-                                if (Imgui.BeginFrame("CONTENT", remainder, Imgui.Style.Window.Frame, true))
+                                // we push a fresh ID here so that it doesn't car what its parent ID is
+                                // we also push a storage so that if this panel is destroyed, its storage will also be disposed
+                                Imgui.PushId(new Imgui.ID(activePanel.ID));
+                                Imgui.BeginStorage(0);
+                                if (Imgui.BeginFrame(0, remainder, Imgui.Style.Window.Frame, true))
                                 {
                                     frameId = Imgui.CurrentId;
                                     activePanel.OnRefresh?.Invoke(Imgui);
                                     Imgui.EndFrame();
                                 }
+                                Imgui.EndStorage();
+                                Imgui.PopId();
                             }
 
                             Imgui.EndFrame();

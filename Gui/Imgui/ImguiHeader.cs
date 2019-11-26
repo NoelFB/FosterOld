@@ -9,13 +9,9 @@ namespace Foster.GuiSystem
     {
         public static bool Header(this Imgui imgui, string label, bool startOpen = false)
         {
-            const string StorageKey = "TOGGLED";
-
             var style = imgui.Style.Header;
-
             var id = imgui.Id(label);
-            var has = imgui.Retreive(id, StorageKey, out bool toggled);
-            var enabled = (has && toggled) || (!has && startOpen);
+            var enabled = imgui.Storage.GetBool(id, 0, startOpen);
 
             imgui.PushSpacing(0);
 
@@ -33,7 +29,7 @@ namespace Foster.GuiSystem
             content.Draw(imgui, imgui.Batcher, state, inner);
 
             // store result
-            imgui.Store(id, StorageKey, enabled);
+            imgui.Storage.SetBool(id, 0, enabled);
 
             // indent tab
             if (enabled)
