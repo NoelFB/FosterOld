@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
-    public class Batch2d : GraphicsResource
+    public class Batch2D : GraphicsResource
     {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -97,6 +97,10 @@ void main(void)
         public readonly Material DefaultMaterial;
         public readonly Mesh<Vertex> Mesh;
 
+        public Matrix3x2 OrthographicMatrix => 
+            Matrix3x2.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2) *
+            Matrix3x2.CreateTranslation(-1.0f, 1.0f);
+
         public Matrix3x2 MatrixStack = Matrix3x2.Identity;
         private readonly Stack<Matrix3x2> matrixStack = new Stack<Matrix3x2>();
 
@@ -135,12 +139,12 @@ void main(void)
             }
         }
 
-        public Batch2d() : this(App.Graphics)
+        public Batch2D() : this(App.Graphics)
         {
 
         }
 
-        public Batch2d(Graphics graphics) : base(graphics)
+        public Batch2D(Graphics graphics) : base(graphics)
         {
             DefaultShader = graphics.CreateShader(VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
@@ -174,7 +178,7 @@ void main(void)
 
         public void Render()
         {
-            Render(Matrix3x2.Identity);
+            Render(OrthographicMatrix);
         }
 
         public void Render(Matrix3x2 matrix)
@@ -196,19 +200,13 @@ void main(void)
                 Graphics.DepthTest(false);
                 Graphics.CullMode(Cull.None);
 
-                var ortho =
-                    Matrix3x2.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2) *
-                    Matrix3x2.CreateTranslation(-1.0f, 1.0f);
-
-                var view = matrix * ortho;
-
                 // render batches
                 for (int i = 0; i < batches.Count; i++)
-                    RenderBatch(batches[i], ref view);
+                    RenderBatch(batches[i], ref matrix);
 
                 // remaining elements
                 if (currentBatch.Elements > 0)
-                    RenderBatch(currentBatch, ref view);
+                    RenderBatch(currentBatch, ref matrix);
             }
         }
 

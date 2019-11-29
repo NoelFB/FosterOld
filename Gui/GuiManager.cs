@@ -10,7 +10,7 @@ namespace Foster.GuiSystem
 
         public readonly Gui Gui;
         public readonly Window Window;
-        public readonly Batch2d Batcher;
+        public readonly Batch2D Batcher;
 
         public readonly GuiDockNode Root;
         public readonly List<GuiDockNode> Floating = new List<GuiDockNode>();
@@ -34,7 +34,7 @@ namespace Foster.GuiSystem
         public GuiManager(Gui gui, Window window)
         {
             Gui = gui;
-            Batcher = new Batch2d();
+            Batcher = new Batch2D();
 
             Window = window;
             Window.OnRender = Render;

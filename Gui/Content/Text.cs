@@ -15,7 +15,7 @@ namespace Foster.GuiSystem
             Value = text;
         }
 
-        public void Draw(Imgui imgui, Batch2d batcher, StyleState style, Rect position)
+        public void Draw(Imgui imgui, Batch2D batcher, StyleState style, Rect position)
         {
             var scale = Vector2.One * imgui.FontScale;
             var align = new Vector2(position.X, position.Center.Y - imgui.FontSize * 0.5f);

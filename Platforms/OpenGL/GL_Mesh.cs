@@ -1,5 +1,6 @@
 ﻿using Foster.Framework;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -23,7 +24,7 @@ namespace Foster.OpenGL
 
         public override unsafe void SetVertices(Memory<TVertex> vertices)
         {
-            using System.Buffers.MemoryHandle pinned = vertices.Pin();
+            using var pinned = vertices.Pin();
 
             GL.BindBuffer(GLEnum.ARRAY_BUFFER, VertexBuffer);
             GL.BufferData(GLEnum.ARRAY_BUFFER, new IntPtr(Marshal.SizeOf<TVertex>() * vertices.Length), new IntPtr(pinned.Pointer), GLEnum.STATIC_DRAW);
@@ -31,7 +32,7 @@ namespace Foster.OpenGL
 
         public override unsafe void SetTriangles(Memory<int> triangles)
         {
-            using System.Buffers.MemoryHandle pinned = triangles.Pin();
+            using var pinned = triangles.Pin();
 
             GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, TriangleBuffer);
             GL.BufferData(GLEnum.ELEMENT_ARRAY_BUFFER, new IntPtr(sizeof(int) * triangles.Length), new IntPtr(pinned.Pointer), GLEnum.STATIC_DRAW);
@@ -52,7 +53,7 @@ namespace Foster.OpenGL
             }
 
             // upload buffer data
-            using System.Buffers.MemoryHandle handle = instances.Pin();
+            using var handle = instances.Pin();
             GL.BindBuffer(GLEnum.ARRAY_BUFFER, InstanceBuffer);
             GL.BufferData(GLEnum.ARRAY_BUFFER, new IntPtr(Marshal.SizeOf<T>() * instances.Length), new IntPtr(handle.Pointer), GLEnum.STATIC_DRAW);
         }

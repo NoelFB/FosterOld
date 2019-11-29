@@ -45,7 +45,7 @@ namespace Foster.GuiSystem
         public struct ViewportState
         {
             public ID ID;
-            public Batch2d Batcher;
+            public Batch2D Batcher;
             public Vector2 Scale;
             public Rect Bounds;
             public Vector2 Mouse;
@@ -189,7 +189,7 @@ namespace Foster.GuiSystem
         public ViewportState Viewport => viewport;
         public FrameState Frame => frame;
         public Rect Clip => clipStack.Count > 0 ? clipStack.Peek() : new Rect();
-        public Batch2d Batcher => viewport.Batcher;
+        public Batch2D Batcher => viewport.Batcher;
         public Rect LastCell => frame.LastCell;
         public StorageData Storage => storageStack.Peek();
 
@@ -411,7 +411,7 @@ namespace Foster.GuiSystem
 
         #region Viewports / Frames
 
-        public void BeginViewport(Window window, Batch2d batcher, Vector2? contentScale = null)
+        public void BeginViewport(Window window, Batch2D batcher, Vector2? contentScale = null)
         {
             var scale = window.ContentScale * (contentScale ?? Vector2.One);
             var bounds = new Rect(0, 0, window.DrawableWidth / scale.X, window.DrawableHeight / scale.Y);
@@ -420,7 +420,7 @@ namespace Foster.GuiSystem
             BeginViewport(window.Title, batcher, bounds, mouse, scale, !window.MouseOver);
         }
 
-        public void BeginViewport(Name name, Batch2d batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
+        public void BeginViewport(Name name, Batch2D batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
         {
             if (viewport.ID != ID.None)
                 throw new Exception("The previous Viewport must be ended before beginning a new one");
@@ -520,22 +520,23 @@ namespace Foster.GuiSystem
 
                     if (lastInnerHeight > frame.Bounds.Height)
                     {
+                        var height = frame.Bounds.Height - frame.Padding.Height;
+
                         frame.Bounds.Width -= 16;
+                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, lastInnerHeight - height);
 
-                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, lastInnerHeight - frame.Bounds.Height);
-
-                        var scrollId = Id("Scroll-Y");
                         var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
                         var buttonRect = scrollRect.OverlapRect(frame.Clip);
 
                         if (buttonRect.Area > 0)
                         {
+                            var scrollId = Id("Scroll-Y");
                             ButtonBehaviour(scrollId, buttonRect);
 
                             if (ActiveId == scrollId)
                             {
-                                var relativeSpeed = (frame.Bounds.Height / scrollRect.Height);
-                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + viewport.MouseDelta.Y * relativeSpeed, 0, lastInnerHeight - bounds.Height);
+                                var delta = viewport.MouseDelta.Y * (lastInnerHeight / height);
+                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y +  delta, 0, lastInnerHeight - bounds.Height);
                                 scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
                             }
 
@@ -588,7 +589,7 @@ namespace Foster.GuiSystem
 
         private Rect VerticalScrollBar(Rect bounds, Vector2 scroll, float innerHeight)
         {
-            var barH = bounds.Height * (bounds.Height / innerHeight);
+            var barH = Math.Max(32, bounds.Height * (bounds.Height / innerHeight));
             var barY = (bounds.Height - barH) * (scroll.Y / (innerHeight - bounds.Height));
 
             return new Rect(bounds.Right, bounds.Y + barY, 16f, barH);

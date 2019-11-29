@@ -46,7 +46,7 @@ namespace Foster.GuiSystem
         public readonly Imgui Imgui;
         public readonly Modes Mode;
         public readonly Window Window;
-        public readonly Batch2d Batcher;
+        public readonly Batch2D Batcher;
 
         private GuiDockNode? parent;
         private GuiDockNode? left;
@@ -109,7 +109,7 @@ namespace Foster.GuiSystem
 
                 Window.Visible = true;
 
-                Batcher = new Batch2d();
+                Batcher = new Batch2D();
 
                 Manager.Standalone.Add(this);
             }
@@ -534,7 +534,7 @@ namespace Foster.GuiSystem
 
                     if (panels.Count > 0)
                     {
-                        if (activePanel == null)
+                        if (activePanel == null || !panels.Contains(activePanel))
                             activePanel = panels[0];
 
                         // The Window

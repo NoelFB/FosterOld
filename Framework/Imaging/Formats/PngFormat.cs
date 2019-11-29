@@ -79,13 +79,13 @@ namespace Foster.Framework
         {
             width = height = 0;
 
-            bool hasTransparency = false;
-            int depth = 8;
-            Colors color = Colors.Truecolor;
-            int compression = 0;
-            int filter = 0;
-            Interlace interlace = Interlace.None;
-            int components = 4;
+            var hasTransparency = false;
+            var depth = 8;
+            var color = Colors.Truecolor;
+            var compression = 0;
+            var filter = 0;
+            var interlace = Interlace.None;
+            var components = 4;
 
             using MemoryStream idat = new MemoryStream();
             Span<byte> idatChunk = stackalloc byte[16384];

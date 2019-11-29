@@ -1,17 +1,15 @@
 ﻿using Foster.Framework;
-using Foster.GuiSystem;
 using Foster.GLFW;
-using Foster.SDL2;
+using Foster.GuiSystem;
 using Foster.OpenGL;
 using System;
 using System.IO;
 
-namespace Test1
+namespace Foster.Engine
 {
-    internal class Program
+    class Program
     {
-        
-        private static void Main()
+        static void Main(string[] args)
         {
             App.Modules.Register<GLFW_System>();
             App.Modules.Register<GLFW_Input>();
@@ -22,7 +20,7 @@ namespace Test1
 
         private static void Ready()
         {
-            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Roboto-Medium.ttf"), 64, Charsets.ASCII);
+            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Content", "Roboto-Medium.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
 
             var scene = gui.CreatePanel("Scene", new Rect(32, 32, 200, 200));
@@ -38,7 +36,7 @@ namespace Test1
 
             game.OnRefresh = (imgui) =>
             {
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     imgui.PushId(i);
 
@@ -72,6 +70,5 @@ namespace Test1
                 }
             };
         }
-
     }
 }

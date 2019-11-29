@@ -23,10 +23,13 @@ namespace Foster.GuiSystem
             imgui.PopSpacing();
 
             // draw
-            var inner = imgui.Box(position, style, id);
-            var state = style.Current(imgui.ActiveId, imgui.HotId, id);
-            var content = new Text((enabled ? "v " : "> ") + label);
-            content.Draw(imgui, imgui.Batcher, state, inner);
+            if (position.Intersects(imgui.Clip))
+            {
+                var inner = imgui.Box(position, style, id);
+                var state = style.Current(imgui.ActiveId, imgui.HotId, id);
+                var content = new Text((enabled ? "v " : "> ") + label);
+                content.Draw(imgui, imgui.Batcher, state, inner);
+            }
 
             // store result
             imgui.Storage.SetBool(id, 0, enabled);

@@ -17,7 +17,7 @@ namespace Foster.GuiSystem
             UseContentColor = useContentColor;
         }
 
-        public void Draw(Imgui imgui, Batch2d batcher, StyleState style, Rect position)
+        public void Draw(Imgui imgui, Batch2D batcher, StyleState style, Rect position)
         {
             var scale = Vector2.One * Math.Min(imgui.FontSize / Image.Width, imgui.FontSize / Image.Height);
             var pos = new Vector2(position.Center.X, position.Center.Y);
