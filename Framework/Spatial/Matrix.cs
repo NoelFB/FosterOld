@@ -14,9 +14,10 @@ namespace Foster.Framework
     /// A structure encapsulating a 4x4 matrix.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct Matrix4x4 : IEquatable<Matrix4x4>
+    public struct Matrix : IEquatable<Matrix>
     {
         #region Public Fields
+
         /// <summary>
         /// Value at row 1, column 1 of the matrix.
         /// </summary>
@@ -84,9 +85,10 @@ namespace Foster.Framework
         /// Value at row 4, column 4 of the matrix.
         /// </summary>
         public float M44;
+
         #endregion Public Fields
 
-        private static readonly Matrix4x4 _identity = new Matrix4x4
+        private static readonly Matrix _identity = new Matrix
         (
             1f, 0f, 0f, 0f,
             0f, 1f, 0f, 0f,
@@ -97,7 +99,7 @@ namespace Foster.Framework
         /// <summary>
         /// Returns the multiplicative identity matrix.
         /// </summary>
-        public static Matrix4x4 Identity
+        public static Matrix Identity
         {
             get { return _identity; }
         }
@@ -137,7 +139,7 @@ namespace Foster.Framework
         /// <summary>
         /// Constructs a Matrix4x4 from the given components.
         /// </summary>
-        public Matrix4x4(float m11, float m12, float m13, float m14,
+        public Matrix(float m11, float m12, float m13, float m14,
                          float m21, float m22, float m23, float m24,
                          float m31, float m32, float m33, float m34,
                          float m41, float m42, float m43, float m44)
@@ -167,7 +169,7 @@ namespace Foster.Framework
         /// Constructs a Matrix4x4 from the given Matrix3x2.
         /// </summary>
         /// <param name="value">The source Matrix3x2.</param>
-        public Matrix4x4(Matrix3x2 value)
+        public Matrix(Matrix2D value)
         {
             M11 = value.M11;
             M12 = value.M12;
@@ -195,7 +197,7 @@ namespace Foster.Framework
         /// <param name="cameraUpVector">The up vector of the camera.</param>
         /// <param name="cameraForwardVector">The forward vector of the camera.</param>
         /// <returns>The created billboard matrix</returns>
-        public static Matrix4x4 CreateBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 cameraUpVector, Vector3 cameraForwardVector)
+        public static Matrix CreateBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 cameraUpVector, Vector3 cameraForwardVector)
         {
             const float epsilon = 1e-4f;
 
@@ -219,7 +221,7 @@ namespace Foster.Framework
 
             Vector3 yaxis = Vector3.Cross(zaxis, xaxis);
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xaxis.X;
             result.M12 = xaxis.Y;
@@ -251,7 +253,7 @@ namespace Foster.Framework
         /// <param name="cameraForwardVector">Forward vector of the camera.</param>
         /// <param name="objectForwardVector">Forward vector of the object.</param>
         /// <returns>The created billboard matrix.</returns>
-        public static Matrix4x4 CreateConstrainedBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 rotateAxis, Vector3 cameraForwardVector, Vector3 objectForwardVector)
+        public static Matrix CreateConstrainedBillboard(Vector3 objectPosition, Vector3 cameraPosition, Vector3 rotateAxis, Vector3 cameraForwardVector, Vector3 objectForwardVector)
         {
             const float epsilon = 1e-4f;
             const float minAngle = 1.0f - (0.1f * ((float)Math.PI / 180.0f)); // 0.1 degrees
@@ -301,7 +303,7 @@ namespace Foster.Framework
                 zaxis = Vector3.Normalize(Vector3.Cross(xaxis, yaxis));
             }
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xaxis.X;
             result.M12 = xaxis.Y;
@@ -329,9 +331,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="position">The amount to translate in each axis.</param>
         /// <returns>The translation matrix.</returns>
-        public static Matrix4x4 CreateTranslation(Vector3 position)
+        public static Matrix CreateTranslation(Vector3 position)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = 1.0f;
             result.M12 = 0.0f;
@@ -361,9 +363,9 @@ namespace Foster.Framework
         /// <param name="yPosition">The amount to translate on the Y-axis.</param>
         /// <param name="zPosition">The amount to translate on the Z-axis.</param>
         /// <returns>The translation matrix.</returns>
-        public static Matrix4x4 CreateTranslation(float xPosition, float yPosition, float zPosition)
+        public static Matrix CreateTranslation(float xPosition, float yPosition, float zPosition)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = 1.0f;
             result.M12 = 0.0f;
@@ -393,9 +395,9 @@ namespace Foster.Framework
         /// <param name="yScale">Value to scale by on the Y-axis.</param>
         /// <param name="zScale">Value to scale by on the Z-axis.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(float xScale, float yScale, float zScale)
+        public static Matrix CreateScale(float xScale, float yScale, float zScale)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xScale;
             result.M12 = 0.0f;
@@ -425,9 +427,9 @@ namespace Foster.Framework
         /// <param name="zScale">Value to scale by on the Z-axis.</param>
         /// <param name="centerPoint">The center point.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(float xScale, float yScale, float zScale, Vector3 centerPoint)
+        public static Matrix CreateScale(float xScale, float yScale, float zScale, Vector3 centerPoint)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float tx = centerPoint.X * (1 - xScale);
             float ty = centerPoint.Y * (1 - yScale);
@@ -458,9 +460,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="scales">The vector containing the amount to scale by on each axis.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(Vector3 scales)
+        public static Matrix CreateScale(Vector3 scales)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = scales.X;
             result.M12 = 0.0f;
@@ -488,9 +490,9 @@ namespace Foster.Framework
         /// <param name="scales">The vector containing the amount to scale by on each axis.</param>
         /// <param name="centerPoint">The center point.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(Vector3 scales, Vector3 centerPoint)
+        public static Matrix CreateScale(Vector3 scales, Vector3 centerPoint)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float tx = centerPoint.X * (1 - scales.X);
             float ty = centerPoint.Y * (1 - scales.Y);
@@ -521,9 +523,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="scale">The uniform scaling factor.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(float scale)
+        public static Matrix CreateScale(float scale)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = scale;
             result.M12 = 0.0f;
@@ -551,9 +553,9 @@ namespace Foster.Framework
         /// <param name="scale">The uniform scaling factor.</param>
         /// <param name="centerPoint">The center point.</param>
         /// <returns>The scaling matrix.</returns>
-        public static Matrix4x4 CreateScale(float scale, Vector3 centerPoint)
+        public static Matrix CreateScale(float scale, Vector3 centerPoint)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float tx = centerPoint.X * (1 - scale);
             float ty = centerPoint.Y * (1 - scale);
@@ -584,9 +586,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="radians">The amount, in radians, by which to rotate around the X-axis.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateRotationX(float radians)
+        public static Matrix CreateRotationX(float radians)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float c = (float)Math.Cos(radians);
             float s = (float)Math.Sin(radians);
@@ -621,9 +623,9 @@ namespace Foster.Framework
         /// <param name="radians">The amount, in radians, by which to rotate around the X-axis.</param>
         /// <param name="centerPoint">The center point.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateRotationX(float radians, Vector3 centerPoint)
+        public static Matrix CreateRotationX(float radians, Vector3 centerPoint)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float c = (float)Math.Cos(radians);
             float s = (float)Math.Sin(radians);
@@ -660,9 +662,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="radians">The amount, in radians, by which to rotate around the Y-axis.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateRotationY(float radians)
+        public static Matrix CreateRotationY(float radians)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float c = (float)Math.Cos(radians);
             float s = (float)Math.Sin(radians);
@@ -697,9 +699,9 @@ namespace Foster.Framework
         /// <param name="radians">The amount, in radians, by which to rotate around the Y-axis.</param>
         /// <param name="centerPoint">The center point.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateRotationY(float radians, Vector3 centerPoint)
+        public static Matrix CreateRotationY(float radians, Vector3 centerPoint)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float c = (float)Math.Cos(radians);
             float s = (float)Math.Sin(radians);
@@ -736,9 +738,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="radians">The amount, in radians, by which to rotate around the Z-axis.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateRotationZ(float radians)
+        public static Matrix CreateRotationZ(float radians)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float c = (float)Math.Cos(radians);
             float s = (float)Math.Sin(radians);
@@ -773,9 +775,9 @@ namespace Foster.Framework
         /// <param name="radians">The amount, in radians, by which to rotate around the Z-axis.</param>
         /// <param name="centerPoint">The center point.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateRotationZ(float radians, Vector3 centerPoint)
+        public static Matrix CreateRotationZ(float radians, Vector3 centerPoint)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float c = (float)Math.Cos(radians);
             float s = (float)Math.Sin(radians);
@@ -813,7 +815,7 @@ namespace Foster.Framework
         /// <param name="axis">The axis to rotate around.</param>
         /// <param name="angle">The angle to rotate around the given axis, in radians.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateFromAxisAngle(Vector3 axis, float angle)
+        public static Matrix CreateFromAxisAngle(Vector3 axis, float angle)
         {
             // a: angle
             // x, y, z: unit vector for axis.
@@ -845,7 +847,7 @@ namespace Foster.Framework
             float xx = x * x, yy = y * y, zz = z * z;
             float xy = x * y, xz = x * z, yz = y * z;
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xx + ca * (1.0f - xx);
             result.M12 = xy - ca * xy + sa * z;
@@ -875,7 +877,7 @@ namespace Foster.Framework
         /// <param name="nearPlaneDistance">Distance to the near view plane.</param>
         /// <param name="farPlaneDistance">Distance to the far view plane.</param>
         /// <returns>The perspective projection matrix.</returns>
-        public static Matrix4x4 CreatePerspectiveFieldOfView(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
+        public static Matrix CreatePerspectiveFieldOfView(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
         {
             if (fieldOfView <= 0.0f || fieldOfView >= (float)Math.PI)
                 throw new ArgumentOutOfRangeException(nameof(fieldOfView));
@@ -892,7 +894,7 @@ namespace Foster.Framework
             float yScale = 1.0f / (float)Math.Tan(fieldOfView * 0.5f);
             float xScale = yScale / aspectRatio;
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xScale;
             result.M12 = result.M13 = result.M14 = 0.0f;
@@ -919,7 +921,7 @@ namespace Foster.Framework
         /// <param name="nearPlaneDistance">Distance to the near view plane.</param>
         /// <param name="farPlaneDistance">Distance to the far view plane.</param>
         /// <returns>The perspective projection matrix.</returns>
-        public static Matrix4x4 CreatePerspective(float width, float height, float nearPlaneDistance, float farPlaneDistance)
+        public static Matrix CreatePerspective(float width, float height, float nearPlaneDistance, float farPlaneDistance)
         {
             if (nearPlaneDistance <= 0.0f)
                 throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance));
@@ -930,7 +932,7 @@ namespace Foster.Framework
             if (nearPlaneDistance >= farPlaneDistance)
                 throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance));
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = 2.0f * nearPlaneDistance / width;
             result.M12 = result.M13 = result.M14 = 0.0f;
@@ -959,7 +961,7 @@ namespace Foster.Framework
         /// <param name="nearPlaneDistance">Distance to the near view plane.</param>
         /// <param name="farPlaneDistance">Distance to of the far view plane.</param>
         /// <returns>The perspective projection matrix.</returns>
-        public static Matrix4x4 CreatePerspectiveOffCenter(float left, float right, float bottom, float top, float nearPlaneDistance, float farPlaneDistance)
+        public static Matrix CreatePerspectiveOffCenter(float left, float right, float bottom, float top, float nearPlaneDistance, float farPlaneDistance)
         {
             if (nearPlaneDistance <= 0.0f)
                 throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance));
@@ -970,7 +972,7 @@ namespace Foster.Framework
             if (nearPlaneDistance >= farPlaneDistance)
                 throw new ArgumentOutOfRangeException(nameof(nearPlaneDistance));
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = 2.0f * nearPlaneDistance / (right - left);
             result.M12 = result.M13 = result.M14 = 0.0f;
@@ -998,9 +1000,9 @@ namespace Foster.Framework
         /// <param name="zNearPlane">Minimum Z-value of the view volume.</param>
         /// <param name="zFarPlane">Maximum Z-value of the view volume.</param>
         /// <returns>The orthographic projection matrix.</returns>
-        public static Matrix4x4 CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane)
+        public static Matrix CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = 2.0f / width;
             result.M12 = result.M13 = result.M14 = 0.0f;
@@ -1028,9 +1030,9 @@ namespace Foster.Framework
         /// <param name="zNearPlane">Minimum Z-value of the view volume.</param>
         /// <param name="zFarPlane">Maximum Z-value of the view volume.</param>
         /// <returns>The orthographic projection matrix.</returns>
-        public static Matrix4x4 CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane)
+        public static Matrix CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = 2.0f / (right - left);
             result.M12 = result.M13 = result.M14 = 0.0f;
@@ -1056,13 +1058,13 @@ namespace Foster.Framework
         /// <param name="cameraTarget">The target towards which the camera is pointing.</param>
         /// <param name="cameraUpVector">The direction that is "up" from the camera's point of view.</param>
         /// <returns>The view matrix.</returns>
-        public static Matrix4x4 CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
+        public static Matrix CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
         {
             Vector3 zaxis = Vector3.Normalize(cameraPosition - cameraTarget);
             Vector3 xaxis = Vector3.Normalize(Vector3.Cross(cameraUpVector, zaxis));
             Vector3 yaxis = Vector3.Cross(zaxis, xaxis);
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xaxis.X;
             result.M12 = yaxis.X;
@@ -1091,13 +1093,13 @@ namespace Foster.Framework
         /// <param name="forward">Forward direction of the object.</param>
         /// <param name="up">Upward direction of the object; usually [0, 1, 0].</param>
         /// <returns>The world matrix.</returns>
-        public static Matrix4x4 CreateWorld(Vector3 position, Vector3 forward, Vector3 up)
+        public static Matrix CreateWorld(Vector3 position, Vector3 forward, Vector3 up)
         {
             Vector3 zaxis = Vector3.Normalize(-forward);
             Vector3 xaxis = Vector3.Normalize(Vector3.Cross(up, zaxis));
             Vector3 yaxis = Vector3.Cross(zaxis, xaxis);
 
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = xaxis.X;
             result.M12 = xaxis.Y;
@@ -1124,9 +1126,9 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="quaternion">The source Quaternion.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateFromQuaternion(Quaternion quaternion)
+        public static Matrix CreateFromQuaternion(Quaternion quaternion)
         {
-            Matrix4x4 result;
+            Matrix result;
 
             float xx = quaternion.X * quaternion.X;
             float yy = quaternion.Y * quaternion.Y;
@@ -1166,11 +1168,11 @@ namespace Foster.Framework
         /// <param name="pitch">Angle of rotation, in radians, around the X-axis.</param>
         /// <param name="roll">Angle of rotation, in radians, around the Z-axis.</param>
         /// <returns>The rotation matrix.</returns>
-        public static Matrix4x4 CreateFromYawPitchRoll(float yaw, float pitch, float roll)
+        public static Matrix CreateFromYawPitchRoll(float yaw, float pitch, float roll)
         {
             Quaternion q = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
 
-            return Matrix4x4.CreateFromQuaternion(q);
+            return Matrix.CreateFromQuaternion(q);
         }
         
 
@@ -1231,7 +1233,7 @@ namespace Foster.Framework
         /// <param name="matrix">The source matrix to invert.</param>
         /// <param name="result">If successful, contains the inverted matrix.</param>
         /// <returns>True if the source matrix could be inverted; False otherwise.</returns>
-        public static bool Invert(Matrix4x4 matrix, out Matrix4x4 result)
+        public static bool Invert(Matrix matrix, out Matrix result)
         {
             //                                       -1
             // If you have matrix M, inverse Matrix M   can compute
@@ -1346,7 +1348,7 @@ namespace Foster.Framework
 
             if ((float)Math.Abs(det) < float.Epsilon)
             {
-                result = new Matrix4x4(float.NaN, float.NaN, float.NaN, float.NaN,
+                result = new Matrix(float.NaN, float.NaN, float.NaN, float.NaN,
                                        float.NaN, float.NaN, float.NaN, float.NaN,
                                        float.NaN, float.NaN, float.NaN, float.NaN,
                                        float.NaN, float.NaN, float.NaN, float.NaN);
@@ -1417,7 +1419,7 @@ namespace Foster.Framework
         /// <param name="rotation">The rotation component of the transformation matrix.</param>
         /// <param name="translation">The translation component of the transformation matrix</param>
         /// <returns>True if the source matrix was successfully decomposed; False otherwise.</returns>
-        public static bool Decompose(Matrix4x4 matrix, out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        public static bool Decompose(Matrix matrix, out Vector3 scale, out Quaternion rotation, out Vector3 translation)
         {
             bool result = true;
 
@@ -1432,7 +1434,7 @@ namespace Foster.Framework
                     VectorBasis vectorBasis;
                     Vector3** pVectorBasis = (Vector3**)&vectorBasis;
 
-                    Matrix4x4 matTemp = Matrix4x4.Identity;
+                    Matrix matTemp = Matrix.Identity;
                     CanonicalBasis canonicalBasis = new CanonicalBasis();
                     Vector3* pCanonicalBasis = &canonicalBasis.Row0;
 
@@ -1615,7 +1617,7 @@ namespace Foster.Framework
         /// <param name="value">The source matrix to transform.</param>
         /// <param name="rotation">The rotation to apply.</param>
         /// <returns>The transformed matrix.</returns>
-        public static Matrix4x4 Transform(Matrix4x4 value, Quaternion rotation)
+        public static Matrix Transform(Matrix value, Quaternion rotation)
         {
             // Compute rotation matrix.
             float x2 = rotation.X + rotation.X;
@@ -1644,7 +1646,7 @@ namespace Foster.Framework
             float q23 = yz2 + wx2;
             float q33 = 1.0f - xx2 - yy2;
 
-            Matrix4x4 result;
+            Matrix result;
 
             // First row
             result.M11 = value.M11 * q11 + value.M12 * q21 + value.M13 * q31;
@@ -1678,7 +1680,7 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="matrix">The source matrix.</param>
         /// <returns>The transposed matrix.</returns>
-        public static unsafe Matrix4x4 Transpose(Matrix4x4 matrix)
+        public static unsafe Matrix Transpose(Matrix matrix)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -1701,7 +1703,7 @@ namespace Foster.Framework
                 return matrix;
             }
 #endif
-            Matrix4x4 result;
+            Matrix result;
 
             result.M11 = matrix.M11;
             result.M12 = matrix.M21;
@@ -1730,7 +1732,7 @@ namespace Foster.Framework
         /// <param name="matrix2">The second source matrix.</param>
         /// <param name="amount">The relative weight of the second source matrix.</param>
         /// <returns>The interpolated matrix.</returns>
-        public static unsafe Matrix4x4 Lerp(Matrix4x4 matrix1, Matrix4x4 matrix2, float amount)
+        public static unsafe Matrix Lerp(Matrix matrix1, Matrix matrix2, float amount)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -1743,7 +1745,7 @@ namespace Foster.Framework
                 return matrix1;
             }
 #endif
-            Matrix4x4 result;
+            Matrix result;
 
             // First row
             result.M11 = matrix1.M11 + (matrix2.M11 - matrix1.M11) * amount;
@@ -1777,7 +1779,7 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="value">The source matrix.</param>
         /// <returns>The negated matrix.</returns>
-        public static Matrix4x4 Negate(Matrix4x4 value) => -value;
+        public static Matrix Negate(Matrix value) => -value;
 
         /// <summary>
         /// Adds two matrices together.
@@ -1785,7 +1787,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The resulting matrix.</returns>
-        public static Matrix4x4 Add(Matrix4x4 value1, Matrix4x4 value2) => value1 + value2;
+        public static Matrix Add(Matrix value1, Matrix value2) => value1 + value2;
 
         /// <summary>
         /// Subtracts the second matrix from the first.
@@ -1793,7 +1795,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the subtraction.</returns>
-        public static Matrix4x4 Subtract(Matrix4x4 value1, Matrix4x4 value2) => value1 - value2;
+        public static Matrix Subtract(Matrix value1, Matrix value2) => value1 - value2;
 
         /// <summary>
         /// Multiplies a matrix by another matrix.
@@ -1801,7 +1803,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the multiplication.</returns>
-        public static Matrix4x4 Multiply(Matrix4x4 value1, Matrix4x4 value2) => value1 * value2;
+        public static Matrix Multiply(Matrix value1, Matrix value2) => value1 * value2;
 
         /// <summary>
         /// Multiplies a matrix by a scalar value.
@@ -1809,14 +1811,14 @@ namespace Foster.Framework
         /// <param name="value1">The source matrix.</param>
         /// <param name="value2">The scaling factor.</param>
         /// <returns>The scaled matrix.</returns>
-        public static Matrix4x4 Multiply(Matrix4x4 value1, float value2) => value1 * value2;
+        public static Matrix Multiply(Matrix value1, float value2) => value1 * value2;
 
         /// <summary>
         /// Returns a new matrix with the negated elements of the given matrix.
         /// </summary>
         /// <param name="value">The source matrix.</param>
         /// <returns>The negated matrix.</returns>
-        public static unsafe Matrix4x4 operator -(Matrix4x4 value)
+        public static unsafe Matrix operator -(Matrix value)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -1830,7 +1832,7 @@ namespace Foster.Framework
                 return value;
             }
 #endif
-            Matrix4x4 m;
+            Matrix m;
 
             m.M11 = -value.M11;
             m.M12 = -value.M12;
@@ -1858,7 +1860,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The resulting matrix.</returns>
-        public static unsafe Matrix4x4 operator +(Matrix4x4 value1, Matrix4x4 value2)
+        public static unsafe Matrix operator +(Matrix value1, Matrix value2)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -1870,7 +1872,7 @@ namespace Foster.Framework
                 return value1;
             }
 #endif
-            Matrix4x4 m;
+            Matrix m;
 
             m.M11 = value1.M11 + value2.M11;
             m.M12 = value1.M12 + value2.M12;
@@ -1898,7 +1900,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the subtraction.</returns>
-        public static unsafe Matrix4x4 operator -(Matrix4x4 value1, Matrix4x4 value2)
+        public static unsafe Matrix operator -(Matrix value1, Matrix value2)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -1910,7 +1912,7 @@ namespace Foster.Framework
                 return value1;
             }
 #endif
-            Matrix4x4 m;
+            Matrix m;
 
             m.M11 = value1.M11 - value2.M11;
             m.M12 = value1.M12 - value2.M12;
@@ -1938,7 +1940,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the multiplication.</returns>
-        public static unsafe Matrix4x4 operator *(Matrix4x4 value1, Matrix4x4 value2)
+        public static unsafe Matrix operator *(Matrix value1, Matrix value2)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -1976,7 +1978,7 @@ namespace Foster.Framework
                 return value1;
             }
 #endif
-            Matrix4x4 m;
+            Matrix m;
 
             // First row
             m.M11 = value1.M11 * value2.M11 + value1.M12 * value2.M21 + value1.M13 * value2.M31 + value1.M14 * value2.M41;
@@ -2011,7 +2013,7 @@ namespace Foster.Framework
         /// <param name="value1">The source matrix.</param>
         /// <param name="value2">The scaling factor.</param>
         /// <returns>The scaled matrix.</returns>
-        public static unsafe Matrix4x4 operator *(Matrix4x4 value1, float value2)
+        public static unsafe Matrix operator *(Matrix value1, float value2)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -2024,7 +2026,7 @@ namespace Foster.Framework
                 return value1;
             }
 #endif
-            Matrix4x4 m;
+            Matrix m;
 
             m.M11 = value1.M11 * value2;
             m.M12 = value1.M12 * value2;
@@ -2051,7 +2053,7 @@ namespace Foster.Framework
         /// <param name="value1">The first matrix to compare.</param>
         /// <param name="value2">The second matrix to compare.</param>
         /// <returns>True if the given matrices are equal; False otherwise.</returns>
-        public static unsafe bool operator ==(Matrix4x4 value1, Matrix4x4 value2)
+        public static unsafe bool operator ==(Matrix value1, Matrix value2)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -2075,7 +2077,7 @@ namespace Foster.Framework
         /// <param name="value1">The first matrix to compare.</param>
         /// <param name="value2">The second matrix to compare.</param>
         /// <returns>True if the given matrices are not equal; False if they are equal.</returns>
-        public static unsafe bool operator !=(Matrix4x4 value1, Matrix4x4 value2)
+        public static unsafe bool operator !=(Matrix value1, Matrix value2)
         {
 #if HAS_INTRINSICS
             if (Sse.IsSupported)
@@ -2098,14 +2100,14 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="other">The matrix to compare this instance to.</param>
         /// <returns>True if the matrices are equal; False otherwise.</returns>
-        public bool Equals(Matrix4x4 other) => this == other;
+        public bool Equals(Matrix other) => this == other;
 
         /// <summary>
         /// Returns a boolean indicating whether the given Object is equal to this matrix instance.
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this matrix; False otherwise.</returns>
-        public override bool Equals(object? obj) => (obj is Matrix4x4 other) && (this == other);
+        public override bool Equals(object? obj) => (obj is Matrix other) && (this == other);
 
         /// <summary>
         /// Returns a String representing this matrix instance.

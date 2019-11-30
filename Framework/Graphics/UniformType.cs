@@ -14,8 +14,8 @@
         Float3,
         Float4,
 
-        Matrix3x2 = 0x300,
-        Matrix4x4,
+        Matrix2D = 0x300,
+        Matrix,
 
         Texture2D = 0x400
     }

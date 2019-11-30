@@ -221,7 +221,7 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="matrix">The rotation matrix.</param>
         /// <returns>The created Quaternion.</returns>
-        public static Quaternion CreateFromRotationMatrix(Matrix4x4 matrix)
+        public static Quaternion CreateFromRotationMatrix(Matrix matrix)
         {
             float trace = matrix.M11 + matrix.M22 + matrix.M33;
 

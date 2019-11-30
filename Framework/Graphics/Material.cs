@@ -47,17 +47,17 @@ namespace Foster.Framework
                     throw new Exception($"Parameter {name} isn't a Int");
             }
 
-            public void SetMatrix(string name, Matrix3x2 value)
+            public void SetMatrix(string name, Matrix2D value)
             {
-                if (Type == UniformType.Matrix3x2 || Type == UniformType.Matrix4x4)
+                if (Type == UniformType.Matrix2D || Type == UniformType.Matrix)
                     Value = value;
                 else
                     throw new Exception($"Parameter {name} isn't a Matrix");
             }
 
-            public void SetMatrix(string name, Matrix4x4 value)
+            public void SetMatrix(string name, Matrix value)
             {
-                if (Type == UniformType.Matrix4x4)
+                if (Type == UniformType.Matrix)
                     Value = value;
                 else
                     throw new Exception($"Parameter {name} isn't a Matrix4x4");
@@ -143,13 +143,13 @@ namespace Foster.Framework
                 parameter.SetInt(name, value);
         }
 
-        public void SetMatrix(string name, Matrix3x2 value)
+        public void SetMatrix(string name, Matrix2D value)
         {
             if (Parameters.TryGetValue(name, out var parameter))
                 parameter.SetMatrix(name, value);
         }
 
-        public void SetMatrix(string name, Matrix4x4 value)
+        public void SetMatrix(string name, Matrix value)
         {
             if (Parameters.TryGetValue(name, out var parameter))
                 parameter.SetMatrix(name, value);

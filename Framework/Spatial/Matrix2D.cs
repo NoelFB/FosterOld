@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Foster.Framework
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct Matrix3x2
+    public struct Matrix2D
     {
 
         public float M11;
@@ -18,7 +18,7 @@ namespace Foster.Framework
         public float M31;
         public float M32;
 
-        public Matrix3x2(float m11, float m12, float m21, float m22, float m31, float m32)
+        public Matrix2D(float m11, float m12, float m21, float m22, float m31, float m32)
         {
             M11 = m11;
             M12 = m12;
@@ -48,12 +48,12 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix3x2 Invert()
+        public Matrix2D Invert()
         {
             var det = (M11 * M22) - (M21 * M12);
             var invDet = 1.0f / det;
 
-            return new Matrix3x2()
+            return new Matrix2D()
             {
                 M11 = M22 * invDet,
                 M12 = -M12 * invDet,
@@ -64,7 +64,7 @@ namespace Foster.Framework
             };
         }
 
-        public override bool Equals(object? obj) => (obj is Matrix3x2 other) && (this == other);
+        public override bool Equals(object? obj) => (obj is Matrix2D other) && (this == other);
 
         public override int GetHashCode()
         {
@@ -78,7 +78,7 @@ namespace Foster.Framework
             return $"{{M11:{M11}, M12:{M12}, M21:{M21}, M22:{M22}, M31:{M31}, M32:{M32}}}";
         }
 
-        public static readonly Matrix3x2 Identity = new Matrix3x2()
+        public static readonly Matrix2D Identity = new Matrix2D()
         {
             M11 = 1,
             M12 = 0,
@@ -88,9 +88,9 @@ namespace Foster.Framework
             M32 = 0
         };
 
-        public static Matrix3x2 Add(Matrix3x2 a, Matrix3x2 b)
+        public static Matrix2D Add(Matrix2D a, Matrix2D b)
         {
-            return new Matrix3x2()
+            return new Matrix2D()
             {
                 M11 = a.M11 + b.M11,
                 M12 = a.M12 + b.M12,
@@ -101,9 +101,9 @@ namespace Foster.Framework
             };
         }
 
-        public static Matrix3x2 Subtract(Matrix3x2 a, Matrix3x2 b)
+        public static Matrix2D Subtract(Matrix2D a, Matrix2D b)
         {
-            return new Matrix3x2()
+            return new Matrix2D()
             {
                 M11 = a.M11 - b.M11,
                 M12 = a.M12 - b.M12,
@@ -114,9 +114,9 @@ namespace Foster.Framework
             };
         }
 
-        public static Matrix3x2 Multiply(Matrix3x2 a, Matrix3x2 b)
+        public static Matrix2D Multiply(Matrix2D a, Matrix2D b)
         {
-            return new Matrix3x2()
+            return new Matrix2D()
             {
                 M11 = a.M11 * b.M11 + a.M12 * b.M21,
                 M12 = a.M11 * b.M12 + a.M12 * b.M22,
@@ -127,9 +127,9 @@ namespace Foster.Framework
             };
         }
 
-        public static Matrix3x2 CreateTransform(Vector2 position, Vector2 origin, Vector2 scale, float rotation)
+        public static Matrix2D CreateTransform(Vector2 position, Vector2 origin, Vector2 scale, float rotation)
         {
-            Matrix3x2 matrix;
+            Matrix2D matrix;
 
             if (origin != Vector2.Zero)
                 matrix = CreateTranslation(-origin.X, -origin.Y);
@@ -148,33 +148,33 @@ namespace Foster.Framework
             return matrix;
         }
 
-        public static Matrix3x2 CreateTransform(ITransform transform) => CreateTransform(transform.Position, transform.Origin, transform.Scale, transform.Rotation);
+        public static Matrix2D CreateTransform(ITransform2D transform) => CreateTransform(transform.Position, transform.Origin, transform.Scale, transform.Rotation);
 
-        public static Matrix3x2 CreateTranslation(Vector2 vec2) => CreateTranslation(vec2.X, vec2.Y);
-        public static Matrix3x2 CreateTranslation(float x, float y) => new Matrix3x2(1, 0, 0, 1, x, y);
+        public static Matrix2D CreateTranslation(Vector2 vec2) => CreateTranslation(vec2.X, vec2.Y);
+        public static Matrix2D CreateTranslation(float x, float y) => new Matrix2D(1, 0, 0, 1, x, y);
 
-        public static Matrix3x2 CreateScale(float scale) => CreateScale(scale, scale);
-        public static Matrix3x2 CreateScale(Vector2 vec2) => CreateScale(vec2.X, vec2.Y);
-        public static Matrix3x2 CreateScale(float x, float y) => new Matrix3x2(x, 0, 0, y, 0, 0);
+        public static Matrix2D CreateScale(float scale) => CreateScale(scale, scale);
+        public static Matrix2D CreateScale(Vector2 vec2) => CreateScale(vec2.X, vec2.Y);
+        public static Matrix2D CreateScale(float x, float y) => new Matrix2D(x, 0, 0, y, 0, 0);
 
-        public static Matrix3x2 CreateRotation(float radians)
+        public static Matrix2D CreateRotation(float radians)
         {
             var c = Calc.Cos(radians);
             var s = Calc.Sin(radians);
 
-            return new Matrix3x2(c, s, -s, c, 0, 0);
+            return new Matrix2D(c, s, -s, c, 0, 0);
         }
 
-        public static Matrix3x2 operator *(Matrix3x2 a, Matrix3x2 b) => Multiply(a, b);
-        public static Matrix3x2 operator +(Matrix3x2 a, Matrix3x2 b) => Add(a, b);
-        public static Matrix3x2 operator -(Matrix3x2 a, Matrix3x2 b) => Subtract(a, b);
+        public static Matrix2D operator *(Matrix2D a, Matrix2D b) => Multiply(a, b);
+        public static Matrix2D operator +(Matrix2D a, Matrix2D b) => Add(a, b);
+        public static Matrix2D operator -(Matrix2D a, Matrix2D b) => Subtract(a, b);
 
-        public static bool operator ==(Matrix3x2 a, Matrix3x2 b)
+        public static bool operator ==(Matrix2D a, Matrix2D b)
         {
             return (a.M11 == b.M11 && a.M12 == b.M12 && a.M21 == b.M21 && a.M22 == b.M22 && a.M31 == b.M31 && a.M32 == b.M32);
         }
 
-        public static bool operator !=(Matrix3x2 a, Matrix3x2 b)
+        public static bool operator !=(Matrix2D a, Matrix2D b)
         {
             return (a.M11 != b.M11 || a.M12 != b.M12 || a.M21 != b.M21 || a.M22 != b.M22 || a.M31 != b.M31 || a.M32 != b.M32);
 

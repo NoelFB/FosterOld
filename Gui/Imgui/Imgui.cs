@@ -442,7 +442,7 @@ namespace Foster.GuiSystem
             viewport.LastHotFrame = Storage.GetId(viewport.ID, 2, ID.None);
 
             PushClip(viewport.Bounds);
-            viewport.Batcher.PushMatrix(Matrix3x2.CreateScale(scale));
+            viewport.Batcher.PushMatrix(Matrix2D.CreateScale(scale));
         }
 
         public void EndViewport()

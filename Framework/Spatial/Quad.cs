@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
-    public struct Quad3D : IProjectable3D
+    public struct Quad3D : IProjectable
     {
 
         public Vector3 A;
@@ -79,7 +79,7 @@ namespace Foster.Framework
             return hash;
         }
 
-        public static Quad3D Transform(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Matrix4x4 matrix)
+        public static Quad3D Transform(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Matrix matrix)
         {
             return new Quad3D(
                 Vector3.Transform(a, matrix),
@@ -88,7 +88,7 @@ namespace Foster.Framework
                 Vector3.Transform(d, matrix));
         }
 
-        public static Quad3D Transform(Quad3D quad, Matrix4x4 matrix)
+        public static Quad3D Transform(Quad3D quad, Matrix matrix)
         {
             return new Quad3D(
                 Vector3.Transform(quad.A, matrix),

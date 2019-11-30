@@ -103,7 +103,7 @@ namespace Foster.Framework
                 vector1.X * vector2.Y - vector1.Y * vector2.X);
         }
 
-        public static Vector3 Transform(Vector3 position, Matrix4x4 matrix)
+        public static Vector3 Transform(Vector3 position, Matrix matrix)
         {
             return new Vector3(
                 position.X * matrix.M11 + position.Y * matrix.M21 + position.Z * matrix.M31 + matrix.M41,

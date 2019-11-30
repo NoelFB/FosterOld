@@ -94,7 +94,7 @@ namespace Foster.Framework
             return b * (Dot(a, b) / b.Length);
         }
 
-        public static Vector2 Transform(Vector2 vec, Matrix3x2 matrix)
+        public static Vector2 Transform(Vector2 vec, Matrix2D matrix)
         {
             return new Vector2(
                 (vec.X * matrix.M11) + (vec.Y * matrix.M21) + matrix.M31,

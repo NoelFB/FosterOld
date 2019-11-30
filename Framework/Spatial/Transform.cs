@@ -2,23 +2,23 @@
 
 namespace Foster.Framework
 {
-    public interface ITransform3D
+    public interface ITransform
     {
         Vector3 Position { get; set; }
         Vector3 Scale { get; set; }
         Quaternion Rotation { get; set; }
     }
 
-    public class Transform3D : ITransform3D
+    public class Transform : ITransform
     {
         public event Action? OnChanged;
 
-        private Transform3D? parent;
+        private Transform? parent;
         private Vector3 position;
         private Vector3 scale = Vector3.One;
         private Quaternion rotation;
-        private Matrix4x4 matrix;
-        private Matrix4x4 inverse;
+        private Matrix matrix;
+        private Matrix inverse;
         private Vector3 forward;
         private Vector3 left;
         private Vector3 right;
@@ -27,7 +27,7 @@ namespace Foster.Framework
         private Vector3 down;
         private bool dirty = true;
 
-        public Transform3D? Parent
+        public Transform? Parent
         {
             get => parent;
             set
@@ -122,7 +122,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix4x4 Matrix
+        public Matrix Matrix
         {
             get
             {
@@ -133,7 +133,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix4x4 Inverse
+        public Matrix Inverse
         {
             get
             {
@@ -216,9 +216,9 @@ namespace Foster.Framework
 
         private void Update()
         {
-            matrix = Matrix4x4.CreateScale(scale) *
-                     Matrix4x4.CreateFromQuaternion(rotation) *
-                     Matrix4x4.CreateTranslation(position);
+            matrix = Matrix.CreateScale(scale) *
+                     Matrix.CreateFromQuaternion(rotation) *
+                     Matrix.CreateTranslation(position);
 
             forward = Vector3.Transform(Vector3.Forward, rotation);
             backward = -forward;
@@ -230,7 +230,7 @@ namespace Foster.Framework
             if (parent != null)
                 matrix = matrix * parent.Matrix;
 
-            Matrix4x4.Invert(matrix, out inverse);
+            Matrix.Invert(matrix, out inverse);
 
             dirty = false;
         }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
-    public struct Rect : IProjectable
+    public struct Rect : IConvexShape2D
     {
 
         public float X;
@@ -194,6 +194,20 @@ namespace Foster.Framework
             dot = Vector2.Dot(new Vector2(X, Y + Height), axis);
             min = Math.Min(dot, min);
             max = Math.Max(dot, max);
+        }
+
+        public int Sides => 4;
+
+        public Vector2 GetPoint(int index)
+        {
+            return index switch
+            {
+                0 => TopLeft,
+                1 => TopRight,
+                2 => BottomRight,
+                3 => BottomLeft,
+                _ => throw new IndexOutOfRangeException(),
+            };
         }
 
         public override bool Equals(object? obj) => (obj is Rect other) && (this == other);

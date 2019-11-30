@@ -2,7 +2,7 @@
 
 namespace Foster.Framework
 {
-    public interface ITransform
+    public interface ITransform2D
     {
         Vector2 Position { get; set; }
         Vector2 Scale { get; set; }
@@ -10,20 +10,20 @@ namespace Foster.Framework
         float Rotation { get; set; }
     }
 
-    public class Transform : ITransform
+    public class Transform2D : ITransform2D
     {
         public event Action? OnChanged;
 
-        private Transform? parent;
+        private Transform2D? parent;
         private Vector2 position;
         private Vector2 origin;
         private Vector2 scale = Vector2.One;
         private float rotation;
-        private Matrix3x2 matrix;
-        private Matrix3x2 inverse;
+        private Matrix2D matrix;
+        private Matrix2D inverse;
         private bool dirty = true;
         
-        public Transform? Parent
+        public Transform2D? Parent
         {
             get => parent;
             set
@@ -132,7 +132,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix3x2 Matrix
+        public Matrix2D Matrix
         {
             get
             {
@@ -143,7 +143,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix3x2 Inverse
+        public Matrix2D Inverse
         {
             get
             {
@@ -173,10 +173,10 @@ namespace Foster.Framework
 
         private void Update()
         {
-            matrix = Matrix3x2.CreateTranslation(-origin.X, -origin.Y) *
-                             Matrix3x2.CreateScale(scale.X, scale.Y) *
-                             Matrix3x2.CreateRotation(rotation) *
-                             Matrix3x2.CreateTranslation(position.X, position.Y);
+            matrix = Matrix2D.CreateTranslation(-origin.X, -origin.Y) *
+                             Matrix2D.CreateScale(scale.X, scale.Y) *
+                             Matrix2D.CreateRotation(rotation) *
+                             Matrix2D.CreateTranslation(position.X, position.Y);
 
             if (parent != null)
                 matrix = matrix * parent.Matrix;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
-    public struct Quad : IProjectable
+    public struct Quad2D : IConvexShape2D
     {
 
         private Vector2 a;
@@ -113,7 +113,8 @@ namespace Foster.Framework
 
         public Vector2 Center => (a + b + c + d) / 4f;
 
-        public Quad(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
+
+        public Quad2D(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
         {
             this.a = a;
             this.b = b;
@@ -133,7 +134,7 @@ namespace Foster.Framework
             dirty = false;
         }
 
-        public Quad Translate(Vector2 amount)
+        public Quad2D Translate(Vector2 amount)
         {
             A += amount;
             B += amount;
@@ -161,6 +162,20 @@ namespace Foster.Framework
             max = Math.Max(dot, max);
         }
 
+        public int Sides => 4;
+
+        public Vector2 GetPoint(int index)
+        {
+            return index switch
+            {
+                0 => A,
+                1 => B,
+                2 => C,
+                3 => D,
+                _ => throw new IndexOutOfRangeException(),
+            };
+        }
+
         public Rect BoundingRect()
         {
             var bounds = new Rect();
@@ -171,7 +186,7 @@ namespace Foster.Framework
             return bounds;
         }
 
-        public override bool Equals(object? obj) => (obj is Quad other) && (this == other);
+        public override bool Equals(object? obj) => (obj is Quad2D other) && (this == other);
 
         public override int GetHashCode()
         {
@@ -183,30 +198,30 @@ namespace Foster.Framework
             return hash;
         }
 
-        public static Quad Transform(Vector2 a, Vector2 b, Vector2 c, Vector2 d, Matrix3x2 matrix)
+        public static Quad2D Transform(Vector2 a, Vector2 b, Vector2 c, Vector2 d, Matrix2D matrix)
         {
-            return new Quad(
+            return new Quad2D(
                 Vector2.Transform(a, matrix),
                 Vector2.Transform(b, matrix),
                 Vector2.Transform(c, matrix),
                 Vector2.Transform(d, matrix));
         }
 
-        public static Quad Transform(Quad quad, Matrix3x2 matrix)
+        public static Quad2D Transform(Quad2D quad, Matrix2D matrix)
         {
-            return new Quad(
+            return new Quad2D(
                 Vector2.Transform(quad.a, matrix), 
                 Vector2.Transform(quad.b, matrix), 
                 Vector2.Transform(quad.c, matrix), 
                 Vector2.Transform(quad.d, matrix));
         }
 
-        public static bool operator ==(Quad a, Quad b)
+        public static bool operator ==(Quad2D a, Quad2D b)
         {
             return a.A == b.A && a.B == b.B && a.C == b.C && a.D == b.D;
         }
 
-        public static bool operator !=(Quad a, Quad b)
+        public static bool operator !=(Quad2D a, Quad2D b)
         {
             return a.A != b.A || a.B != b.B || a.C != b.C || a.D != b.D;
         }

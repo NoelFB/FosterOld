@@ -145,7 +145,7 @@ namespace Foster.Framework
             return Clamp((val - min) / (max - min), 0, 1) * (newMax - newMin) + newMin;
         }
 
-        public static Rect Bounds(Rect viewport, Matrix3x2 matrix)
+        public static Rect Bounds(Rect viewport, Matrix2D matrix)
         {
             var inverse = matrix.Invert();
 
@@ -392,126 +392,110 @@ namespace Foster.Framework
 
         #region Triangulation
 
-        public static bool IsTriangleClockwise(Vector2 a, Vector2 b, Vector2 c)
+        public static List<int> Triangulate(IList<Vector2> points)
         {
-            return (a.X * b.Y + c.X * a.Y + b.X * c.Y - a.X * c.Y - c.X * b.Y - b.X * a.Y) <= 0f;
-        }
-        
-        public static bool IsPointInTriangle(Vector2 t0, Vector2 t1, Vector2 t2, Vector2 p)
-        {
-            var denominator = ((t1.Y - t2.Y) * (t0.X - t2.X) + (t2.X - t1.X) * (t0.Y - t2.Y));
-            var a = ((t1.Y - t2.Y) * (p.X - t2.X) + (t2.X - t1.X) * (p.Y - t2.Y)) / denominator;
-            var b = ((t2.Y - t0.Y) * (p.X - t2.X) + (t0.X - t2.X) * (p.Y - t2.Y)) / denominator;
-            var c = 1 - a - b;
-            
-            return (a >= 0f && a < 1f && b >= 0f && b < 1f && c >= 0f && c < 1f);
-        }
-
-        public static bool IsPointInPolygon(IList<Vector2> polygon, Vector2 p)
-        {
-            var result = false;
-            var j = polygon.Count - 1;
-
-            for (int i = 0; i < polygon.Count; i++)
+            float Area()
             {
-                if (polygon[i].Y < p.Y && polygon[j].Y >= p.Y || 
-                    polygon[j].Y < p.Y && polygon[i].Y >= p.Y)
+                var area = 0f;
+
+                for (int p = points.Count - 1, q = 0; q < points.Count; p = q++)
                 {
-                    if (polygon[i].X + (p.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) * (polygon[j].X - polygon[i].X) < p.X)
-                        result = !result;
+                    var pval = points[p];
+                    var qval = points[q];
+
+                    area += pval.X * qval.Y - qval.X * pval.Y;
                 }
 
-                j = i;
+                return area * 0.5f;
             }
 
-            return result;
-        }
-
-        public static unsafe bool Triangulate(IList<Vector2> polygon, List<Vector2> output)
-        {
-            // not possible
-            if (polygon.Count <= 2)
-                return false;
-
-            // a single triangle
-            if (polygon.Count == 3)
+            bool Snip(int u, int v, int w, int n, Span<int> list)
             {
-                output.AddRange(polygon);
-                return true;
-            }
+                var a = points[list[u]];
+                var b = points[list[v]];
+                var c = points[list[w]];
 
-            // create a temporary list
-            var vertsCount = polygon.Count;
-            var verts = stackalloc Vector2[vertsCount];
-            for (int i = 0; i < vertsCount; i++)
-                verts[i] = polygon[i];
-
-            Vector2 Prev(int index) => verts[(index + vertsCount - 1) % vertsCount];
-            Vector2 Next(int index) => verts[(index + 1) % vertsCount];
-
-            bool IsEar(int index)
-            {
-                var a = Prev(index);
-                var b = verts[index];
-                var c = Next(index);
-
-                if (IsTriangleClockwise(a, b, c))
+                if (float.Epsilon > (((b.X - a.X) * (c.Y - a.Y)) - ((b.Y - a.Y) * (c.X - a.X))))
                     return false;
 
-                for (int i = 0; i < vertsCount; i++)
+                for (int p = 0; p < n; p++)
                 {
-                    if (IsTriangleClockwise(Prev(i), verts[i], Next(i)))
-                    {
-                        var p = verts[i];
-                        if (IsPointInTriangle(a, b, c, p))
-                            return false;
-                    }
+                    if ((p == u) || (p == v) || (p == w))
+                        continue;
+
+                    if (InsideTriangle(a, b, c, points[list[p]]))
+                        return false;
                 }
 
                 return true;
             }
 
-            // build triangles
-            while (vertsCount > 3)
+            var indices = new List<int>();
+            if (points.Count < 3)
+                return indices;
+
+            Span<int> list = (points.Count < 1000 ? stackalloc int[points.Count] : new int[points.Count]);
+                
+            if (Area() > 0)
             {
-                // find the first ear
-                int ear = -1;
-                for (int i = 0; i < vertsCount; i++)
-                {
-                    if (IsEar(i))
-                    {
-                        ear = i;
-                        break;
-                    }
-                }
-
-                // something bad happened
-                if (ear < 0)
-                    return false;
-
-                // add triangle
-                output.Add(Prev(ear));
-                output.Add(verts[ear]);
-                output.Add(Next(ear));
-
-                // remove this ear
-                for (int i = ear; i < vertsCount; i++)
-                    verts[i] = verts[i + 1];
-                vertsCount--;
+                for (int v = 0; v < points.Count; v++)
+                    list[v] = v;
+            }
+            else
+            {
+                for (int v = 0; v < points.Count; v++)
+                    list[v] = (points.Count - 1) - v;
             }
 
-            output.Add(verts[0]);
-            output.Add(verts[1]);
-            output.Add(verts[2]);
-            return true;
+            var nv = points.Count;
+            var count = 2 * nv;
+
+            for (int v = nv - 1; nv > 2;)
+            {
+                if ((count--) <= 0)
+                    return indices;
+
+                var u = v;
+                if (nv <= u)
+                    u = 0;
+                v = u + 1;
+                if (nv <= v)
+                    v = 0;
+                var w = v + 1;
+                if (nv <= w)
+                    w = 0;
+
+                if (Snip(u, v, w, nv, list))
+                {
+                    indices.Add(list[u]);
+                    indices.Add(list[v]);
+                    indices.Add(list[w]);
+
+                    for (int s = v, t = v + 1; t < nv; s++, t++)
+                        list[s] = list[t];
+
+                    nv--;
+                    count = 2 * nv;
+                }
+            }
+
+            indices.Reverse();
+            return indices;
         }
 
-        public static List<Vector2>? Triangulate(IList<Vector2> polygon)
+        public static bool InsideTriangle(Vector2 a, Vector2 b, Vector2 c, Vector2 point)
         {
-            var output = new List<Vector2>();
-            if (Triangulate(polygon, output))
-                return output;
-            return null;
+            var p0 = c - b;
+            var p1 = a - c;
+            var p2 = b - a;
+
+            var ap = point - a;
+            var bp = point - b;
+            var cp = point - c;
+
+            return (p0.X * bp.Y - p0.Y * bp.X >= 0.0f) &&
+                   (p2.X * ap.Y - p2.Y * ap.X >= 0.0f) &&
+                   (p1.X * cp.Y - p1.Y * cp.X >= 0.0f);
         }
 
         #endregion

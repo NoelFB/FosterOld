@@ -97,12 +97,12 @@ void main(void)
         public readonly Material DefaultMaterial;
         public readonly Mesh<Vertex> Mesh;
 
-        public Matrix3x2 OrthographicMatrix => 
-            Matrix3x2.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2) *
-            Matrix3x2.CreateTranslation(-1.0f, 1.0f);
+        public Matrix OrthographicMatrix =>
+            Matrix.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2, 1f) *
+            Matrix.CreateTranslation(-1.0f, 1.0f, 0f);
 
-        public Matrix3x2 MatrixStack = Matrix3x2.Identity;
-        private readonly Stack<Matrix3x2> matrixStack = new Stack<Matrix3x2>();
+        public Matrix2D MatrixStack = Matrix2D.Identity;
+        private readonly Stack<Matrix2D> matrixStack = new Stack<Matrix2D>();
 
         private Vertex[] vertices;
         private int[] triangles;
@@ -121,13 +121,13 @@ void main(void)
         {
             public Material? Material;
             public BlendMode BlendMode;
-            public Matrix3x2 Matrix;
+            public Matrix2D Matrix;
             public Texture? Texture;
             public RectInt? Scissor;
             public int Offset;
             public int Elements;
 
-            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix3x2 matrix, int offset, int elements)
+            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix2D matrix, int offset, int elements)
             {
                 Material = material;
                 BlendMode = blend;
@@ -168,10 +168,10 @@ void main(void)
         {
             vertexCount = 0;
             triangleCount = 0;
-            currentBatch = new Batch(null, BlendMode.Normal, null, Matrix3x2.Identity, 0, 0);
+            currentBatch = new Batch(null, BlendMode.Normal, null, Matrix2D.Identity, 0, 0);
             batches.Clear();
             matrixStack.Clear();
-            MatrixStack = Matrix3x2.Identity;
+            MatrixStack = Matrix2D.Identity;
         }
 
         #region Rendering
@@ -181,7 +181,7 @@ void main(void)
             Render(OrthographicMatrix);
         }
 
-        public void Render(Matrix3x2 matrix)
+        public void Render(Matrix matrix)
         {
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
             Debug.Assert(!Disposed, "Batch was Disposed and cannot Render");
@@ -210,7 +210,7 @@ void main(void)
             }
         }
 
-        private void RenderBatch(Batch batch, ref Matrix3x2 matrix)
+        private void RenderBatch(Batch batch, ref Matrix matrix)
         {
             if (batch.Scissor != null)
                 Graphics.Scissor(batch.Scissor.Value);
@@ -226,7 +226,7 @@ void main(void)
 
             Mesh.Material = batch.Material ?? DefaultMaterial;
             Mesh.Material.SetTexture("Texture", batch.Texture);
-            Mesh.Material.SetMatrix("Matrix", batch.Matrix * matrix);
+            Mesh.Material.SetMatrix("Matrix", new Matrix(batch.Matrix) * matrix);
             Mesh.Draw(batch.Offset, batch.Elements);
         }
 
@@ -266,7 +266,7 @@ void main(void)
             }
         }
 
-        public void SetMatrix(Matrix3x2 matrix)
+        public void SetMatrix(Matrix2D matrix)
         {
             if (currentBatch.Elements == 0)
             {
@@ -298,7 +298,7 @@ void main(void)
             }
         }
 
-        public void SetState(Material? material, BlendMode blendmode, Matrix3x2 matrix, RectInt? scissor)
+        public void SetState(Material? material, BlendMode blendmode, Matrix2D matrix, RectInt? scissor)
         {
             SetMaterial(material);
             SetBlendMode(blendmode);
@@ -322,22 +322,22 @@ void main(void)
             }
         }
 
-        public Matrix3x2 PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)
+        public Matrix2D PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)
         {
-            return PushMatrix(Matrix3x2.CreateTransform(position, origin, scale, rotation), relative);
+            return PushMatrix(Matrix2D.CreateTransform(position, origin, scale, rotation), relative);
         }
 
-        public Matrix3x2 PushMatrix(Transform transform, bool relative = true)
+        public Matrix2D PushMatrix(Transform2D transform, bool relative = true)
         {
             return PushMatrix(transform.Matrix, relative);
         }
 
-        public Matrix3x2 PushMatrix(Vector2 position, bool relative = true)
+        public Matrix2D PushMatrix(Vector2 position, bool relative = true)
         {
-            return PushMatrix(Matrix3x2.CreateTranslation(position.X, position.Y), relative);
+            return PushMatrix(Matrix2D.CreateTranslation(position.X, position.Y), relative);
         }
 
-        public Matrix3x2 PushMatrix(Matrix3x2 matrix, bool relative = true)
+        public Matrix2D PushMatrix(Matrix2D matrix, bool relative = true)
         {
             matrixStack.Push(MatrixStack);
 
@@ -353,7 +353,7 @@ void main(void)
             return MatrixStack;
         }
 
-        public Matrix3x2 PopMatrix()
+        public Matrix2D PopMatrix()
         {
             Debug.Assert(matrixStack.Count > 0, "Batch.MatrixStack Pops more than it Pushes");
 
@@ -363,7 +363,7 @@ void main(void)
             }
             else
             {
-                MatrixStack = Matrix3x2.Identity;
+                MatrixStack = Matrix2D.Identity;
             }
 
             return MatrixStack;
@@ -372,6 +372,11 @@ void main(void)
         #endregion
 
         #region Quad
+
+        public void Quad(Quad2D quad, Color color)
+        {
+            Quad(quad.A, quad.B, quad.C, quad.D, color);
+        }
 
         public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Color color)
         {
@@ -792,7 +797,7 @@ void main(void)
         {
             var was = MatrixStack;
 
-            MatrixStack = Matrix3x2.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
 
             SetTexture(texture);
             Quad(
@@ -821,7 +826,7 @@ void main(void)
         {
             var was = MatrixStack;
 
-            MatrixStack = Matrix3x2.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
 
             var tx0 = clip.X / (float)texture.Width;
             var ty0 = clip.Y / (float)texture.Height;
@@ -858,7 +863,7 @@ void main(void)
         {
             var was = MatrixStack;
 
-            MatrixStack = Matrix3x2.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
 
             SetTexture(subtex.Texture);
             Quad(
@@ -967,7 +972,7 @@ void main(void)
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Transform(ref Vector2 to, ref Vector2 position, ref Matrix3x2 matrix)
+        private void Transform(ref Vector2 to, ref Vector2 position, ref Matrix2D matrix)
         {
             to.X = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M31;
             to.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M32;

@@ -22,8 +22,8 @@ namespace Foster.OpenGL
                 case GLEnum.FLOAT_VEC2: Type = UniformType.Float2; break;
                 case GLEnum.FLOAT_VEC3: Type = UniformType.Float3; break;
                 case GLEnum.FLOAT_VEC4: Type = UniformType.Float4; break;
-                case GLEnum.FLOAT_MAT3x2: Type = UniformType.Matrix3x2; break;
-                case GLEnum.FLOAT_MAT4: Type = UniformType.Matrix4x4; break;
+                case GLEnum.FLOAT_MAT3x2: Type = UniformType.Matrix2D; break;
+                case GLEnum.FLOAT_MAT4: Type = UniformType.Matrix; break;
                 case GLEnum.SAMPLER_2D: default: Type = UniformType.Texture2D; break;
             }
         }
@@ -50,9 +50,9 @@ namespace Foster.OpenGL
                     Vector4 vec4 = (Vector4)(value ?? Vector4.Zero);
                     GL.Uniform4f(Location, vec4.X, vec4.Y, vec4.Z, vec4.W);
                     break;
-                case UniformType.Matrix3x2:
+                case UniformType.Matrix2D:
                     {
-                        Matrix3x2 m3x2 = (Matrix3x2)(value ?? Matrix3x2.Identity);
+                        Matrix2D m3x2 = (Matrix2D)(value ?? Matrix2D.Identity);
                         float* matrix = stackalloc float[6];
 
                         matrix[0] = m3x2.M11;
@@ -65,11 +65,11 @@ namespace Foster.OpenGL
                         GL.UniformMatrix3x2fv(Location, 1, false, new IntPtr(matrix));
                     }
                     break;
-                case UniformType.Matrix4x4:
+                case UniformType.Matrix:
                     {
                         float* matrix = stackalloc float[16];
 
-                        if (value is Matrix3x2 m3x2)
+                        if (value is Matrix2D m3x2)
                         {
                             matrix[00] = m3x2.M11;
                             matrix[01] = m3x2.M12;
@@ -88,7 +88,7 @@ namespace Foster.OpenGL
                             matrix[14] = 0f;
                             matrix[15] = 1f;
                         }
-                        else if (value is Matrix4x4 m4x4)
+                        else if (value is Matrix m4x4)
                         {
                             matrix[00] = m4x4.M11;
                             matrix[01] = m4x4.M12;
