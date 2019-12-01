@@ -12,6 +12,49 @@ namespace Foster.Framework
         All = 7
     }
 
+    public enum DepthFunctions
+    {
+        /// <summary>
+        /// The depth test always passes.
+        /// </summary>
+        Always,
+
+        /// <summary>
+        /// The depth test never passes.
+        /// </summary>
+        Never,
+
+        /// <summary>
+        /// Passes if the fragment's depth value is less than the stored depth value.
+        /// </summary>
+        Less,
+
+        /// <summary>
+        /// Passes if the fragment's depth value is equal to the stored depth value.
+        /// </summary>
+        Equal,
+
+        /// <summary>
+        /// Passes if the fragment's depth value is less than or equal to the stored depth value.
+        /// </summary>
+        LessOrEqual,
+
+        /// <summary>
+        /// Passes if the fragment's depth value is greater than the stored depth value.
+        /// </summary>
+        Greater,
+
+        /// <summary>
+        /// Passes if the fragment's depth value is not equal to the stored depth value.
+        /// </summary>
+        NotEqual,
+
+        /// <summary>
+        /// Passes if the fragment's depth value is greater than or equal to the stored depth value.
+        /// </summary>
+        GreaterOrEqual
+    }  
+
     public abstract class Graphics : Module
     {
 
@@ -46,9 +89,9 @@ namespace Foster.Framework
         public abstract Texture CreateTexture(int width, int height);
 
         /// <summary>
-        /// Creates a new render target of the given size, with the given amount of textures and depth buffer associated
+        /// Creates a new render target of the given size, with the given amount of color, depth, and stencil buffers
         /// </summary>
-        public abstract Target CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false);
+        public abstract Target CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false);
 
         /// <summary>
         /// Creates a new Shader
@@ -101,6 +144,11 @@ namespace Foster.Framework
         /// Enables or Disables Depth-testing
         /// </summary>
         public abstract void DepthTest(bool enabled);
+
+        /// <summary>
+        /// Sets the Depth Testing function
+        /// </summary>
+        public abstract void DepthFunction(DepthFunctions func);
 
         /// <summary>
         /// Sets the current Culling Mode

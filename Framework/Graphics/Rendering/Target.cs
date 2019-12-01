@@ -19,9 +19,9 @@ namespace Foster.Framework
             Attachments = attachments.AsReadOnly();
         }
 
-        public static Target Create(int width, int height, int textures = 1, bool depthBuffer = false)
+        public static Target Create(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false)
         {
-            return App.Graphics.CreateTarget(width, height, textures, depthBuffer);
+            return App.Graphics.CreateTarget(width, height, textures, depthBuffer, stencilBuffer);
         }
 
         public static implicit operator Texture(Target target) => target.Attachments[0];

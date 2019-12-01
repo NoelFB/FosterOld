@@ -143,9 +143,9 @@ namespace Foster.OpenGL
             return new GL_Texture(this, width, height);
         }
 
-        public override Target CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false)
+        public override Target CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false)
         {
-            return new GL_Target(this, width, height, textures, depthBuffer);
+            return new GL_Target(this, width, height, textures, depthBuffer, stencilBuffer);
         }
 
         public override Shader CreateShader(string vertexSource, string fragmentSource)
@@ -185,6 +185,40 @@ namespace Foster.OpenGL
             else
             {
                 GL.Disable(GLEnum.DEPTH_TEST);
+            }
+        }
+
+        public override void DepthFunction(DepthFunctions func)
+        {
+            switch (func)
+            {
+                case DepthFunctions.Always:
+                    GL.DepthFunc(GLEnum.ALWAYS);
+                    break;
+                case DepthFunctions.Equal:
+                    GL.DepthFunc(GLEnum.EQUAL);
+                    break;
+                case DepthFunctions.Greater:
+                    GL.DepthFunc(GLEnum.GREATER);
+                    break;
+                case DepthFunctions.GreaterOrEqual:
+                    GL.DepthFunc(GLEnum.GEQUAL);
+                    break;
+                case DepthFunctions.Less:
+                    GL.DepthFunc(GLEnum.LESS);
+                    break;
+                case DepthFunctions.LessOrEqual:
+                    GL.DepthFunc(GLEnum.LEQUAL);
+                    break;
+                case DepthFunctions.Never:
+                    GL.DepthFunc(GLEnum.NEVER);
+                    break;
+                case DepthFunctions.NotEqual:
+                    GL.DepthFunc(GLEnum.NOTEQUAL);
+                    break;
+
+                default: 
+                    throw new NotImplementedException();
             }
         }
 

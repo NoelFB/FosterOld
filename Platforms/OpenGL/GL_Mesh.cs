@@ -10,46 +10,36 @@ namespace Foster.OpenGL
     {
 
         public Dictionary<Context, uint> VertexArrays = new Dictionary<Context, uint>();
+        private readonly int StructSize;
 
         public uint VertexBuffer;
         public uint TriangleBuffer;
         public uint InstanceBuffer;
         public Type? InstanceType;
 
-        private int vertexCount;
-        private int elementCount;
-        private int instanceCount;
+        private long vertexCount;
+        private long indicesCount;
+        private long instanceCount;
 
         public GL_Mesh(GL_Graphics graphics) : base(graphics)
         {
             VertexBuffer = GL.GenBuffer();
             TriangleBuffer = GL.GenBuffer();
+            StructSize = Marshal.SizeOf<TVertex>();
         }
 
-        public override unsafe void SetVertices(Memory<TVertex> vertices)
+        public override unsafe void SetVertices(ReadOnlySequence<TVertex> vertices)
         {
-            vertexCount = vertices.Length;
-
-            using var pinned = vertices.Pin();
-
-            GL.BindBuffer(GLEnum.ARRAY_BUFFER, VertexBuffer);
-            GL.BufferData(GLEnum.ARRAY_BUFFER, new IntPtr(Marshal.SizeOf<TVertex>() * vertices.Length), new IntPtr(pinned.Pointer), GLEnum.STATIC_DRAW);
+            UploadBuffer(VertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexCount);
         }
 
-        public override unsafe void SetTriangles(Memory<int> triangles)
+        public override unsafe void SetTriangles(ReadOnlySequence<int> triangles)
         {
-            elementCount = triangles.Length / 3;
-
-            using var pinned = triangles.Pin();
-
-            GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, TriangleBuffer);
-            GL.BufferData(GLEnum.ELEMENT_ARRAY_BUFFER, new IntPtr(sizeof(int) * triangles.Length), new IntPtr(pinned.Pointer), GLEnum.STATIC_DRAW);
+            UploadBuffer(TriangleBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, triangles, ref indicesCount);
         }
 
-        public override unsafe void SetInstances<T>(Memory<T> instances)
+        public override unsafe void SetInstances<T>(ReadOnlySequence<T> instances)
         {
-            instanceCount = instances.Length / 3;
-
             // create buffer if it's missing
             Type type = typeof(T);
             if (type != InstanceType || InstanceBuffer == 0)
@@ -63,14 +53,35 @@ namespace Foster.OpenGL
             }
 
             // upload buffer data
-            using var handle = instances.Pin();
-            GL.BindBuffer(GLEnum.ARRAY_BUFFER, InstanceBuffer);
-            GL.BufferData(GLEnum.ARRAY_BUFFER, new IntPtr(Marshal.SizeOf<T>() * instances.Length), new IntPtr(handle.Pointer), GLEnum.STATIC_DRAW);
+            UploadBuffer(InstanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceCount);
+        }
+
+        private unsafe void UploadBuffer<T>(uint id, GLEnum type, ReadOnlySequence<T> data, ref long count)
+        {
+            var structSize = Marshal.SizeOf<T>();
+
+            GL.BindBuffer(type, id);
+
+            var lastCount = count;
+            count = data.Length;
+
+            // resize the buffer
+            if (count > lastCount)
+                GL.BufferData(type, new IntPtr(structSize * count), IntPtr.Zero, GLEnum.STATIC_DRAW);
+
+            // upload the data
+            var offset = 0;
+            foreach (var memory in data)
+            {
+                using var pinned = memory.Pin();
+                GL.BufferSubData(type, new IntPtr(structSize * offset), new IntPtr(structSize * memory.Length), new IntPtr(pinned.Pointer));
+                offset += memory.Length;
+            }
         }
 
         public override void Draw()
         {
-            Draw(0, elementCount);
+            Draw(0, (int)(indicesCount / 3));
         }
 
         public override void Draw(int start, int elements)

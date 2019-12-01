@@ -31,6 +31,7 @@ namespace Foster.OpenGL
             AssignDelegate(ref ClearDepth, "glClearDepth");
             AssignDelegate(ref ClearStencil, "glClearStencil");
             AssignDelegate(ref DepthMask, "glDepthMask");
+            AssignDelegate(ref DepthFunc, "glDepthFunc");
             AssignDelegate(ref Viewport, "glViewport");
             AssignDelegate(ref CullFace, "glCullFace");
             AssignDelegate(ref Scissor, "glScissor");
@@ -61,6 +62,7 @@ namespace Foster.OpenGL
             AssignDelegate(ref GenBuffers, "glGenBuffers");
             AssignDelegate(ref BindBuffer, "glBindBuffer");
             AssignDelegate(ref BufferData, "glBufferData");
+            AssignDelegate(ref BufferSubData, "glBufferSubData");
             AssignDelegate(ref DeleteBuffers, "glDeleteBuffers");
             AssignDelegate(ref DeleteVertexArrays, "glDeleteVertexArrays");
             AssignDelegate(ref EnableVertexAttribArray, "glEnableVertexAttribArray");
@@ -202,6 +204,7 @@ namespace Foster.OpenGL
         public static GL_Delegates.ClearDepth ClearDepth;
         public static GL_Delegates.ClearStencil ClearStencil;
         public static GL_Delegates.DepthMask DepthMask;
+        public static GL_Delegates.DepthFunc DepthFunc;
         public static GL_Delegates.Viewport Viewport;
         public static GL_Delegates.Scissor Scissor;
         public static GL_Delegates.CullFace CullFace;
@@ -284,6 +287,7 @@ namespace Foster.OpenGL
 
         public static GL_Delegates.BindBuffer BindBuffer;
         public static GL_Delegates.BufferData BufferData;
+        public static GL_Delegates.BufferSubData BufferSubData;
 
         public static GL_Delegates.DeleteBuffers DeleteBuffers;
         public static unsafe void DeleteBuffer(uint id)
@@ -410,6 +414,7 @@ namespace Foster.OpenGL
         public delegate void ClearDepth(double depth);
         public delegate void ClearStencil(int stencil);
         public delegate void DepthMask(bool enabled);
+        public delegate void DepthFunc(GLEnum func);
         public delegate void Viewport(int x, int y, GLSizei width, GLSizei height);
         public delegate void Scissor(int x, int y, GLSizei width, GLSizei height);
         public delegate void CullFace(GLEnum mode);
@@ -440,6 +445,7 @@ namespace Foster.OpenGL
         public unsafe delegate void GenBuffers(GLSizei n, uint* arrays);
         public delegate void BindBuffer(GLEnum target, uint buffer);
         public delegate void BufferData(GLEnum target, IntPtr size, IntPtr data, GLEnum usage);
+        public delegate void BufferSubData(GLEnum target, IntPtr offset, IntPtr size, IntPtr data);
         public unsafe delegate void DeleteBuffers(GLSizei n, uint* buffers);
         public unsafe delegate void DeleteVertexArrays(GLSizei n, uint* arrays);
         public delegate void EnableVertexAttribArray(uint location);

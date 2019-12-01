@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace Foster.Framework
@@ -15,9 +16,24 @@ namespace Foster.Framework
             }
         }
 
-        public abstract void SetVertices(Memory<TVertex> vertices);
-        public abstract void SetTriangles(Memory<int> triangles);
-        public abstract void SetInstances<T>(Memory<T> instances) where T : struct;
+        public void SetVertices(ReadOnlyMemory<TVertex> vertices)
+        {
+            SetVertices(new ReadOnlySequence<TVertex>(vertices));
+        }
+
+        public void SetTriangles(ReadOnlyMemory<int> triangles)
+        {
+            SetTriangles(new ReadOnlySequence<int>(triangles));
+        }
+
+        public void SetInstances<T>(ReadOnlyMemory<T> instances) where T : struct
+        {
+            SetInstances(new ReadOnlySequence<T>(instances));
+        }
+
+        public abstract void SetVertices(ReadOnlySequence<TVertex> vertices);
+        public abstract void SetTriangles(ReadOnlySequence<int> triangles);
+        public abstract void SetInstances<T>(ReadOnlySequence<T> instances) where T : struct;
 
         public abstract void Draw();
         public abstract void Draw(int start, int elements);

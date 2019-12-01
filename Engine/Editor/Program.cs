@@ -112,7 +112,7 @@ out vec4 fragCol;
 void main(void)
 {
     gl_Position = Matrix * vec4(vertPos, 1.0);
-    fragCol = (1 + normalize(gl_Position)) / 2;
+    fragCol = (1 + normalize(vec4(vertPos, 1.0))) / 2;
 }",
 @"
 #version 330
@@ -127,12 +127,14 @@ void main(void)
 
             window.OnRender = () =>
             {
-                var view = Matrix.CreateLookAt(new Vector3(MathF.Cos((float)Time.Duration.TotalSeconds), 0, MathF.Sin((float)Time.Duration.TotalSeconds)) * 60f, new Vector3(0, 0, 0), Vector3.Up);
+                var view = Matrix.CreateLookAt(new Vector3(MathF.Cos((float)Time.Duration.TotalSeconds), 0, MathF.Sin((float)Time.Duration.TotalSeconds)) * 20f, new Vector3(0, 0, 0), Vector3.Up);
                 var projection = Matrix.CreatePerspectiveFieldOfView(MathF.PI / 4f, window.DrawableWidth / (float)window.DrawableHeight, 0.25f, 100f);
                 mesh.Material.SetMatrix("Matrix", view * projection);
 
-                App.Graphics.DepthTest(false);
-                App.Graphics.Clear(ClearFlags.All, Color.Yellow, 0f, 0) ;
+                App.Graphics.DepthTest(true);
+                App.Graphics.DepthFunction(DepthFunctions.Less);
+                App.Graphics.CullMode(Cull.Back);
+                App.Graphics.Clear(ClearFlags.All, Color.Yellow, 1f, 0) ;
 
                 mesh.Draw(0, indices.Count / 3);
             };
