@@ -19,6 +19,8 @@
         protected internal virtual void Update() { }
         protected internal virtual void AfterUpdate() { }
 
+        protected internal virtual void ContextChanged(Context context) { }
+
         protected internal virtual void BeforeRender(Window window) { }
         protected internal virtual void AfterRender(Window window) { }
 

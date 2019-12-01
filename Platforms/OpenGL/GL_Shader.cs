@@ -44,6 +44,9 @@ namespace Foster.OpenGL
                     throw new Exception(programError);
             }
 
+            // get attributes
+
+
             // get uniforms
             GL.GetProgramiv(ID, GLEnum.ACTIVE_UNIFORMS, out int uniformCount);
             for (int i = 0; i < uniformCount; i++)

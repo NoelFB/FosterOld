@@ -96,6 +96,7 @@ namespace Foster.Framework
 
                 context.ActiveThreadId = Thread.CurrentThread.ManagedThreadId;
                 SetCurrentContextInternal(context);
+                App.Modules.ContextChanged(context);
             }
             else
             {

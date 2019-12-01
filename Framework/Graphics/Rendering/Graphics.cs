@@ -110,9 +110,9 @@ namespace Foster.Framework
         public abstract Shader CreateShader(string vertexSource, string fragmentSource);
 
         /// <summary>
-        /// Creates a new Mesh with the Vertex type T
+        /// Creates a new Mesh
         /// </summary>
-        public abstract Mesh<T> CreateMesh<T>() where T : struct;
+        public abstract Mesh CreateMesh();
 
         /// <summary>
         /// Sets the current rendering Target.
@@ -120,20 +120,13 @@ namespace Foster.Framework
         /// </summary>
         public abstract void Target(Target? target);
 
-        public void ClearColor(Color color)
-        {
-            Clear(ClearFlags.Color, color, 0, 0);
-        }
+        public void ClearColor(Color color) => Clear(ClearFlags.Color, color, 0, 0);
 
-        public void ClearDepth(float depth)
-        {
-            Clear(ClearFlags.Depth, 0, depth, 0);
-        }
+        public void ClearDepth(float depth) => Clear(ClearFlags.Depth, 0, depth, 0);
 
-        public void ClearStencil(int stencil)
-        {
-            Clear(ClearFlags.Stencil, 0, 0, stencil);
-        }
+        public void ClearStencil(int stencil) => Clear(ClearFlags.Stencil, 0, 0, stencil);
+
+        public void Clear(Color color, float depth, int stencil) => Clear(ClearFlags.All, color, depth, stencil);
 
         /// <summary>
         /// Clears the current Target to the given color

@@ -95,7 +95,7 @@ void main(void)
 
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
-        public readonly Mesh<Vertex> Mesh;
+        public readonly Mesh Mesh;
 
         public Matrix OrthographicMatrix =>
             Matrix.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2, 1f) *
@@ -148,7 +148,7 @@ void main(void)
         {
             DefaultShader = rendering.CreateShader(VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
-            Mesh = rendering.CreateMesh<Vertex>();
+            Mesh = rendering.CreateMesh();
 
             vertices = new Vertex[64];
             triangles = new int[64];
@@ -191,8 +191,8 @@ void main(void)
             {
                 if (dirty)
                 {
-                    Mesh.SetTriangles(new Memory<int>(triangles, 0, triangleCount));
-                    Mesh.SetVertices(new Memory<Vertex>(vertices, 0, vertexCount));
+                    Mesh.SetIndices(new ReadOnlyMemory<int>(triangles, 0, triangleCount));
+                    Mesh.SetVertices(new ReadOnlyMemory<Vertex>(vertices, 0, vertexCount));
 
                     dirty = false;
                 }

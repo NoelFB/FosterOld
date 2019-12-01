@@ -57,15 +57,20 @@ namespace Foster.Framework
             }
         }
 
-        public static bool TypeHasAttributes<T>()
+        public static bool TypeHasAttributes(Type type)
         {
-            AttributesOfType<T>(out List<VertexAttributeAttribute>? list);
+            AttributesOfType(type, out var list);
             return (list != null && list.Count > 0);
         }
 
-        public static void AttributesOfType<T>(out List<VertexAttributeAttribute>? list)
+        public static bool TypeHasAttributes<T>()
         {
-            Type type = typeof(T);
+            AttributesOfType<T>(out var list);
+            return (list != null && list.Count > 0);
+        }
+
+        public static void AttributesOfType(Type type, out List<VertexAttributeAttribute>? list)
+        {
             bool hasAttributes = attributesOfType.TryGetValue(type, out list);
 
             if (!hasAttributes)
@@ -90,6 +95,11 @@ namespace Foster.Framework
                     attrib.Stride = stride;
                 }
             }
+        }
+
+        public static void AttributesOfType<T>(out List<VertexAttributeAttribute>? list)
+        {
+            AttributesOfType(typeof(T), out list);
         }
 
         private static readonly Dictionary<Type, List<VertexAttributeAttribute>> attributesOfType = new Dictionary<Type, List<VertexAttributeAttribute>>();

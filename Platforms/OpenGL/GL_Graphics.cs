@@ -14,7 +14,14 @@ namespace Foster.OpenGL
         internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
         internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
 
-        internal List<Context> disposedContexts = new List<Context>();
+        private readonly List<Context> disposedContexts = new List<Context>();
+
+        private delegate void DeleteResource(uint id);
+        private readonly DeleteResource deleteArray = GL.DeleteVertexArray;
+        private readonly DeleteResource deleteFramebuffer = GL.DeleteFramebuffer;
+        private readonly DeleteResource deleteBuffer = GL.DeleteBuffer;
+        private readonly DeleteResource deleteTexture = GL.DeleteTexture;
+        private readonly DeleteResource deleteProgram = (id) => GL.DeleteProgram(id);
 
         protected override void Initialized()
         {
@@ -38,29 +45,9 @@ namespace Foster.OpenGL
         protected override void Tick()
         {
             // delete any GL graphics resources that are shared between contexts
-            unsafe
-            {
-                if (BuffersToDelete.Count > 0)
-                {
-                    fixed (uint* buffers = BuffersToDelete.ToArray())
-                        GL.DeleteBuffers(BuffersToDelete.Count, buffers);
-                    BuffersToDelete.Clear();
-                }
-
-                if (ProgramsToDelete.Count > 0)
-                {
-                    foreach (var id in ProgramsToDelete)
-                        GL.DeleteProgram(id);
-                    ProgramsToDelete.Clear();
-                }
-
-                if (TexturesToDelete.Count > 0)
-                {
-                    fixed (uint* textures = TexturesToDelete.ToArray())
-                        GL.DeleteTextures(TexturesToDelete.Count, textures);
-                    TexturesToDelete.Clear();
-                }
-            }
+            DeleteResources(deleteBuffer, BuffersToDelete);
+            DeleteResources(deleteProgram, ProgramsToDelete);
+            DeleteResources(deleteTexture, TexturesToDelete);
 
             // check for any resources we're still tracking that are in disposed contexts
             {
@@ -95,34 +82,31 @@ namespace Foster.OpenGL
         {
             GL.Flush();
 
-            // delete any VAOs or FrameBuffers associated with this context that need deleting
-            CleanupContextResources(window.Context);
-
-            // TODO:
-            // What if there is a context not associated with a window (ex. a background context) 
-            // that exists for a long time? how do we cleanup its deleted resources?
+            DeleteUnusedContextResources(window.Context);
         }
 
-        private unsafe void CleanupContextResources(Context context)
+        protected override void ContextChanged(Context context)
         {
-            lock (VertexArraysToDelete)
-            {
-                if (VertexArraysToDelete.TryGetValue(context, out var vaoList))
-                {
-                    fixed (uint* buffers = vaoList.ToArray())
-                        GL.DeleteVertexArrays(vaoList.Count, buffers);
-                    vaoList.Clear();
-                }
-            }
+            DeleteUnusedContextResources(context);
+        }
 
-            lock (FrameBuffersToDelete)
+        private void DeleteUnusedContextResources(Context context)
+        {
+            // delete any VAOs or FrameBuffers associated with this context that need deleting
+            if (VertexArraysToDelete.TryGetValue(context, out var vaoList))
+                DeleteResources(deleteArray, vaoList);
+
+            if (FrameBuffersToDelete.TryGetValue(context, out var fboList))
+                DeleteResources(deleteFramebuffer, fboList);
+        }
+
+        private unsafe void DeleteResources(DeleteResource deleter, List<uint> list)
+        {
+            if (list.Count > 0)
             {
-                if (FrameBuffersToDelete.TryGetValue(context, out var fbList))
-                {
-                    fixed (uint* buffers = fbList.ToArray())
-                        GL.DeleteVertexArrays(fbList.Count, buffers);
-                    fbList.Clear();
-                }
+                for (int i = 0; i < list.Count; i++)
+                    deleter(list[i]);
+                list.Clear();
             }
         }
 
@@ -153,9 +137,9 @@ namespace Foster.OpenGL
             return new GL_Shader(this, vertexSource, fragmentSource);
         }
 
-        public override Mesh<T> CreateMesh<T>()
+        public override Mesh CreateMesh()
         {
-            return new GL_Mesh<T>(this);
+            return new GL_Mesh(this);
         }
 
         public override void Target(Target? target)
