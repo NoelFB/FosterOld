@@ -177,7 +177,7 @@ namespace Foster.Framework
             var diff = AngleDiff(val, target);
             if (Math.Abs(diff) < maxMove)
                 return target;
-            return val + Calc.Clamp(diff, -maxMove, maxMove);
+            return val + Clamp(diff, -maxMove, maxMove);
         }
 
         public static float AngleLerp(float startAngle, float endAngle, float percent)
@@ -189,8 +189,10 @@ namespace Foster.Framework
         {
             float diff = radiansB - radiansA;
 
-            while (diff > MathF.PI) { diff -= MathF.PI * 2; }
-            while (diff <= -MathF.PI) { diff += MathF.PI * 2; }
+            while (diff > MathF.PI)
+                diff -= MathF.PI * 2;
+            while (diff <= -MathF.PI)
+                diff += MathF.PI * 2;
 
             return diff;
         }
@@ -392,7 +394,7 @@ namespace Foster.Framework
 
         #region Triangulation
 
-        public static List<int> Triangulate(IList<Vector2> points)
+        public static void Triangulate(IList<Vector2> points, List<int> populate)
         {
             float Area()
             {
@@ -430,12 +432,11 @@ namespace Foster.Framework
                 return true;
             }
 
-            var indices = new List<int>();
             if (points.Count < 3)
-                return indices;
+                return;
 
             Span<int> list = (points.Count < 1000 ? stackalloc int[points.Count] : new int[points.Count]);
-                
+
             if (Area() > 0)
             {
                 for (int v = 0; v < points.Count; v++)
@@ -453,7 +454,7 @@ namespace Foster.Framework
             for (int v = nv - 1; nv > 2;)
             {
                 if ((count--) <= 0)
-                    return indices;
+                    return;
 
                 var u = v;
                 if (nv <= u)
@@ -467,9 +468,9 @@ namespace Foster.Framework
 
                 if (Snip(u, v, w, nv, list))
                 {
-                    indices.Add(list[u]);
-                    indices.Add(list[v]);
-                    indices.Add(list[w]);
+                    populate.Add(list[u]);
+                    populate.Add(list[v]);
+                    populate.Add(list[w]);
 
                     for (int s = v, t = v + 1; t < nv; s++, t++)
                         list[s] = list[t];
@@ -479,7 +480,13 @@ namespace Foster.Framework
                 }
             }
 
-            indices.Reverse();
+            populate.Reverse();
+        }
+
+        public static List<int> Triangulate(IList<Vector2> points)
+        {
+            var indices = new List<int>();
+            Triangulate(points, indices);
             return indices;
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,8 +14,8 @@ namespace Foster.Framework
         public static readonly Vector3 One = new Vector3(1, 1, 1);
         public static readonly Vector3 Right = new Vector3(1, 0, 0);
         public static readonly Vector3 Left = new Vector3(-1, 0, 0);
-        public static readonly Vector3 Up = new Vector3(0, -1, 0);
-        public static readonly Vector3 Down = new Vector3(0, 1, 0);
+        public static readonly Vector3 Up = new Vector3(0, 1, 0);
+        public static readonly Vector3 Down = new Vector3(0, -1, 0);
         public static readonly Vector3 Forward = new Vector3(0, 0, -1);
         public static readonly Vector3 Backward = new Vector3(0, 0, 1);
 
@@ -131,6 +132,36 @@ namespace Foster.Framework
                 value.X * (1.0f - yy2 - zz2) + value.Y * (xy2 - wz2) + value.Z * (xz2 + wy2),
                 value.X * (xy2 + wz2) + value.Y * (1.0f - xx2 - zz2) + value.Z * (yz2 - wx2),
                 value.X * (xz2 - wy2) + value.Y * (yz2 + wx2) + value.Z * (1.0f - xx2 - yy2));
+        }
+
+        public override string ToString()
+        {
+            return $"[{X}, {Y}, {Z}]";
+        }
+
+        public static bool Parse(ReadOnlySpan<char> span, char deliminator, out Vector3 vector)
+        {
+            vector = new Vector3();
+
+            var index = span.IndexOf(deliminator);
+            if (index > 0)
+            {
+                var first = span.Slice(0, index);
+                var remaining = span.Slice(index + 1);
+
+                index = remaining.IndexOf(deliminator);
+                if (index > 0)
+                {
+                    var second = remaining.Slice(0, index);
+                    var third = remaining.Slice(index + 1);
+
+
+                    if (float.TryParse(first, out vector.X) && float.TryParse(second, out vector.Y) && float.TryParse(third, out vector.Z))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         public static implicit operator Vector3(Point2 point) => new Vector3(point.X, point.Y, 0);

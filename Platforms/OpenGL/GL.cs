@@ -28,6 +28,9 @@ namespace Foster.OpenGL
             AssignDelegate(ref Disable, "glDisable");
             AssignDelegate(ref Clear, "glClear");
             AssignDelegate(ref ClearColor, "glClearColor");
+            AssignDelegate(ref ClearDepth, "glClearDepth");
+            AssignDelegate(ref ClearStencil, "glClearStencil");
+            AssignDelegate(ref DepthMask, "glDepthMask");
             AssignDelegate(ref Viewport, "glViewport");
             AssignDelegate(ref CullFace, "glCullFace");
             AssignDelegate(ref Scissor, "glScissor");
@@ -196,6 +199,9 @@ namespace Foster.OpenGL
         public static GL_Delegates.Disable Disable;
         public static GL_Delegates.Clear Clear;
         public static GL_Delegates.ClearColor ClearColor;
+        public static GL_Delegates.ClearDepth ClearDepth;
+        public static GL_Delegates.ClearStencil ClearStencil;
+        public static GL_Delegates.DepthMask DepthMask;
         public static GL_Delegates.Viewport Viewport;
         public static GL_Delegates.Scissor Scissor;
         public static GL_Delegates.CullFace CullFace;
@@ -401,6 +407,9 @@ namespace Foster.OpenGL
         public delegate void Disable(GLEnum mode);
         public delegate void Clear(GLEnum mask);
         public delegate void ClearColor(float red, float green, float blue, float alpha);
+        public delegate void ClearDepth(double depth);
+        public delegate void ClearStencil(int stencil);
+        public delegate void DepthMask(bool enabled);
         public delegate void Viewport(int x, int y, GLSizei width, GLSizei height);
         public delegate void Scissor(int x, int y, GLSizei width, GLSizei height);
         public delegate void CullFace(GLEnum mode);

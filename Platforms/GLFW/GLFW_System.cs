@@ -58,15 +58,17 @@ namespace Foster.GLFW
             {
                 if (App.Graphics.Api == GraphicsApi.OpenGL)
                 {
-                    GLFW.WindowHint(GLFW.WindowHints.OpenGLVersionMajor, 3);
-                    GLFW.WindowHint(GLFW.WindowHints.OpenGLVersionMinor, 2);
-                    GLFW.WindowHint(GLFW.WindowHints.OpenGLProfile, 0x00032001);
-                    GLFW.WindowHint(GLFW.WindowHints.OpenGLForwardCompat, true);
+                    GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MAJOR, 3);
+                    GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MINOR, 2);
+                    GLFW.WindowHint(GLFW_Enum.OPENGL_PROFILE, 0x00032001);
+                    GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
                 }
             }
 
             // Various Window Hints
-            GLFW.WindowHint(GLFW.WindowHints.DoubleBuffer, true);
+            GLFW.WindowHint(GLFW_Enum.DOUBLEBUFFER, true);
+            GLFW.WindowHint(GLFW_Enum.DEPTH_BITS, 24);
+            GLFW.WindowHint(GLFW_Enum.STENCIL_BITS, 8);
 
             // Monitors
             unsafe
@@ -150,11 +152,11 @@ namespace Foster.GLFW
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Context must be called from the Main Thread");
 
-            GLFW.WindowHint(GLFW.WindowHints.Visible, !flags.HasFlag(WindowFlags.Hidden));
-            GLFW.WindowHint(GLFW.WindowHints.FocusOnshow, false);
-            GLFW.WindowHint(GLFW.WindowHints.TransparentFramebuffer, flags.HasFlag(WindowFlags.Transparent));
-            GLFW.WindowHint(GLFW.WindowHints.ScaleToMonitor, flags.HasFlag(WindowFlags.ScaleToMonitor));
-            GLFW.WindowHint(GLFW.WindowHints.Samples, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
+            GLFW.WindowHint(GLFW_Enum.VISIBLE, !flags.HasFlag(WindowFlags.Hidden));
+            GLFW.WindowHint(GLFW_Enum.FOCUS_ON_SHOW, false);
+            GLFW.WindowHint(GLFW_Enum.TRANSPARENT_FRAMEBUFFER, flags.HasFlag(WindowFlags.Transparent));
+            GLFW.WindowHint(GLFW_Enum.SCALE_TO_MONITOR, flags.HasFlag(WindowFlags.ScaleToMonitor));
+            GLFW.WindowHint(GLFW_Enum.SAMPLES, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
 
             GLFW_Context? shared = null;
             if (Contexts.Count > 0)

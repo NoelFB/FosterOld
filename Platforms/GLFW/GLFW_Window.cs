@@ -122,9 +122,9 @@ namespace Foster.GLFW
 
         public override IntPtr Pointer => context.Handle.Ptr;
 
-        private GLFW.WindowSizeFunc windowSizeCallbackRef;
-        private GLFW.WindowFocusFunc windowFocusCallbackRef;
-        private GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
+        private readonly GLFW.WindowSizeFunc windowSizeCallbackRef;
+        private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
+        private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
         public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible)
         {

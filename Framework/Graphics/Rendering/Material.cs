@@ -11,13 +11,13 @@ namespace Foster.Framework
 
         public class Parameter
         {
-            public readonly ShaderUniform Uniform;
+            public readonly Uniform Uniform;
 
             public string Name => Uniform.Name;
             public UniformType Type => Uniform.Type;
             public object? Value { get; private set; }
 
-            public Parameter(ShaderUniform uniform)
+            public Parameter(Uniform uniform)
             {
                 Uniform = uniform;
                 Value = null;
@@ -111,7 +111,7 @@ namespace Foster.Framework
 
                     if (shader != null)
                     {
-                        foreach (ShaderUniform uniform in shader.Uniforms.Values)
+                        foreach (Uniform uniform in shader.Uniforms.Values)
                             Parameters.Add(uniform.Name, new Parameter(uniform));
                     }
                 }

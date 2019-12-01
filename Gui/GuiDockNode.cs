@@ -99,7 +99,7 @@ namespace Foster.GuiSystem
                 Window.Bordered = false;
                 Window.OnRender = () =>
                 {
-                    App.Graphics.Clear(Color.Transparent);
+                    App.Graphics.ClearColor(Color.Transparent);
                     Batcher.Render();
                 };
                 Window.OnClose = () =>

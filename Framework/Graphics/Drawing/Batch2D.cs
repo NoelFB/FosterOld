@@ -144,11 +144,11 @@ void main(void)
 
         }
 
-        public Batch2D(Graphics graphics) : base(graphics)
+        public Batch2D(Graphics rendering) : base(rendering)
         {
-            DefaultShader = graphics.CreateShader(VertexSource, FragmentSource);
+            DefaultShader = rendering.CreateShader(VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
-            Mesh = graphics.CreateMesh<Vertex>();
+            Mesh = rendering.CreateMesh<Vertex>();
 
             vertices = new Vertex[64];
             triangles = new int[64];

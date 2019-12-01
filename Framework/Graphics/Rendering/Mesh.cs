@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Foster.Framework
 {
@@ -18,6 +19,7 @@ namespace Foster.Framework
         public abstract void SetTriangles(Memory<int> triangles);
         public abstract void SetInstances<T>(Memory<T> instances) where T : struct;
 
+        public abstract void Draw();
         public abstract void Draw(int start, int elements);
         public abstract void DrawInstances(int start, int elements, int instances);
 

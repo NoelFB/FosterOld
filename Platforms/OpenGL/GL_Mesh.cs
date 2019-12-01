@@ -16,6 +16,10 @@ namespace Foster.OpenGL
         public uint InstanceBuffer;
         public Type? InstanceType;
 
+        private int vertexCount;
+        private int elementCount;
+        private int instanceCount;
+
         public GL_Mesh(GL_Graphics graphics) : base(graphics)
         {
             VertexBuffer = GL.GenBuffer();
@@ -24,6 +28,8 @@ namespace Foster.OpenGL
 
         public override unsafe void SetVertices(Memory<TVertex> vertices)
         {
+            vertexCount = vertices.Length;
+
             using var pinned = vertices.Pin();
 
             GL.BindBuffer(GLEnum.ARRAY_BUFFER, VertexBuffer);
@@ -32,6 +38,8 @@ namespace Foster.OpenGL
 
         public override unsafe void SetTriangles(Memory<int> triangles)
         {
+            elementCount = triangles.Length / 3;
+
             using var pinned = triangles.Pin();
 
             GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, TriangleBuffer);
@@ -40,6 +48,8 @@ namespace Foster.OpenGL
 
         public override unsafe void SetInstances<T>(Memory<T> instances)
         {
+            instanceCount = instances.Length / 3;
+
             // create buffer if it's missing
             Type type = typeof(T);
             if (type != InstanceType || InstanceBuffer == 0)
@@ -56,6 +66,11 @@ namespace Foster.OpenGL
             using var handle = instances.Pin();
             GL.BindBuffer(GLEnum.ARRAY_BUFFER, InstanceBuffer);
             GL.BufferData(GLEnum.ARRAY_BUFFER, new IntPtr(Marshal.SizeOf<T>() * instances.Length), new IntPtr(handle.Pointer), GLEnum.STATIC_DRAW);
+        }
+
+        public override void Draw()
+        {
+            Draw(0, elementCount);
         }
 
         public override void Draw(int start, int elements)

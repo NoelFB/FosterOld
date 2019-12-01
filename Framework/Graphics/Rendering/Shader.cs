@@ -8,12 +8,12 @@ namespace Foster.Framework
     public abstract class Shader : GraphicsResource
     {
 
-        public readonly ReadOnlyDictionary<string, ShaderUniform> Uniforms;
-        protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
+        public readonly ReadOnlyDictionary<string, Uniform> Uniforms;
+        protected readonly Dictionary<string, Uniform> uniforms = new Dictionary<string, Uniform>();
 
         protected Shader(Graphics graphics) : base(graphics)
         {
-            Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(uniforms);
+            Uniforms = new ReadOnlyDictionary<string, Uniform>(uniforms);
         }
 
     }

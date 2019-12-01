@@ -73,7 +73,7 @@ namespace Foster.Framework
         }
 
         // This could likely be optimized a buuunch more
-        // We also ignore all checksums when reading because they don't seem super important f or game usage
+        // We also ignore all checksums when reading because they don't seem super important for game usage
 
         public override unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels)
         {
@@ -88,7 +88,7 @@ namespace Foster.Framework
             var components = 4;
 
             using MemoryStream idat = new MemoryStream();
-            Span<byte> idatChunk = stackalloc byte[16384];
+            Span<byte> idatChunk = stackalloc byte[4096];
             Span<byte> palette = stackalloc byte[0];
             Span<byte> alphaPalette = stackalloc byte[0];
             Span<byte> fourbytes = stackalloc byte[4];
@@ -370,18 +370,6 @@ namespace Foster.Framework
                         }
                     }
                 }
-
-                // premultiply alpha
-                /*if (hasTransparency && premultiplyAlpha)
-                {
-                    for (int i = 0, l = width * height * 4; i < l; i += 4)
-                    {
-                        byte a = buffer[i + 3];
-                        buffer[i + 0] = (byte)((buffer[i + 0] * a + 0xFF) >> 8);
-                        buffer[i + 1] = (byte)((buffer[i + 1] * a + 0xFF) >> 8);
-                        buffer[i + 2] = (byte)((buffer[i + 2] * a + 0xFF) >> 8);
-                    }
-                }*/
 
                 // set RGBA data to Color array
                 {

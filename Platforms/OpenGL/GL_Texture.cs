@@ -78,7 +78,7 @@ namespace Foster.OpenGL
             Height = height;
         }
 
-        public override unsafe void SetData(Memory<Color> buffer)
+        public override unsafe void SetColor(Memory<Color> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -87,7 +87,7 @@ namespace Foster.OpenGL
             GL.TexImage2D(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, Width, Height, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
         }
 
-        public override unsafe void GetData(Memory<Color> buffer)
+        public override unsafe void GetColor(Memory<Color> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 

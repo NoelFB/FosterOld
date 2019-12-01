@@ -2,6 +2,16 @@
 
 namespace Foster.Framework
 {
+    [Flags]
+    public enum ClearFlags
+    {
+        None = 0,
+        Color = 1,
+        Depth = 2,
+        Stencil = 4,
+        All = 7
+    }
+
     public abstract class Graphics : Module
     {
 
@@ -67,10 +77,25 @@ namespace Foster.Framework
         /// </summary>
         public abstract void Target(Target? target);
 
+        public void ClearColor(Color color)
+        {
+            Clear(ClearFlags.Color, color, 0, 0);
+        }
+
+        public void ClearDepth(float depth)
+        {
+            Clear(ClearFlags.Depth, 0, depth, 0);
+        }
+
+        public void ClearStencil(int stencil)
+        {
+            Clear(ClearFlags.Stencil, 0, 0, stencil);
+        }
+
         /// <summary>
         /// Clears the current Target to the given color
         /// </summary>
-        public abstract void Clear(Color color);
+        public abstract void Clear(ClearFlags flags, Color color, float depth, int stencil);
 
         /// <summary>
         /// Enables or Disables Depth-testing

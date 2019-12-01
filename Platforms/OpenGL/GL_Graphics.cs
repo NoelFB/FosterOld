@@ -27,6 +27,7 @@ namespace Foster.OpenGL
         protected override void Startup()
         {
             GL.Init();
+            GL.DepthMask(true);
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
@@ -222,10 +223,29 @@ namespace Foster.OpenGL
             GL.BlendFunc(src, dst);
         }
 
-        public override void Clear(Color color)
+        public override void Clear(ClearFlags flags, Color color, float depth, int stencil)
         {
-            GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
-            GL.Clear(GLEnum.COLOR_BUFFER_BIT);
+            var mask = GLEnum.ZERO;
+
+            if (flags.HasFlag(ClearFlags.Color))
+            {
+                GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
+                mask |= GLEnum.COLOR_BUFFER_BIT;
+            }
+
+            if (flags.HasFlag(ClearFlags.Depth))
+            {
+                GL.ClearDepth(depth);
+                mask |= GLEnum.DEPTH_BUFFER_BIT;
+            }
+
+            if (flags.HasFlag(ClearFlags.Stencil))
+            {
+                GL.ClearStencil(stencil);
+                mask |= GLEnum.STENCIL_BUFFER_BIT;
+            }
+
+            GL.Clear(mask);
         }
 
         public override void Scissor(RectInt scissor)

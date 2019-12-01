@@ -122,7 +122,7 @@ namespace Foster.GuiSystem
 
         private void Render()
         {
-            App.Graphics.Clear(Color.Black);
+            App.Graphics.ClearColor(Color.Black);
             Batcher.Render();
         }
     }

@@ -77,31 +77,6 @@ namespace Foster.GLFW
             FocusOnShow = 0x0002000C,
         }
 
-        public enum WindowHints
-        {
-            Focused = 0x00020001,
-            Resizable = 0x00020003,
-            Visible = 0x00020004,
-            Decorated = 0x00020005,
-            AutoIconify = 0x00020006,
-            Floating = 0x00020007,
-            Maximized = 0x00020008,
-            CenterCursor = 0x00020009,
-            TransparentFramebuffer = 0x0002000A,
-            FocusOnshow = 0x0002000C,
-            ScaleToMonitor = 0x0002200C,
-            DoubleBuffer = 0x00021010,
-            ContextVersionMajor = 0x00022002,
-            ContextVersionMinor = 0x00022003,
-            ContextVersionRevision = 0x00022004,
-            Samples = 0x0002100D,
-
-            OpenGLVersionMajor = 0x00022002,
-            OpenGLVersionMinor = 0x00022003,
-            OpenGLProfile = 0x00022008,
-            OpenGLForwardCompat = 0x00022006
-        }
-
         public delegate void ErrorFunc(int id, string message);
         public delegate void MonitorFunc(Monitor monitor, GLFW_Enum eventType);
         public delegate void WindowPosFunc(Window window, int x, int y);
@@ -189,13 +164,13 @@ namespace Foster.GLFW
         public static extern void DefaultWindowHints();
 
         [DllImport(DLL, EntryPoint = "glfwWindowHint", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void WindowHint(WindowHints hint, bool value);
+        public static extern void WindowHint(GLFW_Enum hint, bool value);
 
         [DllImport(DLL, EntryPoint = "glfwWindowHint", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void WindowHint(WindowHints hint, int value);
+        public static extern void WindowHint(GLFW_Enum hint, int value);
 
         [DllImport(DLL, EntryPoint = "glfwWindowHintString", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void WindowHintString(WindowHints hint, [MarshalAs(UnmanagedType.LPStr)] string value);
+        public static extern void WindowHintString(GLFW_Enum hint, [MarshalAs(UnmanagedType.LPStr)] string value);
 
         [DllImport(DLL, EntryPoint = "glfwCreateWindow", CallingConvention = CallingConvention.Cdecl)]
         public static extern Window CreateWindow(int width, int height, [MarshalAs(UnmanagedType.LPStr)] string title, Monitor monitor, IntPtr share);
@@ -479,13 +454,14 @@ namespace Foster.GLFW
 
     internal enum GLFW_Enum
     {
+        VERSION_MAJOR = 3,
+        VERSION_MINOR = 4,
+        VERSION_REVISION = 0,
         TRUE = 1,
         FALSE = 0,
         RELEASE = 0,
-
         PRESS = 1,
         REPEAT = 2,
-
         HAT_CENTERED = 0,
         HAT_UP = 1,
         HAT_RIGHT = 2,
@@ -493,19 +469,15 @@ namespace Foster.GLFW
         HAT_LEFT = 8,
         HAT_RIGHT_UP = (HAT_RIGHT | HAT_UP),
         HAT_RIGHT_DOWN = (HAT_RIGHT | HAT_DOWN),
-        HAT_LEFT_UP = (HAT_LEFT | HAT_UP),
-        HAT_LEFT_DOWN = (HAT_LEFT | HAT_DOWN),
-
-        /* The unknown key */
+        HAT_LEFT_UP = (HAT_LEFT  | HAT_UP),
+        HAT_LEFT_DOWN = (HAT_LEFT  | HAT_DOWN),
         KEY_UNKNOWN = -1,
-
-        /* Printable keys */
         KEY_SPACE = 32,
-        KEY_APOSTROPHE = 39,  /* ' */
-        KEY_COMMA = 44,  /* , */
-        KEY_MINUS = 45,  /* - */
-        KEY_PERIOD = 46,  /* . */
-        KEY_SLASH = 47,  /* / */
+        KEY_APOSTROPHE = 39,
+        KEY_COMMA = 44,
+        KEY_MINUS = 45,
+        KEY_PERIOD = 46,
+        KEY_SLASH = 47,
         KEY_0 = 48,
         KEY_1 = 49,
         KEY_2 = 50,
@@ -516,8 +488,8 @@ namespace Foster.GLFW
         KEY_7 = 55,
         KEY_8 = 56,
         KEY_9 = 57,
-        KEY_SEMICOLON = 59,  /* ; */
-        KEY_EQUAL = 61,  /* = */
+        KEY_SEMICOLON = 59,
+        KEY_EQUAL = 61,
         KEY_A = 65,
         KEY_B = 66,
         KEY_C = 67,
@@ -544,14 +516,12 @@ namespace Foster.GLFW
         KEY_X = 88,
         KEY_Y = 89,
         KEY_Z = 90,
-        KEY_LEFT_BRACKET = 91,  /* [ */
-        KEY_BACKSLASH = 92,  /* \ */
-        KEY_RIGHT_BRACKET = 93,  /* ] */
-        KEY_GRAVE_ACCENT = 96,  /* ` */
-        KEY_WORLD_1 = 161, /* non-US #1 */
-        KEY_WORLD_2 = 162, /* non-US #2 */
-
-        /* Function keys */
+        KEY_LEFT_BRACKET = 91,
+        KEY_BACKSLASH = 92,
+        KEY_RIGHT_BRACKET = 93,
+        KEY_GRAVE_ACCENT = 96,
+        KEY_WORLD_1 = 161,
+        KEY_WORLD_2 = 162,
         KEY_ESCAPE = 256,
         KEY_ENTER = 257,
         KEY_TAB = 258,
@@ -622,16 +592,13 @@ namespace Foster.GLFW
         KEY_RIGHT_ALT = 346,
         KEY_RIGHT_SUPER = 347,
         KEY_MENU = 348,
-
         KEY_LAST = KEY_MENU,
-
         MOD_SHIFT = 0x0001,
         MOD_CONTROL = 0x0002,
         MOD_ALT = 0x0004,
         MOD_SUPER = 0x0008,
         MOD_CAPS_LOCK = 0x0010,
         MOD_NUM_LOCK = 0x0020,
-
         MOUSE_BUTTON_1 = 0,
         MOUSE_BUTTON_2 = 1,
         MOUSE_BUTTON_3 = 2,
@@ -644,7 +611,6 @@ namespace Foster.GLFW
         MOUSE_BUTTON_LEFT = MOUSE_BUTTON_1,
         MOUSE_BUTTON_RIGHT = MOUSE_BUTTON_2,
         MOUSE_BUTTON_MIDDLE = MOUSE_BUTTON_3,
-
         JOYSTICK_1 = 0,
         JOYSTICK_2 = 1,
         JOYSTICK_3 = 2,
@@ -662,7 +628,6 @@ namespace Foster.GLFW
         JOYSTICK_15 = 14,
         JOYSTICK_16 = 15,
         JOYSTICK_LAST = JOYSTICK_16,
-
         GAMEPAD_BUTTON_A = 0,
         GAMEPAD_BUTTON_B = 1,
         GAMEPAD_BUTTON_X = 2,
@@ -679,12 +644,10 @@ namespace Foster.GLFW
         GAMEPAD_BUTTON_DPAD_DOWN = 13,
         GAMEPAD_BUTTON_DPAD_LEFT = 14,
         GAMEPAD_BUTTON_LAST = GAMEPAD_BUTTON_DPAD_LEFT,
-
         GAMEPAD_BUTTON_CROSS = GAMEPAD_BUTTON_A,
         GAMEPAD_BUTTON_CIRCLE = GAMEPAD_BUTTON_B,
         GAMEPAD_BUTTON_SQUARE = GAMEPAD_BUTTON_X,
         GAMEPAD_BUTTON_TRIANGLE = GAMEPAD_BUTTON_Y,
-
         GAMEPAD_AXIS_LEFT_X = 0,
         GAMEPAD_AXIS_LEFT_Y = 1,
         GAMEPAD_AXIS_RIGHT_X = 2,
@@ -692,7 +655,6 @@ namespace Foster.GLFW
         GAMEPAD_AXIS_LEFT_TRIGGER = 4,
         GAMEPAD_AXIS_RIGHT_TRIGGER = 5,
         GAMEPAD_AXIS_LAST = GAMEPAD_AXIS_RIGHT_TRIGGER,
-
         NO_ERROR = 0,
         NOT_INITIALIZED = 0x00010001,
         NO_CURRENT_CONTEXT = 0x00010002,
@@ -704,7 +666,7 @@ namespace Foster.GLFW
         PLATFORM_ERROR = 0x00010008,
         FORMAT_UNAVAILABLE = 0x00010009,
         NO_WINDOW_CONTEXT = 0x0001000A,
-
+        CURSOR_UNAVAILABLE = 0x0001000B,
         FOCUSED = 0x00020001,
         ICONIFIED = 0x00020002,
         RESIZABLE = 0x00020003,
@@ -717,7 +679,6 @@ namespace Foster.GLFW
         TRANSPARENT_FRAMEBUFFER = 0x0002000A,
         HOVERED = 0x0002000B,
         FOCUS_ON_SHOW = 0x0002000C,
-
         RED_BITS = 0x00021001,
         GREEN_BITS = 0x00021002,
         BLUE_BITS = 0x00021003,
@@ -728,81 +689,71 @@ namespace Foster.GLFW
         ACCUM_GREEN_BITS = 0x00021008,
         ACCUM_BLUE_BITS = 0x00021009,
         ACCUM_ALPHA_BITS = 0x0002100A,
-
         AUX_BUFFERS = 0x0002100B,
         STEREO = 0x0002100C,
         SAMPLES = 0x0002100D,
         SRGB_CAPABLE = 0x0002100E,
         REFRESH_RATE = 0x0002100F,
         DOUBLEBUFFER = 0x00021010,
-
         CLIENT_API = 0x00022001,
-
         CONTEXT_VERSION_MAJOR = 0x00022002,
         CONTEXT_VERSION_MINOR = 0x00022003,
         CONTEXT_REVISION = 0x00022004,
         CONTEXT_ROBUSTNESS = 0x00022005,
-
         OPENGL_FORWARD_COMPAT = 0x00022006,
         OPENGL_DEBUG_CONTEXT = 0x00022007,
         OPENGL_PROFILE = 0x00022008,
-
         CONTEXT_RELEASE_BEHAVIOR = 0x00022009,
         CONTEXT_NO_ERROR = 0x0002200A,
         CONTEXT_CREATION_API = 0x0002200B,
-
         SCALE_TO_MONITOR = 0x0002200C,
-
         COCOA_RETINA_FRAMEBUFFER = 0x00023001,
         COCOA_FRAME_NAME = 0x00023002,
         COCOA_GRAPHICS_SWITCHING = 0x00023003,
-
         X11_CLASS_NAME = 0x00024001,
         X11_INSTANCE_NAME = 0x00024002,
-
+        WIN32_KEYBOARD_MENU = 0x00025001,
         NO_API = 0,
         OPENGL_API = 0x00030001,
         OPENGL_ES_API = 0x00030002,
-
         NO_ROBUSTNESS = 0,
         NO_RESET_NOTIFICATION = 0x00031001,
         LOSE_CONTEXT_ON_RESET = 0x00031002,
-
         OPENGL_ANY_PROFILE = 0,
         OPENGL_CORE_PROFILE = 0x00032001,
         OPENGL_COMPAT_PROFILE = 0x00032002,
-
         CURSOR = 0x00033001,
         STICKY_KEYS = 0x00033002,
         STICKY_MOUSE_BUTTONS = 0x00033003,
         LOCK_KEY_MODS = 0x00033004,
         RAW_MOUSE_MOTION = 0x00033005,
-
         CURSOR_NORMAL = 0x00034001,
         CURSOR_HIDDEN = 0x00034002,
         CURSOR_DISABLED = 0x00034003,
-
         ANY_RELEASE_BEHAVIOR = 0,
         RELEASE_BEHAVIOR_FLUSH = 0x00035001,
         RELEASE_BEHAVIOR_NONE = 0x00035002,
-
         NATIVE_CONTEXT_API = 0x00036001,
         EGL_CONTEXT_API = 0x00036002,
         OSMESA_CONTEXT_API = 0x00036003,
-
         ARROW_CURSOR = 0x00036001,
         IBEAM_CURSOR = 0x00036002,
         CROSSHAIR_CURSOR = 0x00036003,
-        HAND_CURSOR = 0x00036004,
-        HRESIZE_CURSOR = 0x00036005,
-        VRESIZE_CURSOR = 0x00036006,
-
+        POINTING_HAND_CURSOR = 0x00036004,
+        RESIZE_EW_CURSOR = 0x00036005,
+        RESIZE_NS_CURSOR = 0x00036006,
+        RESIZE_NWSE_CURSOR = 0x00036007,
+        RESIZE_NESW_CURSOR = 0x00036008,
+        RESIZE_ALL_CURSOR = 0x00036009,
+        NOT_ALLOWED_CURSOR = 0x0003600A,
+        HRESIZE_CURSOR = RESIZE_EW_CURSOR,
+        VRESIZE_CURSOR = RESIZE_NS_CURSOR,
+        HAND_CURSOR = POINTING_HAND_CURSOR,
         CONNECTED = 0x00040001,
         DISCONNECTED = 0x00040002,
-
         JOYSTICK_HAT_BUTTONS = 0x00050001,
         COCOA_CHDIR_RESOURCES = 0x00051001,
         COCOA_MENUBAR = 0x00051002,
-        DONT_CARE = -1
+        GLFW_DONT_CARE = -1,
     }
 }

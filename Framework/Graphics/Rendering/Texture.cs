@@ -41,13 +41,13 @@ namespace Foster.Framework
         /// Sets the Texture Color data from the given buffer
         /// </summary>
         /// <param name="buffer"></param>
-        public abstract void SetData(Memory<Color> buffer);
+        public abstract void SetColor(Memory<Color> buffer);
 
         /// <summary>
         /// Writes the Texture Color data to the given buffer
         /// </summary>
         /// <param name="buffer"></param>
-        public abstract void GetData(Memory<Color> buffer);
+        public abstract void GetColor(Memory<Color> buffer);
 
         /// <summary>
         /// Creates a Bitmap with the Texture Color data
@@ -56,7 +56,7 @@ namespace Foster.Framework
         public Bitmap AsBitmap()
         {
             var bitmap = new Bitmap(Width, Height);
-            GetData(new Memory<Color>(bitmap.Pixels));
+            GetColor(new Memory<Color>(bitmap.Pixels));
             return bitmap;
         }
 
@@ -79,7 +79,7 @@ namespace Foster.Framework
         public static Texture Create(Bitmap bitmap)
         {
             var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height);
-            texture.SetData(new Memory<Color>(bitmap.Pixels));
+            texture.SetColor(new Memory<Color>(bitmap.Pixels));
             return texture;
         }
     }
