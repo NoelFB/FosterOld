@@ -144,14 +144,15 @@ namespace Foster.OpenGL
 
         public override void Target(Target? target)
         {
-            GL.BindFramebuffer(GLEnum.FRAMEBUFFER, (target as GL_Target)?.ID ?? 0);
-
-            if (target != null)
+            if (target != null && target is GL_Target glTarget)
             {
-                Viewport = new RectInt(0, 0, target.Width, target.Height);
+                glTarget.Use();
+                Viewport = new RectInt(0, 0, glTarget.Width, glTarget.Height);
             }
             else
             {
+                GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
+
                 var context = App.System.GetCurrentContext();
                 if (context != null)
                     Viewport = new RectInt(0, 0, context.Width, context.Height);

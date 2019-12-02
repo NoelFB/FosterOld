@@ -22,10 +22,25 @@ namespace Foster.OpenGL
         private long indexCount;
         private long instanceCount;
 
+        private Material? material;
+
         public GL_Mesh(GL_Graphics graphics) : base(graphics)
         {
             vertexBuffer = GL.GenBuffer();
             indexBuffer = GL.GenBuffer();
+        }
+
+        public override Material? Material
+        {
+            get => material;
+            set
+            {
+                if (material != value)
+                {
+                    material = value;
+                    bindedArrays.Clear();
+                }
+            }
         }
 
         protected override unsafe void UploadVertices<T>(ReadOnlySequence<T> vertices)
@@ -94,11 +109,11 @@ namespace Foster.OpenGL
             if (Material.Shader is GL_Shader shader)
                 shader.Use(Material);
 
-            if (!BindVertexArray())
-                throw new Exception("Unable to bind Vertex Array");
-
-            GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
-            GL.BindVertexArray(0);
+            if (BindVertexArray())
+            {
+                GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
+                GL.BindVertexArray(0);
+            }
         }
 
         public override void DrawInstances(int start, int elements, int instances)
@@ -112,11 +127,11 @@ namespace Foster.OpenGL
             if (Material.Shader is GL_Shader shader)
                 shader.Use(Material);
 
-            if (!BindVertexArray())
-                throw new Exception("Unable to bind Vertex Array");
-
-            GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
-            GL.BindVertexArray(0);
+            if (BindVertexArray())
+            {
+                GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
+                GL.BindVertexArray(0);
+            }
         }
 
         private bool BindVertexArray()
@@ -125,7 +140,7 @@ namespace Foster.OpenGL
             // VAO's are not shared between contexts so it must exist on every one we try drawing with
 
             var context = App.System.GetCurrentContext();
-            if (context != null)
+            if (context != null && Material != null)
             {
                 // create new array if it's needed
                 if (!vertexArrays.TryGetValue(context, out uint id))
@@ -138,16 +153,64 @@ namespace Foster.OpenGL
                 {
                     bindedArrays[context] = true;
 
-                    // vertex buffer
-                    if (lastVertexType != null)
-                        EnableAttribsOnBuffer(lastVertexType, vertexBuffer, 0);
+                    // bind buffers and determine what attributes are on
+                    foreach (var shaderAttribute in Material.Shader.Attributes.Values)
+                    {
+                        if (lastVertexType != null)
+                        {
+                            GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
 
-                    // instance buffer
-                    if (lastInstanceType != null)
-                        EnableAttribsOnBuffer(lastInstanceType, instanceBuffer, 1);
+                            if (SetupAttributePointer(shaderAttribute, lastVertexType, 0))
+                                continue;
+                        }
+
+                        if (lastInstanceType != null)
+                        {
+                            GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
+
+                            if (SetupAttributePointer(shaderAttribute, lastInstanceType, 1))
+                                continue;
+                        }
+
+                        // nothing is using this so disable it
+                        GL.DisableVertexAttribArray(shaderAttribute.Location);
+                    }
 
                     // bind our index buffer
                     GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool SetupAttributePointer(ShaderAttribute shaderAttribute, Type type, uint divisor)
+        {
+            VertexAttributes.OfType(type, out var attributes);
+
+            if (attributes == null)
+                throw new Exception("Expecting Vertex Attributes");
+
+            foreach (var attribute in attributes)
+            {
+                if (!attribute.Name.Equals(shaderAttribute.Name))
+                    continue;
+
+                // this is kind of messy because some attributes can take up multiple slots
+                // ex. a marix4x4 actually takes up 4 (size 16)
+                var ptr = new IntPtr(attribute.Pointer);
+                for (int i = 0, loc = 0; i < attribute.ComponentCount; i += 4, loc++)
+                {
+                    var size = Math.Min(attribute.ComponentCount - i, 4);
+                    var location = (uint)(shaderAttribute.Location + loc);
+
+                    GL.EnableVertexAttribArray(location);
+                    GL.VertexAttribPointer(location, size, ConvertVertexType(attribute.Type), attribute.Normalized, attribute.Stride, ptr);
+                    GL.VertexAttribDivisor(location, divisor);
+
+                    ptr += size * attribute.ComponentSize;
                 }
 
                 return true;
@@ -184,34 +247,7 @@ namespace Foster.OpenGL
             base.Dispose();
         }
 
-        private static void EnableAttribsOnBuffer(Type type, uint buffer, uint divisor = 0)
-        {
-            VertexAttributeAttribute.AttributesOfType(type, out List<VertexAttributeAttribute>? attributes);
-
-            if (attributes == null)
-                throw new Exception("Expecting Vertex Attributes");
-
-            GL.BindBuffer(GLEnum.ARRAY_BUFFER, buffer);
-
-            foreach (VertexAttributeAttribute attrib in attributes)
-            {
-                // this is kind of messy because some attributes can take up multiple slots
-                // ex. a marix4x4 actually takes up 4 (size 16)
-                IntPtr ptr = new IntPtr(attrib.Offset);
-                for (int i = 0, loc = 0; i < attrib.Components; i += 4, loc++)
-                {
-                    int size = Math.Min(attrib.Components - i, 4);
-                    uint location = (uint)(attrib.Location + loc);
-
-                    GL.EnableVertexAttribArray(location);
-                    GL.VertexAttribPointer(location, size, ToGLVertexType(attrib.Type), attrib.Normalized, attrib.Stride, ptr);
-                    GL.VertexAttribDivisor(location, divisor);
-                    ptr += size * attrib.Size;
-                }
-            }
-        }
-
-        private static GLEnum ToGLVertexType(VertexType value)
+        private static GLEnum ConvertVertexType(VertexType value)
         {
             switch (value)
             {

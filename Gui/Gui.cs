@@ -10,6 +10,7 @@ namespace Foster.GuiSystem
 
         public SpriteFont Font;
         public Vector2 ContentScale = Vector2.One;
+        public Window Window => Manager.Window;
 
         public readonly Imgui Imgui;
 

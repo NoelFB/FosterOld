@@ -66,6 +66,7 @@ namespace Foster.OpenGL
             AssignDelegate(ref DeleteBuffers, "glDeleteBuffers");
             AssignDelegate(ref DeleteVertexArrays, "glDeleteVertexArrays");
             AssignDelegate(ref EnableVertexAttribArray, "glEnableVertexAttribArray");
+            AssignDelegate(ref DisableVertexAttribArray, "glDisableVertexAttribArray");
             AssignDelegate(ref VertexAttribPointer, "glVertexAttribPointer");
             AssignDelegate(ref VertexAttribDivisor, "glVertexAttribDivisor");
             AssignDelegate(ref CreateShader, "glCreateShader");
@@ -82,8 +83,10 @@ namespace Foster.OpenGL
             AssignDelegate(ref GetProgramiv, "glGetProgramiv");
             AssignDelegate(ref getProgramInfoLog, "glGetProgramInfoLog");
             AssignDelegate(ref getActiveUniform, "glGetActiveUniform");
+            AssignDelegate(ref getActiveAttrib, "glGetActiveAttrib");
             AssignDelegate(ref UseProgram, "glUseProgram");
             AssignDelegate(ref GetUniformLocation, "glGetUniformLocation");
+            AssignDelegate(ref GetAttribLocation, "glGetAttribLocation");
             AssignDelegate(ref Uniform1f, "glUniform1f");
             AssignDelegate(ref Uniform2f, "glUniform2f");
             AssignDelegate(ref Uniform3f, "glUniform3f");
@@ -302,6 +305,7 @@ namespace Foster.OpenGL
         }
 
         public static GL_Delegates.EnableVertexAttribArray EnableVertexAttribArray;
+        public static GL_Delegates.DisableVertexAttribArray DisableVertexAttribArray;
         public static GL_Delegates.VertexAttribPointer VertexAttribPointer;
         public static GL_Delegates.VertexAttribDivisor VertexAttribDivisor;
         public static GL_Delegates.CreateShader CreateShader;
@@ -356,16 +360,28 @@ namespace Foster.OpenGL
         private static GL_Delegates.GetActiveUniform getActiveUniform;
         public static unsafe void GetActiveUniform(uint program, uint index, out int size, out GLEnum type, out string name)
         {
-            char* uniformName = stackalloc char[64];
+            char* uniformName = stackalloc char[256];
             IntPtr ptr = new IntPtr(uniformName);
 
-            getActiveUniform(program, index, 64, out int length, out size, out type, ptr);
+            getActiveUniform(program, index, 256, out int length, out size, out type, ptr);
+
+            name = Marshal.PtrToStringAnsi(ptr, length) ?? "";
+        }
+
+        private static GL_Delegates.GetActiveAttrib getActiveAttrib;
+        public static unsafe void GetActiveAttrib(uint program, uint index, out int size, out GLEnum type, out string name)
+        {
+            char* uniformName = stackalloc char[256];
+            IntPtr ptr = new IntPtr(uniformName);
+
+            getActiveAttrib(program, index, 256, out int length, out size, out type, ptr);
 
             name = Marshal.PtrToStringAnsi(ptr, length) ?? "";
         }
 
         public static GL_Delegates.UseProgram UseProgram;
         public static GL_Delegates.GetUniformLocation GetUniformLocation;
+        public static GL_Delegates.GetAttribLocation GetAttribLocation;
         public static GL_Delegates.Uniform1f Uniform1f;
         public static GL_Delegates.Uniform2f Uniform2f;
         public static GL_Delegates.Uniform3f Uniform3f;
@@ -449,6 +465,7 @@ namespace Foster.OpenGL
         public unsafe delegate void DeleteBuffers(GLSizei n, uint* buffers);
         public unsafe delegate void DeleteVertexArrays(GLSizei n, uint* arrays);
         public delegate void EnableVertexAttribArray(uint location);
+        public delegate void DisableVertexAttribArray(uint location);
         public delegate void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, GLSizei stride, IntPtr pointer);
         public delegate void VertexAttribDivisor(uint index, uint divisor);
         public delegate uint CreateShader(GLEnum type);
@@ -465,8 +482,10 @@ namespace Foster.OpenGL
         public delegate void GetProgramiv(uint program, GLEnum pname, out int result);
         public delegate void GetProgramInfoLog(uint program, GLSizei maxLength, out GLSizei length, IntPtr infoLog);
         public unsafe delegate void GetActiveUniform(uint program, uint index, GLSizei bufSize, out GLSizei length, out int size, out GLEnum type, IntPtr name);
+        public unsafe delegate void GetActiveAttrib(uint program, uint index, GLSizei bufSize, out GLSizei length, out int size, out GLEnum type, IntPtr name);
         public delegate void UseProgram(uint program);
         public delegate int GetUniformLocation(uint program, string name);
+        public delegate int GetAttribLocation(uint program, string name);
         public delegate void Uniform1f(int location, float v0);
         public delegate void Uniform2f(int location, float v0, float v1);
         public delegate void Uniform3f(int location, float v0, float v1, float v2);
@@ -685,6 +704,7 @@ namespace Foster.OpenGL
         FRAGMENT_SHADER = 0x8B30,
         VERTEX_SHADER = 0x8B31,
         ACTIVE_UNIFORMS = 0x8B86,
+        ACTIVE_ATTRIBUTES = 0x8B89,
         FLOAT_VEC2 = 0x8B50,
         FLOAT_VEC3 = 0x8B51,
         FLOAT_VEC4 = 0x8B52,

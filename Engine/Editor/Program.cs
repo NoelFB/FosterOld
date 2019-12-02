@@ -3,6 +3,7 @@ using Foster.GLFW;
 using Foster.GuiSystem;
 using Foster.OpenGL;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -24,20 +25,19 @@ namespace Foster.Engine
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct Vertex
         {
-            [VertexAttribute(0, VertexType.Float, 3, false)]
+            [VertexAttribute(0, "vPosition", VertexType.Float, 3, false)]
             public Vector3 Position;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct Instance
         {
-            [VertexAttribute(1, VertexType.Float, 3, false)]
-            public Vector3 Offset;
+            [VertexAttribute(0, "iOffset", VertexType.Float, 16, false)]
+            public Matrix Offset;
         }
 
         private static void Ready()
         {
-            /*
             var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Content", "Roboto-Medium.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, "Gui", 1280, 720));
 
@@ -86,11 +86,7 @@ namespace Foster.Engine
 
                     imgui.PopId();
                 }
-            };*/
-
-            var window = App.System.CreateWindow("Window", 1280, 720);
-            App.System.SetCurrentContext(window.Context);
-            
+            };
 
             static Mesh MakeMesh(string file)
             {
@@ -112,7 +108,7 @@ namespace Foster.Engine
 
                 var instances = new List<Instance>();
                 for (int i = 0; i < 10; i++)
-                    instances.Add(new Instance { Offset = new Vector3(0, 0, -10 + i * 2) });
+                    instances.Add(new Instance { Offset = Matrix.CreateTranslation(Rand.Instance.Range(-10, 10), Rand.Instance.Range(-10, 10), Rand.Instance.Range(-10, 10)) });
 
                 var mesh = App.Graphics.CreateMesh();
                 
@@ -129,44 +125,53 @@ namespace Foster.Engine
             var shader = App.Graphics.CreateShader(@"
 #version 330
 uniform mat4 Matrix;
-layout (location = 0) in vec3 vPosition;
-layout (location = 1) in vec3 iOffset;
+in vec3 vPosition;
+in mat4 iOffset;
 out vec4 fragCol;
 void main(void)
 {
-    gl_Position = Matrix * vec4(iOffset + vPosition, 1.0);
+    gl_Position = Matrix * iOffset * vec4(vPosition, 1.0);
     fragCol = (1 + vec4(vPosition, 1.0)) / 2;
 }",
 @"
 #version 330
-layout(location = 0) out vec4 outColor;
+out vec4 outColor;
 in vec4 fragCol;
 void main(void)
 {
     outColor = fragCol;
 }");
+            var material = new Material(shader);
+            var target = App.Graphics.CreateTarget(1000, 1000, 1, true);
 
-            mesh.Material = new Material(shader);
-            mesh2.Material = mesh.Material;
+            mesh.Material = material;
+            mesh2.Material = material;
 
-            window.OnRender = () =>
+            scene.OnRefresh = (imgui) =>
             {
+                var width = (int)imgui.Frame.Bounds.Width;
+                var height = (int)imgui.Frame.Bounds.Height;
+
+                App.Graphics.Target(target);
                 App.Graphics.DepthTest(true);
                 App.Graphics.DepthFunction(DepthFunctions.Less);
                 App.Graphics.CullMode(Cull.None);
                 App.Graphics.Clear(ClearFlags.All, Color.Yellow, 1f, 0);
 
                 var view = Matrix.CreateLookAt(new Vector3(MathF.Cos((float)Time.Duration.TotalSeconds), 0, MathF.Sin((float)Time.Duration.TotalSeconds)) * 20f, new Vector3(0, 0, 0), Vector3.Up);
-                var projection = Matrix.CreatePerspectiveFieldOfView(MathF.PI / 4f, window.DrawableWidth / (float)window.DrawableHeight, 0.25f, 100f);
-                
-                mesh.Material.SetMatrix("Matrix", view * projection);
+                var projection = Matrix.CreatePerspectiveFieldOfView(MathF.PI / 4f, target.Width / (float)target.Height, 0.25f, 100f);
+
+                material.SetMatrix("Matrix", view * projection);
                 mesh.DrawInstances();
 
                 view = Matrix.CreateTranslation(0, -5, 0) * Matrix.CreateLookAt(new Vector3(MathF.Cos((float)-Time.Duration.TotalSeconds), 0, MathF.Sin((float)-Time.Duration.TotalSeconds)) * 20f, new Vector3(0, 0, 0), Vector3.Up);
-                
-                mesh2.Material.SetMatrix("Matrix", view * projection);
+
+                material.SetMatrix("Matrix", view * projection);
                 mesh2.DrawInstances();
+
+                imgui.Batcher.Image(target, new RectInt((target.Width - width) / 2, (target.Height - height) / 2, width, height), imgui.Frame.Bounds.TopLeft, Vector2.One, Vector2.Zero, 0f, Color.White);
             };
+            
         }
     }
 }

@@ -12,22 +12,22 @@ namespace Foster.Framework
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Vertex
         {
-            [VertexAttribute(0, VertexType.Float, 2)]
+            [VertexAttribute(0, "vPosition", VertexType.Float, 2)]
             public Vector2 Pos;
 
-            [VertexAttribute(1, VertexType.Float, 2)]
+            [VertexAttribute(1, "vTex", VertexType.Float, 2)]
             public Vector2 Tex;
 
-            [VertexAttribute(2, VertexType.UnsignedByte, 4, true)]
+            [VertexAttribute(2, "vColor", VertexType.UnsignedByte, 4, true)]
             public Color Col;
 
-            [VertexAttribute(3, VertexType.UnsignedByte, 1, true)]
+            [VertexAttribute(3, "vMult", VertexType.UnsignedByte, 1, true)]
             public byte Mult;
 
-            [VertexAttribute(4, VertexType.UnsignedByte, 1, true)]
+            [VertexAttribute(4, "vWash", VertexType.UnsignedByte, 1, true)]
             public byte Wash;
 
-            [VertexAttribute(5, VertexType.UnsignedByte, 1, true)]
+            [VertexAttribute(5, "vFill", VertexType.UnsignedByte, 1, true)]
             public byte Fill;
 
             public Vertex(Vector2 position, Vector2 texcoord, Color color, int mult, int wash, int fill)
@@ -52,43 +52,49 @@ namespace Foster.Framework
         private const string VertexSource = @"
 #version 330
 uniform mat4 Matrix;
-layout(location = 0) in vec2 vertPos;
-layout(location = 1) in vec2 vertUV;
-layout(location = 2) in vec4 vertCol;
-layout(location = 3) in float vertMult;
-layout(location = 4) in float vertWash;
-layout(location = 5) in float vertFill;
-out vec2 fragUV;
-out vec4 fragCol;
-out float fragMult;
-out float fragWash;
-out float fragFill;
+
+in vec2 vPosition;
+in vec2 vTex;
+in vec4 vColor;
+in float vMult;
+in float vWash;
+in float vFill;
+
+out vec2 fTex;
+out vec4 fColor;
+out float fMult;
+out float fWash;
+out float fFill;
+
 void main(void)
 {
-    gl_Position = Matrix * vec4(vertPos, 0.0, 1.0);
-    fragUV = vertUV;
-    fragCol = vertCol;
-    fragMult = vertMult;
-    fragWash = vertWash;
-    fragFill = vertFill;
+    gl_Position = Matrix * vec4(vPosition, 0.0, 1.0);
+    fTex = vTex;
+    fColor = vColor;
+    fMult = vMult;
+    fWash = vWash;
+    fFill = vFill;
 }";
 
         private const string FragmentSource = @"
 #version 330
 uniform sampler2D Texture;
-in vec2 fragUV;
-in vec4 fragCol;
-in float fragMult;
-in float fragWash;
-in float fragFill;
-layout(location = 0) out vec4 outColor;
+
+in vec2 fTex;
+in vec4 fColor;
+in float fMult;
+in float fWash;
+in float fFill;
+
+out vec4 outColor;
+
 void main(void)
 {
-    vec4 color = texture(Texture, fragUV);
+    vec4 color = texture(Texture, fTex);
     outColor = 
-        fragMult * color * fragCol + 
-        fragWash * color.a * fragCol + 
-        fragFill * fragCol;
+        fMult * color * fColor + 
+        fWash * color.a * fColor + 
+        fFill * fColor;
 }";
 
         #endregion

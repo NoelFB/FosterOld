@@ -6,8 +6,6 @@ namespace Foster.Framework
 {
     public abstract class Mesh : GraphicsResource
     {
-        public Material? Material;
-
         public int VertexCount { get; private set; }
         public int IndexCount { get; private set; }
         public int InstanceCount { get; private set; }
@@ -19,6 +17,8 @@ namespace Foster.Framework
         {
 
         }
+
+        public abstract Material? Material { get; set; }
 
         public void SetVertices<T>(T[] vertices) where T : struct => SetVertices(new ReadOnlySequence<T>(vertices));
         public void SetVertices<T>(ReadOnlyMemory<T> vertices) where T : struct => SetVertices(new ReadOnlySequence<T>(vertices));

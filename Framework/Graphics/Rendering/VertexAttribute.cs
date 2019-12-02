@@ -4,72 +4,80 @@ using System.Reflection;
 
 namespace Foster.Framework
 {
+    public enum VertexType
+    {
+        Unknown,
+
+        Byte,
+        UnsignedByte,
+
+        Short,
+        UnsignedShort,
+
+        Int,
+        UnsignedInt,
+
+        Float
+    }
+
     /// <summary>
     /// Vertex Attribute information
     /// This doesn't have a platform-dependent implementation which may be a problem? Or not?
     /// </summary>
     public class VertexAttributeAttribute : Attribute
     {
-        public readonly uint Location;
-        public readonly int Components;
-        public readonly VertexType Type;
-        public readonly int Size;
-        public readonly bool Normalized;
+        public int Index;
+        public string Name;
+        public int ComponentCount;
+        public int ComponentSize;
+        public int Size => ComponentCount * ComponentSize;
+        public VertexType Type;
+        public bool Normalized;
+        public int Pointer;
+        public int Stride;
 
-        public int Offset { get; private set; }
-        public int Stride { get; private set; }
-
-        public VertexAttributeAttribute(uint location, VertexType type, int components, bool normalized = true)
+        public VertexAttributeAttribute(int index, string name, VertexType type, int components, bool normalized = false)
         {
-            Location = location;
-            Components = components;
+            Index = index;
+            Name = name;
             Type = type;
-            Normalized = normalized;
 
-            Size = 1;
+            ComponentCount = components;
+            ComponentSize = 1;
             if (Type == VertexType.Byte)
-            {
-                Size = 1;
-            }
+                ComponentSize = 1;
             else if (Type == VertexType.Float)
-            {
-                Size = 4;
-            }
+                ComponentSize = 4;
             else if (Type == VertexType.Int)
-            {
-                Size = 4;
-            }
+                ComponentSize = 4;
             else if (Type == VertexType.Short)
-            {
-                Size = 2;
-            }
+                ComponentSize = 2;
             else if (Type == VertexType.UnsignedByte)
-            {
-                Size = 1;
-            }
+                ComponentSize = 1;
             else if (Type == VertexType.UnsignedInt)
-            {
-                Size = 4;
-            }
+                ComponentSize = 4;
             else if (Type == VertexType.UnsignedShort)
-            {
-                Size = 2;
-            }
-        }
+                ComponentSize = 2;
 
-        public static bool TypeHasAttributes(Type type)
+            Normalized = normalized;
+        }
+    }
+
+    public static class VertexAttributes
+    {
+        public static bool HasType(Type type)
         {
-            AttributesOfType(type, out var list);
+            OfType(type, out var list);
             return (list != null && list.Count > 0);
         }
 
-        public static bool TypeHasAttributes<T>()
+        public static bool HasType<T>()
         {
-            AttributesOfType<T>(out var list);
+            OfType<T>(out var list);
             return (list != null && list.Count > 0);
         }
 
-        public static void AttributesOfType(Type type, out List<VertexAttributeAttribute>? list)
+        public static void OfType(Type type, out List<VertexAttributeAttribute>? list)
         {
             bool hasAttributes = attributesOfType.TryGetValue(type, out list);
 
@@ -77,29 +85,30 @@ namespace Foster.Framework
             {
                 attributesOfType.Add(type, list = new List<VertexAttributeAttribute>());
 
-                int stride = 0;
                 foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
-                    object[] attribs = field.GetCustomAttributes(typeof(VertexAttributeAttribute), false);
+                    var attribs = field.GetCustomAttributes(typeof(VertexAttributeAttribute), false);
                     if (attribs != null && attribs.Length > 0)
-                    {
-                        VertexAttributeAttribute attrib = (VertexAttributeAttribute)attribs[0];
-                        attrib.Offset = stride;
-                        stride += attrib.Components * attrib.Size;
-                        list.Add(attrib);
-                    }
+                        list.Add((VertexAttributeAttribute)attribs[0]);
                 }
 
-                foreach (VertexAttributeAttribute attrib in list)
+                list.Sort((a, b) => a.Index - b.Index);
+
+                int stride = 0;
+                foreach (var attribute in list)
                 {
-                    attrib.Stride = stride;
+                    attribute.Pointer = stride;
+                    stride += attribute.Size;
                 }
+
+                foreach (var attrib in list)
+                    attrib.Stride = stride;
             }
         }
 
-        public static void AttributesOfType<T>(out List<VertexAttributeAttribute>? list)
+        public static void OfType<T>(out List<VertexAttributeAttribute>? list)
         {
-            AttributesOfType(typeof(T), out list);
+            OfType(typeof(T), out list);
         }
 
         private static readonly Dictionary<Type, List<VertexAttributeAttribute>> attributesOfType = new Dictionary<Type, List<VertexAttributeAttribute>>();

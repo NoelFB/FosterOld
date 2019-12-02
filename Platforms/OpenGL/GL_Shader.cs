@@ -45,7 +45,17 @@ namespace Foster.OpenGL
             }
 
             // get attributes
-
+            GL.GetProgramiv(ID, GLEnum.ACTIVE_ATTRIBUTES, out int attributeCount);
+            for (int i = 0; i < attributeCount; i++)
+            {
+                GL.GetActiveAttrib(ID, (uint)i, out int size, out GLEnum type, out string name);
+                int location = GL.GetAttribLocation(ID, name);
+                if (location >= 0)
+                {
+                    GL_ShaderAttribute attribute = new GL_ShaderAttribute(this, name, (uint)location);
+                    attributes.Add(name, attribute);
+                }
+            }
 
             // get uniforms
             GL.GetProgramiv(ID, GLEnum.ACTIVE_UNIFORMS, out int uniformCount);
@@ -77,7 +87,7 @@ namespace Foster.OpenGL
                 if (!(parameter.Uniform is GL_ShaderUniform uniform))
                     continue;
 
-                if (uniform.Type == UniformType.Texture2D)
+                if (uniform.Type == ShaderUniform.Types.Texture2D)
                 {
                     var texture = parameter.Value as GL_Texture;
                     var id = texture?.ID ?? 0;

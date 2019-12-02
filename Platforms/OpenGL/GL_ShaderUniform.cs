@@ -3,7 +3,7 @@ using System;
 
 namespace Foster.OpenGL
 {
-    public class GL_ShaderUniform : Uniform
+    public class GL_ShaderUniform : ShaderUniform
     {
         public readonly GL_Shader Shader;
         public readonly int Size;
@@ -17,14 +17,14 @@ namespace Foster.OpenGL
 
             switch (type)
             {
-                case GLEnum.INT: Type = UniformType.Int; break;
-                case GLEnum.FLOAT: Type = UniformType.Float; break;
-                case GLEnum.FLOAT_VEC2: Type = UniformType.Float2; break;
-                case GLEnum.FLOAT_VEC3: Type = UniformType.Float3; break;
-                case GLEnum.FLOAT_VEC4: Type = UniformType.Float4; break;
-                case GLEnum.FLOAT_MAT3x2: Type = UniformType.Matrix2D; break;
-                case GLEnum.FLOAT_MAT4: Type = UniformType.Matrix; break;
-                case GLEnum.SAMPLER_2D: default: Type = UniformType.Texture2D; break;
+                case GLEnum.INT: Type = ShaderUniform.Types.Int; break;
+                case GLEnum.FLOAT: Type = ShaderUniform.Types.Float; break;
+                case GLEnum.FLOAT_VEC2: Type = ShaderUniform.Types.Float2; break;
+                case GLEnum.FLOAT_VEC3: Type = ShaderUniform.Types.Float3; break;
+                case GLEnum.FLOAT_VEC4: Type = ShaderUniform.Types.Float4; break;
+                case GLEnum.FLOAT_MAT3x2: Type = ShaderUniform.Types.Matrix2D; break;
+                case GLEnum.FLOAT_MAT4: Type = ShaderUniform.Types.Matrix; break;
+                case GLEnum.SAMPLER_2D: default: Type = ShaderUniform.Types.Texture2D; break;
             }
         }
 
@@ -32,25 +32,25 @@ namespace Foster.OpenGL
         {
             switch (Type)
             {
-                case UniformType.Int:
+                case ShaderUniform.Types.Int:
                     GL.Uniform1i(Location, (int)(value ?? 0));
                     break;
-                case UniformType.Float:
+                case ShaderUniform.Types.Float:
                     GL.Uniform1f(Location, (float)(value ?? 0));
                     break;
-                case UniformType.Float2:
+                case ShaderUniform.Types.Float2:
                     Vector2 vec2 = (Vector2)(value ?? Vector2.Zero);
                     GL.Uniform2f(Location, vec2.X, vec2.Y);
                     break;
-                case UniformType.Float3:
+                case ShaderUniform.Types.Float3:
                     Vector3 vec3 = (Vector3)(value ?? Vector3.Zero);
                     GL.Uniform3f(Location, vec3.X, vec3.Y, vec3.Z);
                     break;
-                case UniformType.Float4:
+                case ShaderUniform.Types.Float4:
                     Vector4 vec4 = (Vector4)(value ?? Vector4.Zero);
                     GL.Uniform4f(Location, vec4.X, vec4.Y, vec4.Z, vec4.W);
                     break;
-                case UniformType.Matrix2D:
+                case ShaderUniform.Types.Matrix2D:
                     {
                         Matrix2D m3x2 = (Matrix2D)(value ?? Matrix2D.Identity);
                         float* matrix = stackalloc float[6];
@@ -65,7 +65,7 @@ namespace Foster.OpenGL
                         GL.UniformMatrix3x2fv(Location, 1, false, new IntPtr(matrix));
                     }
                     break;
-                case UniformType.Matrix:
+                case ShaderUniform.Types.Matrix:
                     {
                         float* matrix = stackalloc float[16];
 
@@ -111,7 +111,7 @@ namespace Foster.OpenGL
                         GL.UniformMatrix4fv(Location, 1, false, new IntPtr(matrix));
                     }
                     break;
-                case UniformType.Texture2D:
+                case ShaderUniform.Types.Texture2D:
                     GL.Uniform1i(Location, (int)(value ?? 0));
                     break;
             }

@@ -12,16 +12,16 @@ namespace Foster.Framework
     public struct Vertex
     {
 
-        [VertexAttribute(0, VertexType.Float, 3)]
+        [VertexAttribute(0, "vPosition", VertexType.Float, 3)]
         public Vector3 Position;
 
-        [VertexAttribute(1, VertexType.Float, 2)]
+        [VertexAttribute(1, "vTex", VertexType.Float, 2)]
         public Vector2 TexCoord;
 
-        [VertexAttribute(2, VertexType.Float, 3)]
+        [VertexAttribute(2, "vNormal", VertexType.Float, 3)]
         public Vector3 Normal;
 
-        [VertexAttribute(3, VertexType.UnsignedByte, 4)]
+        [VertexAttribute(3, "vColor", VertexType.UnsignedByte, 4, true)]
         public Color Color;
 
     }
