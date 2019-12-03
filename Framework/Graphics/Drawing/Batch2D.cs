@@ -9,6 +9,14 @@ namespace Foster.Framework
     public class Batch2D : GraphicsResource
     {
 
+        public static readonly VertexFormat VertexFormat = new VertexFormat(
+            new VertexElement("vPosition", VertexType.Float, 2),
+            new VertexElement("vTex", VertexType.Float, 2),
+            new VertexElement("vColor", VertexType.UnsignedByte, 4, true),
+            new VertexElement("vMult", VertexType.UnsignedByte, 1, true),
+            new VertexElement("vWash", VertexType.UnsignedByte, 1, true),
+            new VertexElement("vFill", VertexType.UnsignedByte, 1, true));
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Vertex : IVertex
         {
@@ -29,15 +37,7 @@ namespace Foster.Framework
                 Fill = (byte)fill;
             }
 
-            public VertexFormat Format => format;
-
-            private readonly static VertexFormat format = new VertexFormat(
-                new VertexElement("vPosition", VertexType.Float, 2),
-                new VertexElement("vTex", VertexType.Float, 2),
-                new VertexElement("vColor", VertexType.UnsignedByte, 4, true),
-                new VertexElement("vMult", VertexType.UnsignedByte, 1, true),
-                new VertexElement("vWash", VertexType.UnsignedByte, 1, true),
-                new VertexElement("vFill", VertexType.UnsignedByte, 1, true));
+            public VertexFormat Format => VertexFormat;
 
             public override string ToString()
             {
