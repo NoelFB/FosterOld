@@ -27,17 +27,17 @@ namespace Foster.Framework
         /// <summary>
         /// A list of all opened Windows
         /// </summary>
-        public abstract ReadOnlyCollection<Window> Windows { get; }
+        public readonly ReadOnlyCollection<Window> Windows;
 
         /// <summary>
         /// A list of active Monitors
         /// </summary>
-        public abstract ReadOnlyCollection<Monitor> Monitors { get; }
+        public readonly ReadOnlyCollection<Monitor> Monitors;
 
         /// <summary>
         /// A list of all the Rendering Contexts
         /// </summary>
-        protected abstract ReadOnlyCollection<Context> Contexts { get; }
+        protected readonly ReadOnlyCollection<Context> Contexts;
 
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
@@ -122,9 +122,19 @@ namespace Foster.Framework
         /// <returns></returns>
         public abstract IntPtr GetProcAddress(string name);
 
+        protected readonly List<Window> windows = new List<Window>();
+
+        protected readonly List<Monitor> monitors = new List<Monitor>();
+
+        protected readonly List<Context> contexts = new List<Context>();
+
         protected System()
         {
             Priority = 100;
+
+            Windows = new ReadOnlyCollection<Window>(windows);
+            Monitors = new ReadOnlyCollection<Monitor>(monitors);
+            Contexts = new ReadOnlyCollection<Context>(contexts);
         }
 
         protected internal override void Startup()

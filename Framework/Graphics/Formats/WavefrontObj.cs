@@ -160,7 +160,7 @@ namespace Foster.Framework
             }
         }
 
-        public Span<char> NextSplit(ref Span<char> span, char delim)
+        private Span<char> NextSplit(ref Span<char> span, char delim)
         {
             var result = new Span<char>();
 
@@ -180,29 +180,6 @@ namespace Foster.Framework
             }
 
             return result;
-        }
-
-        public bool Next(Span<char> span, char delim, out int length)
-        {
-            length = 0;
-
-            if (span.Length <= 0)
-                return false;
-
-            var index = span.IndexOf(delim);
-            if (index >= 0)
-            {
-                length = index;
-                return true;
-            }
-
-            length = span.Length;
-            return true;
-        }
-
-        public Obj this[string name]
-        {
-            get { return Objects[name]; }
         }
 
     }

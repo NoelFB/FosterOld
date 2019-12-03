@@ -14,21 +14,6 @@ namespace Foster.GLFW
         public event Action<GLFW_Window>? OnWindowCreated;
         public event Action<GLFW_Window>? OnWindowClosed;
 
-        internal readonly List<Window> windows = new List<Window>();
-        internal readonly List<Framework.Monitor> monitors = new List<Framework.Monitor>();
-        internal readonly List<Context> contexts = new List<Context>();
-
-        public override ReadOnlyCollection<Window> Windows { get; }
-        public override ReadOnlyCollection<Framework.Monitor> Monitors { get; }
-        protected override ReadOnlyCollection<Context> Contexts { get; }
-
-        public GLFW_System()
-        {
-            Windows = new ReadOnlyCollection<Window>(windows);
-            Monitors = new ReadOnlyCollection<Framework.Monitor>(monitors);
-            Contexts = new ReadOnlyCollection<Context>(contexts);
-        }
-
         protected override void Initialized()
         {
             // get API info
