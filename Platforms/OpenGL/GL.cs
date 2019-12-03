@@ -1,7 +1,6 @@
 ﻿using Foster.Framework;
 using System;
 using System.Runtime.InteropServices;
-using GLSizei = System.Int32;
 
 namespace Foster.OpenGL
 {
@@ -20,106 +19,13 @@ namespace Foster.OpenGL
         public static int MaxTextureImageUnits;
         public static int MaxTextureSize;
 
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        private static GL_Bindings bindings;
+#pragma warning restore CS8618
+
         public static void Init()
         {
-            AssignDelegate(ref DebugMessageCallback, "glDebugMessageCallback");
-            AssignDelegate(ref Flush, "glFlush");
-            AssignDelegate(ref Enable, "glEnable");
-            AssignDelegate(ref Disable, "glDisable");
-            AssignDelegate(ref Clear, "glClear");
-            AssignDelegate(ref ClearColor, "glClearColor");
-            AssignDelegate(ref ClearDepth, "glClearDepth");
-            AssignDelegate(ref ClearStencil, "glClearStencil");
-            AssignDelegate(ref DepthMask, "glDepthMask");
-            AssignDelegate(ref DepthFunc, "glDepthFunc");
-            AssignDelegate(ref Viewport, "glViewport");
-            AssignDelegate(ref CullFace, "glCullFace");
-            AssignDelegate(ref Scissor, "glScissor");
-            AssignDelegate(ref BlendEquation, "glBlendEquation");
-            AssignDelegate(ref BlendEquationSeparate, "glBlendEquationSeparate");
-            AssignDelegate(ref BlendFunc, "glBlendFunc");
-            AssignDelegate(ref GetIntegerv, "glGetIntegerv");
-            AssignDelegate(ref GenTextures, "glGenTextures");
-            AssignDelegate(ref GenRenderbuffers, "glGenRenderbuffers");
-            AssignDelegate(ref GenFramebuffers, "glGenFramebuffers");
-            AssignDelegate(ref ActiveTexture, "glActiveTexture");
-            AssignDelegate(ref BindTexture, "glBindTexture");
-            AssignDelegate(ref BindRenderbuffer, "glBindRenderbuffer");
-            AssignDelegate(ref BindFramebuffer, "glBindFramebuffer");
-            AssignDelegate(ref TexImage2D, "glTexImage2D");
-            AssignDelegate(ref FramebufferRenderbuffer, "glFramebufferRenderbuffer");
-            AssignDelegate(ref FramebufferTexture2D, "glFramebufferTexture2D");
-            AssignDelegate(ref TexParameteri, "glTexParameteri");
-            AssignDelegate(ref RenderbufferStorage, "glRenderbufferStorage");
-            AssignDelegate(ref GetTexImage, "glGetTexImage");
-            AssignDelegate(ref DrawElements, "glDrawElements");
-            AssignDelegate(ref DrawElementsInstanced, "glDrawElementsInstanced");
-            AssignDelegate(ref DeleteTextures, "glDeleteTextures");
-            AssignDelegate(ref DeleteRenderbuffers, "glDeleteRenderbuffers");
-            AssignDelegate(ref DeleteFramebuffers, "glDeleteFramebuffers");
-            AssignDelegate(ref GenVertexArrays, "glGenVertexArrays");
-            AssignDelegate(ref BindVertexArray, "glBindVertexArray");
-            AssignDelegate(ref GenBuffers, "glGenBuffers");
-            AssignDelegate(ref BindBuffer, "glBindBuffer");
-            AssignDelegate(ref BufferData, "glBufferData");
-            AssignDelegate(ref BufferSubData, "glBufferSubData");
-            AssignDelegate(ref DeleteBuffers, "glDeleteBuffers");
-            AssignDelegate(ref DeleteVertexArrays, "glDeleteVertexArrays");
-            AssignDelegate(ref EnableVertexAttribArray, "glEnableVertexAttribArray");
-            AssignDelegate(ref DisableVertexAttribArray, "glDisableVertexAttribArray");
-            AssignDelegate(ref VertexAttribPointer, "glVertexAttribPointer");
-            AssignDelegate(ref VertexAttribDivisor, "glVertexAttribDivisor");
-            AssignDelegate(ref CreateShader, "glCreateShader");
-            AssignDelegate(ref AttachShader, "glAttachShader");
-            AssignDelegate(ref DetachShader, "glDetachShader");
-            AssignDelegate(ref DeleteShader, "glDeleteShader");
-            AssignDelegate(ref ShaderSource, "glShaderSource");
-            AssignDelegate(ref CompileShader, "glCompileShader");
-            AssignDelegate(ref GetShaderiv, "glGetShaderiv");
-            AssignDelegate(ref getShaderInfoLog, "glGetShaderInfoLog");
-            AssignDelegate(ref CreateProgram, "glCreateProgram");
-            AssignDelegate(ref DeleteProgram, "glDeleteProgram");
-            AssignDelegate(ref LinkProgram, "glLinkProgram");
-            AssignDelegate(ref GetProgramiv, "glGetProgramiv");
-            AssignDelegate(ref getProgramInfoLog, "glGetProgramInfoLog");
-            AssignDelegate(ref getActiveUniform, "glGetActiveUniform");
-            AssignDelegate(ref getActiveAttrib, "glGetActiveAttrib");
-            AssignDelegate(ref UseProgram, "glUseProgram");
-            AssignDelegate(ref GetUniformLocation, "glGetUniformLocation");
-            AssignDelegate(ref GetAttribLocation, "glGetAttribLocation");
-            AssignDelegate(ref Uniform1f, "glUniform1f");
-            AssignDelegate(ref Uniform2f, "glUniform2f");
-            AssignDelegate(ref Uniform3f, "glUniform3f");
-            AssignDelegate(ref Uniform4f, "glUniform4f");
-            AssignDelegate(ref Uniform1fv, "glUniform1fv");
-            AssignDelegate(ref Uniform2fv, "glUniform2fv");
-            AssignDelegate(ref Uniform3fv, "glUniform3fv");
-            AssignDelegate(ref Uniform4fv, "glUniform4fv");
-            AssignDelegate(ref Uniform1i, "glUniform1i");
-            AssignDelegate(ref Uniform2i, "glUniform2i");
-            AssignDelegate(ref Uniform3i, "glUniform3i");
-            AssignDelegate(ref Uniform4i, "glUniform4i");
-            AssignDelegate(ref Uniform1iv, "glUniform1iv");
-            AssignDelegate(ref Uniform2iv, "glUniform2iv");
-            AssignDelegate(ref Uniform3iv, "glUniform3iv");
-            AssignDelegate(ref Uniform4iv, "glUniform4iv");
-            AssignDelegate(ref Uniform1ui, "glUniform1ui");
-            AssignDelegate(ref Uniform2ui, "glUniform2ui");
-            AssignDelegate(ref Uniform3ui, "glUniform3ui");
-            AssignDelegate(ref Uniform4ui, "glUniform4ui");
-            AssignDelegate(ref Uniform1uiv, "glUniform1uiv");
-            AssignDelegate(ref Uniform2uiv, "glUniform2uiv");
-            AssignDelegate(ref Uniform3uiv, "glUniform3uiv");
-            AssignDelegate(ref Uniform4uiv, "glUniform4uiv");
-            AssignDelegate(ref UniformMatrix2fv, "glUniformMatrix2fv");
-            AssignDelegate(ref UniformMatrix3fv, "glUniformMatrix3fv");
-            AssignDelegate(ref UniformMatrix4fv, "glUniformMatrix4fv");
-            AssignDelegate(ref UniformMatrix2x3fv, "glUniformMatrix2x3fv");
-            AssignDelegate(ref UniformMatrix3x2fv, "glUniformMatrix3x2fv");
-            AssignDelegate(ref UniformMatrix2x4fv, "glUniformMatrix2x4fv");
-            AssignDelegate(ref UniformMatrix4x2fv, "glUniformMatrix4x2fv");
-            AssignDelegate(ref UniformMatrix3x4fv, "glUniformMatrix3x4fv");
-            AssignDelegate(ref UniformMatrix4x3fv, "glUniformMatrix4x3fv");
+            bindings = new GL_Bindings(App.System);
 
             GetIntegerv((GLEnum)0x821B, out MajorVersion);
             GetIntegerv((GLEnum)0x821C, out MinorVersion);
@@ -134,7 +40,7 @@ namespace Foster.OpenGL
             GetIntegerv((GLEnum)0x0D33, out MaxTextureSize);
 
 #if DEBUG
-            if (DebugMessageCallback != null)
+            if (bindings.glDebugMessageCallback != null)
             {
                 Enable(GLEnum.DEBUG_OUTPUT);
                 Enable(GLEnum.DEBUG_OUTPUT_SYNCHRONOUS);
@@ -196,135 +102,210 @@ namespace Foster.OpenGL
         private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, IntPtr message, IntPtr userParam);
 
 
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-        public static GL_Delegates.DebugMessageCallback DebugMessageCallback;
+        public static void DebugMessageCallback(IntPtr callback, IntPtr userdata) => bindings.glDebugMessageCallback(callback, userdata);
 
-        public static GL_Delegates.Flush Flush;
-        public static GL_Delegates.Enable Enable;
-        public static GL_Delegates.Disable Disable;
-        public static GL_Delegates.Clear Clear;
-        public static GL_Delegates.ClearColor ClearColor;
-        public static GL_Delegates.ClearDepth ClearDepth;
-        public static GL_Delegates.ClearStencil ClearStencil;
-        public static GL_Delegates.DepthMask DepthMask;
-        public static GL_Delegates.DepthFunc DepthFunc;
-        public static GL_Delegates.Viewport Viewport;
-        public static GL_Delegates.Scissor Scissor;
-        public static GL_Delegates.CullFace CullFace;
-        public static GL_Delegates.BlendEquation BlendEquation;
-        public static GL_Delegates.BlendEquationSeparate BlendEquationSeparate;
-        public static GL_Delegates.BlendFunc BlendFunc;
-        public static GL_Delegates.GetIntegerv GetIntegerv;
+        public static void Flush() => bindings.glFlush();
+        
+        public static void Enable(GLEnum mode) => bindings.glEnable(mode);
+        
+        public static void Disable(GLEnum mode) => bindings.glDisable(mode);
+        
+        public static void Clear(GLEnum mask) => bindings.glClear(mask);
+        
+        public static void ClearColor(float red, float green, float blue, float alpha) => bindings.glClearColor(red, green, blue, alpha);
+        
+        public static void ClearDepth(double depth) => bindings.glClearDepth(depth);
+        
+        public static void ClearStencil(int stencil) => bindings.glClearStencil(stencil);
+        
+        public static void DepthMask(bool enabled) => bindings.glDepthMask(enabled);
+        
+        public static void DepthFunc(GLEnum func) => bindings.glDepthFunc(func);
+        
+        public static void Viewport(int x, int y, int width, int height) => bindings.glViewport(x, y, width, height);
+        
+        public static void Scissor(int x, int y, int width, int height) => bindings.glScissor(x, y, width, height);
+        
+        public static void CullFace(GLEnum mode) => bindings.glCullFace(mode);
+        
+        public static void BlendEquation(GLEnum eq) => bindings.glBlendEquation(eq);
+        
+        public static void BlendEquationSeparate(GLEnum modeRGB, GLEnum modeAlpha) => bindings.glBlendEquationSeparate(modeRGB, modeAlpha);
+        
+        public static void BlendFunc(GLEnum sfactor, GLEnum dfactor) => bindings.glBlendFunc(sfactor, dfactor);
+        
+        public static void GetIntegerv(GLEnum name, out int data) => bindings.glGetIntegerv(name, out data);
 
-        public static GL_Delegates.GenTextures GenTextures;
+        public static void GenTextures(int n, IntPtr textures) => bindings.glGenTextures(n, textures);
+        
         public static unsafe uint GenTexture()
         {
             uint id;
-            GenTextures(1, new IntPtr(&id));
+            bindings.glGenTextures(1, new IntPtr(&id));
             return id;
         }
 
-        public static GL_Delegates.GenTextures GenRenderbuffers;
+        public static void GenRenderbuffers(int n, IntPtr textures) => bindings.glGenRenderbuffers(n, textures);
+        
         public static unsafe uint GenRenderbuffer()
         {
             uint id;
-            GenRenderbuffers(1, new IntPtr(&id));
+            bindings.glGenRenderbuffers(1, new IntPtr(&id));
             return id;
         }
 
-        public static GL_Delegates.GenFramebuffers GenFramebuffers;
+        public static void GenFramebuffers(int n, IntPtr textures) => bindings.glGenFramebuffers(n, textures);
+        
         public static unsafe uint GenFramebuffer()
         {
             uint id;
-            GenFramebuffers(1, new IntPtr(&id));
+            bindings.glGenFramebuffers(1, new IntPtr(&id));
             return id;
         }
 
-        public static GL_Delegates.ActiveTexture ActiveTexture;
-        public static GL_Delegates.BindTexture BindTexture;
-        public static GL_Delegates.BindRenderbuffer BindRenderbuffer;
-        public static GL_Delegates.BindFramebuffer BindFramebuffer;
-        public static GL_Delegates.TexImage2D TexImage2D;
-        public static GL_Delegates.FramebufferRenderbuffer FramebufferRenderbuffer;
-        public static GL_Delegates.FramebufferTexture2D FramebufferTexture2D;
-        public static GL_Delegates.TexParameteri TexParameteri;
-        public static GL_Delegates.RenderbufferStorage RenderbufferStorage;
-        public static GL_Delegates.GetTexImage GetTexImage;
-        public static GL_Delegates.DrawElements DrawElements;
-        public static GL_Delegates.DrawElementsInstanced DrawElementsInstanced;
+        public static void ActiveTexture(uint id) => bindings.glActiveTexture(id);
+        
+        public static void BindTexture(GLEnum target, uint id) => bindings.glBindTexture(target, id);
+        
+        public static void BindRenderbuffer(GLEnum target, uint id) => bindings.glBindRenderbuffer(target, id);
+        
+        public static void BindFramebuffer(GLEnum target, uint id) => bindings.glBindFramebuffer(target, id);
+        
+        public static void TexImage2D(GLEnum target, int level, GLEnum internalFormat, int width, int height, int border, GLEnum format, GLEnum type, IntPtr data) => bindings.glTexImage2D(target, level, internalFormat, width, height, border, format, type, data);
+        
+        public static void FramebufferRenderbuffer(GLEnum target​, GLEnum attachment​, GLEnum renderbuffertarget​, uint renderbuffer) => bindings.glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
+        
+        public static void FramebufferTexture2D(GLEnum target, GLEnum attachment, GLEnum textarget, uint texture, int level) => bindings.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+        
+        public static void TexParameteri(GLEnum target, GLEnum name, int param) => bindings.glTexParameteri(target, name, param);
+        
+        public static void RenderbufferStorage(GLEnum target​, GLEnum internalformat​, int width​, int height​) => bindings.glRenderbufferStorage(target, internalformat, width, height);
+        
+        public static void GetTexImage(GLEnum target, int level, GLEnum format, GLEnum type, IntPtr data) => bindings.glGetTexImage(target, level, format, type, data);
+        
+        public static void DrawElements(GLEnum mode, int count, GLEnum type, IntPtr indices) => bindings.glDrawElements(mode, count, type, indices);
+        
+        public static void DrawElementsInstanced(GLEnum mode, int count, GLEnum type, IntPtr indices, int amount) => bindings.glDrawElementsInstanced(mode, count, type, indices, amount);
 
-        public static GL_Delegates.DeleteTextures DeleteTextures;
+        public static unsafe void DeleteTextures(ReadOnlyMemory<uint> textures)
+        {
+            using var pin = textures.Pin();
+            bindings.glDeleteTextures(textures.Length, (uint*)pin.Pointer);
+        }
+        
         public static unsafe void DeleteTexture(uint id)
         {
-            DeleteTextures(1, &id);
+            bindings.glDeleteTextures(1, &id);
         }
 
-        public static GL_Delegates.DeleteRenderbuffers DeleteRenderbuffers;
+        public static unsafe void DeleteRenderbuffers(ReadOnlyMemory<uint> renderbuffers)
+        {
+            using var pin = renderbuffers.Pin();
+            bindings.glDeleteRenderbuffers(renderbuffers.Length, (uint*)pin.Pointer);
+        }
+
         public static unsafe void DeleteRenderbuffer(uint id)
         {
-            DeleteRenderbuffers(1, &id);
+            bindings.glDeleteRenderbuffers(1, &id);
         }
 
-        public static GL_Delegates.DeleteFramebuffers DeleteFramebuffers;
+        public static unsafe void DeleteFramebuffers(ReadOnlyMemory<uint> framebuffers)
+        {
+            using var pin = framebuffers.Pin();
+            bindings.glDeleteFramebuffers(framebuffers.Length, (uint*)pin.Pointer);
+        }
+
         public static unsafe void DeleteFramebuffer(uint id)
         {
-            DeleteFramebuffers(1, &id);
+            bindings.glDeleteFramebuffers(1, &id);
         }
 
-        public static GL_Delegates.GenVertexArrays GenVertexArrays;
+        public static unsafe void GenVertexArrays(Memory<uint> arrays)
+        {
+            using var pin = arrays.Pin();
+            bindings.glGenVertexArrays(arrays.Length, (uint*)pin.Pointer);
+        }
+
         public static unsafe uint GenVertexArray()
         {
             uint id;
-            GenVertexArrays(1, &id);
+            bindings.glGenVertexArrays(1, &id);
             return id;
         }
 
-        public static GL_Delegates.BindVertexArray BindVertexArray;
-        public static GL_Delegates.GenBuffers GenBuffers;
+        public static void BindVertexArray(uint id) => bindings.glBindVertexArray(id);
+
+        public static unsafe void GenBuffers(Memory<uint> arrays)
+        {
+            using var pin = arrays.Pin();
+            bindings.glGenBuffers(arrays.Length, (uint*)pin.Pointer);
+        }
+        
         public static unsafe uint GenBuffer()
         {
             uint id;
-            GenBuffers(1, &id);
+            bindings.glGenBuffers(1, &id);
             return id;
         }
 
-        public static GL_Delegates.BindBuffer BindBuffer;
-        public static GL_Delegates.BufferData BufferData;
-        public static GL_Delegates.BufferSubData BufferSubData;
+        public static void BindBuffer(GLEnum target, uint buffer) => bindings.glBindBuffer(target, buffer);
+        
+        public static void BufferData(GLEnum target, IntPtr size, IntPtr data, GLEnum usage) => bindings.glBufferData(target, size, data, usage);
+        
+        public static void BufferSubData(GLEnum target, IntPtr offset, IntPtr size, IntPtr data) => bindings.glBufferSubData(target, offset, size, data);
 
-        public static GL_Delegates.DeleteBuffers DeleteBuffers;
+        public static unsafe void DeleteBuffers(ReadOnlyMemory<uint> buffers)
+        {
+            using var pin = buffers.Pin();
+            bindings.glDeleteBuffers(buffers.Length, (uint*)pin.Pointer);
+        }
+        
         public static unsafe void DeleteBuffer(uint id)
         {
-            DeleteBuffers(1, &id);
+            bindings.glDeleteBuffers(1, &id);
         }
 
-        public static GL_Delegates.DeleteVertexArrays DeleteVertexArrays;
+        public static unsafe void DeleteVertexArrays(ReadOnlyMemory<uint> arrays)
+        {
+            using var pin = arrays.Pin();
+            bindings.glDeleteVertexArrays(arrays.Length, (uint*)pin.Pointer);
+        }
+
         public static unsafe void DeleteVertexArray(uint id)
         {
-            DeleteVertexArrays(1, &id);
+            bindings.glDeleteVertexArrays(1, &id);
         }
 
-        public static GL_Delegates.EnableVertexAttribArray EnableVertexAttribArray;
-        public static GL_Delegates.DisableVertexAttribArray DisableVertexAttribArray;
-        public static GL_Delegates.VertexAttribPointer VertexAttribPointer;
-        public static GL_Delegates.VertexAttribDivisor VertexAttribDivisor;
-        public static GL_Delegates.CreateShader CreateShader;
-        public static GL_Delegates.AttachShader AttachShader;
-        public static GL_Delegates.DetachShader DetachShader;
-        public static GL_Delegates.DeleteShader DeleteShader;
-        public static GL_Delegates.ShaderSource ShaderSource;
-        public static GL_Delegates.CompileShader CompileShader;
-        public static GL_Delegates.GetShaderiv GetShaderiv;
+        public static void EnableVertexAttribArray(uint location) => bindings.glEnableVertexAttribArray(location);
+        
+        public static void DisableVertexAttribArray(uint location) => bindings.glDisableVertexAttribArray(location);
+        
+        public static void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, int stride, IntPtr pointer) => bindings.glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+        
+        public static void VertexAttribDivisor(uint index, uint divisor) => bindings.glVertexAttribDivisor(index, divisor);
+        
+        public static uint CreateShader(GLEnum type) => bindings.glCreateShader(type);
+        
+        public static void AttachShader(uint program, uint shader) => bindings.glAttachShader(program, shader);
+        
+        public static void DetachShader(uint program, uint shader) => bindings.glDetachShader(program, shader);
+        
+        public static void DeleteShader(uint shader) => bindings.glDeleteShader(shader);
+        
+        public static void ShaderSource(uint shader, int count, string[] source, int[] length) => bindings.glShaderSource(shader, count, source, length);
+        
+        public static void CompileShader(uint shader) => bindings.glCompileShader(shader);
+        
+        public static void GetShaderiv(uint shader, GLEnum pname, out int result) => bindings.glGetShaderiv(shader, pname, out result);
 
-        private static GL_Delegates.GetShaderInfoLog getShaderInfoLog;
         public static unsafe string? GetShaderInfoLog(uint shader)
         {
-            GetShaderiv(shader, (GLEnum)0x8B84, out int len);
+            bindings.glGetShaderiv(shader, (GLEnum)0x8B84, out int len);
 
             char* bytes = stackalloc char[len];
             IntPtr ptr = new IntPtr(bytes);
 
-            getShaderInfoLog(shader, len, out len, ptr);
+            bindings.glGetShaderInfoLog(shader, len, out len, ptr);
 
             if (len <= 0)
             {
@@ -334,20 +315,22 @@ namespace Foster.OpenGL
             return Marshal.PtrToStringAnsi(ptr, len);
         }
 
-        public static GL_Delegates.CreateProgram CreateProgram;
-        public static GL_Delegates.DeleteProgram DeleteProgram;
-        public static GL_Delegates.LinkProgram LinkProgram;
-        public static GL_Delegates.GetProgramiv GetProgramiv;
+        public static uint CreateProgram() => bindings.glCreateProgram();
+        
+        public static void DeleteProgram(uint program) => bindings.glDeleteProgram(program);
+        
+        public static void LinkProgram(uint program) => bindings.glLinkProgram(program);
+        
+        public static void GetProgramiv(uint program, GLEnum pname, out int result) => bindings.glGetProgramiv(program, pname, out result);
 
-        private static GL_Delegates.GetProgramInfoLog getProgramInfoLog;
         public static unsafe string? GetProgramInfoLog(uint program)
         {
-            GetProgramiv(program, (GLEnum)0x8B84, out int len);
+            bindings.glGetProgramiv(program, (GLEnum)0x8B84, out int len);
 
             char* bytes = stackalloc char[len];
             IntPtr ptr = new IntPtr(bytes);
 
-            getProgramInfoLog(program, len, out len, ptr);
+            bindings.glGetProgramInfoLog(program, len, out len, ptr);
 
             if (len <= 0)
             {
@@ -357,168 +340,98 @@ namespace Foster.OpenGL
             return Marshal.PtrToStringAnsi(ptr, len);
         }
 
-        private static GL_Delegates.GetActiveUniform getActiveUniform;
         public static unsafe void GetActiveUniform(uint program, uint index, out int size, out GLEnum type, out string name)
         {
-            char* uniformName = stackalloc char[256];
-            IntPtr ptr = new IntPtr(uniformName);
+            var uniformName = stackalloc char[256];
+            var ptr = new IntPtr(uniformName);
 
-            getActiveUniform(program, index, 256, out int length, out size, out type, ptr);
+            bindings.glGetActiveUniform(program, index, 256, out int length, out size, out type, ptr);
 
             name = Marshal.PtrToStringAnsi(ptr, length) ?? "";
         }
 
-        private static GL_Delegates.GetActiveAttrib getActiveAttrib;
         public static unsafe void GetActiveAttrib(uint program, uint index, out int size, out GLEnum type, out string name)
         {
-            char* uniformName = stackalloc char[256];
-            IntPtr ptr = new IntPtr(uniformName);
+            var uniformName = stackalloc char[256];
+            var ptr = new IntPtr(uniformName);
 
-            getActiveAttrib(program, index, 256, out int length, out size, out type, ptr);
+            bindings.glGetActiveAttrib(program, index, 256, out int length, out size, out type, ptr);
 
             name = Marshal.PtrToStringAnsi(ptr, length) ?? "";
         }
 
-        public static GL_Delegates.UseProgram UseProgram;
-        public static GL_Delegates.GetUniformLocation GetUniformLocation;
-        public static GL_Delegates.GetAttribLocation GetAttribLocation;
-        public static GL_Delegates.Uniform1f Uniform1f;
-        public static GL_Delegates.Uniform2f Uniform2f;
-        public static GL_Delegates.Uniform3f Uniform3f;
-        public static GL_Delegates.Uniform4f Uniform4f;
-        public static GL_Delegates.Uniform1fv Uniform1fv;
-        public static GL_Delegates.Uniform2fv Uniform2fv;
-        public static GL_Delegates.Uniform3fv Uniform3fv;
-        public static GL_Delegates.Uniform4fv Uniform4fv;
-        public static GL_Delegates.Uniform1i Uniform1i;
-        public static GL_Delegates.Uniform2i Uniform2i;
-        public static GL_Delegates.Uniform3i Uniform3i;
-        public static GL_Delegates.Uniform4i Uniform4i;
-        public static GL_Delegates.Uniform1iv Uniform1iv;
-        public static GL_Delegates.Uniform2iv Uniform2iv;
-        public static GL_Delegates.Uniform3iv Uniform3iv;
-        public static GL_Delegates.Uniform4iv Uniform4iv;
-        public static GL_Delegates.Uniform1ui Uniform1ui;
-        public static GL_Delegates.Uniform2ui Uniform2ui;
-        public static GL_Delegates.Uniform3ui Uniform3ui;
-        public static GL_Delegates.Uniform4ui Uniform4ui;
-        public static GL_Delegates.Uniform1uiv Uniform1uiv;
-        public static GL_Delegates.Uniform2uiv Uniform2uiv;
-        public static GL_Delegates.Uniform3uiv Uniform3uiv;
-        public static GL_Delegates.Uniform4uiv Uniform4uiv;
-        public static GL_Delegates.UniformMatrix2fv UniformMatrix2fv;
-        public static GL_Delegates.UniformMatrix3fv UniformMatrix3fv;
-        public static GL_Delegates.UniformMatrix4fv UniformMatrix4fv;
-        public static GL_Delegates.UniformMatrix2x3fv UniformMatrix2x3fv;
-        public static GL_Delegates.UniformMatrix3x2fv UniformMatrix3x2fv;
-        public static GL_Delegates.UniformMatrix2x4fv UniformMatrix2x4fv;
-        public static GL_Delegates.UniformMatrix4x2fv UniformMatrix4x2fv;
-        public static GL_Delegates.UniformMatrix3x4fv UniformMatrix3x4fv;
-        public static GL_Delegates.UniformMatrix4x3fv UniformMatrix4x3fv;
+        public static void UseProgram(uint program) => bindings.glUseProgram(program);
+        
+        public static int GetUniformLocation(uint program, string name) => bindings.glGetUniformLocation(program, name);
+        
+        public static int GetAttribLocation(uint program, string name) => bindings.glGetAttribLocation(program, name);
+        
+        public static void Uniform1f(int location, float v0) => bindings.glUniform1f(location, v0);
+        
+        public static void Uniform2f(int location, float v0, float v1) => bindings.glUniform2f(location, v0, v1);
+        
+        public static void Uniform3f(int location, float v0, float v1, float v2) => bindings.glUniform3f(location, v0, v1, v2);
+        
+        public static void Uniform4f(int location, float v0, float v1, float v2, float v3) => bindings.glUniform4f(location, v0, v1, v2, v3);
+        
+        public static void Uniform1fv(int location, int count, IntPtr value) => bindings.glUniform1fv(location, count, value);
+        
+        public static void Uniform2fv(int location, int count, IntPtr value) => bindings.glUniform2fv(location, count, value);
+        
+        public static void Uniform3fv(int location, int count, IntPtr value) => bindings.glUniform3fv(location, count, value);
+        
+        public static void Uniform4fv(int location, int count, IntPtr value) => bindings.glUniform4fv(location, count, value);
+        
+        public static void Uniform1i(int location, int v0) => bindings.glUniform1i(location, v0);
+        
+        public static void Uniform2i(int location, int v0, int v1) => bindings.glUniform2i(location, v0, v1);
+        
+        public static void Uniform3i(int location, int v0, int v1, int v2) => bindings.glUniform3i(location, v0, v1, v2);
+        
+        public static void Uniform4i(int location, int v0, int v1, int v2, int v3) => bindings.glUniform4i(location, v0, v1, v2, v3);
+        
+        public static void Uniform1iv(int location, int count, IntPtr value) => bindings.glUniform1iv(location, count, value);
+        
+        public static void Uniform2iv(int location, int count, IntPtr value) => bindings.glUniform2iv(location, count, value);
+        
+        public static void Uniform3iv(int location, int count, IntPtr value) => bindings.glUniform3iv(location, count, value);
+        
+        public static void Uniform4iv(int location, int count, IntPtr value) => bindings.glUniform4iv(location, count, value);
+        
+        public static void Uniform1ui(int location, uint v0) => bindings.glUniform1ui(location, v0);
+        
+        public static void Uniform2ui(int location, uint v0, uint v1) => bindings.glUniform2ui(location, v0, v1);
+        
+        public static void Uniform3ui(int location, uint v0, uint v1, uint v2) => bindings.glUniform3ui(location, v0, v1, v2);
+        
+        public static void Uniform4ui(int location, uint v0, uint v1, uint v2, uint v3) => bindings.glUniform4ui(location, v0, v1, v2, v3);
+        
+        public static void Uniform1uiv(int location, int count, IntPtr value) => bindings.glUniform1uiv(location, count, value);
+        
+        public static void Uniform2uiv(int location, int count, IntPtr value) => bindings.glUniform2uiv(location, count, value);
+        
+        public static void Uniform3uiv(int location, int count, IntPtr value) => bindings.glUniform3uiv(location, count, value);
+        
+        public static void Uniform4uiv(int location, int count, IntPtr value) => bindings.glUniform4uiv(location, count, value);
+        
+        public static void UniformMatrix2fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix2fv(location, count, transpose, value);
+        
+        public static void UniformMatrix3fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix3fv(location, count, transpose, value);
+        
+        public static void UniformMatrix4fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix4fv(location, count, transpose, value);
+        
+        public static void UniformMatrix2x3fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix2x3fv(location, count, transpose, value);
+        
+        public static void UniformMatrix3x2fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix3x2fv(location, count, transpose, value);
+        
+        public static void UniformMatrix2x4fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix2x4fv(location, count, transpose, value);
+        
+        public static void UniformMatrix4x2fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix4x2fv(location, count, transpose, value);
+        
+        public static void UniformMatrix3x4fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix3x4fv(location, count, transpose, value);
+        
+        public static void UniformMatrix4x3fv(int location, int count, bool transpose, IntPtr value) => bindings.glUniformMatrix4x3fv(location, count, transpose, value);
 
-#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-    }
-
-    internal static class GL_Delegates
-    {
-        public delegate void DebugMessageCallback(IntPtr callback, IntPtr userdata);
-        public delegate void Flush();
-        public delegate void Enable(GLEnum mode);
-        public delegate void Disable(GLEnum mode);
-        public delegate void Clear(GLEnum mask);
-        public delegate void ClearColor(float red, float green, float blue, float alpha);
-        public delegate void ClearDepth(double depth);
-        public delegate void ClearStencil(int stencil);
-        public delegate void DepthMask(bool enabled);
-        public delegate void DepthFunc(GLEnum func);
-        public delegate void Viewport(int x, int y, GLSizei width, GLSizei height);
-        public delegate void Scissor(int x, int y, GLSizei width, GLSizei height);
-        public delegate void CullFace(GLEnum mode);
-        public delegate void BlendEquation(GLEnum eq);
-        public delegate void BlendEquationSeparate(GLEnum modeRGB, GLEnum modeAlpha);
-        public delegate void BlendFunc(GLEnum sfactor, GLEnum dfactor);
-        public delegate void GetIntegerv(GLEnum name, out int data);
-        public unsafe delegate void GenTextures(GLSizei n, IntPtr textures);
-        public unsafe delegate void GenRenderbuffers(GLSizei n, IntPtr textures);
-        public unsafe delegate void GenFramebuffers(GLSizei n, IntPtr textures);
-        public delegate void ActiveTexture(uint id);
-        public delegate void BindTexture(GLEnum target, uint id);
-        public delegate void BindRenderbuffer(GLEnum target, uint id);
-        public delegate void BindFramebuffer(GLEnum target, uint id);
-        public delegate void TexImage2D(GLEnum target, int level, GLEnum internalFormat, GLSizei width, GLSizei height, int border, GLEnum format, GLEnum type, IntPtr data);
-        public delegate void FramebufferRenderbuffer(GLEnum target​, GLEnum attachment​, GLEnum renderbuffertarget​, uint renderbuffer​);
-        public delegate void FramebufferTexture2D(GLEnum target, GLEnum attachment, GLEnum textarget, uint texture, int level);
-        public delegate void TexParameteri(GLEnum target, GLEnum name, int param);
-        public delegate void RenderbufferStorage(GLEnum target​, GLEnum internalformat​, GLSizei width​, GLSizei height​);
-        public delegate void GetTexImage(GLEnum target, int level, GLEnum format, GLEnum type, IntPtr data);
-        public unsafe delegate void DrawElements(GLEnum mode, GLSizei count, GLEnum type, IntPtr indices);
-        public unsafe delegate void DrawElementsInstanced(GLEnum mode, GLSizei count, GLEnum type, IntPtr indices, int amount);
-        public unsafe delegate void DeleteTextures(GLSizei n, uint* textures);
-        public unsafe delegate void DeleteRenderbuffers(GLSizei n, uint* renderbuffers);
-        public unsafe delegate void DeleteFramebuffers(GLSizei n, uint* textures);
-        public unsafe delegate void GenVertexArrays(GLSizei n, uint* arrays);
-        public delegate void BindVertexArray(uint id);
-        public unsafe delegate void GenBuffers(GLSizei n, uint* arrays);
-        public delegate void BindBuffer(GLEnum target, uint buffer);
-        public delegate void BufferData(GLEnum target, IntPtr size, IntPtr data, GLEnum usage);
-        public delegate void BufferSubData(GLEnum target, IntPtr offset, IntPtr size, IntPtr data);
-        public unsafe delegate void DeleteBuffers(GLSizei n, uint* buffers);
-        public unsafe delegate void DeleteVertexArrays(GLSizei n, uint* arrays);
-        public delegate void EnableVertexAttribArray(uint location);
-        public delegate void DisableVertexAttribArray(uint location);
-        public delegate void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, GLSizei stride, IntPtr pointer);
-        public delegate void VertexAttribDivisor(uint index, uint divisor);
-        public delegate uint CreateShader(GLEnum type);
-        public delegate void AttachShader(uint program, uint shader);
-        public delegate void DetachShader(uint program, uint shader);
-        public delegate void DeleteShader(uint shader);
-        public delegate void ShaderSource(uint shader, GLSizei count, string[] source, int[] length);
-        public delegate void CompileShader(uint id);
-        public delegate void GetShaderiv(uint shader, GLEnum pname, out int result);
-        public delegate void GetShaderInfoLog(uint shader, GLSizei maxLength, out GLSizei length, IntPtr infoLog);
-        public delegate uint CreateProgram();
-        public delegate void DeleteProgram(uint program);
-        public delegate void LinkProgram(uint program);
-        public delegate void GetProgramiv(uint program, GLEnum pname, out int result);
-        public delegate void GetProgramInfoLog(uint program, GLSizei maxLength, out GLSizei length, IntPtr infoLog);
-        public unsafe delegate void GetActiveUniform(uint program, uint index, GLSizei bufSize, out GLSizei length, out int size, out GLEnum type, IntPtr name);
-        public unsafe delegate void GetActiveAttrib(uint program, uint index, GLSizei bufSize, out GLSizei length, out int size, out GLEnum type, IntPtr name);
-        public delegate void UseProgram(uint program);
-        public delegate int GetUniformLocation(uint program, string name);
-        public delegate int GetAttribLocation(uint program, string name);
-        public delegate void Uniform1f(int location, float v0);
-        public delegate void Uniform2f(int location, float v0, float v1);
-        public delegate void Uniform3f(int location, float v0, float v1, float v2);
-        public delegate void Uniform4f(int location, float v0, float v1, float v2, float v3);
-        public delegate void Uniform1fv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform2fv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform3fv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform4fv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform1i(int location, int v0);
-        public delegate void Uniform2i(int location, int v0, int v1);
-        public delegate void Uniform3i(int location, int v0, int v1, int v2);
-        public delegate void Uniform4i(int location, int v0, int v1, int v2, int v3);
-        public delegate void Uniform1iv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform2iv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform3iv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform4iv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform1ui(int location, uint v0);
-        public delegate void Uniform2ui(int location, uint v0, uint v1);
-        public delegate void Uniform3ui(int location, uint v0, uint v1, uint v2);
-        public delegate void Uniform4ui(int location, uint v0, uint v1, uint v2, uint v3);
-        public delegate void Uniform1uiv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform2uiv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform3uiv(int location, GLSizei count, IntPtr value);
-        public delegate void Uniform4uiv(int location, GLSizei count, IntPtr value);
-        public delegate void UniformMatrix2fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix3fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix4fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix2x3fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix3x2fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix2x4fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix4x2fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix3x4fv(int location, GLSizei count, bool transpose, IntPtr value);
-        public delegate void UniformMatrix4x3fv(int location, GLSizei count, bool transpose, IntPtr value);
     }
 
     public enum GLEnum : int

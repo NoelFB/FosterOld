@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Foster.GLFW
@@ -12,9 +13,8 @@ namespace Foster.GLFW
         private readonly Stopwatch timer = new Stopwatch();
 
         // we need to keep track of delegates because otherwise they can be garbage collected
-        // and then the C++ GLFW stuff is calling garbage collected delegates. not good!
-        private readonly Dictionary<GLFW_Context, List<Delegate>> contextDelegates = new Dictionary<GLFW_Context, List<Delegate>>();
-        private readonly List<Delegate> contextlessDelegates = new List<Delegate>();
+        // and then the C++ GLFW stuff is calling garbage collected delegates...
+        private readonly Dictionary<GLFW_Context, List<Delegate>> delegateTracker = new Dictionary<GLFW_Context, List<Delegate>>();
 
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
 
@@ -57,7 +57,7 @@ namespace Foster.GLFW
 
                 system.OnWindowClosed += (window) =>
                 {
-                    contextDelegates.Remove(window.context);
+                    delegateTracker.Remove(window.context);
                 };
             }
             else
@@ -76,18 +76,12 @@ namespace Foster.GLFW
             }
         }
 
-        private T TrackDelegate<T>(GLFW_Context? context, T method) where T : Delegate
+        private T TrackDelegate<T>(GLFW_Context context, T method) where T : Delegate
         {
-            if (context == null)
-            {
-                contextlessDelegates.Add(method);
-            }
-            else
-            {
-                if (!contextDelegates.TryGetValue(context, out var list))
-                    contextDelegates[context] = list = new List<Delegate>();
-                list.Add(method);
-            }
+            if (!delegateTracker.TryGetValue(context, out var list))
+                delegateTracker[context] = list = new List<Delegate>();
+
+            list.Add(method);
 
             return method;
         }

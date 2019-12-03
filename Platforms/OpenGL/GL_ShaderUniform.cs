@@ -7,6 +7,7 @@ namespace Foster.OpenGL
     {
         public readonly GL_Shader Shader;
         public readonly int Size;
+        private object? lastValue;
 
         public GL_ShaderUniform(GL_Shader shader, string name, int size, int location, GLEnum type)
         {
@@ -30,6 +31,10 @@ namespace Foster.OpenGL
 
         public unsafe void Upload(object? value)
         {
+            if (lastValue == value)
+                return;
+            lastValue = value;
+
             switch (Type)
             {
                 case Types.Int:
