@@ -62,7 +62,6 @@ namespace Foster.GuiSystem
 
         private const float splitSize = 1f;
         private const float splitGrabSize = 8f;
-        private const int standaloneWindowEdge = 4;
 
         public GuiDockNode(GuiDockNode parent)
         {
@@ -89,9 +88,9 @@ namespace Foster.GuiSystem
                     throw new Exception("Bounds is required for a Standalone dock node");
 
                 var rounded = bounds.Value.Int();
-                var width = rounded.Width + standaloneWindowEdge;
-                var height = rounded.Height + standaloneWindowEdge;
-                var flags = WindowFlags.Hidden | WindowFlags.Transparent | WindowFlags.MultiSampling;
+                var width = rounded.Width;
+                var height = rounded.Height;
+                var flags = WindowFlags.Hidden;
 
                 Window = App.System.CreateWindow("Gui Dock", width, height, flags);
                 Window.Position = rounded.TopLeft;
@@ -99,7 +98,6 @@ namespace Foster.GuiSystem
                 Window.Bordered = false;
                 Window.OnRender = () =>
                 {
-                    App.Graphics.ClearColor(Color.Transparent);
                     Batcher.Render();
                 };
                 Window.OnClose = () =>
@@ -344,12 +342,6 @@ namespace Foster.GuiSystem
                     var scale = Window.ContentScale * Gui.ContentScale;
                     var bounds = new Rect(0, 0, Window.DrawableWidth / scale.X, Window.DrawableHeight / scale.Y);
 
-                    if (Mode == Modes.Standalone)
-                    {
-                        bounds.Width -= standaloneWindowEdge;
-                        bounds.Height -= standaloneWindowEdge;
-                    }
-
                     return bounds;
                 }
 
@@ -437,7 +429,7 @@ namespace Foster.GuiSystem
                         if (Manager.Window.Bounds.Contains(Window.Bounds))
                         {
                             var rect = ScreenToBounds(Manager.Window, Window.Bounds);
-                            var dock = new GuiDockNode(Manager, Modes.Floating, new Rect(rect.X, rect.Y, rect.Width - standaloneWindowEdge, rect.Height - standaloneWindowEdge));
+                            var dock = new GuiDockNode(Manager, Modes.Floating, new Rect(rect.X, rect.Y, rect.Width, rect.Height));
 
                             dock.ID = ID;
                             dock.TakeContent(this);
@@ -484,15 +476,12 @@ namespace Foster.GuiSystem
             if (Mode == Modes.Standalone)
             {
                 Batcher.Clear();
+                Batcher.Rect(Window.DrawableBounds, Color.Black);
                 Imgui.BeginViewport(Window, Batcher, Gui.ContentScale);
             }
 
             // Display
             {
-                // Shadow
-                if (Mode == Modes.Floating || Mode == Modes.Standalone)
-                    Batcher.RoundedRect(bounds + new Vector2(4, 4), 4f, Color.Black * 0.25f);
-
                 // Split Content
                 if (left != null || right != null)
                 {
@@ -577,11 +566,14 @@ namespace Foster.GuiSystem
                                 var remainder = Imgui.Remainder();
                                 Imgui.PopSpacing();
 
+                                var style = Imgui.Style.Window.Frame;
+                                style.Padding = activePanel.Padding;
+                                
                                 // we push a fresh ID here so that it doesn't car what its parent ID is
                                 // we also push a storage so that if this panel is destroyed, its storage will also be disposed
                                 Imgui.PushId(new Imgui.ID(activePanel.ID));
                                 Imgui.BeginStorage(0);
-                                if (Imgui.BeginFrame(0, remainder, Imgui.Style.Window.Frame, true))
+                                if (Imgui.BeginFrame(0, remainder, style, true))
                                 {
                                     frameId = Imgui.CurrentId;
                                     activePanel.OnRefresh?.Invoke(Imgui);

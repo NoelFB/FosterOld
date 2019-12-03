@@ -13,6 +13,7 @@ namespace Foster.GuiSystem
 
         public string Title = "";
         public Action<Imgui>? OnRefresh;
+        public Vector2 Padding = new Vector2(4, 4);
         public bool Opened => Node != null;
 
         internal GuiDockNode? Node;

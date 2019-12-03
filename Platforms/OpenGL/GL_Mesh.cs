@@ -15,14 +15,12 @@ namespace Foster.OpenGL
         private readonly uint indexBuffer;
         private readonly uint vertexBuffer;
         private uint instanceBuffer;
-        private Type? lastVertexType;
-        private Type? lastInstanceType;
-
-        private long vertexCount;
-        private long indexCount;
-        private long instanceCount;
-
+        private VertexFormat? lastVertexFormat;
+        private VertexFormat? lastInstanceFormat;
         private Material? material;
+        private long indexBufferSize;
+        private long vertexBufferSize;
+        private long instanceBufferSize;
 
         public GL_Mesh(GL_Graphics graphics) : base(graphics)
         {
@@ -43,51 +41,50 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override unsafe void UploadVertices<T>(ReadOnlySequence<T> vertices)
+        protected override void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format)
         {
-            var type = typeof(T);
-            if (type != lastVertexType)
+            if (format != lastVertexFormat)
             {
-                lastVertexType = type;
+                lastVertexFormat = format;
                 bindedArrays.Clear();
             }
 
-            UploadBuffer(vertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexCount);
+            UploadBuffer(vertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexBufferSize);
         }
 
-        protected override unsafe void UploadIndices(ReadOnlySequence<int> triangles)
-        {
-            UploadBuffer(indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, triangles, ref indexCount);
-        }
-
-        protected override unsafe void UploadInstances<T>(ReadOnlySequence<T> instances)
+        protected override void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format)
         {
             if (instanceBuffer == 0)
                 instanceBuffer = GL.GenBuffer();
 
-            Type type = typeof(T);
-            if (type != lastInstanceType)
+            if (format != lastInstanceFormat)
             {
-                lastInstanceType = type;
+                lastInstanceFormat = format;
                 bindedArrays.Clear();
             }
 
             // upload buffer data
-            UploadBuffer(instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceCount);
+            UploadBuffer(instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceBufferSize);
         }
 
-        private unsafe void UploadBuffer<T>(uint id, GLEnum type, ReadOnlySequence<T> data, ref long count)
+        protected override unsafe void UploadIndices(ReadOnlySequence<int> indices)
+        {
+            UploadBuffer(indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, indices, ref indexBufferSize);
+        }
+
+        private unsafe void UploadBuffer<T>(uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
         {
             var structSize = Marshal.SizeOf<T>();
 
             GL.BindBuffer(type, id);
 
-            var lastCount = count;
-            count = data.Length;
-
             // resize the buffer
-            if (count > lastCount)
-                GL.BufferData(type, new IntPtr(structSize * count), IntPtr.Zero, GLEnum.STATIC_DRAW);
+            var neededBufferSize = data.Length * structSize;
+            if (currentBufferSize < neededBufferSize)
+            {
+                currentBufferSize = neededBufferSize;
+                GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.STATIC_DRAW);
+            }
 
             // upload the data
             var offset = 0;
@@ -118,7 +115,7 @@ namespace Foster.OpenGL
 
         public override void DrawInstances(int start, int elements, int instances)
         {
-            if (lastInstanceType == null)
+            if (lastInstanceFormat == null || indexBuffer == 0)
                 throw new Exception("Instances must be assigned before being drawn");
 
             if (Material == null)
@@ -154,26 +151,26 @@ namespace Foster.OpenGL
                     bindedArrays[context] = true;
 
                     // bind buffers and determine what attributes are on
-                    foreach (var shaderAttribute in Material.Shader.Attributes.Values)
+                    foreach (var attribute in Material.Shader.Attributes.Values)
                     {
-                        if (lastVertexType != null)
+                        if (VertexFormat != null && VertexCount > 0)
                         {
                             GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
 
-                            if (SetupAttributePointer(shaderAttribute, lastVertexType, 0))
+                            if (TrySetupAttribPointer(attribute, VertexFormat, 0))
                                 continue;
                         }
 
-                        if (lastInstanceType != null)
+                        if (InstanceFormat != null && InstanceCount > 0)
                         {
                             GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
 
-                            if (SetupAttributePointer(shaderAttribute, lastInstanceType, 1))
+                            if (TrySetupAttribPointer(attribute, InstanceFormat, 1))
                                 continue;
                         }
 
                         // nothing is using this so disable it
-                        GL.DisableVertexAttribArray(shaderAttribute.Location);
+                        GL.DisableVertexAttribArray(attribute.Location);
                     }
 
                     // bind our index buffer
@@ -186,31 +183,22 @@ namespace Foster.OpenGL
             return false;
         }
 
-        private bool SetupAttributePointer(ShaderAttribute shaderAttribute, Type type, uint divisor)
+        private bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
         {
-            VertexAttributes.OfType(type, out var attributes);
-
-            if (attributes == null)
-                throw new Exception("Expecting Vertex Attributes");
-
-            foreach (var attribute in attributes)
+            if (format.TryGetElement(attribute.Name, out var element, out var ptr))
             {
-                if (!attribute.Name.Equals(shaderAttribute.Name))
-                    continue;
-
                 // this is kind of messy because some attributes can take up multiple slots
                 // ex. a marix4x4 actually takes up 4 (size 16)
-                var ptr = new IntPtr(attribute.Pointer);
-                for (int i = 0, loc = 0; i < attribute.ComponentCount; i += 4, loc++)
+                for (int i = 0, loc = 0; i < element.Components; i += 4, loc++)
                 {
-                    var size = Math.Min(attribute.ComponentCount - i, 4);
-                    var location = (uint)(shaderAttribute.Location + loc);
+                    var components = Math.Min(element.Components - i, 4);
+                    var location = (uint)(attribute.Location + loc);
 
                     GL.EnableVertexAttribArray(location);
-                    GL.VertexAttribPointer(location, size, ConvertVertexType(attribute.Type), attribute.Normalized, attribute.Stride, ptr);
+                    GL.VertexAttribPointer(location, components, ConvertVertexType(element.Type), element.Normalized, format.Stride, new IntPtr(ptr));
                     GL.VertexAttribDivisor(location, divisor);
 
-                    ptr += size * attribute.ComponentSize;
+                    ptr += components * element.ComponentSizeInBytes;
                 }
 
                 return true;
@@ -249,16 +237,17 @@ namespace Foster.OpenGL
 
         private static GLEnum ConvertVertexType(VertexType value)
         {
-            switch (value)
+            return value switch
             {
-                case Framework.VertexType.Byte: return GLEnum.BYTE;
-                case Framework.VertexType.UnsignedByte: return GLEnum.UNSIGNED_BYTE;
-                case Framework.VertexType.Short: return GLEnum.SHORT;
-                case Framework.VertexType.UnsignedShort: return GLEnum.UNSIGNED_SHORT;
-                case Framework.VertexType.Int: return GLEnum.INT;
-                case Framework.VertexType.UnsignedInt: return GLEnum.UNSIGNED_INT;
-                case Framework.VertexType.Float: default: return GLEnum.FLOAT;
-            }
+                VertexType.Byte => GLEnum.BYTE,
+                VertexType.UnsignedByte => GLEnum.UNSIGNED_BYTE,
+                VertexType.Short => GLEnum.SHORT,
+                VertexType.UnsignedShort => GLEnum.UNSIGNED_SHORT,
+                VertexType.Int => GLEnum.INT,
+                VertexType.UnsignedInt => GLEnum.UNSIGNED_INT,
+                VertexType.Float => GLEnum.FLOAT,
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }

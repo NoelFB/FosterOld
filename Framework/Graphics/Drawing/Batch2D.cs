@@ -10,24 +10,13 @@ namespace Foster.Framework
     {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct Vertex
+        public struct Vertex : IVertex
         {
-            [VertexAttribute(0, "vPosition", VertexType.Float, 2)]
             public Vector2 Pos;
-
-            [VertexAttribute(1, "vTex", VertexType.Float, 2)]
             public Vector2 Tex;
-
-            [VertexAttribute(2, "vColor", VertexType.UnsignedByte, 4, true)]
             public Color Col;
-
-            [VertexAttribute(3, "vMult", VertexType.UnsignedByte, 1, true)]
             public byte Mult;
-
-            [VertexAttribute(4, "vWash", VertexType.UnsignedByte, 1, true)]
             public byte Wash;
-
-            [VertexAttribute(5, "vFill", VertexType.UnsignedByte, 1, true)]
             public byte Fill;
 
             public Vertex(Vector2 position, Vector2 texcoord, Color color, int mult, int wash, int fill)
@@ -40,11 +29,20 @@ namespace Foster.Framework
                 Fill = (byte)fill;
             }
 
+            public VertexFormat Format => format;
+
+            private readonly static VertexFormat format = new VertexFormat(
+                new VertexElement("vPosition", VertexType.Float, 2),
+                new VertexElement("vTex", VertexType.Float, 2),
+                new VertexElement("vColor", VertexType.UnsignedByte, 4, true),
+                new VertexElement("vMult", VertexType.UnsignedByte, 1, true),
+                new VertexElement("vWash", VertexType.UnsignedByte, 1, true),
+                new VertexElement("vFill", VertexType.UnsignedByte, 1, true));
+
             public override string ToString()
             {
                 return $"{{Pos:{Pos}, Tex:{Tex}, Col:{Col}, Mult:{Mult}, Wash:{Wash}, Fill:{Fill}}}";
             }
-
         }
 
         #region Shader Source

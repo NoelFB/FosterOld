@@ -44,22 +44,24 @@ namespace Foster.OpenGL
             var context = App.System.GetCurrentContext();
             if (context != null)
             {
-                // create new array if it's needed
+                // create new framebuffer if it's needed
                 if (!framebuffers.TryGetValue(context, out uint id))
                 {
-                    framebuffers.Add(context, id = GL.GenFramebuffer());
+                    id = GL.GenFramebuffer();
 
                     GL.BindFramebuffer(GLEnum.FRAMEBUFFER, id);
 
                     int i = 0;
                     foreach (GL_Texture texture in attachments)
                     {
-                        GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, (GLEnum.COLOR_ATTACHMENT0 + i), GLEnum.TEXTURE_2D, texture.ID, 0);
+                        GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.COLOR_ATTACHMENT0 + i, GLEnum.TEXTURE_2D, texture.ID, 0);
                         i++;
                     }
 
                     if (HasDepthBuffer)
                         GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, renderBuffer);
+
+                    framebuffers.Add(context, id);
                 }
                 else
                 {

@@ -4,22 +4,19 @@
     {
         public enum Types
         {
-            Unknown = 0,
+            Unknown,
+            
+            Int,
 
-            Int = 0x100,
-            Int2,
-            Int3,
-            Int4,
-
-            Float = 0x200,
+            Float,
             Float2,
             Float3,
             Float4,
 
-            Matrix2D = 0x300,
+            Matrix2D,
             Matrix,
-
-            Texture2D = 0x400
+            
+            Texture2D
         }
 
         /// <summary>

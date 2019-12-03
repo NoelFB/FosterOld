@@ -99,6 +99,7 @@ namespace Foster.GuiSystem
         private void UpdateWorkspace()
         {
             Batcher.Clear();
+            Batcher.Rect(Window.DrawableBounds, Color.Black);
 
             Gui.Imgui.Step();
             Gui.Imgui.BeginViewport(Window, Batcher, Gui.ContentScale);
@@ -122,7 +123,6 @@ namespace Foster.GuiSystem
 
         private void Render()
         {
-            App.Graphics.ClearColor(Color.Black);
             Batcher.Render();
         }
     }

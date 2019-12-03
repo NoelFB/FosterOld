@@ -53,6 +53,7 @@ namespace Foster.Framework
 
             while (Running)
             {
+                var t = Stopwatch.StartNew();
                 // update
                 {
                     // fixed timestep update
