@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-
-namespace Foster.GuiSystem
+﻿namespace Foster.GuiSystem
 {
     public struct BorderRadius
     {

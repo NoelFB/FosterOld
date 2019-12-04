@@ -1,7 +1,6 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Foster.OpenGL
 {
@@ -202,7 +201,7 @@ namespace Foster.OpenGL
                     GL.DepthFunc(GLEnum.NOTEQUAL);
                     break;
 
-                default: 
+                default:
                     throw new NotImplementedException();
             }
         }

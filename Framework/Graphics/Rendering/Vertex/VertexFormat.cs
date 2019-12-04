@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Foster.Framework
+﻿namespace Foster.Framework
 {
     public class VertexFormat
     {
@@ -15,7 +11,7 @@ namespace Foster.Framework
             Elements = elements;
 
             Stride = 0;
-            for (int i = 0; i < Elements.Length; i ++)
+            for (int i = 0; i < Elements.Length; i++)
                 Stride += Elements[i].ElementSizeInBytes;
         }
 

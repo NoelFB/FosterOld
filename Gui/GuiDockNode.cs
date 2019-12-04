@@ -1,7 +1,6 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.GuiSystem
 {
@@ -53,7 +52,7 @@ namespace Foster.GuiSystem
         private GuiDockNode? right;
         private float splitPoint = 0.5f;
         private bool splitHorizontally = true;
-        private List<GuiPanel> panels = new List<GuiPanel>();
+        private readonly List<GuiPanel> panels = new List<GuiPanel>();
         private GuiPanel? activePanel;
         private Rect floatingBounds;
         private Dragging dragging = Dragging.None;
@@ -66,7 +65,7 @@ namespace Foster.GuiSystem
         public GuiDockNode(GuiDockNode parent)
         {
             this.parent = parent;
-            
+
             Gui = parent.Gui;
             Manager = parent.Manager;
             Imgui = parent.Imgui;
@@ -232,7 +231,7 @@ namespace Foster.GuiSystem
                     else
                         activePanel = panels[Math.Max(0, panels.IndexOf(activePanel) - 1)];
                 }
-                
+
                 panels.Remove(panel);
                 panel.Node = null;
 
@@ -568,7 +567,7 @@ namespace Foster.GuiSystem
 
                                 var style = Imgui.Style.Window.Frame;
                                 style.Padding = activePanel.Padding;
-                                
+
                                 // we push a fresh ID here so that it doesn't car what its parent ID is
                                 // we also push a storage so that if this panel is destroyed, its storage will also be disposed
                                 Imgui.PushId(new Imgui.ID(activePanel.ID));

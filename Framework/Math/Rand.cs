@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
@@ -99,7 +96,7 @@ namespace Foster.Framework
         {
             return choices[random.Next(choices.Count)];
         }
-    
+
         #endregion
 
         #region Range

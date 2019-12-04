@@ -1,7 +1,5 @@
 ﻿using Foster.Framework;
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace Foster.GLFW
 {
@@ -163,7 +161,7 @@ namespace Foster.GLFW
                 System.SetCurrentContext(context);
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
-            
+
             GLFW.SwapBuffers(context.Handle);
         }
 

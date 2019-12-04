@@ -1,7 +1,4 @@
 ﻿using Foster.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.GuiSystem
 {
@@ -58,38 +55,38 @@ namespace Foster.GuiSystem
             return size;
         }
 
-        public static Sizing Preferred() => new Sizing 
-        { 
-            ModeX = Modes.Preferred, 
-            ModeY = Modes.Preferred 
+        public static Sizing Preferred() => new Sizing
+        {
+            ModeX = Modes.Preferred,
+            ModeY = Modes.Preferred
         };
 
-        public static Sizing Size(float width, float height) => new Sizing 
-        { 
-            ModeX = Modes.Explicit, 
-            ModeY = Modes.Explicit, 
-            ExplicitWidth = width, 
-            ExplicitHeight = height 
+        public static Sizing Size(float width, float height) => new Sizing
+        {
+            ModeX = Modes.Explicit,
+            ModeY = Modes.Explicit,
+            ExplicitWidth = width,
+            ExplicitHeight = height
         };
 
-        public static Sizing Width(float width, bool fillHeight = false) => new Sizing 
-        { 
-            ModeX = Modes.Explicit, 
+        public static Sizing Width(float width, bool fillHeight = false) => new Sizing
+        {
+            ModeX = Modes.Explicit,
             ModeY = (fillHeight ? Modes.Fill : Modes.Preferred),
-            ExplicitWidth = width 
+            ExplicitWidth = width
         };
 
-        public static Sizing Height(float height, bool fillWidth = false) => new Sizing 
-        { 
+        public static Sizing Height(float height, bool fillWidth = false) => new Sizing
+        {
             ModeX = (fillWidth ? Modes.Fill : Modes.Preferred),
-            ModeY = Modes.Explicit, 
-            ExplicitHeight = height 
+            ModeY = Modes.Explicit,
+            ExplicitHeight = height
         };
 
-        public static Sizing Fill() => new Sizing 
-        { 
-            ModeX = Modes.Fill, 
-            ModeY = Modes.Fill 
+        public static Sizing Fill() => new Sizing
+        {
+            ModeX = Modes.Fill,
+            ModeY = Modes.Fill
         };
 
         public static Sizing FillX() => new Sizing

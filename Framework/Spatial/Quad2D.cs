@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
@@ -123,7 +119,7 @@ namespace Foster.Framework
             normalAB = normalBC = normalCD = normalDA = Vector2.Zero;
             dirty = true;
         }
-        
+
         private void UpdateQuad()
         {
             normalAB = (b - a).Normalized.TurnLeft;
@@ -210,9 +206,9 @@ namespace Foster.Framework
         public static Quad2D Transform(Quad2D quad, Matrix2D matrix)
         {
             return new Quad2D(
-                Vector2.Transform(quad.a, matrix), 
-                Vector2.Transform(quad.b, matrix), 
-                Vector2.Transform(quad.c, matrix), 
+                Vector2.Transform(quad.a, matrix),
+                Vector2.Transform(quad.b, matrix),
+                Vector2.Transform(quad.c, matrix),
                 Vector2.Transform(quad.d, matrix));
         }
 

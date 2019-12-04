@@ -22,7 +22,7 @@ namespace Foster.Framework
         private Matrix2D matrix;
         private Matrix2D inverse;
         private bool dirty = true;
-        
+
         public Transform2D? Parent
         {
             get => parent;

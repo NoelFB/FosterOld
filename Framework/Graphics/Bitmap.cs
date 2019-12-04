@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Foster.Framework
 {
@@ -12,7 +10,7 @@ namespace Foster.Framework
         public readonly int Width;
         public readonly int Height;
 
-        public Bitmap(int width, int height) 
+        public Bitmap(int width, int height)
             : this(width, height, new Color[width * height])
         {
         }

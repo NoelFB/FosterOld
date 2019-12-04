@@ -121,7 +121,7 @@ namespace Foster.GLFW
         public static extern ErrorFunc SetErrorCallback(ErrorFunc callback);
 
         [DllImport(DLL, EntryPoint = "glfwGetMonitors", CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe extern IntPtr* GetMonitors(out int count);
+        public static extern unsafe IntPtr* GetMonitors(out int count);
 
         [DllImport(DLL, EntryPoint = "glfwGetPrimaryMonitor", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetPrimaryMonitor();
@@ -469,8 +469,8 @@ namespace Foster.GLFW
         HAT_LEFT = 8,
         HAT_RIGHT_UP = (HAT_RIGHT | HAT_UP),
         HAT_RIGHT_DOWN = (HAT_RIGHT | HAT_DOWN),
-        HAT_LEFT_UP = (HAT_LEFT  | HAT_UP),
-        HAT_LEFT_DOWN = (HAT_LEFT  | HAT_DOWN),
+        HAT_LEFT_UP = (HAT_LEFT | HAT_UP),
+        HAT_LEFT_DOWN = (HAT_LEFT | HAT_DOWN),
         KEY_UNKNOWN = -1,
         KEY_SPACE = 32,
         KEY_APOSTROPHE = 39,

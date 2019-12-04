@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
@@ -36,7 +33,7 @@ namespace Foster.Framework
                 return false;
             }
 
-            public bool Down => Input.Keyboard.Down(Key); 
+            public bool Down => Input.Keyboard.Down(Key);
             public bool Released => Input.Keyboard.Released(Key);
             public bool Repeated(float delay, float interval) => Input.Keyboard.Repeated(Key, delay, interval);
             public void Update() { }
@@ -68,8 +65,8 @@ namespace Foster.Framework
                 return false;
             }
 
-            public bool Down  => Input.Controllers[Index].Down(Button);
-            public bool Released => Input.Controllers[Index].Released(Button); 
+            public bool Down => Input.Controllers[Index].Down(Button);
+            public bool Released => Input.Controllers[Index].Released(Button);
             public bool Repeated(float delay, float interval) => Input.Controllers[Index].Repeated(Button, delay, interval);
             public void Update() { }
 

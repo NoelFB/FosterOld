@@ -9,8 +9,8 @@ namespace Foster.OpenGL
     public class GL_Mesh : Mesh
     {
 
-        private Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
-        private Dictionary<Context, bool> bindedArrays = new Dictionary<Context, bool>();
+        private readonly Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
+        private readonly Dictionary<Context, bool> bindedArrays = new Dictionary<Context, bool>();
 
         private readonly uint indexBuffer;
         private readonly uint vertexBuffer;

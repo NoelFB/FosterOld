@@ -1,9 +1,9 @@
-﻿using System;
+﻿using StbTrueTypeSharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using StbTrueTypeSharp;
 
 namespace Foster.Framework
 {
@@ -44,7 +44,7 @@ namespace Foster.Framework
 
         public Font(string path) : this(File.ReadAllBytes(path))
         {
-            
+
         }
 
         ~Font()

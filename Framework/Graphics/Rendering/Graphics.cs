@@ -53,7 +53,7 @@ namespace Foster.Framework
         /// Passes if the fragment's depth value is greater than or equal to the stored depth value.
         /// </summary>
         GreaterOrEqual
-    }  
+    }
 
     public abstract class Graphics : Module
     {

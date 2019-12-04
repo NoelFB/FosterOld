@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
@@ -69,7 +65,7 @@ namespace Foster.Framework
 
         public static Vector3 operator /(Point3 point, float scaler) => new Vector3(point.X / scaler, point.Y / scaler, point.Z / scaler);
 
-        public static Vector3 operator * (Point3 point, float scaler) => new Vector3(point.X * scaler, point.Y * scaler, point.Z * scaler);
+        public static Vector3 operator *(Point3 point, float scaler) => new Vector3(point.X * scaler, point.Y * scaler, point.Z * scaler);
 
         public static Vector3 operator %(Point3 point, float scaler) => new Vector3(point.X % scaler, point.Y % scaler, point.Z % scaler);
 

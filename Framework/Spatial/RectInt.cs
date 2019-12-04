@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace Foster.Framework
+﻿namespace Foster.Framework
 {
 
     public struct RectInt
@@ -171,7 +163,7 @@ namespace Foster.Framework
             hash = hash * 23 + Height;
             return hash;
         }
-        
+
         public override string ToString()
         {
             return $"[{X}, {Y}, {Width}, {Height}]";

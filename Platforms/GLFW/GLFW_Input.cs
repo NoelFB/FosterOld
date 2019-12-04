@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Foster.GLFW
 {
@@ -18,9 +16,9 @@ namespace Foster.GLFW
 
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
 
-        private GLFW.GamepadState gamepadState = new GLFW.GamepadState() 
-        { 
-            Buttons = new char[(int)GLFW_Enum.GAMEPAD_BUTTON_LAST + 1], 
+        private GLFW.GamepadState gamepadState = new GLFW.GamepadState()
+        {
+            Buttons = new char[(int)GLFW_Enum.GAMEPAD_BUTTON_LAST + 1],
             Axes = new float[(int)GLFW_Enum.GAMEPAD_AXIS_LAST + 1]
         };
 
@@ -198,7 +196,7 @@ namespace Foster.GLFW
                 {
                     if (GLFW.JoystickIsGamepad(jid) != 0 && GLFW.GetGamepadState(jid, ref gamepadState) != 0)
                     {
-                        for (int i = 0; i < gamepadState.Buttons.Length; i ++)
+                        for (int i = 0; i < gamepadState.Buttons.Length; i++)
                         {
                             var button = GamepadButtonToEnum((GLFW_Enum)i);
                             var down = IsGamepadButtonDown(index, button);
@@ -246,7 +244,7 @@ namespace Foster.GLFW
                             }
 
                             float* axes = (float*)GLFW.GetJoystickAxes(jid, out int axesCount).ToPointer();
-                            for (int i = 0; i < axesCount; i ++)
+                            for (int i = 0; i < axesCount; i++)
                             {
                                 var axis = (uint)i;
                                 var current = GetJoystickAxis(index, axis);

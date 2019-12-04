@@ -1,7 +1,5 @@
-﻿using System;
+﻿using Foster.Framework;
 using System.Collections.Generic;
-using System.Text;
-using Foster.Framework;
 
 namespace Foster.GuiSystem
 {
@@ -44,7 +42,7 @@ namespace Foster.GuiSystem
         }
 
         public GuiManager(Gui gui, string title, int width, int height) :
-            this (gui, App.System.CreateWindow(title, width, height))
+            this(gui, App.System.CreateWindow(title, width, height))
         {
 
         }

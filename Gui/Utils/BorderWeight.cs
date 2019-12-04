@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Foster.GuiSystem
+﻿namespace Foster.GuiSystem
 {
     public struct BorderWeight
     {

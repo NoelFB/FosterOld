@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 
 namespace Foster.Framework
@@ -9,11 +7,11 @@ namespace Foster.Framework
     public static class App
     {
         public static readonly Version Version = new Version(0, 1, 0);
-        
+
         public static bool Running { get; private set; } = false;
         public static bool Exiting { get; private set; } = false;
 
-        public readonly static ModuleList Modules = new ModuleList();
+        public static readonly ModuleList Modules = new ModuleList();
 
         public static System System => Modules.Get<System>();
         public static Graphics Graphics => Modules.Get<Graphics>();
@@ -136,7 +134,7 @@ namespace Foster.Framework
                     Modules.Tick();
                 }
             }
-            
+
             // finalize
             Modules.Shutdown();
             Modules.Clear();

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Foster.Framework
 {
@@ -47,7 +46,7 @@ namespace Foster.Framework
 
         }
 
-        public SpriteFont(Font font, int size, string charset) 
+        public SpriteFont(Font font, int size, string charset)
             : this(new FontSize(font, size, charset))
         {
 

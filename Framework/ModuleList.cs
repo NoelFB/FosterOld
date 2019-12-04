@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace Foster.Framework
@@ -92,19 +91,19 @@ namespace Foster.Framework
                 modules[i].Shutdown();
         }
 
-        internal void BeforeUpdate() 
+        internal void BeforeUpdate()
         {
             for (int i = 0; i < modules.Count; i++)
                 modules[i].BeforeUpdate();
         }
 
-        internal void Update() 
+        internal void Update()
         {
             for (int i = 0; i < modules.Count; i++)
                 modules[i].Update();
         }
 
-        internal void AfterUpdate() 
+        internal void AfterUpdate()
         {
             for (int i = 0; i < modules.Count; i++)
                 modules[i].AfterUpdate();
@@ -116,13 +115,13 @@ namespace Foster.Framework
                 modules[i].ContextChanged(context);
         }
 
-        internal void BeforeRender(Window window) 
+        internal void BeforeRender(Window window)
         {
             for (int i = 0; i < modules.Count; i++)
                 modules[i].BeforeRender(window);
         }
 
-        internal void AfterRender(Window window) 
+        internal void AfterRender(Window window)
         {
             for (int i = 0; i < modules.Count; i++)
                 modules[i].AfterRender(window);

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
 namespace Foster.Framework
 {
@@ -230,8 +227,8 @@ namespace Foster.Framework
                 throw new Exception("Source image is larger than max atlas size");
 
             // we should never need more nodes than source images * 3
-            Span<PackingNode> buffer = (sources.Count <= 1000 ? 
-                stackalloc PackingNode[sources.Count * 4] : 
+            Span<PackingNode> buffer = (sources.Count <= 1000 ?
+                stackalloc PackingNode[sources.Count * 4] :
                 new PackingNode[sources.Count * 4]);
 
             // using pointer operations here was faster

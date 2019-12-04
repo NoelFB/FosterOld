@@ -1,5 +1,4 @@
 ﻿using Foster.Framework;
-using System;
 
 namespace Foster.OpenGL
 {

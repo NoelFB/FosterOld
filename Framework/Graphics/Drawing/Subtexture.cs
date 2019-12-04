@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Foster.Framework
+﻿namespace Foster.Framework
 {
     public class Subtexture
     {
@@ -85,13 +81,13 @@ namespace Foster.Framework
         private Rect drawRect;
         private Rect sourceRect;
 
-        public Subtexture(Texture texture) 
+        public Subtexture(Texture texture)
             : this(texture, new Rect(0, 0, texture.Width, texture.Height))
         {
 
         }
 
-        public Subtexture(Texture texture, Rect source) 
+        public Subtexture(Texture texture, Rect source)
             : this(texture, source, new Rect(0, 0, source.Width, source.Height))
         {
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foster.Framework;
-
-namespace Foster.GuiSystem
+﻿namespace Foster.GuiSystem
 {
     public static class ImguiHeader
     {

@@ -731,7 +731,7 @@ void main(void)
         {
             var last = Vector2.Angle(start, radius);
 
-            for (int i = 1; i <= steps; i ++)
+            for (int i = 1; i <= steps; i++)
             {
                 var next = Vector2.Angle(Calc.AngleLerp(start, end, (i / (float)steps)), radius);
                 Triangle(center + last, center + next, center, color);
@@ -783,7 +783,7 @@ void main(void)
         {
             SetTexture(texture);
             Quad(
-                new Vector2(0, 0), new Vector2(texture.Width, 0), new Vector2(texture.Width, texture.Height),  new Vector2(0, texture.Height),
+                new Vector2(0, 0), new Vector2(texture.Width, 0), new Vector2(texture.Width, texture.Height), new Vector2(0, texture.Height),
                 new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
                 color, washed);
         }
@@ -814,10 +814,10 @@ void main(void)
 
         public void Image(Texture texture, Rect clip, Vector2 position, Color color, bool washed = false)
         {
-            var tx0 = clip.X / (float)texture.Width;
-            var ty0 = clip.Y / (float)texture.Height;
-            var tx1 = clip.Right / (float)texture.Width;
-            var ty1 = clip.Bottom / (float)texture.Height;
+            var tx0 = clip.X / texture.Width;
+            var ty0 = clip.Y / texture.Height;
+            var tx1 = clip.Right / texture.Width;
+            var ty1 = clip.Bottom / texture.Height;
 
             SetTexture(texture);
             Quad(
@@ -832,10 +832,10 @@ void main(void)
 
             MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
 
-            var tx0 = clip.X / (float)texture.Width;
-            var ty0 = clip.Y / (float)texture.Height;
-            var tx1 = clip.Right / (float)texture.Width;
-            var ty1 = clip.Bottom / (float)texture.Height;
+            var tx0 = clip.X / texture.Width;
+            var ty0 = clip.Y / texture.Height;
+            var tx1 = clip.Right / texture.Width;
+            var ty1 = clip.Bottom / texture.Height;
 
             SetTexture(texture);
             Quad(

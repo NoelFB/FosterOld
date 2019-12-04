@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foster.Framework;
+﻿using Foster.Framework;
+using System;
 
 namespace Foster.GuiSystem
 {

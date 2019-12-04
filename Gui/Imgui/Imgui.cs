@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Foster.Framework;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Text;
-using Foster.Framework;
 
 namespace Foster.GuiSystem
 {
@@ -155,9 +152,9 @@ namespace Foster.GuiSystem
 
         public class StorageData
         {
-            private Dictionary<ID, float> numbers = new Dictionary<ID, float>();
-            private Dictionary<ID, bool> bools = new Dictionary<ID, bool>();
-            private Dictionary<ID, ID> ids = new Dictionary<ID, ID>();
+            private readonly Dictionary<ID, float> numbers = new Dictionary<ID, float>();
+            private readonly Dictionary<ID, bool> bools = new Dictionary<ID, bool>();
+            private readonly Dictionary<ID, ID> ids = new Dictionary<ID, ID>();
 
             public bool Used;
 
@@ -536,7 +533,7 @@ namespace Foster.GuiSystem
                             if (ActiveId == scrollId)
                             {
                                 var delta = viewport.MouseDelta.Y * (lastInnerHeight / height);
-                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y +  delta, 0, lastInnerHeight - bounds.Height);
+                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + delta, 0, lastInnerHeight - bounds.Height);
                                 scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
                             }
 
@@ -685,11 +682,11 @@ namespace Foster.GuiSystem
                 {
                     var inner = rect.Inflate(-borderWeight.Left, -borderWeight.Top, -borderWeight.Right, -borderWeight.Bottom);
                     Batcher.RoundedRect(rect, radius.TopLeft, radius.TopRight, radius.BottomRight, radius.BottomLeft, border);
-                    Batcher.RoundedRect(inner, 
-                        radius.TopLeft - (borderWeight.Top > 0 && borderWeight.Left > 0 ? 1 : 0), 
-                        radius.TopRight - (borderWeight.Top > 0 && borderWeight.Right > 0 ? 1 : 0), 
-                        radius.BottomRight - (borderWeight.Bottom > 0 && borderWeight.Right > 0 ? 1 : 0), 
-                        radius.BottomLeft - (borderWeight.Bottom > 0 && borderWeight.Left > 0 ? 1 : 0), 
+                    Batcher.RoundedRect(inner,
+                        radius.TopLeft - (borderWeight.Top > 0 && borderWeight.Left > 0 ? 1 : 0),
+                        radius.TopRight - (borderWeight.Top > 0 && borderWeight.Right > 0 ? 1 : 0),
+                        radius.BottomRight - (borderWeight.Bottom > 0 && borderWeight.Right > 0 ? 1 : 0),
+                        radius.BottomLeft - (borderWeight.Bottom > 0 && borderWeight.Left > 0 ? 1 : 0),
                         background);
                 }
                 else

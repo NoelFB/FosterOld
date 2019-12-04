@@ -7,8 +7,8 @@ namespace Foster.OpenGL
     public class GL_Target : Target
     {
 
-        private Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
-        private uint renderBuffer;
+        private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
+        private readonly uint renderBuffer;
 
         public GL_Target(GL_Graphics graphics, int width, int height, int textures, bool depthBuffer, bool stencilBuffer) : base(graphics)
         {

@@ -1,6 +1,5 @@
 ﻿using Foster.Framework;
 using System;
-using System.Threading;
 
 namespace Foster.OpenGL
 {

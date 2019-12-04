@@ -226,7 +226,7 @@ namespace Foster.Framework
             right = -left;
             up = Vector3.Transform(Vector3.Up, rotation);
             down = -up;
-            
+
             if (parent != null)
                 matrix = matrix * parent.Matrix;
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
@@ -53,7 +49,7 @@ namespace Foster.Framework
         public static Point2 operator %(Point2 point, int scaler) => new Point2(point.X % scaler, point.Y % scaler);
 
         public static Vector2 operator /(Point2 point, float scaler) => new Vector2(point.X / scaler, point.Y / scaler);
-        public static Vector2 operator* (Point2 point, float scaler) => new Vector2(point.X * scaler, point.Y * scaler);
+        public static Vector2 operator *(Point2 point, float scaler) => new Vector2(point.X * scaler, point.Y * scaler);
         public static Vector2 operator %(Point2 point, float scaler) => new Vector2(point.X % scaler, point.Y % scaler);
 
         public static Point2 operator +(Point2 a, Point2 b) => new Point2(a.X + b.X, a.Y + b.Y);

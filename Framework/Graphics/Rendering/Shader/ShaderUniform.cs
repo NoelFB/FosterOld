@@ -5,7 +5,7 @@
         public enum Types
         {
             Unknown,
-            
+
             Int,
 
             Float,
@@ -15,7 +15,7 @@
 
             Matrix2D,
             Matrix,
-            
+
             Texture2D
         }
 

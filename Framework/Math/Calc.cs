@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
@@ -230,7 +227,7 @@ namespace Foster.Framework
         /// <summary>
         /// Adler32 checksum algorithm taken from zlib format specification: https://tools.ietf.org/html/rfc1950#section-9
         /// </summary>
-        static uint Adler32_Naive(uint value, Span<byte> buf)
+        private static uint Adler32_Naive(uint value, Span<byte> buf)
         {
             uint s1 = value & 0xffff;
             uint s2 = (value >> 16) & 0xffff;

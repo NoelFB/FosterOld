@@ -1,7 +1,6 @@
-﻿using System;
+﻿using StbTrueTypeSharp;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using StbTrueTypeSharp;
 
 namespace Foster.Framework
 {

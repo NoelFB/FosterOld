@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foster.Framework
 {
     public struct Tag
     {
-        
+
         public const uint Any = 0xFFFFFFFF;
 
         public uint Flag;

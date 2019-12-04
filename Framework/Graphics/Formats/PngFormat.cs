@@ -489,7 +489,7 @@ namespace Foster.Framework
                             for (int x = 0; x < width; x += MaxHorizontalStep)
                             {
                                 var segment = new Span<byte>(pixelBuffer + x * 4, Math.Min(width - x, MaxHorizontalStep) * 4);
-                                
+
                                 // delfate the segment of the row
                                 deflate.Write(segment);
 

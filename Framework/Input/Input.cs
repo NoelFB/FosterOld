@@ -44,7 +44,7 @@ namespace Foster.Framework
             State.Copy(nextState);
             nextState.Step();
 
-            for (int i = virtualButtons.Count - 1; i >= 0; i --)
+            for (int i = virtualButtons.Count - 1; i >= 0; i--)
             {
                 var button = virtualButtons[i];
                 if (button.TryGetTarget(out var target))
@@ -73,7 +73,7 @@ namespace Foster.Framework
             nextState.Keyboard.down[key] = false;
             nextState.Keyboard.released[key] = true;
         }
-        
+
         protected void OnMouseDown(MouseButtons button, ulong timestamp)
         {
             nextState.Mouse.down[(int)button] = true;

@@ -144,25 +144,25 @@ namespace Foster.Framework
                          float m31, float m32, float m33, float m34,
                          float m41, float m42, float m43, float m44)
         {
-            this.M11 = m11;
-            this.M12 = m12;
-            this.M13 = m13;
-            this.M14 = m14;
+            M11 = m11;
+            M12 = m12;
+            M13 = m13;
+            M14 = m14;
 
-            this.M21 = m21;
-            this.M22 = m22;
-            this.M23 = m23;
-            this.M24 = m24;
+            M21 = m21;
+            M22 = m22;
+            M23 = m23;
+            M24 = m24;
 
-            this.M31 = m31;
-            this.M32 = m32;
-            this.M33 = m33;
-            this.M34 = m34;
+            M31 = m31;
+            M32 = m32;
+            M33 = m33;
+            M34 = m34;
 
-            this.M41 = m41;
-            this.M42 = m42;
-            this.M43 = m43;
-            this.M44 = m44;
+            M41 = m41;
+            M42 = m42;
+            M43 = m43;
+            M44 = m44;
         }
 
         /// <summary>
@@ -282,16 +282,16 @@ namespace Foster.Framework
             // Treat the case when angle between faceDir and rotateAxis is too close to 0.
             float dot = Vector3.Dot(rotateAxis, faceDir);
 
-            if ((float)Math.Abs(dot) > minAngle)
+            if (Math.Abs(dot) > minAngle)
             {
                 zaxis = objectForwardVector;
 
                 // Make sure passed values are useful for compute.
                 dot = Vector3.Dot(rotateAxis, zaxis);
 
-                if ((float)Math.Abs(dot) > minAngle)
+                if (Math.Abs(dot) > minAngle)
                 {
-                    zaxis = ((float)Math.Abs(rotateAxis.Z) > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
+                    zaxis = (Math.Abs(rotateAxis.Z) > minAngle) ? new Vector3(1, 0, 0) : new Vector3(0, 0, -1);
                 }
 
                 xaxis = Vector3.Normalize(Vector3.Cross(rotateAxis, zaxis));
@@ -1174,7 +1174,7 @@ namespace Foster.Framework
 
             return Matrix.CreateFromQuaternion(q);
         }
-        
+
 
         /// <summary>
         /// Calculates the determinant of the matrix.
@@ -1346,7 +1346,7 @@ namespace Foster.Framework
 
             float det = a * a11 + b * a12 + c * a13 + d * a14;
 
-            if ((float)Math.Abs(det) < float.Epsilon)
+            if (Math.Abs(det) < float.Epsilon)
             {
                 result = new Matrix(float.NaN, float.NaN, float.NaN, float.NaN,
                                        float.NaN, float.NaN, float.NaN, float.NaN,
@@ -1394,16 +1394,14 @@ namespace Foster.Framework
             return true;
         }
 
-
-        struct CanonicalBasis
+        private struct CanonicalBasis
         {
             public Vector3 Row0;
             public Vector3 Row1;
             public Vector3 Row2;
         };
 
-
-        struct VectorBasis
+        private struct VectorBasis
         {
             public unsafe Vector3* Element0;
             public unsafe Vector3* Element1;
@@ -1524,9 +1522,9 @@ namespace Foster.Framework
                         uint cc;
                         float fAbsX, fAbsY, fAbsZ;
 
-                        fAbsX = (float)Math.Abs(pVectorBasis[a]->X);
-                        fAbsY = (float)Math.Abs(pVectorBasis[a]->Y);
-                        fAbsZ = (float)Math.Abs(pVectorBasis[a]->Z);
+                        fAbsX = Math.Abs(pVectorBasis[a]->X);
+                        fAbsY = Math.Abs(pVectorBasis[a]->Y);
+                        fAbsZ = Math.Abs(pVectorBasis[a]->Z);
 
                         #region Ranking
                         if (fAbsX < fAbsY)
