@@ -3,7 +3,7 @@
     public class Subtexture
     {
 
-        public Texture Texture;
+        public readonly Texture Texture;
 
         /// <summary>
         /// The Texture coordinates. These are set automatically based on the Source rectangle
@@ -74,8 +74,14 @@
         /// </summary>
         public Rect FrameRect;
 
-
+        /// <summary>
+        /// The Draw Width of the Subtexture
+        /// </summary>
         public float Width => DrawRect.Width;
+
+        /// <summary>
+        /// The Draw Height of the Subtexture
+        /// </summary>
         public float Height => DrawRect.Height;
 
         private Rect drawRect;

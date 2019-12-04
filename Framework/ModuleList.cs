@@ -11,11 +11,17 @@ namespace Foster.Framework
         private readonly List<Module> modules = new List<Module>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
 
+        /// <summary>
+        /// Registers a Module
+        /// </summary>
         public T Register<T>() where T : Module
         {
             return Register(Activator.CreateInstance<T>());
         }
 
+        /// <summary>
+        /// Registers a Module
+        /// </summary>
         public Module Register(Type type)
         {
             if (!(Activator.CreateInstance(type) is Module module))
@@ -24,6 +30,9 @@ namespace Foster.Framework
             return Register(module);
         }
 
+        /// <summary>
+        /// Registers a Module
+        /// </summary>
         public T Register<T>(T module) where T : Module
         {
             if (module.Registered)
@@ -50,6 +59,26 @@ namespace Foster.Framework
                 module.Startup();
 
             return module;
+        }
+
+        /// <summary>
+        /// Removes a Module
+        /// Note: Removing core modules (such as System) will make everything break
+        /// </summary>
+        public void Remove(Module module)
+        {
+            modules.Remove(module);
+
+            var type = module.GetType();
+            while (type != typeof(Module))
+            {
+                modulesByType.Remove(type);
+
+                if (type.BaseType == null)
+                    break;
+
+                type = type.BaseType;
+            }
         }
 
         public bool TryGet<T>(out T? module) where T : Module

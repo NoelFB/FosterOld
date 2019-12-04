@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Foster.Framework
 {
@@ -75,6 +76,18 @@ namespace Foster.Framework
         /// <returns></returns>
         public static Texture Create(Bitmap bitmap)
         {
+            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height);
+            texture.SetColor(new Memory<Color>(bitmap.Pixels));
+            return texture;
+        }
+
+        /// <summary>
+        /// Creates a new Texture from the given stream
+        /// </summary>
+        /// <returns></returns>
+        public static Texture Create(Stream stream)
+        {
+            var bitmap = new Bitmap(stream);
             var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height);
             texture.SetColor(new Memory<Color>(bitmap.Pixels));
             return texture;

@@ -22,9 +22,9 @@ namespace Foster.GuiSystem
             var scale = Vector2.One * imgui.FontScale * imgui.Style.TitleScale;
 
             imgui.Batcher.PushMatrix(new Vector2(position.X, position.Y + imgui.Style.Generic.Idle.Padding.Y), scale, Vector2.Zero, 0f);
-            imgui.Batcher.Text(imgui.Font, label, Color.White);
+            imgui.Batcher.Text(imgui.Font, label, imgui.Style.TitleColor);
             imgui.Batcher.PopMatrix();
-            imgui.Batcher.Rect(position.X, position.Bottom - 4, position.Width, 4, Color.White);
+            imgui.Batcher.Rect(position.X, position.Bottom - 4, position.Width, 4, imgui.Style.TitleColor);
         }
     }
 }

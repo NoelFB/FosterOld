@@ -43,6 +43,7 @@ namespace Foster.GuiSystem
     public struct Stylesheet
     {
         public float TitleScale;
+        public Color TitleColor;
 
         public StyleWindow Window;
         public StyleWindow Docked;
@@ -175,7 +176,7 @@ namespace Foster.GuiSystem
             {
                 Idle = new StyleState
                 {
-                    BorderRadius = new BorderRadius(3),
+                    BorderRadius = new BorderRadius(0),
                     BorderWeight = new BorderWeight(0, 0, 0, 1),
                     BorderColor = 0x383838,
                     BackgroundColor = 0x757a78,

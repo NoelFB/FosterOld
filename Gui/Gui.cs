@@ -30,7 +30,9 @@ namespace Foster.GuiSystem
         {
             var panel = new GuiPanel(this, title);
 
-            if (with.Node != null)
+            if (with == null)
+                Manager.Root.InsertPanel(GuiDockNode.Placings.Center, panel);
+            else if (with.Node != null)
                 with.Node.InsertPanel(GuiDockNode.Placings.Center, panel);
 
             return panel;
