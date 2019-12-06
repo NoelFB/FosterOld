@@ -49,7 +49,7 @@ namespace Foster.Framework
 
         private const string VertexSource = @"
 #version 330
-uniform mat4 Matrix;
+uniform mat4 matrix;
 
 in vec2 vPosition;
 in vec2 vTex;
@@ -66,7 +66,7 @@ out float fFill;
 
 void main(void)
 {
-    gl_Position = Matrix * vec4(vPosition, 0.0, 1.0);
+    gl_Position = matrix * vec4(vPosition, 0.0, 1.0);
     fTex = vTex;
     fColor = vColor;
     fMult = vMult;
@@ -76,7 +76,7 @@ void main(void)
 
         private const string FragmentSource = @"
 #version 330
-uniform sampler2D Texture;
+uniform sampler2D mainTexture;
 
 in vec2 fTex;
 in vec4 fColor;
@@ -88,7 +88,7 @@ out vec4 outColor;
 
 void main(void)
 {
-    vec4 color = texture(Texture, fTex);
+    vec4 color = texture(mainTexture, fTex);
     outColor = 
         fMult * color * fColor + 
         fWash * color.a * fColor + 
@@ -100,6 +100,9 @@ void main(void)
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
         public readonly Mesh Mesh;
+
+        public string TextureUniformName = "mainTexture";
+        public string MatrixUniformName = "matrix";
 
         public Matrix OrthographicMatrix =>
             Matrix.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2, 1f) *
@@ -201,8 +204,8 @@ void main(void)
                     dirty = false;
                 }
 
-                Graphics.DepthTest(false);
-                Graphics.CullMode(Cull.None);
+                Graphics.SetDepthTest(false);
+                Graphics.SetCullMode(Cull.None);
 
                 // render batches
                 for (int i = 0; i < batches.Count; i++)
@@ -217,20 +220,20 @@ void main(void)
         private void RenderBatch(Batch batch, ref Matrix matrix)
         {
             if (batch.Scissor != null)
-                Graphics.Scissor(batch.Scissor.Value);
+                Graphics.SetScissor(batch.Scissor.Value);
             else
                 Graphics.DisableScissor();
 
             // set BlendMode
-            Graphics.BlendMode(batch.BlendMode);
+            Graphics.SetBlendMode(batch.BlendMode);
 
             // Render the Mesh
             // Note we apply the texture and matrix based on the current batch
             // If the user set these on the Material themselves, they will be overwritten here
 
             Mesh.Material = batch.Material ?? DefaultMaterial;
-            Mesh.Material.SetTexture("Texture", batch.Texture);
-            Mesh.Material.SetMatrix("Matrix", new Matrix(batch.Matrix) * matrix);
+            Mesh.Material.SetTexture(TextureUniformName, batch.Texture);
+            Mesh.Material.SetMatrix(MatrixUniformName, new Matrix(batch.Matrix) * matrix);
             Mesh.Draw(batch.Offset, batch.Elements);
         }
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Foster.Framework
+namespace Foster.Framework.Internal
 {
     public abstract class InternalShader : InternalResource
     {

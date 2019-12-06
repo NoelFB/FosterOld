@@ -1,4 +1,5 @@
 ﻿using System;
+using Foster.Framework.Internal;
 using System.Collections.Generic;
 using System.Text;
 

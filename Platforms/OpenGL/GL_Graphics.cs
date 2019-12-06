@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.Framework.Internal;
 using System;
 using System.Collections.Generic;
 
@@ -141,11 +142,11 @@ namespace Foster.OpenGL
             return new GL_Mesh(this);
         }
 
-        public override void Target(Target? target)
+        public override void SetTarget(Target? target)
         {
             if (target != null && target.Internal is GL_Target glTarget)
             {
-                glTarget.Use();
+                glTarget.Bind();
                 Viewport = new RectInt(0, 0, target.Width, target.Height);
             }
             else
@@ -160,7 +161,7 @@ namespace Foster.OpenGL
             DisableScissor();
         }
 
-        public override void DepthTest(bool enabled)
+        public override void SetDepthTest(bool enabled)
         {
             if (enabled)
             {
@@ -172,7 +173,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void DepthFunction(DepthFunctions func)
+        public override void SetDepthFunction(DepthFunctions func)
         {
             switch (func)
             {
@@ -206,7 +207,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void CullMode(Cull mode)
+        public override void SetCullMode(Cull mode)
         {
             if (mode == Cull.None)
             {
@@ -230,7 +231,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void BlendMode(BlendMode blendMode)
+        public override void SetBlendMode(BlendMode blendMode)
         {
             GLEnum op = GetBlendFunc(blendMode.Operation);
             GLEnum src = GetBlendFactor(blendMode.Source);
@@ -266,7 +267,7 @@ namespace Foster.OpenGL
             GL.Clear(mask);
         }
 
-        public override void Scissor(RectInt scissor)
+        public override void SetScissor(RectInt scissor)
         {
             GL.Enable(GLEnum.SCISSOR_TEST);
             GL.Scissor(scissor.X, viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);

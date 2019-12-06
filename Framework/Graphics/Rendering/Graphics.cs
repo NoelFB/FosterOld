@@ -1,4 +1,5 @@
 ﻿using System;
+using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
@@ -89,7 +90,7 @@ namespace Foster.Framework
         /// Sets the current rendering Target.
         /// Set null to target the current Context backbuffer
         /// </summary>
-        public abstract void Target(Target? target);
+        public abstract void SetTarget(Target? target);
 
         /// <summary>
         /// Clears the Color of the current Target
@@ -121,29 +122,29 @@ namespace Foster.Framework
         /// <summary>
         /// Enables or Disables Depth-testing
         /// </summary>
-        public abstract void DepthTest(bool enabled);
+        public abstract void SetDepthTest(bool enabled);
 
         /// <summary>
         /// Sets the Depth Testing function
         /// </summary>
-        public abstract void DepthFunction(DepthFunctions func);
+        public abstract void SetDepthFunction(DepthFunctions func);
 
         /// <summary>
         /// Sets the current Culling Mode
         /// </summary>
-        public abstract void CullMode(Cull mode);
+        public abstract void SetCullMode(Cull mode);
 
         /// <summary>
         /// Sets the current Blend Mode
         /// </summary>
-        public abstract void BlendMode(BlendMode blendMode);
+        public abstract void SetBlendMode(BlendMode blendMode);
 
         /// <summary>
         /// Enables and Sets the current Scissor Rectangle
         /// This is from the Top-Left of the rendering target
         /// </summary>
         /// <param name="scissor"></param>
-        public abstract void Scissor(RectInt scissor);
+        public abstract void SetScissor(RectInt scissor);
 
         /// <summary>
         /// Disables the Scissor Rectangle
@@ -188,7 +189,7 @@ namespace Foster.Framework
 
         protected internal override void BeforeRender(Window window)
         {
-            Target(null);
+            SetTarget(null);
         }
     }
 }

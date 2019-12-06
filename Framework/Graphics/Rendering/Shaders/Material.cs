@@ -52,7 +52,7 @@ namespace Foster.Framework
                 if (Type == ShaderUniform.Types.Matrix2D || Type == ShaderUniform.Types.Matrix)
                     Value = value;
                 else
-                    throw new Exception($"Parameter {name} isn't a Matrix");
+                    throw new Exception($"Parameter {name} isn't a 2D Matrix");
             }
 
             public void SetMatrix(string name, Matrix value)
@@ -60,7 +60,7 @@ namespace Foster.Framework
                 if (Type == ShaderUniform.Types.Matrix)
                     Value = value;
                 else
-                    throw new Exception($"Parameter {name} isn't a Matrix4x4");
+                    throw new Exception($"Parameter {name} isn't a Matrix");
             }
 
             public void SetVector2(string name, Vector2 value)

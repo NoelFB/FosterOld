@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Buffers;
 
-namespace Foster.Framework
+namespace Foster.Framework.Internal
 {
     public abstract class InternalMesh : InternalResource
     {

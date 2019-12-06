@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.Framework.Internal;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +8,7 @@ namespace Foster.OpenGL
     public class GL_Target : InternalTarget
     {
 
-        private GL_Graphics graphics;
+        private readonly GL_Graphics graphics;
         private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
         private readonly uint renderBuffer;
 
@@ -18,9 +19,10 @@ namespace Foster.OpenGL
             // texture (color) attachments
             for (int i = 0; i < textures; i++)
             {
-                GL_Texture texture = new GL_Texture(graphics, width, height);
-                texture.flipVertically = true;
-                attachments.Add(texture);
+                attachments.Add(new GL_Texture(graphics, width, height)
+                {
+                    flipVertically = true
+                });
             }
 
             // depth buffer
@@ -42,7 +44,7 @@ namespace Foster.OpenGL
             Dispose();
         }
 
-        public void Use()
+        public void Bind()
         {
             var context = App.System.GetCurrentContext();
             if (context != null)

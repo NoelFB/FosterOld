@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Foster.Framework
+namespace Foster.Framework.Internal
 {
     public abstract class InternalTexture : InternalResource
     {

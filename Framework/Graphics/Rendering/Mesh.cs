@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
+using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
@@ -31,7 +32,11 @@ namespace Foster.Framework
         public  Material? Material
         {
             get => material;
-            set => Internal.SetMaterial(material = value);
+            set
+            {
+                if (material != value)
+                    Internal.SetMaterial(material = value);
+            }
         }
 
         public void SetVertices<T>(T[] vertices) where T : struct, IVertex

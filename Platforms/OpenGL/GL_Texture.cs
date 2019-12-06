@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.Framework.Internal;
 using System;
 
 namespace Foster.OpenGL

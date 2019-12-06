@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.Framework.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Foster.OpenGL
         private readonly Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
         private readonly Dictionary<Context, bool> bindedArrays = new Dictionary<Context, bool>();
 
-        private GL_Graphics graphics;
+        private readonly GL_Graphics graphics;
         private uint indexBuffer;
         private uint vertexBuffer;
         private uint instanceBuffer;

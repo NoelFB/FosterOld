@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.Framework.Internal;
 using System;
 using System.Collections.Specialized;
 
@@ -7,8 +8,9 @@ namespace Foster.OpenGL
     public class GL_Shader : InternalShader
     {
 
+        private readonly GL_Graphics graphics;
+
         public uint ID { get; private set; }
-        private GL_Graphics graphics;
 
         internal GL_Shader(GL_Graphics graphics, string vertexSource, string fragmentSource)
         {
@@ -52,7 +54,7 @@ namespace Foster.OpenGL
             GL.GetProgramiv(ID, GLEnum.ACTIVE_ATTRIBUTES, out int attributeCount);
             for (int i = 0; i < attributeCount; i++)
             {
-                GL.GetActiveAttrib(ID, (uint)i, out int size, out GLEnum type, out string name);
+                GL.GetActiveAttrib(ID, (uint)i, out _, out _, out string name);
                 int location = GL.GetAttribLocation(ID, name);
                 if (location >= 0)
                     attributes.Add(name, new ShaderAttribute(name, (uint)location));
