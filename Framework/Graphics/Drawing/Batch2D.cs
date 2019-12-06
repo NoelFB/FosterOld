@@ -148,11 +148,11 @@ void main(void)
 
         }
 
-        public Batch2D(Graphics rendering) : base(rendering)
+        public Batch2D(Graphics graphics) : base(graphics)
         {
-            DefaultShader = rendering.CreateShader(VertexSource, FragmentSource);
+            DefaultShader = new Shader(graphics, VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
-            Mesh = rendering.CreateMesh();
+            Mesh = new Mesh(graphics);
 
             vertices = new Vertex[64];
             triangles = new int[64];
@@ -402,7 +402,7 @@ void main(void)
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
-            if (currentBatch.Texture?.FlipVertically ?? false)
+            if (currentBatch.Texture?.Internal.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
@@ -443,7 +443,7 @@ void main(void)
             PushQuad();
             ExpandVertices(vertexCount + 4);
 
-            if (currentBatch.Texture?.FlipVertically ?? false)
+            if (currentBatch.Texture?.Internal.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);

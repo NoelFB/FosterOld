@@ -121,32 +121,32 @@ namespace Foster.OpenGL
             }
         }
 
-        public override Texture CreateTexture(int width, int height)
+        protected override InternalTexture CreateTexture(int width, int height)
         {
             return new GL_Texture(this, width, height);
         }
 
-        public override Target CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false)
+        protected override InternalTarget CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false)
         {
             return new GL_Target(this, width, height, textures, depthBuffer, stencilBuffer);
         }
 
-        public override Shader CreateShader(string vertexSource, string fragmentSource)
+        protected override InternalShader CreateShader(string vertexSource, string fragmentSource)
         {
             return new GL_Shader(this, vertexSource, fragmentSource);
         }
 
-        public override Mesh CreateMesh()
+        protected override InternalMesh CreateMesh()
         {
             return new GL_Mesh(this);
         }
 
         public override void Target(Target? target)
         {
-            if (target != null && target is GL_Target glTarget)
+            if (target != null && target.Internal is GL_Target glTarget)
             {
                 glTarget.Use();
-                Viewport = new RectInt(0, 0, glTarget.Width, glTarget.Height);
+                Viewport = new RectInt(0, 0, target.Width, target.Height);
             }
             else
             {
@@ -276,29 +276,6 @@ namespace Foster.OpenGL
         {
             GL.Disable(GLEnum.SCISSOR_TEST);
         }
-
-        /*internal void PerformInThreadSafeContext(Action action)
-        {
-            if (MainThreadId == Thread.CurrentThread.ManagedThreadId)
-            {
-                action();
-            }
-            else
-            {
-                lock (BackgroundContext)
-                {
-                    var system = BackgroundContext.System;
-                    var last = system.GetCurrentContext();
-
-                    system.SetCurrentContext(BackgroundContext);
-
-                    action();
-                    GL.Flush();
-
-                    system.SetCurrentContext(last);
-                }
-            }
-        }*/
 
         private static GLEnum GetBlendFunc(BlendOperations operation)
         {

@@ -1,15 +1,19 @@
 ﻿using Foster.Framework;
 using System;
+using System.Collections.Specialized;
 
 namespace Foster.OpenGL
 {
-    public class GL_Shader : Shader
+    public class GL_Shader : InternalShader
     {
 
-        public readonly uint ID;
+        public uint ID { get; private set; }
+        private GL_Graphics graphics;
 
-        public GL_Shader(GL_Graphics graphics, string vertexSource, string fragmentSource) : base(graphics)
+        internal GL_Shader(GL_Graphics graphics, string vertexSource, string fragmentSource)
         {
+            this.graphics = graphics;
+
             // create vertex shader
             uint vertex = GL.CreateShader(GLEnum.VERTEX_SHADER);
             {
@@ -51,10 +55,7 @@ namespace Foster.OpenGL
                 GL.GetActiveAttrib(ID, (uint)i, out int size, out GLEnum type, out string name);
                 int location = GL.GetAttribLocation(ID, name);
                 if (location >= 0)
-                {
-                    GL_ShaderAttribute attribute = new GL_ShaderAttribute(this, name, (uint)location);
-                    attributes.Add(name, attribute);
-                }
+                    attributes.Add(name, new ShaderAttribute(name, (uint)location));
             }
 
             // get uniforms
@@ -63,9 +64,11 @@ namespace Foster.OpenGL
             {
                 GL.GetActiveUniform(ID, (uint)i, out int size, out GLEnum type, out string name);
                 int location = GL.GetUniformLocation(ID, name);
-
-                GL_ShaderUniform uniform = new GL_ShaderUniform(this, name, size, location, type);
-                uniforms.Add(name, uniform);
+                if (location >= 0)
+                {
+                    GL_Uniform uniform = new GL_Uniform(this, name, size, location, type);
+                    uniforms.Add(name, uniform);
+                }
             }
 
             // dispose fragment and vertex shaders
@@ -84,12 +87,12 @@ namespace Foster.OpenGL
 
             foreach (var parameter in material.Parameters.Values)
             {
-                if (!(parameter.Uniform is GL_ShaderUniform uniform))
+                if (!(parameter.Uniform is GL_Uniform uniform))
                     continue;
 
                 if (uniform.Type == ShaderUniform.Types.Texture2D)
                 {
-                    var texture = parameter.Value as GL_Texture;
+                    var texture = ((parameter.Value as Texture)?.Internal as GL_Texture);
                     var id = texture?.ID ?? 0;
 
                     GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));
@@ -105,15 +108,13 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
-            if (!Disposed)
+            if (ID != 0)
             {
-                if (Graphics is GL_Graphics graphics)
-                    graphics.ProgramsToDelete.Add(ID);
+                graphics.ProgramsToDelete.Add(ID);
+                ID = 0;
             }
-
-            base.Dispose();
         }
     }
 }

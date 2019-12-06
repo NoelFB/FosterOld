@@ -58,6 +58,8 @@ namespace Foster.Framework
     public abstract class Graphics : Module
     {
 
+        #region Public API
+
         /// <summary>
         /// The underlying Graphics API
         /// </summary>
@@ -84,48 +86,31 @@ namespace Foster.Framework
         public abstract RectInt Viewport { get; set; }
 
         /// <summary>
-        /// Creates a new Color Texture of the given size
-        /// </summary>
-        public abstract Texture CreateTexture(int width, int height);
-
-        /// <summary>
-        /// Creates a new render target of the given size, with the given amount of color, depth, and stencil buffers
-        /// </summary>
-        public abstract Target CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false);
-
-        /// <summary>
-        /// Creates a new Shader
-        /// 
-        /// TODO: This isn't api-agnostic ... 
-        /// Not sure what the best way to implement this is:
-        /// 
-        ///     1)  Create our own Shader "language" that each platform can convert
-        ///         into their required language. This has a lot of drawbacks
-        ///         because it needs to be very easy to parse somehow ...
-        ///         
-        ///     2)  Require either GLSL or HLSL and use a 3rd party tool to convert them.
-        ///         The problem here is that I don't want to add more dependencies
-        /// 
-        /// </summary>
-        public abstract Shader CreateShader(string vertexSource, string fragmentSource);
-
-        /// <summary>
-        /// Creates a new Mesh
-        /// </summary>
-        public abstract Mesh CreateMesh();
-
-        /// <summary>
         /// Sets the current rendering Target.
         /// Set null to target the current Context backbuffer
         /// </summary>
         public abstract void Target(Target? target);
 
+        /// <summary>
+        /// Clears the Color of the current Target
+        /// </summary>
         public void ClearColor(Color color) => Clear(ClearFlags.Color, color, 0, 0);
 
+        /// <summary>
+        /// Clears the Depth of the current Target
+        /// </summary>
+        /// <param name="depth"></param>
         public void ClearDepth(float depth) => Clear(ClearFlags.Depth, 0, depth, 0);
 
+        /// <summary>
+        /// Clears the Stencil Buffer of the current Target
+        /// </summary>
+        /// <param name="stencil"></param>
         public void ClearStencil(int stencil) => Clear(ClearFlags.Stencil, 0, 0, stencil);
 
+        /// <summary>
+        /// Clears the current Target
+        /// </summary>
         public void Clear(Color color, float depth, int stencil) => Clear(ClearFlags.All, color, depth, stencil);
 
         /// <summary>
@@ -164,6 +149,32 @@ namespace Foster.Framework
         /// Disables the Scissor Rectangle
         /// </summary>
         public abstract void DisableScissor();
+
+        #endregion
+
+        #region Internal API
+
+        /// <summary>
+        /// Creates a new Color Texture of the given size
+        /// </summary>
+        protected internal abstract InternalTexture CreateTexture(int width, int height);
+
+        /// <summary>
+        /// Creates a new render target of the given size, with the given amount of color, depth, and stencil buffers
+        /// </summary>
+        protected internal abstract InternalTarget CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false);
+
+        /// <summary>
+        /// Creates a new Shader
+        /// </summary>
+        protected internal abstract InternalShader CreateShader(string vertexSource, string fragmentSource);
+
+        /// <summary>
+        /// Creates a new Mesh
+        /// </summary>
+        protected internal abstract InternalMesh CreateMesh();
+
+        #endregion
 
         protected Graphics()
         {

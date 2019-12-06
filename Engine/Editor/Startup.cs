@@ -18,7 +18,7 @@ namespace Foster.Editor
         public Startup(string[] args)
         {
             // load default font
-            font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Content", "InputMono-Medium.ttf"), 64, Charsets.ASCII);
+            font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Content", "InputMono-Medium.ttf"), 128, Charsets.ASCII);
 
             // open a window
             window = App.System.CreateWindow("Foster.Editor", 1280, 720, WindowFlags.ScaleToMonitor);

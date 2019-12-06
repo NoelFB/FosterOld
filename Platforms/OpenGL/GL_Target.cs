@@ -4,16 +4,16 @@ using System.Collections.Generic;
 
 namespace Foster.OpenGL
 {
-    public class GL_Target : Target
+    public class GL_Target : InternalTarget
     {
 
+        private GL_Graphics graphics;
         private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
         private readonly uint renderBuffer;
 
-        public GL_Target(GL_Graphics graphics, int width, int height, int textures, bool depthBuffer, bool stencilBuffer) : base(graphics)
+        internal GL_Target(GL_Graphics graphics, int width, int height, int textures, bool depthBuffer, bool stencilBuffer)
         {
-            Width = width;
-            Height = height;
+            this.graphics = graphics;
 
             // texture (color) attachments
             for (int i = 0; i < textures; i++)
@@ -26,8 +26,6 @@ namespace Foster.OpenGL
             // depth buffer
             if (depthBuffer)
             {
-                HasDepthBuffer = true;
-
                 renderBuffer = GL.GenRenderbuffer();
                 GL.BindRenderbuffer(GLEnum.RENDERBUFFER, renderBuffer);
                 GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH24_STENCIL8, width, height);
@@ -37,6 +35,11 @@ namespace Foster.OpenGL
             {
                 throw new NotImplementedException();
             }
+        }
+
+        ~GL_Target()
+        {
+            Dispose();
         }
 
         public void Use()
@@ -58,7 +61,7 @@ namespace Foster.OpenGL
                         i++;
                     }
 
-                    if (HasDepthBuffer)
+                    if (renderBuffer > 0)
                         GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, renderBuffer);
 
                     framebuffers.Add(context, id);
@@ -70,26 +73,23 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
-            if (!Disposed)
+            if (framebuffers.Count > 0)
             {
-                if (Graphics is GL_Graphics graphics)
+                foreach (var kv in framebuffers)
                 {
-                    foreach (var kv in framebuffers)
-                    {
-                        var context = kv.Key;
-                        var framebuffer = kv.Value;
+                    var context = kv.Key;
+                    var framebuffer = kv.Value;
 
-                        if (!graphics.FrameBuffersToDelete.TryGetValue(context, out var list))
-                            graphics.FrameBuffersToDelete[context] = list = new List<uint>();
+                    if (!graphics.FrameBuffersToDelete.TryGetValue(context, out var list))
+                        graphics.FrameBuffersToDelete[context] = list = new List<uint>();
 
-                        list.Add(framebuffer);
-                    }
+                    list.Add(framebuffer);
                 }
-            }
 
-            base.Dispose();
+                framebuffers.Clear();
+            }
         }
 
     }

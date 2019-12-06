@@ -6,14 +6,15 @@ using System.Runtime.InteropServices;
 
 namespace Foster.OpenGL
 {
-    public class GL_Mesh : Mesh
+    public class GL_Mesh : InternalMesh
     {
 
         private readonly Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
         private readonly Dictionary<Context, bool> bindedArrays = new Dictionary<Context, bool>();
 
-        private readonly uint indexBuffer;
-        private readonly uint vertexBuffer;
+        private GL_Graphics graphics;
+        private uint indexBuffer;
+        private uint vertexBuffer;
         private uint instanceBuffer;
         private VertexFormat? lastVertexFormat;
         private VertexFormat? lastInstanceFormat;
@@ -22,22 +23,25 @@ namespace Foster.OpenGL
         private long vertexBufferSize;
         private long instanceBufferSize;
 
-        public GL_Mesh(GL_Graphics graphics) : base(graphics)
+        internal GL_Mesh(GL_Graphics graphics)
         {
+            this.graphics = graphics;
+
             vertexBuffer = GL.GenBuffer();
             indexBuffer = GL.GenBuffer();
         }
 
-        public override Material? Material
+        ~GL_Mesh()
         {
-            get => material;
-            set
+            Dispose();
+        }
+
+        protected override void SetMaterial(Material? material)
+        {
+            if (this.material != material)
             {
-                if (material != value)
-                {
-                    material = value;
-                    bindedArrays.Clear();
-                }
+                this.material = material;
+                bindedArrays.Clear();
             }
         }
 
@@ -98,13 +102,13 @@ namespace Foster.OpenGL
             GL.BindBuffer(type, 0);
         }
 
-        public override void Draw(int start, int elements)
+        protected override void Draw(int start, int elements)
         {
-            if (Material == null)
+            if (material == null)
                 throw new Exception("Trying to draw without a Material");
 
-            if (Material.Shader is GL_Shader shader)
-                shader.Use(Material);
+            if (material.Shader.Internal is GL_Shader shader)
+                shader.Use(material);
 
             if (BindVertexArray())
             {
@@ -113,16 +117,16 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void DrawInstances(int start, int elements, int instances)
+        protected override void DrawInstances(int start, int elements, int instances)
         {
             if (lastInstanceFormat == null || indexBuffer == 0)
                 throw new Exception("Instances must be assigned before being drawn");
 
-            if (Material == null)
+            if (material == null)
                 throw new Exception("Trying to draw without a Material");
 
-            if (Material.Shader is GL_Shader shader)
-                shader.Use(Material);
+            if (material.Shader.Internal is GL_Shader shader)
+                shader.Use(material);
 
             if (BindVertexArray())
             {
@@ -137,7 +141,7 @@ namespace Foster.OpenGL
             // VAO's are not shared between contexts so it must exist on every one we try drawing with
 
             var context = App.System.GetCurrentContext();
-            if (context != null && Material != null)
+            if (context != null && material != null)
             {
                 // create new array if it's needed
                 if (!vertexArrays.TryGetValue(context, out uint id))
@@ -151,21 +155,21 @@ namespace Foster.OpenGL
                     bindedArrays[context] = true;
 
                     // bind buffers and determine what attributes are on
-                    foreach (var attribute in Material.Shader.Attributes.Values)
+                    foreach (var attribute in material.Shader.Attributes.Values)
                     {
-                        if (VertexFormat != null && VertexCount > 0)
+                        if (lastVertexFormat != null)
                         {
                             GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
 
-                            if (TrySetupAttribPointer(attribute, VertexFormat, 0))
+                            if (TrySetupAttribPointer(attribute, lastVertexFormat, 0))
                                 continue;
                         }
 
-                        if (InstanceFormat != null && InstanceCount > 0)
+                        if (lastInstanceFormat != null)
                         {
                             GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
 
-                            if (TrySetupAttribPointer(attribute, InstanceFormat, 1))
+                            if (TrySetupAttribPointer(attribute, lastInstanceFormat, 1))
                                 continue;
                         }
 
@@ -207,32 +211,32 @@ namespace Foster.OpenGL
             return false;
         }
 
-        public override unsafe void Dispose()
+        protected override void Dispose()
         {
-            if (!Disposed)
+            if (vertexBuffer != 0)
             {
-                if (Graphics is GL_Graphics graphics)
+                graphics.BuffersToDelete.Add(vertexBuffer);
+                graphics.BuffersToDelete.Add(indexBuffer);
+
+                if (instanceBuffer > 0)
+                    graphics.BuffersToDelete.Add(instanceBuffer);
+
+                foreach (var kv in vertexArrays)
                 {
-                    graphics.BuffersToDelete.Add(vertexBuffer);
-                    graphics.BuffersToDelete.Add(indexBuffer);
+                    var context = kv.Key;
+                    var vertexArray = kv.Value;
 
-                    if (instanceBuffer > 0)
-                        graphics.BuffersToDelete.Add(instanceBuffer);
+                    if (!graphics.VertexArraysToDelete.TryGetValue(context, out var list))
+                        graphics.VertexArraysToDelete[context] = list = new List<uint>();
 
-                    foreach (var kv in vertexArrays)
-                    {
-                        var context = kv.Key;
-                        var vertexArray = kv.Value;
-
-                        if (!graphics.VertexArraysToDelete.TryGetValue(context, out var list))
-                            graphics.VertexArraysToDelete[context] = list = new List<uint>();
-
-                        list.Add(vertexArray);
-                    }
+                    list.Add(vertexArray);
                 }
-            }
 
-            base.Dispose();
+                vertexArrays.Clear();
+                vertexBuffer = 0;
+                indexBuffer = 0;
+                instanceBuffer = 0;
+            }
         }
 
         private static GLEnum ConvertVertexType(VertexType value)

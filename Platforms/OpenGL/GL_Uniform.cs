@@ -3,29 +3,29 @@ using System;
 
 namespace Foster.OpenGL
 {
-    public class GL_ShaderUniform : ShaderUniform
+    public class GL_Uniform : ShaderUniform
     {
         public readonly GL_Shader Shader;
-        public readonly int Size;
         private object? lastValue;
 
-        public GL_ShaderUniform(GL_Shader shader, string name, int size, int location, GLEnum type)
+        public GL_Uniform(GL_Shader shader, string name, int size, int location, GLEnum type) 
+            : base(name, location, size, ToFosterType(type))
         {
             Shader = shader;
-            Name = name;
-            Size = size;
-            Location = location;
+        }
 
+        private static Types ToFosterType(GLEnum type)
+        {
             switch (type)
             {
-                case GLEnum.INT: Type = Types.Int; break;
-                case GLEnum.FLOAT: Type = Types.Float; break;
-                case GLEnum.FLOAT_VEC2: Type = Types.Float2; break;
-                case GLEnum.FLOAT_VEC3: Type = Types.Float3; break;
-                case GLEnum.FLOAT_VEC4: Type = Types.Float4; break;
-                case GLEnum.FLOAT_MAT3x2: Type = Types.Matrix2D; break;
-                case GLEnum.FLOAT_MAT4: Type = Types.Matrix; break;
-                case GLEnum.SAMPLER_2D: default: Type = Types.Texture2D; break;
+                case GLEnum.INT: return Types.Int;
+                case GLEnum.FLOAT: return Types.Float;
+                case GLEnum.FLOAT_VEC2: return Types.Float2;
+                case GLEnum.FLOAT_VEC3: return Types.Float3;
+                case GLEnum.FLOAT_VEC4: return Types.Float4;
+                case GLEnum.FLOAT_MAT3x2: return Types.Matrix2D;
+                case GLEnum.FLOAT_MAT4: return Types.Matrix;
+                case GLEnum.SAMPLER_2D: default: return Types.Texture2D;
             }
         }
 

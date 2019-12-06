@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Foster.Framework
 {
-    public abstract class Mesh : GraphicsResource
+    public class Mesh : GraphicsResource
     {
+        public readonly InternalMesh Internal;
+
         public int VertexCount { get; private set; }
         public int IndicesCount { get; private set; }
         public int InstanceCount { get; private set; }
@@ -12,12 +16,23 @@ namespace Foster.Framework
         public VertexFormat? VertexFormat { get; private set; } = null;
         public VertexFormat? InstanceFormat { get; private set; } = null;
 
-        protected Mesh(Graphics graphics) : base(graphics)
+        private Material? material;
+
+        public Mesh(Graphics graphics) : base(graphics)
+        {
+            Internal = graphics.CreateMesh();
+        }
+
+        public Mesh() : this(App.Graphics)
         {
 
         }
 
-        public abstract Material? Material { get; set; }
+        public  Material? Material
+        {
+            get => material;
+            set => Internal.SetMaterial(material = value);
+        }
 
         public void SetVertices<T>(T[] vertices) where T : struct, IVertex
         {
@@ -44,7 +59,7 @@ namespace Foster.Framework
             VertexCount = (int)vertices.Length;
             VertexFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
-            UploadVertices(vertices, VertexFormat);
+            Internal.UploadVertices(vertices, VertexFormat);
         }
 
         public void SetIndices(int[] indices)
@@ -60,7 +75,7 @@ namespace Foster.Framework
         public void SetIndices(ReadOnlySequence<int> indices)
         {
             IndicesCount = (int)indices.Length;
-            UploadIndices(indices);
+            Internal.UploadIndices(indices);
         }
 
         public void SetInstances<T>(T[] vertices) where T : struct, IVertex
@@ -88,24 +103,37 @@ namespace Foster.Framework
             InstanceCount = (int)vertices.Length;
             InstanceFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
-            UploadInstances(vertices, InstanceFormat);
+            Internal.UploadInstances(vertices, InstanceFormat);
         }
 
-        protected abstract void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format);
-        protected abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
-        protected abstract void UploadIndices(ReadOnlySequence<int> indices);
-
-        public void Draw() => Draw(0, ElementCount);
-
-        public abstract void Draw(int start, int elements);
-
-        public void DrawInstances() => DrawInstances(0, ElementCount, InstanceCount);
-
-        public abstract void DrawInstances(int start, int elements, int instances);
-
-        public static Mesh Create()
+        public void Draw()
         {
-            return App.Graphics.CreateMesh();
+            Internal.Draw(0, ElementCount);
         }
+
+        public void Draw(int start, int elements)
+        {
+            Internal.Draw(start, elements);
+        }
+
+        public void DrawInstances()
+        {
+            Internal.DrawInstances(0, ElementCount, InstanceCount);
+        }
+
+        public void DrawInstances(int start, int elements, int instances)
+        {
+            Internal.DrawInstances(start, elements, instances);
+        }
+
+        public override void Dispose()
+        {
+            if (!Disposed)
+            {
+                base.Dispose();
+                Internal.Dispose();
+            }
+        }
+
     }
 }

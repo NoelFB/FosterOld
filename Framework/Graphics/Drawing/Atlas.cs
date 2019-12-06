@@ -23,7 +23,7 @@ namespace Foster.Framework
             if (output != null)
             {
                 foreach (var page in output.Pages)
-                    Pages.Add(Texture.Create(page));
+                    Pages.Add(new Texture(page));
 
                 foreach (var entry in output.Entries.Values)
                 {

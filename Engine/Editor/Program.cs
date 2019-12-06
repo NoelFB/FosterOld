@@ -1,12 +1,6 @@
-﻿using Foster.Editor;
+﻿using System;
+using Foster.Editor;
 using Foster.Framework;
-using Foster.GLFW;
-using Foster.GuiSystem;
-using Foster.OpenGL;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Foster.Engine
 {
@@ -14,9 +8,9 @@ namespace Foster.Engine
     {
         private static void Main(string[] args)
         {
-            App.Modules.Register<GLFW_System>();
-            App.Modules.Register<GLFW_Input>();
-            App.Modules.Register<GL_Graphics>();
+            App.Modules.Register<GLFW.GLFW_System>();
+            App.Modules.Register<GLFW.GLFW_Input>();
+            App.Modules.Register<OpenGL.GL_Graphics>();
 
             App.Start(() =>
             {
