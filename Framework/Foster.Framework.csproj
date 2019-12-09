@@ -14,8 +14,4 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="YAML\" />
-  </ItemGroup>
-
 </Project>
