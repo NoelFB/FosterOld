@@ -26,28 +26,6 @@ namespace Foster.GuiSystem
 
         }
 
-        public GuiPanel CreatePanel(string title, GuiPanel with)
-        {
-            var panel = new GuiPanel(this, title);
-
-            if (with == null)
-                Manager.Root.InsertPanel(GuiDockNode.Placings.Center, panel);
-            else if (with.Node != null)
-                with.Node.InsertPanel(GuiDockNode.Placings.Center, panel);
-
-            return panel;
-        }
-
-        public GuiPanel CreatePanel(string title, Rect bounds)
-        {
-            var panel = new GuiPanel(this, title);
-
-            var node = new GuiDockNode(Manager, GuiDockNode.Modes.Floating, bounds.Int());
-            node.InsertPanel(GuiDockNode.Placings.Center, panel);
-
-            return panel;
-        }
-
         protected override void Update()
         {
             Manager.Update();

@@ -110,7 +110,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void Dispose()
+        protected override void DisposeResources()
         {
             if (ID != 0)
             {

@@ -6,7 +6,7 @@ using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
-    public class Target : GraphicsResource
+    public class Target : IDisposable
     {
 
         public readonly InternalTarget Internal;
@@ -31,7 +31,7 @@ namespace Foster.Framework
             
         }
 
-        public Target(Graphics graphics, int width, int height, int textures = 1, bool depthBuffer = false) : base(graphics)
+        public Target(Graphics graphics, int width, int height, int textures = 1, bool depthBuffer = false)
         {
             Width = width;
             Height = height;
@@ -57,20 +57,17 @@ namespace Foster.Framework
         /// <param name="buffer"></param>
         public void GetColor(int attachment, Memory<Color> buffer) => Attachments[attachment].Internal.GetColor(buffer);
 
+        /// <summary>
+        /// Disposes the internal target resources
+        /// </summary>
+        public void Dispose()
+        {
+            foreach (var attachment in Attachments)
+                attachment.Dispose();
+
+            Internal.Dispose();
+        }
 
         public static implicit operator Texture(Target target) => target.Attachments[0];
-
-        public override void Dispose()
-        {
-            if (!Disposed)
-            {
-                base.Dispose();
-
-                foreach (var attachment in Attachments)
-                    attachment.Dispose();
-
-                Internal.Dispose();
-            }
-        }
     }
 }

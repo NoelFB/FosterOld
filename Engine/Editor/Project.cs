@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Foster.Framework;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Foster.Editor
 {
-    public class Project
+    public class Project : Asset
     {
 
         public string Name;

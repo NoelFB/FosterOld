@@ -6,6 +6,18 @@ namespace Foster.Framework.Internal
 {
     public abstract class InternalResource
     {
-        protected internal abstract void Dispose();
+
+        public bool IsDisposed { get; private set; }
+
+        protected internal void Dispose()
+        {
+            if (!IsDisposed)
+            {
+                DisposeResources();
+                IsDisposed = true;
+            }
+        }
+
+        protected abstract void DisposeResources();
     }
 }

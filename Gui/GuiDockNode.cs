@@ -4,11 +4,6 @@ using System.Collections.Generic;
 
 namespace Foster.GuiSystem
 {
-    internal static class GuiDockNodePlacingExt
-    {
-        public static bool LeftOrTop(this GuiDockNode.Placings placing) => placing == GuiDockNode.Placings.Left || placing == GuiDockNode.Placings.Top;
-    }
-
     internal class GuiDockNode
     {
         public enum Modes
@@ -149,8 +144,8 @@ namespace Foster.GuiSystem
                 var nextLeft = new GuiDockNode(this);
                 var nextRight = new GuiDockNode(this);
 
-                (placing.LeftOrTop() ? nextLeft : nextRight).TakeContent(node);
-                (placing.LeftOrTop() ? nextRight : nextLeft).TakeContent(this);
+                (placing.IsTopLeft() ? nextLeft : nextRight).TakeContent(node);
+                (placing.IsTopLeft() ? nextRight : nextLeft).TakeContent(this);
 
                 left = nextLeft;
                 right = nextRight;
@@ -183,8 +178,8 @@ namespace Foster.GuiSystem
                 var nextLeft = new GuiDockNode(this);
                 var nextRight = new GuiDockNode(this);
 
-                (placing.LeftOrTop() ? nextLeft : nextRight).InsertPanel(Placings.Center, panel);
-                (placing.LeftOrTop() ? nextRight : nextLeft).TakeContent(this);
+                (placing.IsTopLeft() ? nextLeft : nextRight).InsertPanel(Placings.Center, panel);
+                (placing.IsTopLeft() ? nextRight : nextLeft).TakeContent(this);
 
                 left = nextLeft;
                 right = nextRight;
@@ -294,7 +289,8 @@ namespace Foster.GuiSystem
             else if (Mode == Modes.Standalone)
             {
                 Window.Close();
-                Batcher.Dispose();
+                Batcher.DefaultShader.Dispose();
+                Batcher.Mesh.Dispose();
                 Manager.Standalone.Remove(this);
             }
             else if (Mode == Modes.Floating)
@@ -575,7 +571,7 @@ namespace Foster.GuiSystem
                                 if (Imgui.BeginFrame(0, remainder, style, true))
                                 {
                                     frameId = Imgui.CurrentId;
-                                    activePanel.OnRefresh?.Invoke(Imgui);
+                                    activePanel.Refresh(Imgui);
                                     Imgui.EndFrame();
                                 }
                                 Imgui.EndStorage();
@@ -813,5 +809,10 @@ namespace Foster.GuiSystem
                 }
             }
         }
+    }
+
+    internal static class GuiDockNodePlacingExt
+    {
+        public static bool IsTopLeft(this GuiDockNode.Placings placing) => placing == GuiDockNode.Placings.Left || placing == GuiDockNode.Placings.Top;
     }
 }

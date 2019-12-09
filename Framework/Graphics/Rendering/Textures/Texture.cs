@@ -2,10 +2,11 @@
 using Foster.Framework.Internal;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace Foster.Framework
 {
-    public class Texture : GraphicsResource
+    public class Texture : Asset
     {
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace Foster.Framework
             Internal.SetColor(bitmap.Pixels);
         }
 
-        internal Texture(Graphics graphics, InternalTexture? internalTexture, int width, int height) : base(graphics)
+        internal Texture(Graphics graphics, InternalTexture? internalTexture, int width, int height)
         {
             Internal = internalTexture ?? graphics.CreateTexture(width, height);
             Width = width;
@@ -77,6 +78,11 @@ namespace Foster.Framework
             WrapX = TextureWrap.Clamp;
             WrapY = TextureWrap.Clamp;
             Filter = TextureFilter.Linear;
+        }
+
+        internal static Texture LoadAsset(AssetBank bank, Stream stream, AssetMeta? metadata)
+        {
+            return new Texture(new Bitmap(stream));
         }
 
         /// <summary>
@@ -102,13 +108,12 @@ namespace Foster.Framework
         /// <param name="buffer"></param>
         public void GetColor(Memory<Color> buffer) => Internal.GetColor(buffer);
 
+        /// <summary>
+        /// Disposes the internal Texture resources
+        /// </summary>
         public override void Dispose()
         {
-            if (!Disposed)
-            {
-                base.Dispose();
-                Internal.Dispose();
-            }
+            Internal.Dispose();
         }
     }
 }

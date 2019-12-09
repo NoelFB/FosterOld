@@ -14,11 +14,14 @@ namespace Foster.Editor
         private readonly Window window;
         private readonly Imgui imgui;
         private readonly Batch2D batcher;
+        private readonly AssetBankFileSystem bank;
 
         public Startup(string[] args)
         {
+            bank = new AssetBankFileSystem("Content");
+
             // load default font
-            font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Content", "InputMono-Medium.ttf"), 128, Charsets.ASCII);
+            font = new SpriteFont(Path.Combine(App.System.Directory, "Content", "InputMono-Medium.ttf"), 128, Charsets.ASCII);
 
             // open a window
             window = App.System.CreateWindow("Foster.Editor", 1280, 720, WindowFlags.ScaleToMonitor);
@@ -53,7 +56,6 @@ namespace Foster.Editor
                 ContentColor = 0x000000,
                 Padding = new Vector2(8, 4)
             };
-
         }
 
         protected override void Update()
@@ -62,6 +64,13 @@ namespace Foster.Editor
 
             imgui.Step();
             imgui.BeginViewport(window, batcher);
+
+            var pos = Vector2.Zero;
+            foreach (var tex in bank.Each<Texture>())
+            {
+                batcher.Image(tex, pos, Color.White);
+                pos.X += tex.Width;
+            }
 
             var bounds = new Rect(128, 128, 400, 400);
 

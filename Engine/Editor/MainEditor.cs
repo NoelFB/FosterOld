@@ -18,10 +18,10 @@ namespace Foster.Editor
 
         protected override void Startup()
         {
-            var font = new SpriteFont(Path.Combine(App.System.AppDirectory, "Content", "InputMono-Medium.ttf"), 64, Charsets.ASCII);
+            var font = new SpriteFont(Path.Combine(App.System.Directory, "Content", "InputMono-Medium.ttf"), 64, Charsets.ASCII);
             var gui = App.Modules.Register(new Gui(font, App.Window));
 
-            gui.CreatePanel("Scene", null);
+            new GuiPanel(gui, "Scene");
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Foster.OpenGL
 
         ~GL_Texture()
         {
-            Dispose();
+            DisposeResources();
         }
 
         protected override void SetFilter(TextureFilter filter)
@@ -77,7 +77,7 @@ namespace Foster.OpenGL
             GL.GetTexImage(GLEnum.TEXTURE_2D, 0, GLEnum.RGBA, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
         }
 
-        protected override void Dispose()
+        protected override void DisposeResources()
         {
             if (ID != 0)
             {

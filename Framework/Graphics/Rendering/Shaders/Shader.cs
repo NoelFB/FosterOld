@@ -19,7 +19,7 @@ namespace Foster.Framework
     ///         since most of these tools are offline / not in C#)
     /// 
     /// </summary>
-    public class Shader : GraphicsResource
+    public class Shader
     {
 
         /// <summary>
@@ -42,20 +42,19 @@ namespace Foster.Framework
 
         }
 
-        public Shader(Graphics graphics, string vertex, string fragment) : base(graphics)
+        public Shader(Graphics graphics, string vertex, string fragment)
         {
             Internal = graphics.CreateShader(vertex, fragment);
             Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(Internal.uniforms);
             Attributes = new ReadOnlyDictionary<string, ShaderAttribute>(Internal.attributes);
         }
 
-        public override void Dispose()
+        /// <summary>
+        /// Disposes the internal Shader resources
+        /// </summary>
+        public void Dispose()
         {
-            if (!Disposed)
-            {
-                base.Dispose();
-                Internal.Dispose();
-            }
+            Internal.Dispose();
         }
 
     }

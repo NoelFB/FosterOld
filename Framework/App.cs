@@ -21,6 +21,11 @@ namespace Foster.Framework
 
         public static TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
 
+        static App()
+        {
+            AssetLoaders.RegisterDefaultLoaders();
+        }
+
         public static void Start(Action? callback = null)
         {
             if (Running)

@@ -4,19 +4,22 @@ namespace Foster.Runtime
 {
     public class Game : Module
     {
-        public Game()
-        {
 
+        public enum Modes
+        {
+            Standalone,
+            Inline
         }
 
-        public void LaunchStandalone()
+        public readonly Modes Mode;
+        public readonly Window Window;
+        public readonly AssetBank Assets;
+
+        public Game(Modes mode, Window window, AssetBank assets)
         {
-
-        }
-
-        public void LaunchInline()
-        {
-
+            Mode = mode;
+            Window = window;
+            Assets = assets;
         }
     }
 }

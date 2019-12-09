@@ -34,7 +34,7 @@ namespace Foster.OpenGL
 
         ~GL_Mesh()
         {
-            Dispose();
+            DisposeResources();
         }
 
         protected override void SetMaterial(Material? material)
@@ -212,7 +212,7 @@ namespace Foster.OpenGL
             return false;
         }
 
-        protected override void Dispose()
+        protected override void DisposeResources()
         {
             if (vertexBuffer != 0)
             {

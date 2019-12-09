@@ -41,7 +41,7 @@ namespace Foster.OpenGL
 
         ~GL_Target()
         {
-            Dispose();
+            DisposeResources();
         }
 
         public void Bind()
@@ -75,7 +75,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void Dispose()
+        protected override void DisposeResources()
         {
             if (framebuffers.Count > 0)
             {

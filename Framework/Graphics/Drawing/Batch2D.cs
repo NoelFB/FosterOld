@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
-    public class Batch2D : GraphicsResource
+    public class Batch2D
     {
 
         public static readonly VertexFormat VertexFormat = new VertexFormat(
@@ -105,10 +105,12 @@ void main(void)
         public string MatrixUniformName = "matrix";
 
         public Matrix OrthographicMatrix =>
-            Matrix.CreateScale((1.0f / Graphics.Viewport.Width) * 2, -(1.0f / Graphics.Viewport.Height) * 2, 1f) *
+            Matrix.CreateScale((1.0f / graphics.Viewport.Width) * 2, -(1.0f / graphics.Viewport.Height) * 2, 1f) *
             Matrix.CreateTranslation(-1.0f, 1.0f, 0f);
 
         public Matrix2D MatrixStack = Matrix2D.Identity;
+
+        private readonly Graphics graphics;
         private readonly Stack<Matrix2D> matrixStack = new Stack<Matrix2D>();
 
         private Vertex[] vertices;
@@ -151,24 +153,18 @@ void main(void)
 
         }
 
-        public Batch2D(Graphics graphics) : base(graphics)
+        public Batch2D(Graphics graphics)
         {
             DefaultShader = new Shader(graphics, VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
             Mesh = new Mesh(graphics);
 
+            this.graphics = graphics;
             vertices = new Vertex[64];
             triangles = new int[64];
             batches = new List<Batch>();
 
             Clear();
-        }
-
-        public override void Dispose()
-        {
-            DefaultShader.Dispose();
-            Mesh.Dispose();
-            base.Dispose();
         }
 
         public void Clear()
@@ -191,8 +187,6 @@ void main(void)
         public void Render(Matrix matrix)
         {
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
-            Debug.Assert(!Disposed, "Batch was Disposed and cannot Render");
-            Debug.Assert(!Mesh.Disposed, "Batch Mesh was Disposed and cannont Render");
 
             if (batches.Count > 0 || currentBatch.Elements > 0)
             {
@@ -204,8 +198,8 @@ void main(void)
                     dirty = false;
                 }
 
-                Graphics.SetDepthTest(false);
-                Graphics.SetCullMode(Cull.None);
+                graphics.SetDepthTest(false);
+                graphics.SetCullMode(Cull.None);
 
                 // render batches
                 for (int i = 0; i < batches.Count; i++)
@@ -220,20 +214,20 @@ void main(void)
         private void RenderBatch(Batch batch, ref Matrix matrix)
         {
             if (batch.Scissor != null)
-                Graphics.SetScissor(batch.Scissor.Value);
+                graphics.SetScissor(batch.Scissor.Value);
             else
-                Graphics.DisableScissor();
+                graphics.DisableScissor();
 
             // set BlendMode
-            Graphics.SetBlendMode(batch.BlendMode);
+            graphics.SetBlendMode(batch.BlendMode);
 
             // Render the Mesh
             // Note we apply the texture and matrix based on the current batch
             // If the user set these on the Material themselves, they will be overwritten here
 
             Mesh.Material = batch.Material ?? DefaultMaterial;
-            Mesh.Material.SetTexture(TextureUniformName, batch.Texture);
-            Mesh.Material.SetMatrix(MatrixUniformName, new Matrix(batch.Matrix) * matrix);
+            Mesh.Material[TextureUniformName]?.SetTexture(batch.Texture);
+            Mesh.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
             Mesh.Draw(batch.Offset, batch.Elements);
         }
 

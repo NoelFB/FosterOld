@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
-    public class Mesh : GraphicsResource
+    public class Mesh : IDisposable
     {
         public readonly InternalMesh Internal;
 
@@ -19,7 +20,7 @@ namespace Foster.Framework
 
         private Material? material;
 
-        public Mesh(Graphics graphics) : base(graphics)
+        public Mesh(Graphics graphics)
         {
             Internal = graphics.CreateMesh();
         }
@@ -131,13 +132,12 @@ namespace Foster.Framework
             Internal.DrawInstances(start, elements, instances);
         }
 
-        public override void Dispose()
+        /// <summary>
+        /// Disposes the internal Mesh resources
+        /// </summary>
+        public void Dispose()
         {
-            if (!Disposed)
-            {
-                base.Dispose();
-                Internal.Dispose();
-            }
+            Internal.Dispose();
         }
 
     }
