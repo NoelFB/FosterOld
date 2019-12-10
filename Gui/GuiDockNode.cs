@@ -86,6 +86,10 @@ namespace Foster.GuiSystem
                 var height = rounded.Height;
                 var flags = WindowFlags.Hidden;
 
+                // create the standalone batcher
+                Batcher = new Batch2D();
+
+                // create the standalone window
                 Window = App.System.CreateWindow("Gui Dock", width, height, flags);
                 Window.Position = rounded.TopLeft;
                 Window.VSync = false;
@@ -98,8 +102,6 @@ namespace Foster.GuiSystem
                 };
                 Window.OnClose = () => Discard();
                 Window.Visible = true;
-
-                Batcher = new Batch2D();
 
                 Manager.Standalone.Add(this);
             }
