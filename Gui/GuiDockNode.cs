@@ -43,8 +43,8 @@ namespace Foster.GuiSystem
         public readonly Batch2D Batcher;
 
         private GuiDockNode? parent;
-        private GuiDockNode? left;
-        private GuiDockNode? right;
+        private GuiDockNode? leftChild;
+        private GuiDockNode? rightChild;
         private float splitPoint = 0.5f;
         private bool splitHorizontally = true;
         private readonly List<GuiPanel> panels = new List<GuiPanel>();
@@ -90,15 +90,13 @@ namespace Foster.GuiSystem
                 Window.Position = rounded.TopLeft;
                 Window.VSync = false;
                 Window.Bordered = false;
-                Window.OnRender = () =>
+                Window.OnRender = Batcher.Render;
+                Window.OnResize = () =>
                 {
-                    Batcher.Render();
+                    Window.Render();
+                    Window.Present();
                 };
-                Window.OnClose = () =>
-                {
-                    Discard();
-                };
-
+                Window.OnClose = Discard;
                 Window.Visible = true;
 
                 Batcher = new Batch2D();
@@ -123,7 +121,7 @@ namespace Foster.GuiSystem
 
         public void InsertNode(Placings placing, GuiDockNode node)
         {
-            if (placing == Placings.Center && (left != null || right != null))
+            if (placing == Placings.Center && (leftChild != null || rightChild != null))
                 throw new Exception("Cannot insert into the center of a Docking Node that is split");
 
             if (placing == Placings.Center)
@@ -147,8 +145,8 @@ namespace Foster.GuiSystem
                 (placing.IsTopLeft() ? nextLeft : nextRight).TakeContent(node);
                 (placing.IsTopLeft() ? nextRight : nextLeft).TakeContent(this);
 
-                left = nextLeft;
-                right = nextRight;
+                leftChild = nextLeft;
+                rightChild = nextRight;
 
                 splitHorizontally = (placing == Placings.Left || placing == Placings.Right);
                 splitPoint = 0.5f;
@@ -159,7 +157,7 @@ namespace Foster.GuiSystem
 
         public void InsertPanel(Placings placing, GuiPanel panel)
         {
-            if (placing == Placings.Center && (left != null || right != null))
+            if (placing == Placings.Center && (leftChild != null || rightChild != null))
                 throw new Exception("Cannot insert into the center of a Docking Node that is split");
 
             if (panel.Node != null)
@@ -181,8 +179,8 @@ namespace Foster.GuiSystem
                 (placing.IsTopLeft() ? nextLeft : nextRight).InsertPanel(Placings.Center, panel);
                 (placing.IsTopLeft() ? nextRight : nextLeft).TakeContent(this);
 
-                left = nextLeft;
-                right = nextRight;
+                leftChild = nextLeft;
+                rightChild = nextRight;
 
                 splitHorizontally = (placing == Placings.Left || placing == Placings.Right);
                 splitPoint = 0.5f;
@@ -236,15 +234,15 @@ namespace Foster.GuiSystem
 
         public void TakeContent(GuiDockNode absorbing)
         {
-            left = absorbing.left;
-            right = absorbing.right;
+            leftChild = absorbing.leftChild;
+            rightChild = absorbing.rightChild;
             tabOffset = absorbing.tabOffset;
 
-            if (left != null)
-                left.parent = this;
+            if (leftChild != null)
+                leftChild.parent = this;
 
-            if (right != null)
-                right.parent = this;
+            if (rightChild != null)
+                rightChild.parent = this;
 
             splitHorizontally = absorbing.splitHorizontally;
             splitPoint = absorbing.splitPoint;
@@ -258,15 +256,15 @@ namespace Foster.GuiSystem
                 InsertPanel(Placings.Center, panel);
             }
 
-            absorbing.left = null;
-            absorbing.right = null;
+            absorbing.leftChild = null;
+            absorbing.rightChild = null;
             absorbing.TryDiscard();
         }
 
         private void TryDiscard()
         {
             // we have no more panels so we shouldn't exist ...
-            if (panels.Count <= 0 && left == null && right == null && !modifyingContent)
+            if (panels.Count <= 0 && leftChild == null && rightChild == null && !modifyingContent)
                 Discard();
         }
 
@@ -277,10 +275,10 @@ namespace Foster.GuiSystem
                 if (parent != null)
                 {
                     GuiDockNode? absorbing = null;
-                    if (parent.left == this)
-                        absorbing = parent.right;
-                    else if (parent.right == this)
-                        absorbing = parent.left;
+                    if (parent.leftChild == this)
+                        absorbing = parent.rightChild;
+                    else if (parent.rightChild == this)
+                        absorbing = parent.leftChild;
 
                     if (absorbing != null)
                         parent.TakeContent(absorbing);
@@ -315,16 +313,16 @@ namespace Foster.GuiSystem
 
                     if (parent.splitHorizontally)
                     {
-                        if (parent.left == this)
+                        if (parent.leftChild == this)
                             return new Rect(bounds.X, bounds.Y, bounds.Width * split - size, bounds.Height);
-                        else if (parent.right == this)
+                        else if (parent.rightChild == this)
                             return new Rect(bounds.X + bounds.Width * split + size, bounds.Y, bounds.Width * (1 - split) - size, bounds.Height);
                     }
                     else
                     {
-                        if (parent.left == this)
+                        if (parent.leftChild == this)
                             return new Rect(bounds.X, bounds.Y, bounds.Width, bounds.Height * split - size);
-                        else if (parent.right == this)
+                        else if (parent.rightChild == this)
                             return new Rect(bounds.X, bounds.Y + bounds.Height * split + size, bounds.Width, bounds.Height * (1 - split) - size);
                     }
                 }
@@ -392,8 +390,8 @@ namespace Foster.GuiSystem
             foreach (var panel in panels)
                 append.Add(panel);
 
-            left?.AllChildren(append);
-            right?.AllChildren(append);
+            leftChild?.AllChildren(append);
+            rightChild?.AllChildren(append);
         }
 
         public void Positioning()
@@ -478,10 +476,10 @@ namespace Foster.GuiSystem
             // Display
             {
                 // Split Content
-                if (left != null || right != null)
+                if (leftChild != null || rightChild != null)
                 {
-                    left?.Refresh();
-                    right?.Refresh();
+                    leftChild?.Refresh();
+                    rightChild?.Refresh();
 
                     if (splitHorizontally)
                     {
@@ -714,6 +712,7 @@ namespace Foster.GuiSystem
                 var back = new Color(0x2b0c91);
                 var center = bounds.Center.Floor();
                 var size = 50f;
+
                 var fill = new Rect(center.X - size / 2f, center.Y - size / 2f, size, size);
                 var left = new Rect(center.X - size / 2f - size, center.Y - size / 2f, size, size);
                 var right = new Rect(center.X - size / 2f + size, center.Y - size / 2f, size, size);

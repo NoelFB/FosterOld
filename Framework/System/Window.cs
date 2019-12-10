@@ -77,8 +77,8 @@ namespace Foster.Framework
             }
             set
             {
-                Position = value.Position;
                 Size = value.Size;
+                Position = value.Position;
             }
         }
 
