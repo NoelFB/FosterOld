@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Foster.Framework.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace Foster.Framework
             // ...
         }
 
-        private void AddDirectory(string relative, string path)
+        private void AddDirectory(string root, string path)
         {
             foreach (var file in Directory.EnumerateFiles(path))
             {
@@ -57,7 +58,7 @@ namespace Foster.Framework
                     foreach (var extension in loader.Extensions)
                         if (ext.Equals(extension, StringComparison.OrdinalIgnoreCase))
                         {
-                            var name = GetName(relative, file);
+                            var name = GetName(root, file);
                             AddEntry(loader.Type, name, file);
                             added = true;
                             break;
@@ -69,7 +70,7 @@ namespace Foster.Framework
             }
 
             foreach (var dir in Directory.EnumerateDirectories(path))
-                AddDirectory(relative, dir);
+                AddDirectory(root, dir);
         }
 
         private void AddEntry(Type type, string name, string filepath)
@@ -89,26 +90,20 @@ namespace Foster.Framework
             info[guid] = new AssetInfo { Path = filepath, Timestamp = File.GetLastWriteTime(filepath) };
         }
 
-        private unsafe string GetName(ReadOnlySpan<char> relative, ReadOnlySpan<char> path)
+        private unsafe string GetName(ReadOnlySpan<char> root, ReadOnlySpan<char> path)
         {
-            Span<char> r = stackalloc char[relative.Length];
+            Span<char> r = stackalloc char[root.Length];
+            root.CopyTo(r);
+
             Span<char> p = stackalloc char[path.Length];
-            
-            relative.CopyTo(r);
             path.CopyTo(p);
 
-            // normalize
-            r = Normalize(r);
-            p = Normalize(p);
+            // normalize the paths
+            r = Calc.NormalizePath(r);
+            p = Calc.NormalizePath(p);
 
-            // get relative
-            var start = 0;
-            while (start < p.Length && start < r.Length && char.ToLower(p[start]) == char.ToLower(r[start]))
-                start++;
-            p = p.Slice(start);
-
-            // trim any slashes
-            p = p.Trim('/');
+            // find the relative path
+            p = Calc.RelativePath(r, p);
 
             // remove file extension
             var ext = p.LastIndexOf('.');
@@ -116,29 +111,9 @@ namespace Foster.Framework
                 p = p.Slice(0, ext);
 
             return p.ToString();
-
-            static Span<char> Normalize(Span<char> ptr)
-            {
-                for (int i = 0; i < ptr.Length; i++)
-                    if (ptr[i] == '\\') ptr[i] = '/';
-
-                int length = ptr.Length;
-                for (int i = 1, t = 1, l = length; t < l; i++, t++)
-                {
-                    if (ptr[t - 1] == '/' && ptr[t] == '/')
-                    {
-                        i--;
-                        length--;
-                    }
-                    else
-                        ptr[i] = ptr[t];
-                }
-
-                return ptr.Slice(0, length);
-            }
         }
 
-        protected override bool GetAssetStream(Guid guid, out Stream? stream, out AssetMeta? metadata)
+        protected override bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata)
         {
             stream = null;
             metadata = null;

@@ -47,9 +47,9 @@ namespace Foster.Framework
 
         }
 
-        ~Font()
+        public Font(Stream stream) : this(ReadAllBytes(stream))
         {
-            Dispose();
+
         }
 
         public unsafe Font(byte[] buffer)
@@ -89,6 +89,11 @@ namespace Foster.Framework
             }
         }
 
+        ~Font()
+        {
+            Dispose();
+        }
+
         public float GetScale(int height)
         {
             if (Disposed)
@@ -117,6 +122,13 @@ namespace Foster.Framework
 
             if (fontHandle.IsAllocated)
                 fontHandle.Free();
+        }
+
+        public static byte[] ReadAllBytes(Stream stream)
+        {
+            byte[] buffer = new byte[stream.Length];
+            stream.Read(buffer, 0, buffer.Length);
+            return buffer;
         }
     }
 }

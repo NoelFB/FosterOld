@@ -1,4 +1,5 @@
 ﻿using Foster.Framework;
+using Foster.Framework.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +15,7 @@ namespace Foster.Runtime
 
         }
 
-        protected override bool GetAssetStream(Guid guid, out Stream stream, out AssetMeta metadata)
+        protected override bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata)
         {
             throw new NotImplementedException();
         }

@@ -80,11 +80,6 @@ namespace Foster.Framework
             Filter = TextureFilter.Linear;
         }
 
-        internal static Texture LoadAsset(AssetBank bank, Stream stream, AssetMeta? metadata)
-        {
-            return new Texture(new Bitmap(stream));
-        }
-
         /// <summary>
         /// Creates a Bitmap with the Texture Color data
         /// </summary>

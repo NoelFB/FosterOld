@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Foster.Framework.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Foster.Framework
     public static class AssetLoaders
     {
 
-        public delegate object LoadFunc(AssetBank bank, Stream stream, AssetMeta? metadata);
+        public delegate object LoadFunc(AssetBank bank, Stream stream, JsonObject? metadata);
 
         public class Loader
         {
@@ -50,7 +51,7 @@ namespace Foster.Framework
         /// <summary>
         /// Loads an Asset of the given Type
         /// </summary>
-        public static T? Load<T>(AssetBank bank, Stream stream, AssetMeta? metadata) where T : Asset
+        public static T? Load<T>(AssetBank bank, Stream stream, JsonObject? metadata) where T : Asset
         {
             if (loaders.TryGetValue(typeof(T), out var type) && type != null)
                 return (type.Load(bank, stream, metadata) as T);
@@ -75,7 +76,12 @@ namespace Foster.Framework
         internal static void RegisterDefaultLoaders()
         {
             // Texture
-            Register<Texture>(new [] { "png", "jpg", "jpeg", "bmp" }, Texture.LoadAsset);
+            Register<Texture>(new [] { "png", "jpg", "jpeg", "bmp" }, (bank, stream, metadata) =>
+            {
+                var tex =  new Texture(new Bitmap(stream));
+
+                return tex;
+            });;
         }
     }
 }

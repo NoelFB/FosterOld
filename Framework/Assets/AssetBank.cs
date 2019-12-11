@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Foster.Framework.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Versioning;
@@ -81,7 +82,7 @@ namespace Foster.Framework
         /// <summary>
         /// Finds and Opens a Stream for an Asset
         /// </summary>
-        protected abstract bool GetAssetStream(Guid guid, out Stream? stream, out AssetMeta? metadata);
+        protected abstract bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata);
 
         /// <summary>
         /// Adds an Asset to the Bank

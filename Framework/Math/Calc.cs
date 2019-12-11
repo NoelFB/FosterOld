@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
@@ -525,5 +528,74 @@ namespace Foster.Framework
         }
 
         #endregion
+
+        #region Utils
+
+        public static string NormalizePath(string path)
+        {
+            unsafe
+            {
+                Span<char> temp = stackalloc char[path.Length];
+                for (int i = 0; i < path.Length; i++)
+                    temp[i] = path[i];
+                return NormalizePath(temp).ToString();
+            }
+        }
+
+        public static Span<char> NormalizePath(Span<char> path)
+        {
+            for (int i = 0; i < path.Length; i++)
+                if (path[i] == '\\') path[i] = '/';
+
+            int length = path.Length;
+            for (int i = 1, t = 1, l = length; t < l; i++, t++)
+            {
+                if (path[t - 1] == '/' && path[t] == '/')
+                {
+                    i--;
+                    length--;
+                }
+                else
+                    path[i] = path[t];
+            }
+
+            return path.Slice(0, length);
+        }
+
+        public static string RelativePath(string root, string path)
+        {
+            var start = 0;
+            while (start < path.Length && start < root.Length && char.ToLower(path[start]) == char.ToLower(root[start]))
+                start++;
+            path = path.Substring(0, start);
+
+            return path.Trim('/');
+        }
+
+        public static Span<char> RelativePath(Span<char> root, Span<char> path)
+        {
+            var start = 0;
+            while (start < path.Length && start < root.Length && char.ToLower(path[start]) == char.ToLower(root[start]))
+                start++;
+            path = path.Slice(start);
+
+            return path.Trim('/');
+        }
+
+        public static Stream EmbeddedResource(string resourceName)
+        {
+            var assembly = Assembly.GetCallingAssembly();
+            var path = assembly.GetName().Name + "." + resourceName.Replace('/', '.').Replace('\\', '.');
+
+            var stream = assembly.GetManifestResourceStream(path);
+
+            if (stream == null)
+                throw new Exception($"Embedded Resource '{resourceName}' doesn't exist");
+
+            return stream;
+
+        }
+
+        #endregion Utils
     }
 }
