@@ -450,11 +450,21 @@ namespace Foster.GuiSystem
                         // pop out of the frame if it doesn't fit
                         if (App.System.SupportsMultipleWindows && !Manager.Window.Bounds.Contains(BoundsToScreen(floatingBounds)))
                         {
-                            var rect = BoundsToScreen(floatingBounds);
-                            var dock = new GuiDockNode(Manager, Modes.Standalone, rect);
+                            try
+                            {
+                                var rect = BoundsToScreen(floatingBounds);
+                                var dock = new GuiDockNode(Manager, Modes.Standalone, rect);
 
-                            dock.ID = ID;
-                            dock.TakeContent(this);
+                                dock.ID = ID;
+                                dock.TakeContent(this);
+                            }
+                            catch
+                            {
+                                // something stopped us from being able to create a window ...
+                                // I've noticed this happen before due to some kind of OS issue
+                                // (ex. if you create/destroy windows over and over again very fast)
+                                Console.WriteLine("Failed to create Standalone Window");
+                            }
                         }
                     }
                 }
