@@ -9,6 +9,7 @@ namespace Foster.Engine
 {
     internal class Program
     {
+
         private static void Main(string[] args)
         {
             App.Modules.Register<GLFW.GLFW_System>();
@@ -17,7 +18,7 @@ namespace Foster.Engine
 
             App.Start(() =>
             {
-                App.Modules.Register(new Startup(args));
+                App.Modules.Register(new StartEditor(args));
             });
         }
     }

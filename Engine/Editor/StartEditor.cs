@@ -8,16 +8,33 @@ using System.Text;
 
 namespace Foster.Editor
 {
-    public class Startup : Module
+    public class StartEditor : Module
     {
+
+        private string ProjectsPath => Path.Combine(App.System.Directory, "Projects");
 
         private readonly SpriteFont font;
         private readonly Window window;
         private readonly Imgui imgui;
         private readonly Batch2D batcher;
 
-        public Startup(string[] args)
+        private List<string> existingProjects = new List<string>();
+
+        public StartEditor(string[] args)
         {
+            // find existing projects
+            {
+                if (!Directory.Exists(ProjectsPath))
+                    Directory.CreateDirectory(ProjectsPath);
+
+                foreach (var directory in Directory.EnumerateDirectories(ProjectsPath))
+                {
+                    var name = Path.GetFileName(directory);
+                    if (!string.IsNullOrEmpty(name))
+                        existingProjects.Add(name);
+                }
+            }
+
             // load default font
             font = new SpriteFont(Calc.EmbeddedResource("Content/InputMono-Medium.ttf")!, 128, Charsets.ASCII);
 
@@ -72,13 +89,22 @@ namespace Foster.Editor
 
                 if (imgui.Button("New Project"))
                 {
-                    Launch(new Project());
+                    var project = Project.Create(Path.Combine(ProjectsPath, "new project"));
+                    Launch(project);
                 }
 
-                imgui.Button("Open Project");
                 imgui.Cell(0f, 30f);
-                imgui.Label("recent projects");
-                imgui.Label("...");
+                imgui.Label("existing projects");
+
+                foreach (var existing in existingProjects)
+                {
+                    if (imgui.Button(existing))
+                    {
+                        var project = Project.Load(Path.Combine(ProjectsPath, existing));
+                        Launch(project);
+                    }
+                }
+
                 imgui.EndFrame();
             }
 

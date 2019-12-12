@@ -2,10 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Framework\Foster.Framework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Foster.Framework">
+      <HintPath>..\Editor\bin\Debug\netcoreapp3.0\Foster.Framework.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

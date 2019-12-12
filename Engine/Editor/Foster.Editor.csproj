@@ -31,9 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="config.hjson">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="Content\EmptyProject.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Content\icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -14,14 +14,16 @@ namespace Foster.Editor
         public MainEditor(Project project)
         {
             Project = project;
+            App.Window.Title = "Foster.Editor :: " + Project.Name;
         }
 
         protected override void Startup()
         {
             var font = new SpriteFont(Calc.EmbeddedResource(Path.Combine("Content", "InputMono-Medium.ttf")), 64, Charsets.ASCII);
-            var gui = App.Modules.Register(new Gui(font, App.Window));
+            
+            App.Modules.Register(new Gui(font, App.Window));
 
-            new GuiPanel(gui, "Scene");
+            new ScenePanel(this);
         }
     }
 }
