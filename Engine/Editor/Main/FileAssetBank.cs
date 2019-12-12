@@ -9,9 +9,9 @@ using System.Text;
 namespace Foster.Editor
 {
     /// <summary>
-    /// An Asset Bank that syncs with a File System
+    /// An Asset Bank that works from the OS File System
     /// </summary>
-    public class AssetBankFileSystem : AssetBank
+    public class FileAssetBank : AssetBank
     {
 
         private struct AssetInfo
@@ -24,7 +24,7 @@ namespace Foster.Editor
 
         public readonly string RootPath;
 
-        public AssetBankFileSystem(string rootPath = "")
+        public FileAssetBank(string rootPath = "")
         {
             info = new Dictionary<Guid, AssetInfo>();
             RootPath = rootPath;

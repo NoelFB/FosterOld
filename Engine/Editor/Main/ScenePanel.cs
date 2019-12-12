@@ -15,15 +15,12 @@ namespace Foster.Editor
 
         public readonly MainEditor Editor;
 
-        private ProjectCompiler compiler;
-
         private bool building = false;
         private bool failed = false;
 
         public ScenePanel(MainEditor editor) : base(App.Modules.Get<Gui>(), "Scene")
         {
             Editor = editor;
-            compiler = new ProjectCompiler(editor.Project);
         }
 
         public override void Refresh(Imgui imgui)
@@ -35,8 +32,8 @@ namespace Foster.Editor
             else if (imgui.Button("Rebuild"))
             {
                 building = true;
-                compiler.Log.Clear();
-                compiler.Build((s) =>
+                Editor.Compiler.Log.Clear();
+                Editor.Compiler.Build((s) =>
                 {
                     building = false;
                     failed = !s;
@@ -49,37 +46,21 @@ namespace Foster.Editor
             }
             else if (imgui.Button("Run Code"))
             {
-                ExecuteAndUnload(Editor.Project.TempBinaryPath);
+                using (var proj = new ProjectAssembly(Editor.Project))
+                {
+
+                }
             }
 
             if (imgui.BeginFrame("LOG", imgui.Cell(Sizing.Fill().SizeOfEmpty())))
             {
-                foreach (var line in compiler.Log)
+                foreach (var line in Editor.Compiler.Log)
+                {
                     imgui.Label(line);
+                    break;
+                }
                 imgui.EndFrame();
             }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        void ExecuteAndUnload(string assemblyPath)
-        {
-            var alc = new ProjectAssemblyLoadContext();
-
-            using var stream = File.OpenRead(assemblyPath);
-            var assembly = alc.LoadFromStream(stream);
-            stream.Dispose();
-
-            try
-            {
-                var test = assembly.GetType("Test");
-                var instance = Activator.CreateInstance(test);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-            alc.Unload();
         }
 
 

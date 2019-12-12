@@ -12,11 +12,12 @@ namespace Foster.Editor
 
         public string Name;
         public string ProjectPath;
+
         public string CsProjectPath => Path.Combine(ProjectPath, "Project.csproj");
         public string CodePath => Path.Combine(ProjectPath, "Code");
         public string AssetsPath => Path.Combine(ProjectPath, "Assets");
-        public string TempPath => Path.Combine(ProjectPath, "Temp");
-        public string TempBinaryPath => Path.Combine(ProjectPath, "Temp", "Project.dll");
+        public string TempPath => Path.Combine(ProjectPath, "bin");
+        public string TempAssemblyPath => Path.Combine(ProjectPath, "bin", "Project.dll");
 
         private Project(string projectPath)
         {

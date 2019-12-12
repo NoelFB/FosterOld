@@ -15,7 +15,6 @@ namespace Foster.Editor
 
         private Action<bool>? onComplete;
 
-
         public ProjectCompiler(Project project)
         {
             Project = project;
@@ -36,8 +35,6 @@ namespace Foster.Editor
 
         private void BuildThread()
         {
-            var success = true;
-
             using var pr = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -71,10 +68,8 @@ namespace Foster.Editor
             pr.BeginErrorReadLine();
             pr.WaitForExit();
 
-            success = pr.ExitCode == 0;
-
             IsBuilding = false;
-            onComplete?.Invoke(success);
+            onComplete?.Invoke(pr.ExitCode == 0);
         }
 
     }
