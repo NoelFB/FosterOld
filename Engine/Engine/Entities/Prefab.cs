@@ -5,15 +5,21 @@ using System.Text;
 
 namespace Foster.Engine
 {
-    public class Prefab : Asset
+    public class Prefab : IAsset
     {
 
-        public Prefab? Inherits;
+        public Guid Guid { get; set; }
+
+        public Entity Entity;
 
         public Prefab(string name)
         {
-
+            Entity = new Entity(name);
         }
 
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

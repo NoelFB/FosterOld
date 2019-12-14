@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Foster.Framework
 {
-    public class Texture : Asset
+    public class Texture : IAsset
     {
 
         /// <summary>

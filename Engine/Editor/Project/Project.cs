@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Foster.Editor
 {
-    public class Project : Asset
+    public class Project : IAsset
     {
         public string Name;
         public string ProjectPath;

@@ -17,8 +17,6 @@ namespace Foster.Engine
         public readonly Window Window;
         public readonly AssetBank Assets;
 
-        private Entity entity = new Entity("Game Entity");
-
         public Game(Modes mode, Window window, AssetBank assets)
         {
             Mode = mode;

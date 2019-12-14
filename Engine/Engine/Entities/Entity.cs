@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Foster.Engine
 {
-    public sealed class Entity
+    public class Entity
     {
 
         public string Name;
@@ -24,11 +24,6 @@ namespace Foster.Engine
             Transform = new Transform();
             children = new List<Entity>();
             components = new List<Component>();
-        }
-
-        public Entity(Prefab prefab)
-        {
-            throw new NotImplementedException();
         }
 
         public Entity? FindFirst(string name, bool recursive = false)
@@ -50,6 +45,54 @@ namespace Foster.Engine
             }
 
             return null;
+        }
+
+        public void AddChild(Entity entity)
+        {
+            if (entity.Parent != null)
+                throw new Exception("Entity is already a child of another Entity");
+
+            entity.Transform.Parent = Transform;
+            entity.Parent = this;
+
+            children.Add(entity);
+        }
+
+        public void RemoveChild(Entity entity)
+        {
+            if (entity.Parent == this)
+            {
+                entity.Transform.Parent = null;
+                entity.Parent = null;
+
+                children.Remove(entity);
+            }
+        }
+
+        /// <summary>
+        /// Creates a Component of the given Type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void Create<T>() where T : Component
+        {
+            var component = Activator.CreateInstance<T>();
+            component.Entity = this;
+            component.OnAwake();
+            components.Add(component);
+        }
+
+        /// <summary>
+        /// Creates a Component of the given Type
+        /// </summary>
+        public void Create(Type type)
+        {
+            var instance = Activator.CreateInstance(type);
+            if (!(instance is Component component))
+                throw new Exception("Type does not inherit from Component");
+
+            component.Entity = this;
+            component.OnAwake();
+            components.Add(component);
         }
 
         public T? FindFirst<T>(bool recursive = false) where T : Component
@@ -97,54 +140,6 @@ namespace Foster.Engine
             return populate.Count > initial;
         }
 
-        public void AddChild(Entity entity)
-        {
-            if (entity.Parent != null)
-                throw new Exception("Entity is already a child of another Entity");
-
-            entity.Transform.Parent = Transform;
-            entity.Parent = this;
-
-            children.Add(entity);
-        }
-
-        public void RemoveChild(Entity entity)
-        {
-            if (entity.Parent == this)
-            {
-                entity.Transform.Parent = null;
-                entity.Parent = null;
-
-                children.Remove(entity);
-            }
-        }
-
-        /// <summary>
-        /// Creates a Component of the given Type
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public void Create<T>() where T : Component
-        {
-            var component = Activator.CreateInstance<T>();
-            component.Entity = this;
-            component.Created();
-            components.Add(component);
-        }
-
-        /// <summary>
-        /// Creates a Component of the given Type
-        /// </summary>
-        public void Create(Type type)
-        {
-            var instance = Activator.CreateInstance(type);
-            if (!(instance is Component component))
-                throw new Exception("Type does not inherit from Component");
-
-            component.Entity = this;
-            component.Created();
-            components.Add(component);
-        }
-
         /// <summary>
         /// Destroys a Component
         /// </summary>
@@ -153,7 +148,7 @@ namespace Foster.Engine
         {
             if (component.Entity == this)
             {
-                component.Destroyed();
+                component.OnDestroy();
                 component.Entity = null;
                 components.Remove(component);
             }

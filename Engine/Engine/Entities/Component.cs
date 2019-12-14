@@ -17,17 +17,17 @@ namespace Foster.Engine
 
         }
 
-        public virtual void Created()
+        public virtual void OnAwake()
         {
 
         }
 
-        public virtual void Started()
+        public virtual void OnStart()
         {
 
         }
 
-        public virtual void Destroyed()
+        public virtual void OnDestroy()
         {
 
         }
