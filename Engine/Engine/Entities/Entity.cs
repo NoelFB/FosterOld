@@ -181,5 +181,10 @@ namespace Foster.Engine
             while (components.Count > 0)
                 Destroy(components[components.Count - 1]);
         }
+
+        public virtual Entity Clone()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

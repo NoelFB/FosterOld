@@ -9,7 +9,7 @@ namespace Foster.Engine
 
         public Prefab Prefab;
 
-        public Variant(Prefab prefab) : base("instance")
+        public Variant(Prefab prefab) : base(prefab.Name)
         {
             Prefab = prefab;
         }
