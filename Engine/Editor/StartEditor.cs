@@ -1,6 +1,6 @@
 ﻿using Foster.Framework;
 using Foster.GuiSystem;
-using Foster.Runtime;
+using Foster.Engine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -89,7 +89,7 @@ namespace Foster.Editor
 
                 if (imgui.Button("New Project"))
                 {
-                    var project = Project.Create(Path.Combine(ProjectsPath, "new project"));
+                    var project = Project.Create("new project", Path.Combine(ProjectsPath, "new project"));
                     Launch(project);
                 }
 

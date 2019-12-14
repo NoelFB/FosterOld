@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Foster.Runtime
+namespace Foster.Engine
 {
     public class PackedAssetBank : AssetBank
     {

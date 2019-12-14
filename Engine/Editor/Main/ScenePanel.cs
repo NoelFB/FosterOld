@@ -32,8 +32,8 @@ namespace Foster.Editor
             else if (imgui.Button("Rebuild"))
             {
                 building = true;
-                Editor.Compiler.Log.Clear();
-                Editor.Compiler.Build((s) =>
+                Editor.Project.Compiler.Log.Clear();
+                Editor.Project.Compiler.Build((s) =>
                 {
                     building = false;
                     failed = !s;
@@ -54,7 +54,7 @@ namespace Foster.Editor
 
             if (imgui.BeginFrame("LOG", imgui.Cell(Sizing.Fill().SizeOfEmpty())))
             {
-                foreach (var line in Editor.Compiler.Log)
+                foreach (var line in Editor.Project.Compiler.Log)
                 {
                     imgui.Label(line);
                     break;

@@ -10,12 +10,11 @@ namespace Foster.Editor
     public class MainEditor : Module
     {
         public readonly Project Project;
-        public readonly ProjectCompiler Compiler;
 
         public MainEditor(Project project)
         {
             Project = project;
-            Compiler = new ProjectCompiler(project);
+
             App.Window.Title = "Foster.Editor :: " + Project.Name;
         }
 

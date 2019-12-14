@@ -1,7 +1,9 @@
 ﻿using Foster.Framework;
+using System.Collections.Generic;
 
-namespace Foster.Runtime
+namespace Foster.Engine
 {
+
     public class Game : Module
     {
 
@@ -15,11 +17,18 @@ namespace Foster.Runtime
         public readonly Window Window;
         public readonly AssetBank Assets;
 
+        private Entity entity = new Entity("Game Entity");
+
         public Game(Modes mode, Window window, AssetBank assets)
         {
             Mode = mode;
             Window = window;
             Assets = assets;
+        }
+
+        protected override void Update()
+        {
+            base.Update();
         }
     }
 }

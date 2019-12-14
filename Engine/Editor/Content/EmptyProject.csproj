@@ -19,8 +19,8 @@
       <HintPath>..\..\Foster.Framework.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="Foster.Runtime">
-      <HintPath>..\..\Foster.Runtime.dll</HintPath>
+    <Reference Include="Foster.Engine">
+      <HintPath>..\..\Foster.Engine.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Foster.Gui">
