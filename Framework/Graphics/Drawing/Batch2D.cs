@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -117,6 +118,7 @@ void main(void)
         private int[] triangles;
         private readonly List<Batch> batches;
         private Batch currentBatch;
+        private int currentBatchInsert;
 
         private int vertexCount;
         private int triangleCount;
@@ -128,6 +130,8 @@ void main(void)
 
         private struct Batch
         {
+            public int Layer;
+            public bool NextHasSameState;
             public Material? Material;
             public BlendMode BlendMode;
             public Matrix2D Matrix;
@@ -138,6 +142,8 @@ void main(void)
 
             public Batch(Material? material, BlendMode blend, Texture? texture, Matrix2D matrix, int offset, int elements)
             {
+                Layer = 0;
+                NextHasSameState = false;
                 Material = material;
                 BlendMode = blend;
                 Texture = texture;
@@ -145,6 +151,11 @@ void main(void)
                 Scissor = null;
                 Offset = offset;
                 Elements = elements;
+            }
+
+            public bool CanMerge(ref Batch batch)
+            {
+                return batch.Layer == Layer && batch.Material == Material && batch.BlendMode == BlendMode && batch.Matrix == Matrix && batch.Texture == Texture && batch.Scissor == Scissor;
             }
         }
 
@@ -171,6 +182,7 @@ void main(void)
         {
             vertexCount = 0;
             triangleCount = 0;
+            currentBatchInsert = 0;
             currentBatch = new Batch(null, BlendMode.Normal, null, Matrix2D.Identity, 0, 0);
             batches.Clear();
             matrixStack.Clear();
@@ -192,8 +204,8 @@ void main(void)
             {
                 if (dirty)
                 {
-                    Mesh.SetIndices(new ReadOnlyMemory<int>(triangles, 0, triangleCount));
                     Mesh.SetVertices(new ReadOnlyMemory<Vertex>(vertices, 0, vertexCount));
+                    Mesh.SetIndices(new ReadOnlyMemory<int>(triangles, 0, triangleCount));
 
                     dirty = false;
                 }
@@ -202,33 +214,46 @@ void main(void)
                 graphics.SetCullMode(Cull.None);
 
                 // render batches
+                var shareState = false;
                 for (int i = 0; i < batches.Count; i++)
-                    RenderBatch(batches[i], ref matrix);
+                {
+                    // remaining elements in the current batch
+                    if (currentBatchInsert == i && currentBatch.Elements > 0)
+                        RenderBatch(currentBatch, ref shareState, ref matrix);
 
-                // remaining elements
-                if (currentBatch.Elements > 0)
-                    RenderBatch(currentBatch, ref matrix);
+                    // render the batch
+                    RenderBatch(batches[i], ref shareState, ref matrix);
+                }
+
+                // remaining elements in the current batch
+                if (currentBatchInsert == batches.Count && currentBatch.Elements > 0)
+                    RenderBatch(currentBatch, ref shareState, ref matrix);
             }
         }
 
-        private void RenderBatch(Batch batch, ref Matrix matrix)
+        private void RenderBatch(Batch batch, ref bool shareState, ref Matrix matrix)
         {
-            if (batch.Scissor != null)
-                graphics.SetScissor(batch.Scissor.Value);
-            else
-                graphics.DisableScissor();
+            if (!shareState)
+            {
+                if (batch.Scissor != null)
+                    graphics.SetScissor(batch.Scissor.Value);
+                else
+                    graphics.DisableScissor();
 
-            // set BlendMode
-            graphics.SetBlendMode(batch.BlendMode);
+                // set BlendMode
+                graphics.SetBlendMode(batch.BlendMode);
 
-            // Render the Mesh
-            // Note we apply the texture and matrix based on the current batch
-            // If the user set these on the Material themselves, they will be overwritten here
+                // Render the Mesh
+                // Note we apply the texture and matrix based on the current batch
+                // If the user set these on the Material themselves, they will be overwritten here
 
-            Mesh.Material = batch.Material ?? DefaultMaterial;
-            Mesh.Material[TextureUniformName]?.SetTexture(batch.Texture);
-            Mesh.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
+                Mesh.Material = batch.Material ?? DefaultMaterial;
+                Mesh.Material[TextureUniformName]?.SetTexture(batch.Texture);
+                Mesh.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
+            }
+
             Mesh.Draw(batch.Offset, batch.Elements);
+            shareState = batch.NextHasSameState;
         }
 
         #endregion
@@ -243,11 +268,12 @@ void main(void)
             }
             else if (currentBatch.Material != material)
             {
-                batches.Add(currentBatch);
+                batches.Insert(currentBatchInsert, currentBatch);
 
                 currentBatch.Material = material;
                 currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
+                currentBatchInsert++;
             }
         }
 
@@ -259,11 +285,12 @@ void main(void)
             }
             else if (currentBatch.BlendMode != blendmode)
             {
-                batches.Add(currentBatch);
+                batches.Insert(currentBatchInsert, currentBatch);
 
                 currentBatch.BlendMode = blendmode;
                 currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
+                currentBatchInsert++;
             }
         }
 
@@ -275,11 +302,12 @@ void main(void)
             }
             else if (currentBatch.Matrix != matrix)
             {
-                batches.Add(currentBatch);
+                batches.Insert(currentBatchInsert, currentBatch);
 
                 currentBatch.Matrix = matrix;
                 currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
+                currentBatchInsert++;
             }
         }
 
@@ -291,20 +319,13 @@ void main(void)
             }
             else if (currentBatch.Scissor != scissor)
             {
-                batches.Add(currentBatch);
+                batches.Insert(currentBatchInsert, currentBatch);
 
                 currentBatch.Scissor = scissor;
                 currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
+                currentBatchInsert++;
             }
-        }
-
-        public void SetState(Material? material, BlendMode blendmode, Matrix2D matrix, RectInt? scissor)
-        {
-            SetMaterial(material);
-            SetBlendMode(blendmode);
-            SetMatrix(matrix);
-            SetScissor(scissor);
         }
 
         public void SetTexture(Texture? texture)
@@ -315,12 +336,51 @@ void main(void)
             }
             else if (currentBatch.Texture != texture)
             {
-                batches.Add(currentBatch);
+                batches.Insert(currentBatchInsert, currentBatch);
 
                 currentBatch.Texture = texture;
                 currentBatch.Offset += currentBatch.Elements;
                 currentBatch.Elements = 0;
+                currentBatchInsert++;
             }
+        }
+
+        public void SetLayer(int layer)
+        {
+            if (currentBatch.Layer == layer)
+                return;
+
+            // insert last batch
+            if (currentBatch.Elements > 0)
+            {
+                batches.Insert(currentBatchInsert, currentBatch);
+                currentBatch.Offset += currentBatch.Elements;
+                currentBatch.Elements = 0;
+            }
+
+            // find the point to insert us
+            var insert = 0;
+            while (insert < batches.Count && batches[insert].Layer >= layer)
+                insert++;
+
+            // can the previous one merge with us?
+            if (insert > 0 && batches[insert - 1].CanMerge(ref currentBatch))
+            {
+                var prev = batches[insert - 1];
+                prev.NextHasSameState = true;
+                batches[insert - 1] = prev;
+            }
+
+            currentBatch.Layer = layer;
+            currentBatchInsert = insert;
+        }
+
+        public void SetState(Material? material, BlendMode blendmode, Matrix2D matrix, RectInt? scissor)
+        {
+            SetMaterial(material);
+            SetBlendMode(blendmode);
+            SetMatrix(matrix);
+            SetScissor(scissor);
         }
 
         public Matrix2D PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)

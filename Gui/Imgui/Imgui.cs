@@ -50,11 +50,13 @@ namespace Foster.GuiSystem
             public bool MouseObstructed;
             public ID LastHotFrame;
             public ID NextHotFrame;
+            public int NextHotFrameLayer;
         }
 
         public struct FrameState
         {
             public ID ID;
+            public int Layer;
             public Rect Bounds;
             public Rect Clip;
             public Rect LastCell;
@@ -182,6 +184,7 @@ namespace Foster.GuiSystem
         public float FontScale => FontSize / Font.Height;
         public float Spacing => (spacingStack.Count > 0 ? spacingStack.Peek() : DefaultSpacing);
         public float Indent => (indentStack.Count > 0 ? indentStack.Peek() : 0f);
+        public int Layer => (layerStack.Count > 0 ? layerStack.Peek() : 0);
 
         public ViewportState Viewport => viewport;
         public FrameState Frame => frame;
@@ -219,6 +222,7 @@ namespace Foster.GuiSystem
 
         private readonly Stack<FrameState> frameStack = new Stack<FrameState>();
         private readonly Stack<ID> idStack = new Stack<ID>();
+        private readonly Stack<int> layerStack = new Stack<int>();
         private readonly Stack<Rect> clipStack = new Stack<Rect>();
         private readonly Stack<float> indentStack = new Stack<float>();
         private readonly Stack<SpriteFont> fontStack = new Stack<SpriteFont>();
@@ -460,12 +464,30 @@ namespace Foster.GuiSystem
             viewport = new ViewportState();
         }
 
-        public bool BeginFrame(Name info, float height)
+        public void BeginLayer(int layer)
         {
+            if (viewport.ID == ID.None)
+                throw new Exception("You must open a Viewport before beginning a Layer");
+
+            Batcher.SetLayer(layer);
+            PushClip(Viewport.Bounds);
+            layerStack.Push(layer);
+        }
+
+        public void EndLayer()
+        {
+            PopClip();
+            layerStack.Pop();
+            Batcher.SetLayer(Layer);
+        }
+
+        public bool BeginFrame(Name name, bool scrollable = true)
+        {
+            var bounds = viewport.Bounds;
             if (frame.ID != ID.None)
-                return BeginFrame(info, Cell(0, height));
-            else
-                return BeginFrame(info, viewport.Bounds);
+                bounds = Remainder();
+
+            return BeginFrame(name, bounds, scrollable);
         }
 
         public bool BeginFrame(Name name, Rect bounds, bool scrollable = true)
@@ -493,6 +515,7 @@ namespace Foster.GuiSystem
                 frame = new FrameState
                 {
                     ID = PushId(name),
+                    Layer = Layer,
                     Bounds = bounds,
                     Clip = clip,
                     Padding = edge,
@@ -505,7 +528,13 @@ namespace Foster.GuiSystem
                 var lastScrollY = Storage.GetNumber(frame.ID, 3, 0f);
 
                 if (frame.Clip.Contains(viewport.Mouse))
-                    viewport.NextHotFrame = frame.ID;
+                {
+                    if (viewport.NextHotFrame == ID.None || viewport.NextHotFrameLayer >= Layer)
+                    {
+                        viewport.NextHotFrame = frame.ID;
+                        viewport.NextHotFrameLayer = frame.Layer;
+                    }
+                }
 
                 Box(bounds, style);
 
@@ -579,9 +608,15 @@ namespace Foster.GuiSystem
                 PopClip();
 
             if (frameStack.Count > 0)
+            {
                 frame = frameStack.Pop();
+                Batcher.SetLayer(frame.Layer);
+            }
             else
+            {
                 frame = new FrameState();
+                Batcher.SetLayer(0);
+            }
         }
 
         private Rect VerticalScrollBar(Rect bounds, Vector2 scroll, float innerHeight)
