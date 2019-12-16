@@ -127,6 +127,11 @@ namespace Foster.Framework
         public Action? OnResize;
 
         /// <summary>
+        /// A callback when the Window is focused
+        /// </summary>
+        public Action? OnFocus;
+
+        /// <summary>
         /// The System this Window belongs to
         /// </summary>
         public abstract System System { get; }

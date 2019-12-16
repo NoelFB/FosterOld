@@ -147,6 +147,8 @@ namespace Foster.GLFW
         private void OnWindowFocus(GLFW.Window window, int focused)
         {
             this.focused = (focused != 0);
+            if (this.focused)
+                OnFocus?.Invoke();
         }
 
         private void OnCursorEnter(GLFW.Window window, int entered)

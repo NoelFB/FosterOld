@@ -12,11 +12,6 @@ namespace Foster.Engine
 
         public Transform? Transform => Entity?.Transform;
 
-        internal Component()
-        {
-
-        }
-
         public virtual void OnAwake()
         {
 

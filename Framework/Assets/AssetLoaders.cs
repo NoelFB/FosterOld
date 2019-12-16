@@ -10,7 +10,7 @@ namespace Foster.Framework
     public static class AssetLoaders
     {
 
-        public delegate object LoadFunc(AssetBank bank, Stream stream, JsonObject? metadata);
+        public delegate IAsset LoadFunc(AssetBank bank, Stream stream, JsonObject? metadata);
 
         public class Loader
         {
@@ -53,8 +53,18 @@ namespace Foster.Framework
         /// </summary>
         public static T? Load<T>(AssetBank bank, Stream stream, JsonObject? metadata) where T : class, IAsset
         {
-            if (loaders.TryGetValue(typeof(T), out var type) && type != null)
-                return (type.Load(bank, stream, metadata) as T);
+            if (loaders.TryGetValue(typeof(T), out var loader) && loader != null)
+                return (loader.Load(bank, stream, metadata) as T);
+            return null;
+        }
+
+        /// <summary>
+        /// Loads an Asset of the given Type
+        /// </summary>
+        public static IAsset? Load(Type type, AssetBank bank, Stream stream, JsonObject? metadata)
+        {
+            if (loaders.TryGetValue(type, out var loader) && loader != null)
+                return loader.Load(bank, stream, metadata);
             return null;
         }
 

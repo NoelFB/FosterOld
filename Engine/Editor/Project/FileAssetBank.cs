@@ -21,34 +21,49 @@ namespace Foster.Editor
         }
 
         private readonly Dictionary<Guid, AssetInfo> info;
+        private HashSet<string> existing;
 
         public readonly string RootPath;
 
         public FileAssetBank(string rootPath = "")
         {
             info = new Dictionary<Guid, AssetInfo>();
+            existing = new HashSet<string>();
             RootPath = rootPath;
-
-            var path = Path.Combine(App.System.Directory, RootPath);
-            AddDirectory(path, path);
         }
 
-        public void Sync()
+        public void Refresh()
         {
-            // removing missing assets
-            // ...
+            var path = Path.Combine(App.System.Directory, RootPath);
+            var removing = new List<Guid>();
 
-            // add newly created assets
-            // ...
+            foreach (var pair in info)
+            {
+                if (!File.Exists(pair.Value.Path))
+                {
+                    removing.Add(pair.Key);
+                    existing.Remove(pair.Value.Path);
+                }
+                else if (File.GetLastWriteTime(pair.Value.Path) > pair.Value.Timestamp)
+                {
+                    removing.Add(pair.Key);
+                    existing.Remove(pair.Value.Path);
+                }
+            }
 
-            // reload assets that changed
-            // ...
+            foreach (var entry in removing)
+                Remove(entry);
+
+            AddDirectory(path, path);
         }
 
         private void AddDirectory(string relative, string path)
         {
             foreach (var file in Directory.EnumerateFiles(path))
             {
+                if (existing.Contains(file))
+                    continue;
+
                 var ext = ((ReadOnlySpan<char>)Path.GetExtension(file));
                 if (ext.Length > 0 && ext[0] == '.')
                     ext = ext.Slice(1);
@@ -76,19 +91,33 @@ namespace Foster.Editor
 
         private void AddEntry(Type type, string name, string filepath)
         {
-            var meta = filepath + ".meta";
-            var guid = Guid.NewGuid();
+            var metaPath = filepath + ".meta";
+            var hasMeta = false;
+            var guid = new Guid();
 
-            if (File.Exists(meta))
+            // check for meta file
+            if (File.Exists(metaPath))
             {
-                guid = new Guid(File.ReadAllText(meta));
+                using var reader = new JsonReader(File.OpenRead(metaPath));
+                if (reader.TryReadObject(out var obj) && obj.TryGetValue("guid", out var value) && value.IsString)
+                {
+                    guid = new Guid(value.String);
+                    hasMeta = true;
+                }
+            }
+
+            // create a default meta file if none exists
+            if (!hasMeta)
+            {
+                guid = Guid.NewGuid();
+                using var writer = new JsonWriter(File.OpenWrite(metaPath), false);
+                writer.JsonValue(new JsonObject { ["guid"] = guid.ToString() });
             }
 
             Add(type, guid, name);
 
-            Console.WriteLine(type.Name + " : " + name + " : " + guid.ToString());
-
             info[guid] = new AssetInfo { Path = filepath, Timestamp = File.GetLastWriteTime(filepath) };
+            existing.Add(filepath);
         }
 
         private unsafe string GetName(ReadOnlySpan<char> relative, ReadOnlySpan<char> path)

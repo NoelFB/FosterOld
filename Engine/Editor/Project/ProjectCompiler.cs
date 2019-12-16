@@ -11,7 +11,9 @@ namespace Foster.Editor
 
         public readonly Project Project;
         public bool IsBuilding { get; private set; }
+        public bool IsSuccess { get; private set; }
         public List<string> Log = new List<string>();
+        public List<string> Errors = new List<string>();
 
         private Action<bool>? onComplete;
 
@@ -25,6 +27,8 @@ namespace Foster.Editor
             if (!IsBuilding)
             {
                 Log.Clear();
+                Errors.Clear();
+
                 IsBuilding = true;
                 this.onComplete = onComplete;
 
@@ -40,7 +44,7 @@ namespace Foster.Editor
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "dotnet",
-                    Arguments = $"build \"{Project.CsProjectPath}\" -o \"{Project.TempPath}\" --verbosity q --nologo",
+                    Arguments = $"build \"{Project.CsProjectPath}\" -o \"{Project.TempPath}\" --verbosity q --nologo /clp:NoSummary",
                     UseShellExecute = false,
                     CreateNoWindow = false,
                     RedirectStandardOutput = true,
@@ -51,16 +55,23 @@ namespace Foster.Editor
 
             pr.OutputDataReceived += (s, ev) =>
             {
-                Console.WriteLine(ev.Data);
-                if (!string.IsNullOrWhiteSpace(ev.Data))
-                    Log.Add(ev.Data);
-            };
+                var msg = ev.Data;
+                if (!string.IsNullOrWhiteSpace(msg))
+                {
+                    Log.Add(msg);
 
-            pr.ErrorDataReceived += (s, err) =>
-            {
-                Console.WriteLine(err.Data);
-                if (!string.IsNullOrWhiteSpace(err.Data))
-                    Log.Add(err.Data);
+                    if (msg.Contains("error CS"))
+                    {
+                        var path = msg.LastIndexOf('[');
+                        if (path >= 0)
+                        {
+                            var error = msg.Substring(0, path);
+                            Console.WriteLine(error);
+                            Errors.Add(error);
+                        }
+                    }
+                }
+                    
             };
 
             pr.Start();
@@ -69,7 +80,9 @@ namespace Foster.Editor
             pr.WaitForExit();
 
             IsBuilding = false;
-            onComplete?.Invoke(pr.ExitCode == 0);
+            IsSuccess = pr.ExitCode == 0;
+
+            onComplete?.Invoke(IsSuccess);
         }
 
     }

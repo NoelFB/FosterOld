@@ -27,21 +27,21 @@ namespace Foster.Framework
                 Name = name;
             }
 
-            public T? Get<T>() where T : class, IAsset
+            public IAsset? Get()
             {
                 if (Asset == null || !Asset.TryGetTarget(out var target))
-                    return Reload<T>();
+                    return Reload();
 
-                return target as T;
+                return target;
             }
 
-            public T? Reload<T>() where T : class, IAsset
+            public IAsset? Reload()
             {
-                T? target = null;
+                IAsset? target = null;
 
                 if (Bank.GetAssetStream(Guid, out var stream, out var metadata) && stream != null)
                 {
-                    target = AssetLoaders.Load<T>(Bank, stream, metadata);
+                    target = AssetLoaders.Load(Type, Bank, stream, metadata);
 
                     if (target != null)
                     {
@@ -148,12 +148,22 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Finds the Guid of the Asset with the given name
+        /// </summary>
+        public Guid? GuidOf(Type type, string name)
+        {
+            if (byName.TryGetValue(type, out var dictionary) && dictionary.TryGetValue(name, out var resource))
+                return resource.Guid;
+            return null;
+        }
+
+        /// <summary>
         /// Gets a given Asset
         /// </summary>
         public T? Get<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
-                return resource.Get<T>();
+                return resource.Get() as T;
             return null;
         }
 
@@ -163,7 +173,14 @@ namespace Foster.Framework
         public T? Get<T>(Guid guid) where T : class, IAsset
         {
             if (byGuid.TryGetValue(guid, out var resource))
-                return resource.Get<T>();
+                return resource.Get() as T;
+            return null;
+        }
+
+        public object? Get(Guid guid)
+        {
+            if (byGuid.TryGetValue(guid, out var resource))
+                return resource.Get();
             return null;
         }
 
@@ -173,7 +190,7 @@ namespace Foster.Framework
         public T? Reload<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
-                return resource.Reload<T>();
+                return resource.Reload() as T;
             return null;
         }
 
@@ -183,7 +200,7 @@ namespace Foster.Framework
         public T? Reload<T>(Guid guid) where T : class, IAsset
         {
             if (byGuid.TryGetValue(guid, out var resource))
-                return resource.Reload<T>();
+                return resource.Reload() as T;
             return null;
         }
 
@@ -197,7 +214,7 @@ namespace Foster.Framework
                 foreach (var resource in dictionary.Values)
                     if (string.IsNullOrWhiteSpace(prefix) || resource.Name.StartsWith(prefix))
                     {
-                        var asset = resource.Get<T>();
+                        var asset = resource.Get() as T;
                         if (asset != null)
                             yield return asset;
                     }
@@ -218,6 +235,18 @@ namespace Foster.Framework
         public AssetHandle<T> Handle<T>(Guid guid) where T : class, IAsset
         {
             return new AssetHandle<T>(this, guid);
+        }
+
+        public IEnumerable<string> Names
+        {
+            get
+            {
+                foreach (var pairs in byName)
+                {
+                    foreach (var name in pairs.Value.Keys)
+                        yield return name;
+                }
+            }
         }
 
         /// <summary>

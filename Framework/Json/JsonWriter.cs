@@ -32,17 +32,18 @@ namespace Foster.Framework.Json
         private bool wasValue;
         private bool wasBracket;
 
-        public JsonWriter(string path) : this(File.Open(path, FileMode.Create))
+        public JsonWriter(string path, bool strict = true) : this(File.Open(path, FileMode.Create), strict)
         {
         }
 
-        public JsonWriter(Stream stream) : this(new StreamWriter(stream))
+        public JsonWriter(Stream stream, bool strict = true) : this(new StreamWriter(stream), strict)
         {
         }
 
-        public JsonWriter(TextWriter writer)
+        public JsonWriter(TextWriter writer, bool strict = true)
         {
             this.writer = writer;
+            Strict = strict;
         }
 
         private void Next(bool isValue = false, bool isKey = false, bool isBracket = false)
