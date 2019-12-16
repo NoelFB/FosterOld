@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public struct AssetHandle<T> where T : IAsset
+    public struct AssetHandle<T> where T : class, IAsset
     {
 
         public AssetBank Bank;

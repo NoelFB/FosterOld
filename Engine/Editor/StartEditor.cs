@@ -104,7 +104,6 @@ namespace Foster.Editor
                         Launch(project);
                     }
                 }
-
                 imgui.EndFrame();
             }
 

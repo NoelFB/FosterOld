@@ -43,7 +43,7 @@ namespace Foster.Framework
         /// Registers an Asset Loader for the given Asset Type
         /// Note that only one asset loader can exist per type
         /// </summary>
-        public static void Register<T>(string[] extensions, LoadFunc loadFunc) where T : IAsset
+        public static void Register<T>(string[] extensions, LoadFunc loadFunc) where T : class, IAsset
         {
             loaders[typeof(T)] = new Loader(typeof(T), extensions, loadFunc);
         }
@@ -51,7 +51,7 @@ namespace Foster.Framework
         /// <summary>
         /// Loads an Asset of the given Type
         /// </summary>
-        public static T? Load<T>(AssetBank bank, Stream stream, JsonObject? metadata) where T : IAsset
+        public static T? Load<T>(AssetBank bank, Stream stream, JsonObject? metadata) where T : class, IAsset
         {
             if (loaders.TryGetValue(typeof(T), out var type) && type != null)
                 return (type.Load(bank, stream, metadata) as T);

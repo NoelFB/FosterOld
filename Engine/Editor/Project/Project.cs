@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Foster.Editor
 {
-    public class Project : IAsset
+    public class Project
     {
         public string Name;
         public string ProjectPath;
@@ -27,9 +27,9 @@ namespace Foster.Editor
         public readonly FileAssetBank Assets;
         public readonly ProjectCompiler Compiler;
 
-        private Project(string projectPath)
+        private Project(string name, string projectPath)
         {
-            Name = Path.GetFileName(projectPath);
+            Name = name;
             ProjectPath = projectPath;
             Assets = new FileAssetBank(AssetsPath);
             Compiler = new ProjectCompiler(this);
@@ -47,8 +47,7 @@ namespace Foster.Editor
 
         public static Project Create(string name, string projectPath)
         {
-            var project = new Project(projectPath);
-            project.Name = name;
+            var project = new Project(name, projectPath);
 
             // create directories
             Directory.CreateDirectory(projectPath);
@@ -69,8 +68,7 @@ namespace Foster.Editor
 
         public static Project Load(string projectPath)
         {
-            var project = new Project(projectPath);
-            project.Name = Path.GetFileName(projectPath) ?? "Unnamed";
+            var project = new Project(Path.GetFileName(projectPath) ?? "Unnamed", projectPath);
 
             if (!File.Exists(project.ConfigPath))
                 project.CreateConfigFile();
@@ -103,6 +101,5 @@ namespace Foster.Editor
             writer.Strict = false;
             writer.JsonValue(config);
         }
-
     }
 }

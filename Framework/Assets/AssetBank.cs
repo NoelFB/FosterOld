@@ -27,7 +27,7 @@ namespace Foster.Framework
                 Name = name;
             }
 
-            public T? Get<T>() where T : IAsset
+            public T? Get<T>() where T : class, IAsset
             {
                 if (Asset == null || !Asset.TryGetTarget(out var target))
                     return Reload<T>();
@@ -35,7 +35,7 @@ namespace Foster.Framework
                 return target as T;
             }
 
-            public T? Reload<T>() where T : IAsset
+            public T? Reload<T>() where T : class, IAsset
             {
                 T? target = null;
 
@@ -140,7 +140,7 @@ namespace Foster.Framework
         /// <summary>
         /// Finds the Guid of the Asset with the given name
         /// </summary>
-        public Guid? GuidOf<T>(string name) where T : IAsset
+        public Guid? GuidOf<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
                 return resource.Guid;
@@ -150,7 +150,7 @@ namespace Foster.Framework
         /// <summary>
         /// Gets a given Asset
         /// </summary>
-        public T? Get<T>(string name) where T : IAsset
+        public T? Get<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
                 return resource.Get<T>();
@@ -160,7 +160,7 @@ namespace Foster.Framework
         /// <summary>
         /// Gets a given Asset
         /// </summary>
-        public T? Get<T>(Guid guid) where T : IAsset
+        public T? Get<T>(Guid guid) where T : class, IAsset
         {
             if (byGuid.TryGetValue(guid, out var resource))
                 return resource.Get<T>();
@@ -170,7 +170,7 @@ namespace Foster.Framework
         /// <summary>
         /// Gets a given Asset and forces a Reload
         /// </summary>
-        public T? Reload<T>(string name) where T : IAsset
+        public T? Reload<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
                 return resource.Reload<T>();
@@ -180,7 +180,7 @@ namespace Foster.Framework
         /// <summary>
         /// Gets a given Asset and forces a Reload
         /// </summary>
-        public T? Reload<T>(Guid guid) where T : IAsset
+        public T? Reload<T>(Guid guid) where T : class, IAsset
         {
             if (byGuid.TryGetValue(guid, out var resource))
                 return resource.Reload<T>();
@@ -190,7 +190,7 @@ namespace Foster.Framework
         /// <summary>
         /// Finds all Assets of the given type, with the given prefix
         /// </summary>
-        public IEnumerable<T> Each<T>(string? prefix = null) where T : IAsset
+        public IEnumerable<T> Each<T>(string? prefix = null) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary))
             {
@@ -207,7 +207,7 @@ namespace Foster.Framework
         /// <summary>
         /// Makes an AssetHandle to an Asset
         /// </summary>
-        public AssetHandle<T> Handle<T>(string name) where T : IAsset
+        public AssetHandle<T> Handle<T>(string name) where T : class, IAsset
         {
             return new AssetHandle<T>(this, name);
         }
@@ -215,7 +215,7 @@ namespace Foster.Framework
         /// <summary>
         /// Makes an AssetHandle to an Asset
         /// </summary>
-        public AssetHandle<T> Handle<T>(Guid guid) where T : IAsset
+        public AssetHandle<T> Handle<T>(Guid guid) where T : class, IAsset
         {
             return new AssetHandle<T>(this, guid);
         }
@@ -223,7 +223,7 @@ namespace Foster.Framework
         /// <summary>
         /// Disposes the Asset, forcing a Reload the next time it's requested
         /// </summary>
-        public void Dispose<T>(string name) where T : IAsset
+        public void Dispose<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
                 resource.Dispose();
@@ -232,7 +232,7 @@ namespace Foster.Framework
         /// <summary>
         /// Disposes the Asset, forcing a Reload the next time it's requested
         /// </summary>
-        public void Dispose<T>(Guid guid) where T : IAsset
+        public void Dispose<T>(Guid guid) where T : class, IAsset
         {
             if (byGuid.TryGetValue(guid, out var resource))
                 resource.Dispose();

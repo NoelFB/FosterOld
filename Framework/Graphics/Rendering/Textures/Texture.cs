@@ -9,6 +9,8 @@ namespace Foster.Framework
     public class Texture : IAsset
     {
 
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// The internal texture object
         /// </summary>
@@ -106,7 +108,7 @@ namespace Foster.Framework
         /// <summary>
         /// Disposes the internal Texture resources
         /// </summary>
-        public override void Dispose()
+        public void Dispose()
         {
             Internal.Dispose();
         }
