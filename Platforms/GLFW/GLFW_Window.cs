@@ -118,7 +118,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override IntPtr Pointer => context.Handle.Ptr;
+        public override IntPtr Pointer => GLFW.GetWindowUserPointer(context.Handle.Ptr);
 
         private readonly GLFW.WindowSizeFunc windowSizeCallbackRef;
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
