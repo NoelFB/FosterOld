@@ -113,7 +113,11 @@ namespace Foster.Editor
         public void Launch(Project project)
         {
             App.Modules.Remove(this);
-            App.Modules.Register(new MainEditor(project));
+
+            project.Reload();
+
+            App.Modules.Register(new ProjectEditor(project));
+
         }
 
         private void Render()

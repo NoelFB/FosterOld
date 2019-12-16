@@ -13,9 +13,9 @@ namespace Foster.Editor
     public class ScenePanel : GuiPanel
     {
 
-        public readonly MainEditor Editor;
+        public readonly ProjectEditor Editor;
 
-        public ScenePanel(MainEditor editor) : base(App.Modules.Get<Gui>(), "Scene")
+        public ScenePanel(ProjectEditor editor) : base(App.Modules.Get<Gui>(), "Scene")
         {
             Editor = editor;
         }

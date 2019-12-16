@@ -5,39 +5,118 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-
+using System.Threading;
 
 namespace Foster.Editor
 {
     public class Project
     {
-        public string Name;
+        public string ProjectName;
         public string ProjectPath;
 
         public string ConfigPath => Path.Combine(ProjectPath, "Project.foster");
         public string CsProjectPath => Path.Combine(ProjectPath, "Project.csproj");
         public string GeneratedPath => Path.Combine(ProjectPath, "Generated");
         public string AssetsPath => Path.Combine(ProjectPath, "Assets");
+        public string TempBuildPath => Path.Combine(ProjectPath, "bin");
+        public string TempAssemblyPath => Path.Combine(TempBuildPath, "Project.dll");
 
-        public string TempPath => Path.Combine(ProjectPath, "bin");
-        public string TempAssemblyPath => Path.Combine(ProjectPath, "bin", "Project.dll");
+        public readonly ProjectAssetBank Assets;
+        public ProjectAssembly Assembly { get; private set; }
+
+        public bool IsAssemblyValid { get; private set; }
+        public bool IsWaitingForReload => codeDirty || assetsDirty;
+
+        private FileSystemWatcher? watcher;
+        private bool codeDirty = true;
+        private bool assetsDirty = true;
 
         public List<string> Tags = new List<string>();
 
-        public readonly FileAssetBank Assets;
-        public readonly ProjectCompiler Compiler;
-
         private Project(string name, string projectPath)
         {
-            Name = name;
+            ProjectName = name;
             ProjectPath = projectPath;
-            Assets = new FileAssetBank(AssetsPath);
-            Compiler = new ProjectCompiler(this);
+
+            Assets = new ProjectAssetBank(AssetsPath);
+            Assembly = new ProjectAssembly();
+        }
+
+        public void StartWatching()
+        {
+            watcher = new FileSystemWatcher(AssetsPath, "*.*")
+            {
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
+            };
+
+            watcher.Changed += FileChanged;
+            watcher.EnableRaisingEvents = true;
+        }
+
+        public void StopWatching()
+        {
+            if (watcher != null)
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+            }
+        }
+
+        private void FileChanged(object sender, FileSystemEventArgs e)
+        {
+            var ext = Path.GetExtension(e.FullPath);
+
+            if (ext != null)
+            {
+                if (ext.Equals(".cs", StringComparison.OrdinalIgnoreCase) || ext.Equals(".csproj", StringComparison.OrdinalIgnoreCase))
+                {
+                    codeDirty = true;
+                }
+                else
+                {
+                    // TODO:
+                    // mark specific assets as dirty
+                    assetsDirty = true;
+                }
+            }
         }
 
         public void Reload()
         {
+            if (!IsWaitingForReload)
+                return;
 
+            // rebuild & reload assembly
+            if (codeDirty)
+            {
+                codeDirty = false;
+                IsAssemblyValid = false;
+
+                // recompile assembly
+                var compiler = new ProjectCompiler();
+                compiler.Build(CsProjectPath, TempBuildPath);
+
+                // reload the assembly if we successfully re-compiled
+                if (compiler.IsSuccess)
+                {
+                    IsAssemblyValid = true;
+
+                    // TODO:
+                    // Mark all Assets that rely on the Assembly as dirty
+
+                    Assembly.Dispose();
+                    Assembly = new ProjectAssembly();
+                    Assembly.Load(TempAssemblyPath);
+                }
+            }
+
+            if (assetsDirty)
+            {
+                assetsDirty = false;
+
+                Assets.Refresh();
+            }
         }
 
         public void Save()
@@ -59,9 +138,9 @@ namespace Foster.Editor
             project.CreateConfigFile();
 
             // create default .git ignore
-            File.WriteAllText(Path.Combine(projectPath, ".gitignore"), "bin\nobj\n.vs");
-
-            project.Reload();
+            File.WriteAllText(
+                Path.Combine(project.ProjectPath, ".gitignore"), 
+                Calc.EmbeddedResourceText("Content/Default/.gitignore"));
 
             return project;
         }
@@ -76,24 +155,20 @@ namespace Foster.Editor
             if (!File.Exists(project.CsProjectPath))
                 project.CreateCsProjectFile();
 
-            project.Reload();
             return project;
         }
 
         private void CreateCsProjectFile()
         {
-            using var writer = File.CreateText(CsProjectPath);
-            using var stream = Calc.EmbeddedResource("Content/EmptyProject.csproj");
-            using var reader = new StreamReader(stream);
-
-            writer.Write(reader.ReadToEnd());
+            File.WriteAllText(CsProjectPath,
+                Calc.EmbeddedResourceText("Content/Default/Project.csproj"));
         }
 
         private void CreateConfigFile()
         {
             var config = new JsonObject
             {
-                ["name"] = Name,
+                ["name"] = ProjectName,
                 ["tags"] = new JsonArray()
             };
 

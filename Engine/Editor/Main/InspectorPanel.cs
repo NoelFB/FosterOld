@@ -9,9 +9,9 @@ namespace Foster.Editor
     public class InspectorPanel : GuiPanel
     {
 
-        public readonly MainEditor Editor;
+        public readonly ProjectEditor Editor;
 
-        public InspectorPanel(MainEditor editor) : base(App.Modules.Get<Gui>(), "Inspector")
+        public InspectorPanel(ProjectEditor editor) : base(App.Modules.Get<Gui>(), "Inspector")
         {
             Editor = editor;
         }

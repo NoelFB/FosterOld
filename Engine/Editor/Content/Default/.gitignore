@@ -1,0 +1,10 @@
+﻿# ignore Generated Assets
+Generated/
+
+# ignore bin/obj files
+bin/
+obj/
+
+# no visual studio files
+.vs/
+.vscode/

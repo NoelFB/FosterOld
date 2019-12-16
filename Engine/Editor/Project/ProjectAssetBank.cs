@@ -11,7 +11,7 @@ namespace Foster.Editor
     /// <summary>
     /// An Asset Bank that works from the OS File System
     /// </summary>
-    public class FileAssetBank : AssetBank
+    public class ProjectAssetBank : AssetBank
     {
 
         private struct AssetInfo
@@ -25,7 +25,7 @@ namespace Foster.Editor
 
         public readonly string RootPath;
 
-        public FileAssetBank(string rootPath = "")
+        public ProjectAssetBank(string rootPath = "")
         {
             info = new Dictionary<Guid, AssetInfo>();
             existing = new HashSet<string>();

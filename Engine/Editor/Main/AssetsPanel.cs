@@ -11,10 +11,10 @@ namespace Foster.Editor
     public class AssetsPanel : GuiPanel
     {
 
-        public readonly MainEditor Editor;
+        public readonly ProjectEditor Editor;
         private AssetHandle<Texture> preview;
 
-        public AssetsPanel(MainEditor editor) : base(App.Modules.Get<Gui>(), "Assets")
+        public AssetsPanel(ProjectEditor editor) : base(App.Modules.Get<Gui>(), "Assets")
         {
             Editor = editor;
         }
@@ -32,21 +32,24 @@ namespace Foster.Editor
 
             if (preview.Instance != null)
             {
-                var rect = imgui.Remainder();
+                var rect = imgui.Cell(preview.Instance.Width, preview.Instance.Height);
                 imgui.Batcher.Image(preview.Instance, rect.TopLeft, Color.White);
             }
 
             if (imgui.Button("New Component"))
             {
-                using var writer = File.CreateText(Path.Combine(Editor.Project.AssetsPath, "Code", "NewComponent.cs"));
-                using var stream = Calc.EmbeddedResource("Content/EmptyComponent.cs");
-                using var reader = new StreamReader(stream);
-
-                var content = reader.ReadToEnd();
+                var content = Calc.EmbeddedResourceText("Content/Default/Component.cs");
                 content = content.Replace("{Guid}", Guid.NewGuid().ToString());
                 content = content.Replace("{Name}", "NewComponent");
+                File.WriteAllText(Path.Combine(Editor.Project.AssetsPath, "Code", "NewComponent.cs"), content);
+            }
 
-                writer.Write(content);
+            if (Editor.Project.Assembly != null)
+            {
+                foreach (var component in Editor.Project.Assembly.Components)
+                {
+                    imgui.Label(component.Value.Name);
+                }
             }
         }
 

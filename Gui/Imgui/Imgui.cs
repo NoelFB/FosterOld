@@ -416,13 +416,14 @@ namespace Foster.GuiSystem
         {
             var scale = window.ContentScale * (contentScale ?? Vector2.One);
             var bounds = new Rect(0, 0, window.DrawableWidth / scale.X, window.DrawableHeight / scale.Y);
-            var mouse = window.DrawableMouse / scale;
 
-            BeginViewport(window.Title, batcher, bounds, mouse, scale, !window.MouseOver);
+            BeginViewport(window.Title, batcher, bounds, window.DrawableMouse, scale, !window.MouseOver);
         }
 
         public void BeginViewport(Name name, Batch2D batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
         {
+            mouse /= scale;
+
             if (viewport.ID != ID.None)
                 throw new Exception("The previous Viewport must be ended before beginning a new one");
 

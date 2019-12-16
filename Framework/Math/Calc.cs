@@ -584,7 +584,7 @@ namespace Foster.Framework
 
         public static Stream EmbeddedResource(string resourceName)
         {
-            var assembly = Assembly.GetCallingAssembly();
+            var assembly = Assembly.GetEntryAssembly();
             var path = assembly.GetName().Name + "." + resourceName.Replace('/', '.').Replace('\\', '.');
 
             var stream = assembly.GetManifestResourceStream(path);
@@ -593,7 +593,13 @@ namespace Foster.Framework
                 throw new Exception($"Embedded Resource '{resourceName}' doesn't exist");
 
             return stream;
+        }
 
+        public static string EmbeddedResourceText(string resourceName)
+        {
+            using var stream = EmbeddedResource(resourceName);
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
         }
 
         #endregion Utils

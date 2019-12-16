@@ -332,7 +332,14 @@ namespace Foster.GuiSystem
                 {
                     return floatingBounds;
                 }
-                else if (Mode == Modes.Standalone || Mode == Modes.Root)
+                else if (Mode == Modes.Standalone)
+                {
+                    var scale = Window.ContentScale * Gui.ContentScale;
+                    var bounds = new Rect(0, 0, Window.DrawableWidth / scale.X, Window.DrawableHeight / scale.Y);
+
+                    return bounds;
+                }
+                else if (Mode == Modes.Root)
                 {
                     var scale = Window.ContentScale * Gui.ContentScale;
                     var bounds = new Rect(0, 0, Window.DrawableWidth / scale.X, Window.DrawableHeight / scale.Y);

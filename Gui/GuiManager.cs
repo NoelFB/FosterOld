@@ -110,6 +110,7 @@ namespace Foster.GuiSystem
 
                 Root.DockingGui();
             }
+
             Gui.Imgui.EndViewport();
         }
 

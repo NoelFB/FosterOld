@@ -79,6 +79,8 @@ namespace Foster.Framework
 
                 type = type.BaseType;
             }
+
+            module.Registered = false;
         }
 
         public bool TryGet<T>(out T? module) where T : Module
