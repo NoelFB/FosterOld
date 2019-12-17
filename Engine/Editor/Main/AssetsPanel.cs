@@ -41,7 +41,7 @@ namespace Foster.Editor
                 var content = Calc.EmbeddedResourceText("Content/Default/Component.cs");
                 content = content.Replace("{Guid}", Guid.NewGuid().ToString());
                 content = content.Replace("{Name}", "NewComponent");
-                File.WriteAllText(Path.Combine(Editor.Project.AssetsPath, "Code", "NewComponent.cs"), content);
+                File.WriteAllText(Path.Combine(Editor.Project.AssetsPath, "NewComponent.cs"), content);
             }
 
             if (Editor.Project.Assembly != null)

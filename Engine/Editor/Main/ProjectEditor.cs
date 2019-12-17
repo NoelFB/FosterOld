@@ -13,6 +13,7 @@ namespace Foster.Editor
         public readonly Project Project;
 
         public AssetHandle Inspecting;
+        private bool reloadOnNextUpdate;
 
         public ProjectEditor(Project project)
         {
@@ -32,23 +33,26 @@ namespace Foster.Editor
             new InspectorPanel(this);
 
             App.Window.OnFocus += Reload;
-
-
         }
 
         private void Reload()
         {
             if (Project.IsWaitingForReload)
             {
+                reloadOnNextUpdate = true;
                 UpdateTitle("rebuilding");
-                Project.Reload();
-                UpdateTitle((Project.IsAssemblyValid ? "ready" : "build error"));
             }
         }
 
         protected override void BeforeUpdate()
         {
+            if (reloadOnNextUpdate)
+            {
+                reloadOnNextUpdate = false;
 
+                Project.Reload();
+                UpdateTitle((Project.IsAssemblyValid ? "ready" : "build error"));
+            }
         }
 
         private void UpdateTitle(string status)
