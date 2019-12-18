@@ -19,7 +19,7 @@ namespace Foster.Editor
             Project = project;
             Project.StartWatching();
 
-            UpdateTitle((Project.IsAssemblyValid ? "ready" : "build error"));
+            UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
         }
 
         protected override void Startup()
@@ -31,29 +31,28 @@ namespace Foster.Editor
             new AssetsPanel(this);
             new InspectorPanel(this);
 
-            App.Window.OnFocus += Reload;
-
-
+            App.Window.OnFocus += OnFocus;
         }
 
-        private void Reload()
+        private void OnFocus()
         {
             if (Project.IsWaitingForReload)
             {
                 UpdateTitle("rebuilding");
                 Project.Reload();
-                UpdateTitle((Project.IsAssemblyValid ? "ready" : "build error"));
+                UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
             }
-        }
-
-        protected override void BeforeUpdate()
-        {
-
         }
 
         private void UpdateTitle(string status)
         {
-            App.Window.Title = $"Foster.Editor :: {Project.ProjectName} :: ({status})";
+            App.Window.Title = $"Foster.Editor :: {Project.Config.Name} :: ({status})";
+        }
+
+        protected override void Shutdown()
+        {
+            App.Window.OnFocus -= OnFocus;
+            Project.Dispose();
         }
     }
 }

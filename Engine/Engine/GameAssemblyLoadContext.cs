@@ -5,17 +5,17 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 
-namespace Foster.Editor
+namespace Foster.Engine
 {
 #pragma warning disable CS8603 // Possible null reference return.
 
     /// <summary>
-    /// Custom Assembly Load Context for the Project code, required for unloadability
+    /// Custom Assembly Load Context for the Game code, required for unloadability
     /// See details here: https://docs.microsoft.com/en-us/dotnet/standard/assembly/unloadability
     /// </summary>
-    public class ProjectAssemblyLoadContext : AssemblyLoadContext
+    public class GameAssemblyLoadContext : AssemblyLoadContext
     {
-        public ProjectAssemblyLoadContext() : base(isCollectible: true)
+        public GameAssemblyLoadContext() : base(isCollectible: true)
         {
 
         }

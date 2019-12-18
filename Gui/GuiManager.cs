@@ -36,8 +36,8 @@ namespace Foster.GuiSystem
             Batcher = new Batch2D();
 
             Window = window;
-            Window.OnRender = Render;
-            Window.OnResize = Resize;
+            Window.OnRender += Render;
+            Window.OnResize += Resize;
 
             Root = new GuiDockNode(this, GuiDockNode.Modes.Root);
         }

@@ -14,16 +14,6 @@ namespace Foster.Framework.Json
         {
         }
 
-        public JsonObject(string jsonString) : this()
-        {
-
-        }
-
-        public JsonObject(Stream jsonStream) : this()
-        {
-
-        }
-
         public JsonValue this[string key]
         {
             get => Value[key];

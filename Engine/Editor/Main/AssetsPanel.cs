@@ -2,6 +2,7 @@
 using Foster.GuiSystem;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -41,15 +42,20 @@ namespace Foster.Editor
                 var content = Calc.EmbeddedResourceText("Content/Default/Component.cs");
                 content = content.Replace("{Guid}", Guid.NewGuid().ToString());
                 content = content.Replace("{Name}", "NewComponent");
-                File.WriteAllText(Path.Combine(Editor.Project.AssetsPath, "Code", "NewComponent.cs"), content);
+                File.WriteAllText(Path.Combine(Editor.Project.Config.AssetsPath, "Code", "NewComponent.cs"), content);
             }
 
-            if (Editor.Project.Assembly != null)
+            if (Editor.Project.GameAssembly != null)
             {
-                foreach (var component in Editor.Project.Assembly.Components)
+                foreach (var component in Editor.Project.GameAssembly.Components)
                 {
                     imgui.Label(component.Value.Name);
                 }
+            }
+
+            if (imgui.Button("folder"))
+            {
+                Process.Start("explorer.exe", Editor.Project.Config.AssetsPath);
             }
         }
 

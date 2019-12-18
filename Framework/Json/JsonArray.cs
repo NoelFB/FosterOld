@@ -11,6 +11,12 @@ namespace Foster.Framework.Json
         {
         }
 
+        public JsonArray(IList<string> list) : base(JsonType.Array, new List<JsonValue>())
+        {
+            foreach (var value in list)
+                Value.Add(value);
+        }
+
         public JsonValue this[int index]
         {
             get => Value[index];

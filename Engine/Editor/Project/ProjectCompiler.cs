@@ -1,22 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading;
 
 namespace Foster.Editor
 {
-    public class ProjectCompiler
+    public class ProjectCompiler : IDisposable
     {
 
+        public bool IsWaitingForRebuild => codeDirty;
         public bool IsBuilding { get; private set; }
-        public bool IsSuccess { get; private set; }
+        public bool IsAssemblyValid { get; private set; }
 
         public List<string> Log = new List<string>();
         public List<string> Errors = new List<string>();
 
+        private FileSystemWatcher watcher;
+        private bool codeDirty = true;
+
+        public ProjectCompiler(string assetsPath)
+        {
+            watcher = new FileSystemWatcher(assetsPath, "*.cs")
+            {
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.LastAccess
+                    | NotifyFilters.LastWrite
+                    | NotifyFilters.FileName
+                    | NotifyFilters.DirectoryName
+            };
+
+            watcher.Created += FileChanged;
+            watcher.Changed += FileChanged;
+            watcher.Deleted += FileChanged;
+            watcher.Renamed += FileChanged;
+        }
+
+        public void StartWatching()
+        {
+            watcher.EnableRaisingEvents = true;
+        }
+
+        public void StopWatching()
+        {
+            watcher.EnableRaisingEvents = false;
+        }
+
+        private void FileChanged(object sender, FileSystemEventArgs e)
+        {
+            codeDirty = true;
+        }
+
         public bool Build(string csProjectPath, string binPath)
         {
+            codeDirty = false;
+
             if (!IsBuilding)
             {
                 Log.Clear();
@@ -65,14 +104,17 @@ namespace Foster.Editor
                 pr.WaitForExit();
 
                 IsBuilding = false;
-                IsSuccess = pr.ExitCode == 0;
+                IsAssemblyValid = pr.ExitCode == 0;
 
-                return IsSuccess;
+                return IsAssemblyValid;
             }
 
             return false;
         }
 
-
+        public void Dispose()
+        {
+            watcher.Dispose();
+        }
     }
 }

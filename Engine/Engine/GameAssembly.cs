@@ -6,29 +6,35 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Foster.Editor
+namespace Foster.Engine
 {
-    public class ProjectAssembly : IDisposable
+    public class GameAssembly : IDisposable
     {
-        private ProjectAssemblyLoadContext? context;
+        private GameAssemblyLoadContext? context;
         private Assembly? assembly;
 
         public readonly Dictionary<Guid, Type> Components = new Dictionary<Guid, Type>();
 
-        public void Load(string assemblyPath)
+        public void Reload(string assemblyPath)
         {
-            using var stream = File.OpenRead(assemblyPath);
-            
-            context = new ProjectAssemblyLoadContext();
-            assembly = context.LoadFromStream(stream);
+            // dispose existing context
+            if (context != null)
+                Dispose();
 
-            // find all the component types
-            foreach (var type in assembly.GetTypes())
+            // load next context
             {
-                if (typeof(Component).IsAssignableFrom(type))
+                using var stream = File.OpenRead(assemblyPath);
+                context = new GameAssemblyLoadContext();
+                assembly = context.LoadFromStream(stream);
+
+                // find all the component types
+                foreach (var type in assembly.GetTypes())
                 {
-                    Components[type.GUID] = type;
-                    Console.WriteLine(type.Name + ": " + type.GUID);
+                    if (typeof(Component).IsAssignableFrom(type))
+                    {
+                        Components[type.GUID] = type;
+                        Console.WriteLine(type.Name + ": " + type.GUID);
+                    }
                 }
             }
         }

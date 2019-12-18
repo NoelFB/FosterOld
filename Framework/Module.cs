@@ -1,4 +1,7 @@
-﻿namespace Foster.Framework
+﻿
+using System.Collections.Generic;
+
+namespace Foster.Framework
 {
     public abstract class Module
     {
@@ -16,7 +19,17 @@
         protected internal virtual void Shutdown() { }
 
         protected internal virtual void BeforeUpdate() { }
-        protected internal virtual void Update() { }
+        
+        protected internal virtual void Update()
+        {
+            for (int i = 0; i < routines.Count; i ++)
+            {
+                routines[i].Update();
+                if (routines[i].Finished)
+                    routines.RemoveAt(i--);
+            }
+        }
+
         protected internal virtual void AfterUpdate() { }
 
         protected internal virtual void ContextChanged(Context context) { }
@@ -25,6 +38,13 @@
         protected internal virtual void AfterRender(Window window) { }
 
         protected internal virtual void Tick() { }
+
+        private readonly List<Coroutine> routines = new List<Coroutine>();
+
+        public void StartCoroutine(Coroutine routine)
+        {
+            routines.Add(routine);
+        }
 
     }
 }

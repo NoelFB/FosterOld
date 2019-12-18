@@ -89,8 +89,11 @@ namespace Foster.Editor
 
                 if (imgui.Button("New Project"))
                 {
-                    var project = Project.Create("new project", Path.Combine(ProjectsPath, "new project"));
-                    Launch(project);
+                    var config = new ProjectConfig(Path.Combine(ProjectsPath, "new project"));
+                    config.Name = "new project";
+                    config.Save();
+
+                    Launch(config);
                 }
 
                 imgui.Cell(0f, 30f);
@@ -100,8 +103,9 @@ namespace Foster.Editor
                 {
                     if (imgui.Button(existing))
                     {
-                        var project = Project.Load(Path.Combine(ProjectsPath, existing));
-                        Launch(project);
+                        var config = new ProjectConfig(Path.Combine(ProjectsPath, existing));
+
+                        Launch(config);
                     }
                 }
                 imgui.EndFrame();
@@ -110,11 +114,12 @@ namespace Foster.Editor
             imgui.EndViewport();
         }
 
-        public void Launch(Project project)
+        public void Launch(ProjectConfig config)
         {
             App.Modules.Remove(this);
 
-            project.Reload();
+            var project = new Project(config);
+            project.Reload(true);
 
             App.Modules.Register(new ProjectEditor(project));
 

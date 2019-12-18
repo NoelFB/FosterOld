@@ -170,6 +170,16 @@ namespace Foster.Framework
         /// <summary>
         /// Gets a given Asset
         /// </summary>
+        public IAsset? Get(Type type, string name)
+        {
+            if (byName.TryGetValue(type, out var dictionary) && dictionary.TryGetValue(name, out var resource))
+                return resource.Get();
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a given Asset
+        /// </summary>
         public T? Get<T>(Guid guid) where T : class, IAsset
         {
             if (byGuid.TryGetValue(guid, out var resource))
@@ -177,11 +187,41 @@ namespace Foster.Framework
             return null;
         }
 
-        public object? Get(Guid guid)
+        public IAsset? Get(Guid guid)
         {
             if (byGuid.TryGetValue(guid, out var resource))
                 return resource.Get();
             return null;
+        }
+
+        /// <summary>
+        /// Gets a given Asset
+        /// </summary>
+        public bool Exists<T>(string name) where T : class, IAsset
+        {
+            if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
+                return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a given Asset
+        /// </summary>
+        public bool Exists(Type type, string name)
+        {
+            if (byName.TryGetValue(type, out var dictionary) && dictionary.TryGetValue(name, out var resource))
+                return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a given Asset
+        /// </summary>
+        public bool Exists(Guid guid)
+        {
+            if (byGuid.TryGetValue(guid, out var resource))
+                return true;
+            return false;
         }
 
         /// <summary>
@@ -232,6 +272,14 @@ namespace Foster.Framework
         /// <summary>
         /// Makes an AssetHandle to an Asset
         /// </summary>
+        public AssetHandle Handle(Type type, string name)
+        {
+            return new AssetHandle(this, type, name);
+        }
+
+        /// <summary>
+        /// Makes an AssetHandle to an Asset
+        /// </summary>
         public AssetHandle<T> Handle<T>(Guid guid) where T : class, IAsset
         {
             return new AssetHandle<T>(this, guid);
@@ -250,27 +298,56 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Disposes the Asset, forcing a Reload the next time it's requested
+        /// Unloads the Asset, forcing a Reload the next time it's requested
         /// </summary>
-        public void Dispose<T>(string name) where T : class, IAsset
+        public void Unload<T>(string name) where T : class, IAsset
         {
             if (byName.TryGetValue(typeof(T), out var dictionary) && dictionary.TryGetValue(name, out var resource))
                 resource.Dispose();
         }
 
         /// <summary>
-        /// Disposes the Asset, forcing a Reload the next time it's requested
+        /// Unloads the Asset, forcing a Reload the next time it's requested
         /// </summary>
-        public void Dispose<T>(Guid guid) where T : class, IAsset
+        public void Unload(Type type, string name)
+        {
+            if (byName.TryGetValue(type, out var dictionary) && dictionary.TryGetValue(name, out var resource))
+                resource.Dispose();
+        }
+
+        /// <summary>
+        /// Unloads the Asset, forcing a Reload the next time it's requested
+        /// </summary>
+        public void Unload(Guid guid)
         {
             if (byGuid.TryGetValue(guid, out var resource))
                 resource.Dispose();
         }
 
         /// <summary>
-        /// Disposes all Assets
+        /// Unloads all Assets of a given type
         /// </summary>
-        public void Dispose()
+        public void UnloadAll<T>()
+        {
+            UnloadAll(typeof(T));
+        }
+
+        /// <summary>
+        /// Unloads all Assets of a given type
+        /// </summary>
+        public void UnloadAll(Type type)
+        {
+            if (byName.TryGetValue(type, out var dictionary))
+            {
+                foreach (var resource in dictionary.Values)
+                    resource.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Unloads all Assets
+        /// </summary>
+        public void UnloadAll()
         {
             foreach (var resource in byGuid.Values)
                 resource.Dispose();

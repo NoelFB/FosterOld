@@ -11,91 +11,150 @@ namespace Foster.Editor
     /// <summary>
     /// An Asset Bank that works from the OS File System
     /// </summary>
-    public class ProjectAssetBank : AssetBank
+    public class ProjectAssetBank : AssetBank, IDisposable
     {
 
-        private struct AssetInfo
+        public readonly string AssetsPath;
+
+        private readonly Dictionary<string, Guid> pathToGuid = new Dictionary<string, Guid>();
+        private readonly Dictionary<Guid, string> guidToPath = new Dictionary<Guid, string>();
+        private readonly List<(string, WatcherChangeTypes)> markedFiles = new List<(string, WatcherChangeTypes)>();
+        private readonly FileSystemWatcher watcher;
+
+        public bool IsWaitingForSync => markedFiles.Count > 0;
+
+        public ProjectAssetBank(string assetsPath)
         {
-            public string Path;
-            public DateTime Timestamp;
-        }
+            AssetsPath = assetsPath;
 
-        private readonly Dictionary<Guid, AssetInfo> info;
-        private HashSet<string> existing;
+            if (!Directory.Exists(AssetsPath))
+                Directory.CreateDirectory(AssetsPath);
 
-        public readonly string RootPath;
-
-        public ProjectAssetBank(string rootPath = "")
-        {
-            info = new Dictionary<Guid, AssetInfo>();
-            existing = new HashSet<string>();
-            RootPath = rootPath;
-        }
-
-        public void Refresh()
-        {
-            var path = Path.Combine(App.System.Directory, RootPath);
-            var removing = new List<Guid>();
-
-            foreach (var pair in info)
+            watcher = new FileSystemWatcher(AssetsPath, "*.*")
             {
-                if (!File.Exists(pair.Value.Path))
-                {
-                    removing.Add(pair.Key);
-                    existing.Remove(pair.Value.Path);
-                }
-                else if (File.GetLastWriteTime(pair.Value.Path) > pair.Value.Timestamp)
-                {
-                    removing.Add(pair.Key);
-                    existing.Remove(pair.Value.Path);
-                }
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.LastAccess
+                    | NotifyFilters.LastWrite
+                    | NotifyFilters.FileName
+                    | NotifyFilters.DirectoryName
+            };
+
+            watcher.Created += FileChanged;
+            watcher.Changed += FileChanged;
+            watcher.Deleted += FileChanged;
+            watcher.Renamed += FileRenamed;
+        }
+
+        public void StartWatching()
+        {
+            watcher.EnableRaisingEvents = true;
+        }
+
+        public void StopWatching()
+        {
+            watcher.EnableRaisingEvents = false;
+        }
+
+        private void FileChanged(object sender, FileSystemEventArgs e)
+        {
+            var ext = Path.GetExtension(e.FullPath);
+
+            if (ext != null && !ext.Equals(".meta", StringComparison.OrdinalIgnoreCase) && !ext.Equals(".cs", StringComparison.OrdinalIgnoreCase))
+                MarkFile(e.FullPath, e.ChangeType);
+        }
+
+        private void FileRenamed(object sender, RenamedEventArgs e)
+        {
+            var ext = Path.GetExtension(e.FullPath);
+
+            if (ext != null && !ext.Equals(".meta", StringComparison.OrdinalIgnoreCase) && !!ext.Equals(".cs", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO:
+                // actually mark the file as renamed, so it can hande this more gracefully?
+                // ex. it could automatically hook up the guid again, maybe?
+
+                MarkFile(e.OldFullPath, WatcherChangeTypes.Deleted);
+                MarkFile(e.FullPath, WatcherChangeTypes.Created);
+            }
+        }
+
+        public void MarkFile(string fullPath, WatcherChangeTypes mark)
+        {
+            if (mark == WatcherChangeTypes.Created || pathToGuid.ContainsKey(GetRelativePath(fullPath)))
+                markedFiles.Add((fullPath, mark));
+        }
+
+        public void FindAllFiles()
+        {
+            // we don't care about any marked files because we're doing a full sweep
+            markedFiles.Clear();
+
+            foreach (var file in Directory.EnumerateFiles(AssetsPath, "*.*", SearchOption.AllDirectories))
+                AddFile(file);
+        }
+        
+        public void SyncFiles()
+        {
+            int count = markedFiles.Count;
+            for (int i = 0; i < count; i ++)
+            {
+                var path = markedFiles[i].Item1;
+                var mark = markedFiles[i].Item2;
+
+                if (mark == WatcherChangeTypes.Created)
+                    AddFile(path);
+                else if (mark == WatcherChangeTypes.Deleted)
+                    RemoveFile(path);
+                else if (mark == WatcherChangeTypes.Changed)
+                    UpdateFile(path);
             }
 
-            foreach (var entry in removing)
-                Remove(entry);
-
-            AddDirectory(path, path);
+            markedFiles.RemoveRange(0, count);
         }
 
-        private void AddDirectory(string relative, string path)
+        private bool AddFile(string fullPath)
         {
-            foreach (var file in Directory.EnumerateFiles(path))
+            var ext = ((ReadOnlySpan<char>)Path.GetExtension(fullPath));
+            if (ext.Length > 0 && ext[0] == '.')
+                ext = ext.Slice(1);
+
+            // skip meta files
+            if (ext.Equals("meta", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            // find the type based on the extension
+            Type? type = null;
+            foreach (var loader in AssetLoaders.Loaders)
             {
-                if (existing.Contains(file))
-                    continue;
-
-                var ext = ((ReadOnlySpan<char>)Path.GetExtension(file));
-                if (ext.Length > 0 && ext[0] == '.')
-                    ext = ext.Slice(1);
-
-                var added = false;
-                foreach (var loader in AssetLoaders.Loaders)
-                {
-                    foreach (var extension in loader.Extensions)
-                        if (ext.Equals(extension, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var name = GetName(relative, file);
-                            AddEntry(loader.Type, name, file);
-                            added = true;
-                            break;
-                        }
-
-                    if (added)
+                foreach (var extension in loader.Extensions)
+                    if (ext.Equals(extension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        type = loader.Type;
                         break;
-                }
+                    }
+                
+                if (type != null)
+                    break;
             }
 
-            foreach (var dir in Directory.EnumerateDirectories(path))
-                AddDirectory(relative, dir);
-        }
+            // we can't figure out what type this should be ... so ignore it
+            if (type == null)
+                return false;
 
-        private void AddEntry(Type type, string name, string filepath)
-        {
-            var metaPath = filepath + ".meta";
-            var hasMeta = false;
+            // get the name, and unload if it already exists
+            var name = GetName(fullPath);
+            if (Exists(type, name))
+            {
+                Unload(type, name);
+                return false;
+            }
+
+            var relative = GetRelativePath(fullPath);
+            var metaPath = fullPath + ".meta";
             var guid = new Guid();
 
             // check for meta file
+            var hasMeta = false;
             if (File.Exists(metaPath))
             {
                 using var reader = new JsonReader(File.OpenRead(metaPath));
@@ -116,16 +175,62 @@ namespace Foster.Editor
 
             Add(type, guid, name);
 
-            info[guid] = new AssetInfo { Path = filepath, Timestamp = File.GetLastWriteTime(filepath) };
-            existing.Add(filepath);
+            pathToGuid[relative] = guid;
+            guidToPath[guid] = relative;
+            return true;
         }
 
-        private unsafe string GetName(ReadOnlySpan<char> relative, ReadOnlySpan<char> path)
+        private void UpdateFile(string fullPath)
         {
-            Span<char> r = stackalloc char[relative.Length];
+            var relative = GetRelativePath(fullPath);
+            if (pathToGuid.TryGetValue(relative, out var guid))
+                Unload(guid);
+        }
+
+        private void RemoveFile(string fullPath)
+        {
+            var relative = GetRelativePath(fullPath);
+            if (pathToGuid.TryGetValue(relative, out var guid))
+            {
+                guidToPath.Remove(guid);
+                pathToGuid.Remove(relative);
+                Remove(guid);
+            }
+        }
+
+        protected override bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata)
+        {
+            stream = null;
+            metadata = null;
+
+            var path = Path.Combine(AssetsPath, guidToPath[guid]);
+            if (File.Exists(path))
+            {
+                stream = File.OpenRead(path);
+                return true;
+            }
+
+            return false;
+        }
+
+        private string GetName(ReadOnlySpan<char> path)
+        {
+            var p = (ReadOnlySpan<char>)GetRelativePath(path);
+
+            // remove file extension
+            var ext = p.LastIndexOf('.');
+            if (ext >= 0)
+                p = p.Slice(0, ext);
+
+            return p.ToString();
+        }
+
+        private unsafe string GetRelativePath(ReadOnlySpan<char> path)
+        {
+            Span<char> r = stackalloc char[AssetsPath.Length];
             Span<char> p = stackalloc char[path.Length];
-            
-            relative.CopyTo(r);
+
+            ((ReadOnlySpan<char>)AssetsPath).CopyTo(r);
             path.CopyTo(p);
 
             // normalize
@@ -140,11 +245,6 @@ namespace Foster.Editor
 
             // trim any slashes
             p = p.Trim('/');
-
-            // remove file extension
-            var ext = p.LastIndexOf('.');
-            if (ext >= 0)
-                p = p.Slice(0, ext);
 
             return p.ToString();
 
@@ -169,19 +269,9 @@ namespace Foster.Editor
             }
         }
 
-        protected override bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata)
+        public void Dispose()
         {
-            stream = null;
-            metadata = null;
-
-            var path = info[guid].Path;
-            if (File.Exists(path))
-            {
-                stream = File.OpenRead(path);
-                return true;
-            }
-
-            return false;
+            watcher.Dispose();
         }
     }
 }
