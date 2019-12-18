@@ -1,4 +1,5 @@
 ﻿
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Foster.Framework
@@ -41,9 +42,14 @@ namespace Foster.Framework
 
         private readonly List<Coroutine> routines = new List<Coroutine>();
 
-        public void StartCoroutine(Coroutine routine)
+        public void RunRoutine(Coroutine routine)
         {
             routines.Add(routine);
+        }
+
+        public void RunRoutine(IEnumerator routine)
+        {
+            routines.Add(new Coroutine(routine));
         }
 
     }

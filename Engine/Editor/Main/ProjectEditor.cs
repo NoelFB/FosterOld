@@ -1,6 +1,7 @@
 ﻿using Foster.Framework;
 using Foster.GuiSystem;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -13,7 +14,8 @@ namespace Foster.Editor
         public readonly Project Project;
 
         public AssetHandle Inspecting;
-        private bool reloadOnNextUpdate;
+
+        private bool reloading = false;
 
         public ProjectEditor(Project project)
         {
@@ -37,26 +39,27 @@ namespace Foster.Editor
 
         private void OnFocus()
         {
-            if (Project.IsWaitingForReload)
+            if (!reloading && Project.IsWaitingForReload)
             {
-                reloadOnNextUpdate = true;
-                UpdateTitle("rebuilding");
+                reloading = true;
+                RunRoutine(Reload());
             }
+        }
+
+        private IEnumerator Reload()
+        {
+            UpdateTitle("rebuilding");
+            yield return null;
+
+            Project.Reload();
+
+            UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
+            reloading = false;
         }
 
         private void UpdateTitle(string status)
         {
             App.Window.Title = $"Foster.Editor :: {Project.Config.Name} :: ({status})";
-        }
-
-        protected override void BeforeUpdate()
-        {
-            if (reloadOnNextUpdate)
-            {
-                reloadOnNextUpdate = false;
-                Project.Reload();
-                UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
-            }
         }
 
         protected override void Shutdown()
