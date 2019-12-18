@@ -13,6 +13,7 @@ namespace Foster.Editor
         public readonly Project Project;
 
         public AssetHandle Inspecting;
+        private bool reloadOnNextUpdate;
 
         public ProjectEditor(Project project)
         {
@@ -38,15 +39,24 @@ namespace Foster.Editor
         {
             if (Project.IsWaitingForReload)
             {
+                reloadOnNextUpdate = true;
                 UpdateTitle("rebuilding");
-                Project.Reload();
-                UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
             }
         }
 
         private void UpdateTitle(string status)
         {
             App.Window.Title = $"Foster.Editor :: {Project.Config.Name} :: ({status})";
+        }
+
+        protected override void BeforeUpdate()
+        {
+            if (reloadOnNextUpdate)
+            {
+                reloadOnNextUpdate = false;
+                Project.Reload();
+                UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
+            }
         }
 
         protected override void Shutdown()
