@@ -58,9 +58,9 @@ namespace Foster.Editor
             if (Assets.IsWaitingForSync || fullAssetReload)
             {
                 if (fullAssetReload)
-                    Assets.FindAllFiles();
+                    Assets.SyncAllFiles();
                 else
-                    Assets.SyncFiles();
+                    Assets.SyncMarkedFiles();
             }
         }
 

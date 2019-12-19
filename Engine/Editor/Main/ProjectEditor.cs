@@ -13,6 +13,7 @@ namespace Foster.Editor
     {
         public readonly Project Project;
 
+        public AssetsPanel AssetsPanel;
         public AssetHandle Inspecting;
 
         private bool reloading = false;
@@ -22,18 +23,18 @@ namespace Foster.Editor
             Project = project;
             Project.StartWatching();
 
+            var font = new SpriteFont(Calc.EmbeddedResource(Path.Combine("Content", "InputMono-Medium.ttf")), 64, Charsets.ASCII);
+            App.Modules.Register(new Gui(font, App.Window));
+
+            new ScenePanel(this);
+            AssetsPanel = new AssetsPanel(this);
+            new InspectorPanel(this);
+
             UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
         }
 
         protected override void Startup()
         {
-            var font = new SpriteFont(Calc.EmbeddedResource(Path.Combine("Content", "InputMono-Medium.ttf")), 64, Charsets.ASCII);
-            App.Modules.Register(new Gui(font, App.Window));
-
-            new ScenePanel(this);
-            new AssetsPanel(this);
-            new InspectorPanel(this);
-
             App.Window.OnFocus += OnFocus;
         }
 
@@ -52,6 +53,7 @@ namespace Foster.Editor
             yield return null;
 
             Project.Reload();
+            AssetsPanel.Reload();
 
             UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
             reloading = false;

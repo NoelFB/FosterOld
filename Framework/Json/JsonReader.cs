@@ -27,7 +27,7 @@ namespace Foster.Framework.Json
 
         }
 
-        public JsonReader(Stream stream) : this(new StreamReader(stream))
+        public JsonReader(Stream stream) : this(new StreamReader(stream, Encoding.UTF8, true, 4096))
         {
 
         }

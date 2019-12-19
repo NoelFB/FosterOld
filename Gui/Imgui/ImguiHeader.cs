@@ -2,7 +2,7 @@
 {
     public static class ImguiHeader
     {
-        public static bool Header(this Imgui imgui, string label, bool startOpen = false)
+        public static bool BeginHeader(this Imgui imgui, string label, bool startOpen = false)
         {
             var style = imgui.Style.Header;
             var id = imgui.Id(label);
@@ -41,7 +41,6 @@
 
         public static void EndHeader(this Imgui imgui)
         {
-            imgui.Separator();
             imgui.PopIndent();
             imgui.PopId();
         }

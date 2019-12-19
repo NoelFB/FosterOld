@@ -13,9 +13,9 @@ namespace Foster.Engine
             Inline
         }
 
-        public readonly Modes Mode;
-        public readonly Window Window;
-        public readonly AssetBank Assets;
+        public static Modes Mode;
+        public static Window Window;
+        public static AssetBank Assets;
 
         public Game(Modes mode, Window window, AssetBank assets)
         {

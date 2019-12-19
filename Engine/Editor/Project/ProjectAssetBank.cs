@@ -16,7 +16,7 @@ namespace Foster.Editor
 
         public readonly string AssetsPath;
 
-        private readonly Dictionary<string, Guid> pathToGuid = new Dictionary<string, Guid>();
+        private readonly Dictionary<string, Guid> pathToGuid = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<Guid, string> guidToPath = new Dictionary<Guid, string>();
         private readonly List<(string, WatcherChangeTypes)> markedFiles = new List<(string, WatcherChangeTypes)>();
         private readonly FileSystemWatcher watcher;
@@ -43,6 +43,16 @@ namespace Foster.Editor
             watcher.Changed += FileChanged;
             watcher.Deleted += FileChanged;
             watcher.Renamed += FileRenamed;
+        }
+
+        public bool HasFile(string fullPath)
+        {
+            return pathToGuid.ContainsKey(NormalizePath(fullPath));
+        }
+
+        public bool HasRelativeFile(string path)
+        {
+            return pathToGuid.ContainsKey(NormalizePath(path, false));
         }
 
         public void StartWatching()
@@ -80,11 +90,11 @@ namespace Foster.Editor
 
         public void MarkFile(string fullPath, WatcherChangeTypes mark)
         {
-            if (mark == WatcherChangeTypes.Created || pathToGuid.ContainsKey(GetRelativePath(fullPath)))
+            if (mark == WatcherChangeTypes.Created || pathToGuid.ContainsKey(NormalizePath(fullPath)))
                 markedFiles.Add((fullPath, mark));
         }
 
-        public void FindAllFiles()
+        public void SyncAllFiles()
         {
             // we don't care about any marked files because we're doing a full sweep
             markedFiles.Clear();
@@ -93,7 +103,7 @@ namespace Foster.Editor
                 AddFile(file);
         }
         
-        public void SyncFiles()
+        public void SyncMarkedFiles()
         {
             int count = markedFiles.Count;
             for (int i = 0; i < count; i ++)
@@ -143,13 +153,13 @@ namespace Foster.Editor
 
             // get the name, and unload if it already exists
             var name = GetName(fullPath);
-            if (Exists(type, name))
+            if (GetEntry(type, name) != null)
             {
                 Unload(type, name);
                 return false;
             }
 
-            var relative = GetRelativePath(fullPath);
+            var relative = NormalizePath(fullPath);
             var metaPath = fullPath + ".meta";
             var guid = new Guid();
 
@@ -157,11 +167,21 @@ namespace Foster.Editor
             var hasMeta = false;
             if (File.Exists(metaPath))
             {
-                using var reader = new JsonReader(File.OpenRead(metaPath));
-                if (reader.TryReadObject(out var obj) && obj.TryGetValue("guid", out var value) && value.IsString)
+                using var stream = File.OpenRead(metaPath);
+                using var reader = new JsonReader(stream);
+
+                while (reader.Read())
                 {
-                    guid = new Guid(value.String);
-                    hasMeta = true;
+                    if (reader.Token == JsonToken.ObjectKey && reader.Value is string str && str == "guid")
+                    {
+                        reader.Read();
+                        if (reader.Value is string guidValue)
+                        {
+                            guid = new Guid(guidValue);
+                            hasMeta = true;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -182,14 +202,14 @@ namespace Foster.Editor
 
         private void UpdateFile(string fullPath)
         {
-            var relative = GetRelativePath(fullPath);
+            var relative = NormalizePath(fullPath);
             if (pathToGuid.TryGetValue(relative, out var guid))
                 Unload(guid);
         }
 
         private void RemoveFile(string fullPath)
         {
-            var relative = GetRelativePath(fullPath);
+            var relative = NormalizePath(fullPath);
             if (pathToGuid.TryGetValue(relative, out var guid))
             {
                 guidToPath.Remove(guid);
@@ -213,60 +233,41 @@ namespace Foster.Editor
             return false;
         }
 
-        private string GetName(ReadOnlySpan<char> path)
+        private string GetName(string path)
         {
-            var p = (ReadOnlySpan<char>)GetRelativePath(path);
-
-            // remove file extension
+            var p = NormalizePath(path);
             var ext = p.LastIndexOf('.');
-            if (ext >= 0)
-                p = p.Slice(0, ext);
 
-            return p.ToString();
+            if (ext >= 0)
+                return p.Substring(0, ext);
+
+            return p;
         }
 
-        private unsafe string GetRelativePath(ReadOnlySpan<char> path)
+        private unsafe string NormalizePath(string path, bool isFullPath = true)
         {
-            Span<char> r = stackalloc char[AssetsPath.Length];
-            Span<char> p = stackalloc char[path.Length];
+            if (isFullPath)
+                path = Path.GetRelativePath(AssetsPath, path);
 
-            ((ReadOnlySpan<char>)AssetsPath).CopyTo(r);
-            path.CopyTo(p);
+            ReadOnlySpan<char> ptr = path;
+            Span<char> norm = stackalloc char[ptr.Length];
 
-            // normalize
-            r = Normalize(r);
-            p = Normalize(p);
-
-            // get relative
-            var start = 0;
-            while (start < p.Length && start < r.Length && char.ToLower(p[start]) == char.ToLower(r[start]))
-                start++;
-            p = p.Slice(start);
-
-            // trim any slashes
-            p = p.Trim('/');
-
-            return p.ToString();
-
-            static Span<char> Normalize(Span<char> ptr)
+            int length = ptr.Length;
+            for (int i = 0, t = 0, l = length; t < l; i++, t++)
             {
-                for (int i = 0; i < ptr.Length; i++)
-                    if (ptr[i] == '\\') ptr[i] = '/';
-
-                int length = ptr.Length;
-                for (int i = 1, t = 1, l = length; t < l; i++, t++)
+                if (t > 0 && norm[t - 1] == '/' && (ptr[t] == '/' || ptr[t] == '\\'))
                 {
-                    if (ptr[t - 1] == '/' && ptr[t] == '/')
-                    {
-                        i--;
-                        length--;
-                    }
-                    else
-                        ptr[i] = ptr[t];
+                    i--;
+                    length--;
                 }
-
-                return ptr.Slice(0, length);
+                else if (ptr[t] == '\\')
+                    norm[i] = '/';
+                else
+                    norm[i] = ptr[t];
             }
+
+            var normalized = norm.Slice(0, length).Trim('/').ToString();
+            return normalized;
         }
 
         public void Dispose()
