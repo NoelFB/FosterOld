@@ -115,18 +115,17 @@ void main(void)
         private readonly Stack<Matrix2D> matrixStack = new Stack<Matrix2D>();
 
         private Vertex[] vertices;
-        private int[] triangles;
+        private int[] indices;
+
         private readonly List<Batch> batches;
         private Batch currentBatch;
         private int currentBatchInsert;
+        private bool dirty;
 
-        private int vertexCount;
-        private int triangleCount;
-        private bool dirty = false;
-
-        public int Triangles => triangleCount / 3;
-        public int Vertices => vertexCount;
-        public int Batches => batches.Count + (currentBatch.Elements > 0 ? 1 : 0);
+        public int TriangleCount => IndicesCount / 3;
+        public int VertexCount { get; private set; }
+        public int IndicesCount { get; private set; }
+        public int BatchCount => batches.Count + (currentBatch.Elements > 0 ? 1 : 0);
 
         private struct Batch
         {
@@ -172,7 +171,7 @@ void main(void)
 
             this.graphics = graphics;
             vertices = new Vertex[64];
-            triangles = new int[64];
+            indices = new int[64];
             batches = new List<Batch>();
 
             Clear();
@@ -180,8 +179,8 @@ void main(void)
 
         public void Clear()
         {
-            vertexCount = 0;
-            triangleCount = 0;
+            VertexCount = 0;
+            IndicesCount = 0;
             currentBatchInsert = 0;
             currentBatch = new Batch(null, BlendMode.Normal, null, Matrix2D.Identity, 0, 0);
             batches.Clear();
@@ -204,8 +203,8 @@ void main(void)
             {
                 if (dirty)
                 {
-                    Mesh.SetVertices(new ReadOnlyMemory<Vertex>(vertices, 0, vertexCount));
-                    Mesh.SetIndices(new ReadOnlyMemory<int>(triangles, 0, triangleCount));
+                    Mesh.SetVertices(new ReadOnlyMemory<Vertex>(vertices, 0, VertexCount));
+                    Mesh.SetIndices(new ReadOnlyMemory<int>(indices, 0, IndicesCount));
 
                     dirty = false;
                 }
@@ -442,82 +441,82 @@ void main(void)
         public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Color color)
         {
             PushQuad();
-            ExpandVertices(vertexCount + 4);
+            ExpandVertices(VertexCount + 4);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 4);
 
-            Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
 
-            vertexCount += 4;
+            VertexCount += 4;
         }
 
         public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color color, bool washed = false)
         {
             PushQuad();
-            ExpandVertices(vertexCount + 4);
+            ExpandVertices(VertexCount + 4);
 
             if (currentBatch.Texture?.Internal.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
 
-            Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
 
-            vertices[vertexCount + 1].Tex = t1;
-            vertices[vertexCount + 2].Tex = t2;
-            vertices[vertexCount + 3].Tex = t3;
+            vertices[VertexCount + 1].Tex = t1;
+            vertices[VertexCount + 2].Tex = t2;
+            vertices[VertexCount + 3].Tex = t3;
 
-            vertexCount += 4;
+            VertexCount += 4;
         }
 
         public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Color c0, Color c1, Color c2, Color c3)
         {
             PushQuad();
-            ExpandVertices(vertexCount + 4);
+            ExpandVertices(VertexCount + 4);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), VertexCount, 4);
 
-            Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
 
-            vertices[vertexCount + 1].Col = c1;
-            vertices[vertexCount + 2].Col = c2;
-            vertices[vertexCount + 3].Col = c3;
+            vertices[VertexCount + 1].Col = c1;
+            vertices[VertexCount + 2].Col = c2;
+            vertices[VertexCount + 3].Col = c3;
 
-            vertexCount += 4;
+            VertexCount += 4;
         }
 
         public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color c0, Color c1, Color c2, Color c3, bool washed = false)
         {
             PushQuad();
-            ExpandVertices(vertexCount + 4);
+            ExpandVertices(VertexCount + 4);
 
             if (currentBatch.Texture?.Internal.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), vertexCount, 4);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
 
-            Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
 
-            vertices[vertexCount + 1].Col = c1;
-            vertices[vertexCount + 1].Tex = t1;
-            vertices[vertexCount + 2].Col = c2;
-            vertices[vertexCount + 2].Tex = t2;
-            vertices[vertexCount + 3].Col = c3;
-            vertices[vertexCount + 3].Tex = t3;
+            vertices[VertexCount + 1].Col = c1;
+            vertices[VertexCount + 1].Tex = t1;
+            vertices[VertexCount + 2].Col = c2;
+            vertices[VertexCount + 2].Tex = t2;
+            vertices[VertexCount + 3].Col = c3;
+            vertices[VertexCount + 3].Tex = t3;
 
-            vertexCount += 4;
+            VertexCount += 4;
         }
 
         #endregion
@@ -527,32 +526,32 @@ void main(void)
         public void Triangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color)
         {
             PushTriangle();
-            ExpandVertices(vertexCount + 3);
+            ExpandVertices(VertexCount + 3);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 3);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 3);
 
-            Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
 
-            vertexCount += 3;
+            VertexCount += 3;
         }
 
         public void Triangle(Vector2 v0, Vector2 v1, Vector2 v2, Color c0, Color c1, Color c2)
         {
             PushTriangle();
-            ExpandVertices(vertexCount + 3);
+            ExpandVertices(VertexCount + 3);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), vertexCount, 3);
+            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), VertexCount, 3);
 
-            Transform(ref vertices[vertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[vertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
 
-            vertices[vertexCount + 1].Col = c1;
-            vertices[vertexCount + 2].Col = c2;
+            vertices[VertexCount + 1].Col = c1;
+            vertices[VertexCount + 2].Col = c2;
 
-            vertexCount += 3;
+            VertexCount += 3;
         }
 
         #endregion
@@ -669,92 +668,92 @@ void main(void)
 
                 // set tris
                 {
-                    while (triangleCount + 30 >= triangles.Length)
-                        Array.Resize(ref triangles, triangles.Length * 2);
+                    while (IndicesCount + 30 >= indices.Length)
+                        Array.Resize(ref indices, indices.Length * 2);
 
                     // top quad
                     {
-                        triangles[triangleCount + 00] = vertexCount + 00; // r0b
-                        triangles[triangleCount + 01] = vertexCount + 03; // r1a
-                        triangles[triangleCount + 02] = vertexCount + 05; // r1d
+                        indices[IndicesCount + 00] = VertexCount + 00; // r0b
+                        indices[IndicesCount + 01] = VertexCount + 03; // r1a
+                        indices[IndicesCount + 02] = VertexCount + 05; // r1d
 
-                        triangles[triangleCount + 03] = vertexCount + 00; // r0b
-                        triangles[triangleCount + 04] = vertexCount + 05; // r1d
-                        triangles[triangleCount + 05] = vertexCount + 01; // r0c
+                        indices[IndicesCount + 03] = VertexCount + 00; // r0b
+                        indices[IndicesCount + 04] = VertexCount + 05; // r1d
+                        indices[IndicesCount + 05] = VertexCount + 01; // r0c
                     }
 
                     // left quad
                     {
-                        triangles[triangleCount + 06] = vertexCount + 02; // r0d
-                        triangles[triangleCount + 07] = vertexCount + 01; // r0c
-                        triangles[triangleCount + 08] = vertexCount + 10; // r3b
+                        indices[IndicesCount + 06] = VertexCount + 02; // r0d
+                        indices[IndicesCount + 07] = VertexCount + 01; // r0c
+                        indices[IndicesCount + 08] = VertexCount + 10; // r3b
 
-                        triangles[triangleCount + 09] = vertexCount + 02; // r0d
-                        triangles[triangleCount + 10] = vertexCount + 10; // r3b
-                        triangles[triangleCount + 11] = vertexCount + 09; // r3a
+                        indices[IndicesCount + 09] = VertexCount + 02; // r0d
+                        indices[IndicesCount + 10] = VertexCount + 10; // r3b
+                        indices[IndicesCount + 11] = VertexCount + 09; // r3a
                     }
 
                     // right quad
                     {
-                        triangles[triangleCount + 12] = vertexCount + 05; // r1d
-                        triangles[triangleCount + 13] = vertexCount + 04; // r1c
-                        triangles[triangleCount + 14] = vertexCount + 07; // r2b
+                        indices[IndicesCount + 12] = VertexCount + 05; // r1d
+                        indices[IndicesCount + 13] = VertexCount + 04; // r1c
+                        indices[IndicesCount + 14] = VertexCount + 07; // r2b
 
-                        triangles[triangleCount + 15] = vertexCount + 05; // r1d
-                        triangles[triangleCount + 16] = vertexCount + 07; // r2b
-                        triangles[triangleCount + 17] = vertexCount + 06; // r2a
+                        indices[IndicesCount + 15] = VertexCount + 05; // r1d
+                        indices[IndicesCount + 16] = VertexCount + 07; // r2b
+                        indices[IndicesCount + 17] = VertexCount + 06; // r2a
                     }
 
                     // bottom quad
                     {
-                        triangles[triangleCount + 18] = vertexCount + 10; // r3b
-                        triangles[triangleCount + 19] = vertexCount + 06; // r2a
-                        triangles[triangleCount + 20] = vertexCount + 08; // r2d
+                        indices[IndicesCount + 18] = VertexCount + 10; // r3b
+                        indices[IndicesCount + 19] = VertexCount + 06; // r2a
+                        indices[IndicesCount + 20] = VertexCount + 08; // r2d
 
-                        triangles[triangleCount + 21] = vertexCount + 10; // r3b
-                        triangles[triangleCount + 22] = vertexCount + 08; // r2d
-                        triangles[triangleCount + 23] = vertexCount + 11; // r3c
+                        indices[IndicesCount + 21] = VertexCount + 10; // r3b
+                        indices[IndicesCount + 22] = VertexCount + 08; // r2d
+                        indices[IndicesCount + 23] = VertexCount + 11; // r3c
                     }
 
                     // center quad
                     {
-                        triangles[triangleCount + 24] = vertexCount + 01; // r0c
-                        triangles[triangleCount + 25] = vertexCount + 05; // r1d
-                        triangles[triangleCount + 26] = vertexCount + 06; // r2a
+                        indices[IndicesCount + 24] = VertexCount + 01; // r0c
+                        indices[IndicesCount + 25] = VertexCount + 05; // r1d
+                        indices[IndicesCount + 26] = VertexCount + 06; // r2a
 
-                        triangles[triangleCount + 27] = vertexCount + 01; // r0c
-                        triangles[triangleCount + 28] = vertexCount + 06; // r2a
-                        triangles[triangleCount + 29] = vertexCount + 10; // r3b
+                        indices[IndicesCount + 27] = VertexCount + 01; // r0c
+                        indices[IndicesCount + 28] = VertexCount + 06; // r2a
+                        indices[IndicesCount + 29] = VertexCount + 10; // r3b
                     }
 
-                    triangleCount += 30;
+                    IndicesCount += 30;
                     currentBatch.Elements += 10;
                     dirty = true;
                 }
 
                 // set verts
                 {
-                    ExpandVertices(vertexCount + 12);
+                    ExpandVertices(VertexCount + 12);
 
-                    Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 12);
+                    Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 12);
 
-                    Transform(ref vertices[vertexCount + 00].Pos, ref r0_tr, ref MatrixStack); // 0
-                    Transform(ref vertices[vertexCount + 01].Pos, ref r0_br, ref MatrixStack); // 1
-                    Transform(ref vertices[vertexCount + 02].Pos, ref r0_bl, ref MatrixStack); // 2
+                    Transform(ref vertices[VertexCount + 00].Pos, ref r0_tr, ref MatrixStack); // 0
+                    Transform(ref vertices[VertexCount + 01].Pos, ref r0_br, ref MatrixStack); // 1
+                    Transform(ref vertices[VertexCount + 02].Pos, ref r0_bl, ref MatrixStack); // 2
 
-                    Transform(ref vertices[vertexCount + 03].Pos, ref r1_tl, ref MatrixStack); // 3
-                    Transform(ref vertices[vertexCount + 04].Pos, ref r1_br, ref MatrixStack); // 4
-                    Transform(ref vertices[vertexCount + 05].Pos, ref r1_bl, ref MatrixStack); // 5
+                    Transform(ref vertices[VertexCount + 03].Pos, ref r1_tl, ref MatrixStack); // 3
+                    Transform(ref vertices[VertexCount + 04].Pos, ref r1_br, ref MatrixStack); // 4
+                    Transform(ref vertices[VertexCount + 05].Pos, ref r1_bl, ref MatrixStack); // 5
 
-                    Transform(ref vertices[vertexCount + 06].Pos, ref r2_tl, ref MatrixStack); // 6
-                    Transform(ref vertices[vertexCount + 07].Pos, ref r2_tr, ref MatrixStack); // 7
-                    Transform(ref vertices[vertexCount + 08].Pos, ref r2_bl, ref MatrixStack); // 8
+                    Transform(ref vertices[VertexCount + 06].Pos, ref r2_tl, ref MatrixStack); // 6
+                    Transform(ref vertices[VertexCount + 07].Pos, ref r2_tr, ref MatrixStack); // 7
+                    Transform(ref vertices[VertexCount + 08].Pos, ref r2_bl, ref MatrixStack); // 8
 
-                    Transform(ref vertices[vertexCount + 09].Pos, ref r3_tl, ref MatrixStack); // 9
-                    Transform(ref vertices[vertexCount + 10].Pos, ref r3_tr, ref MatrixStack); // 10
-                    Transform(ref vertices[vertexCount + 11].Pos, ref r3_br, ref MatrixStack); // 11
+                    Transform(ref vertices[VertexCount + 09].Pos, ref r3_tl, ref MatrixStack); // 9
+                    Transform(ref vertices[VertexCount + 10].Pos, ref r3_tr, ref MatrixStack); // 10
+                    Transform(ref vertices[VertexCount + 11].Pos, ref r3_br, ref MatrixStack); // 11
 
-                    vertexCount += 12;
+                    VertexCount += 12;
                 }
 
                 // top-left corner
@@ -989,16 +988,16 @@ void main(void)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushTriangle()
         {
-            while (triangleCount + 3 >= triangles.Length)
+            while (IndicesCount + 3 >= indices.Length)
             {
-                Array.Resize(ref triangles, triangles.Length * 2);
+                Array.Resize(ref indices, indices.Length * 2);
             }
 
-            triangles[triangleCount + 0] = vertexCount + 0;
-            triangles[triangleCount + 1] = vertexCount + 1;
-            triangles[triangleCount + 2] = vertexCount + 2;
+            indices[IndicesCount + 0] = VertexCount + 0;
+            indices[IndicesCount + 1] = VertexCount + 1;
+            indices[IndicesCount + 2] = VertexCount + 2;
 
-            triangleCount += 3;
+            IndicesCount += 3;
             currentBatch.Elements++;
             dirty = true;
         }
@@ -1006,19 +1005,19 @@ void main(void)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushQuad()
         {
-            while (triangleCount + 6 >= triangles.Length)
+            while (IndicesCount + 6 >= indices.Length)
             {
-                Array.Resize(ref triangles, triangles.Length * 2);
+                Array.Resize(ref indices, indices.Length * 2);
             }
 
-            triangles[triangleCount + 0] = vertexCount + 0;
-            triangles[triangleCount + 1] = vertexCount + 1;
-            triangles[triangleCount + 2] = vertexCount + 2;
-            triangles[triangleCount + 3] = vertexCount + 0;
-            triangles[triangleCount + 4] = vertexCount + 2;
-            triangles[triangleCount + 5] = vertexCount + 3;
+            indices[IndicesCount + 0] = VertexCount + 0;
+            indices[IndicesCount + 1] = VertexCount + 1;
+            indices[IndicesCount + 2] = VertexCount + 2;
+            indices[IndicesCount + 3] = VertexCount + 0;
+            indices[IndicesCount + 4] = VertexCount + 2;
+            indices[IndicesCount + 5] = VertexCount + 3;
 
-            triangleCount += 6;
+            IndicesCount += 6;
             currentBatch.Elements += 2;
             dirty = true;
         }
