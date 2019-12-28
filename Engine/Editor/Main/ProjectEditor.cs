@@ -1,50 +1,68 @@
 ﻿using Foster.Framework;
 using Foster.GuiSystem;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading;
 
 namespace Foster.Editor
 {
     public class ProjectEditor : Module
     {
         public readonly Project Project;
+        public readonly Window Window;
 
         public AssetsPanel AssetsPanel;
+        public ScenePanel ScenePanel;
+        public InspectorPanel InspectorPanel;
         public AssetHandle Inspecting;
 
-        private bool reloading = false;
+        private bool reloading;
 
         public ProjectEditor(Project project)
         {
+            Window = App.Window ?? throw new System.Exception("Project Editor requires an open Window");
+
+            // tell project to start watching the File System
             Project = project;
             Project.StartWatching();
 
+            // create GUI module
             var font = new SpriteFont(Calc.EmbeddedResource(Path.Combine("Content", "InputMono-Medium.ttf")), 64, Charsets.ASCII);
             App.Modules.Register(new Gui(font, App.Window));
 
-            new ScenePanel(this);
+            // create main editor panels
+            ScenePanel = new ScenePanel(this);
             AssetsPanel = new AssetsPanel(this);
-            new InspectorPanel(this);
+            InspectorPanel = new InspectorPanel(this);
 
+            // update window title
             UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
         }
 
         protected override void Startup()
         {
-            App.Window.OnFocus += OnFocus;
+            Window.OnFocus += OnWindowFocus;
+            Window.OnClose += OnWindowClose;
         }
 
-        private void OnFocus()
+        protected override void Shutdown()
+        {
+            if (Window.Opened)
+                Window.OnFocus -= OnWindowFocus;
+            Project.Dispose();
+        }
+
+        private void OnWindowFocus()
         {
             if (!reloading && Project.IsWaitingForReload)
             {
                 reloading = true;
                 RunRoutine(Reload());
             }
+        }
+
+        private void OnWindowClose()
+        {
+            App.Exit();
         }
 
         private IEnumerator Reload()
@@ -61,13 +79,7 @@ namespace Foster.Editor
 
         private void UpdateTitle(string status)
         {
-            App.Window.Title = $"Foster.Editor :: {Project.Config.Name} :: ({status})";
-        }
-
-        protected override void Shutdown()
-        {
-            App.Window.OnFocus -= OnFocus;
-            Project.Dispose();
+            Window.Title = $"Foster.Editor :: {Project.Config.Name} :: ({status})";
         }
     }
 }

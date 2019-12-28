@@ -15,7 +15,7 @@ namespace Foster.Engine
 
         }
 
-        protected override bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata)
+        protected override IAsset? LoadAsset(Guid guid, Type type)
         {
             throw new NotImplementedException();
         }

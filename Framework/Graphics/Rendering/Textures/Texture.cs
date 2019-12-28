@@ -6,10 +6,8 @@ using System.IO;
 
 namespace Foster.Framework
 {
-    public class Texture : IAsset
+    public class Texture
     {
-
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// The internal texture object

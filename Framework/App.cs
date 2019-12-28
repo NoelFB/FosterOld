@@ -17,14 +17,9 @@ namespace Foster.Framework
         public static Graphics Graphics => Modules.Get<Graphics>();
         public static Audio Audio => Modules.Get<Audio>();
         public static Input Input => Modules.Get<Input>();
-        public static Window Window => System.Windows[0];
+        public static Window? Window => System.Windows.Count > 0 ? System.Windows[0] : null;
 
         public static TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
-
-        static App()
-        {
-            AssetLoaders.RegisterDefaultLoaders();
-        }
 
         public static void Start(Action? callback = null)
         {

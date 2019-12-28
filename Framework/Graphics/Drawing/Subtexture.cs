@@ -1,9 +1,25 @@
-﻿namespace Foster.Framework
+﻿using System;
+
+namespace Foster.Framework
 {
     public class Subtexture
     {
 
-        public readonly Texture Texture;
+        private Texture? texture;
+
+        public Texture? Texture
+        {
+            get => texture;
+            set
+            {
+                if (texture != value)
+                {
+                    texture = value;
+                    if (texture != null)
+                        UpdateTexCoords();
+                }
+            }
+        }
 
         /// <summary>
         /// The Texture coordinates. These are set automatically based on the Source rectangle
@@ -23,24 +39,9 @@
             get => sourceRect;
             set
             {
-                if (sourceRect != value)
-                {
-                    sourceRect = value;
-
-                    var tx0 = sourceRect.X / Texture.Width;
-                    var ty0 = sourceRect.Y / Texture.Height;
-                    var tx1 = sourceRect.Right / Texture.Width;
-                    var ty1 = sourceRect.Bottom / Texture.Height;
-
-                    TexCoords[0].X = tx0;
-                    TexCoords[0].Y = ty0;
-                    TexCoords[1].X = tx1;
-                    TexCoords[1].Y = ty0;
-                    TexCoords[2].X = tx1;
-                    TexCoords[2].Y = ty1;
-                    TexCoords[3].X = tx0;
-                    TexCoords[3].Y = ty1;
-                }
+                sourceRect = value;
+                if (texture != null)
+                    UpdateTexCoords();
             }
         }
 
@@ -105,6 +106,26 @@
             SourceRect = source;
             DrawRect = new Rect(-frame.X, -frame.Y, source.Width, source.Height);
             FrameRect = frame;
+        }
+
+        private void UpdateTexCoords()
+        {
+            if (texture == null)
+                throw new Exception("Cannot update Texcoords when the Texture is null");
+
+            var tx0 = sourceRect.X / texture.Width;
+            var ty0 = sourceRect.Y / texture.Height;
+            var tx1 = sourceRect.Right / texture.Width;
+            var ty1 = sourceRect.Bottom / texture.Height;
+
+            TexCoords[0].X = tx0;
+            TexCoords[0].Y = ty0;
+            TexCoords[1].X = tx1;
+            TexCoords[1].Y = ty0;
+            TexCoords[2].X = tx1;
+            TexCoords[2].Y = ty1;
+            TexCoords[3].X = tx0;
+            TexCoords[3].Y = ty1;
         }
 
     }

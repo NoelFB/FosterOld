@@ -11,4 +11,7 @@
     <ProjectReference Include="..\..\Framework\Foster.Framework.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Assets\" />
+  </ItemGroup>
 </Project>

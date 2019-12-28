@@ -1,4 +1,5 @@
-﻿using Foster.Framework;
+﻿using Foster.Engine;
+using Foster.Framework;
 using Foster.Framework.Json;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,10 @@ namespace Foster.Editor
 
         public bool IsWaitingForSync => markedFiles.Count > 0;
 
+        public readonly Dictionary<Type, AssetLoader> Loaders = new Dictionary<Type, AssetLoader>();
+        public readonly Dictionary<Type, AssetProcessor> Processors = new Dictionary<Type, AssetProcessor>();
+        public readonly Dictionary<string, Type> AssociatedFileTypes = new Dictionary<string, Type>();
+
         public ProjectAssetBank(string assetsPath)
         {
             AssetsPath = assetsPath;
@@ -45,14 +50,21 @@ namespace Foster.Editor
             watcher.Renamed += FileRenamed;
         }
 
-        public bool HasFile(string fullPath)
+        public bool HasFile(string fullpath)
         {
-            return pathToGuid.ContainsKey(NormalizePath(fullPath));
+            return pathToGuid.ContainsKey(NormalizePath(fullpath));
         }
 
         public bool HasRelativeFile(string path)
         {
             return pathToGuid.ContainsKey(NormalizePath(path, false));
+        }
+
+        public string? PathOf(Guid guid)
+        {
+            if (guidToPath.TryGetValue(guid, out var path))
+                return path;
+            return null;
         }
 
         public void StartWatching()
@@ -77,7 +89,7 @@ namespace Foster.Editor
         {
             var ext = Path.GetExtension(e.FullPath);
 
-            if (ext != null && !ext.Equals(".meta", StringComparison.OrdinalIgnoreCase) && !!ext.Equals(".cs", StringComparison.OrdinalIgnoreCase))
+            if (ext != null && !ext.Equals(".meta", StringComparison.OrdinalIgnoreCase) && !ext.Equals(".cs", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO:
                 // actually mark the file as renamed, so it can hande this more gracefully?
@@ -88,10 +100,10 @@ namespace Foster.Editor
             }
         }
 
-        public void MarkFile(string fullPath, WatcherChangeTypes mark)
+        public void MarkFile(string fullpath, WatcherChangeTypes mark)
         {
-            if (mark == WatcherChangeTypes.Created || pathToGuid.ContainsKey(NormalizePath(fullPath)))
-                markedFiles.Add((fullPath, mark));
+            if (mark == WatcherChangeTypes.Created || pathToGuid.ContainsKey(NormalizePath(fullpath)))
+                markedFiles.Add((fullpath, mark));
         }
 
         public void SyncAllFiles()
@@ -122,9 +134,9 @@ namespace Foster.Editor
             markedFiles.RemoveRange(0, count);
         }
 
-        private bool AddFile(string fullPath)
+        private bool AddFile(string fullpath)
         {
-            var ext = ((ReadOnlySpan<char>)Path.GetExtension(fullPath));
+            var ext = ((ReadOnlySpan<char>)Path.GetExtension(fullpath));
             if (ext.Length > 0 && ext[0] == '.')
                 ext = ext.Slice(1);
 
@@ -134,12 +146,12 @@ namespace Foster.Editor
 
             // find the type based on the extension
             Type? type = null;
-            foreach (var loader in AssetLoaders.Loaders)
+            foreach (var loader in Loaders.Values)
             {
-                foreach (var extension in loader.Extensions)
+                foreach (var extension in loader.FileExtensions)
                     if (ext.Equals(extension, StringComparison.OrdinalIgnoreCase))
                     {
-                        type = loader.Type;
+                        type = loader.AssetType;
                         break;
                     }
                 
@@ -152,19 +164,24 @@ namespace Foster.Editor
                 return false;
 
             // get the name, and unload if it already exists
-            var name = GetName(fullPath);
+            var name = GetName(fullpath);
             if (GetEntry(type, name) != null)
             {
                 Unload(type, name);
                 return false;
             }
 
-            var relative = NormalizePath(fullPath);
-            var metaPath = fullPath + ".meta";
+            var relative = NormalizePath(fullpath);
+            var metaPath = fullpath + ".meta";
             var guid = new Guid();
+            var hasMeta = false;
+            var hasChanged = false;
+
+            // TODO:
+            // store Hash or file-dates to check if files need to be processed again
+            // ...
 
             // check for meta file
-            var hasMeta = false;
             if (File.Exists(metaPath))
             {
                 using var stream = File.OpenRead(metaPath);
@@ -172,44 +189,71 @@ namespace Foster.Editor
 
                 while (reader.Read())
                 {
-                    if (reader.Token == JsonToken.ObjectKey && reader.Value is string str && str == "guid")
+                    if (reader.Token == JsonToken.ObjectKey && reader.Value is string guidKey && guidKey == "guid")
                     {
                         reader.Read();
                         if (reader.Value is string guidValue)
                         {
                             guid = new Guid(guidValue);
                             hasMeta = true;
-                            break;
                         }
                     }
                 }
             }
+            else
+                hasChanged = true;
 
             // create a default meta file if none exists
             if (!hasMeta)
             {
                 guid = Guid.NewGuid();
+
                 using var writer = new JsonWriter(File.OpenWrite(metaPath), false);
-                writer.JsonValue(new JsonObject { ["guid"] = guid.ToString() });
+                writer.JsonValue(new JsonObject
+                {
+                    ["guid"] = guid.ToString()
+                });
             }
 
+            // add entry
             Add(type, guid, name);
-
             pathToGuid[relative] = guid;
             guidToPath[guid] = relative;
+
+            // run processors on it ... if we need to
+            if (hasChanged)
+            {
+                if (Processors.TryGetValue(type, out var processor))
+                    processor.Changed(this, guid, name, fullpath);
+            }
+
             return true;
         }
 
-        private void UpdateFile(string fullPath)
+        private void UpdateFile(string fullpath)
         {
-            var relative = NormalizePath(fullPath);
+            // TODO:
+            // Check if Hash or File-Dates have changed before unloading/reloading
+
+            var relative = NormalizePath(fullpath);
             if (pathToGuid.TryGetValue(relative, out var guid))
-                Unload(guid);
+            {
+                var entry = GetEntry(guid);
+                if (entry != null)
+                {
+                    // unload the asset
+                    Unload(guid);
+
+                    // check if there's a processor for this asset type and run it
+                    if (Processors.TryGetValue(entry.Type, out var processor))
+                        processor.Changed(this, guid, entry.Name, fullpath);
+                }
+            }
         }
 
-        private void RemoveFile(string fullPath)
+        private void RemoveFile(string fullpath)
         {
-            var relative = NormalizePath(fullPath);
+            var relative = NormalizePath(fullpath);
             if (pathToGuid.TryGetValue(relative, out var guid))
             {
                 guidToPath.Remove(guid);
@@ -218,19 +262,31 @@ namespace Foster.Editor
             }
         }
 
-        protected override bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata)
+        protected override IAsset? LoadAsset(Guid guid, Type type)
         {
-            stream = null;
-            metadata = null;
-
-            var path = Path.Combine(AssetsPath, guidToPath[guid]);
-            if (File.Exists(path))
+            if (Loaders.TryGetValue(type, out var loader) && guidToPath.TryGetValue(guid, out var path))
             {
-                stream = File.OpenRead(path);
-                return true;
+                var fullpath = Path.Combine(AssetsPath, path);
+                if (File.Exists(fullpath))
+                {
+                    // asset stream
+                    using var stream = File.OpenRead(fullpath);
+
+                    // meta data
+                    JsonObject? meta = null;
+                    var metapath = fullpath + ".meta";
+                    if (File.Exists(metapath))
+                    {
+                        using var reader = new JsonReader(File.OpenRead(metapath));
+                        reader.TryReadObject(out meta);
+                    }
+
+                    return loader.Load(this, stream, meta);
+                }
+                
             }
 
-            return false;
+            return null;
         }
 
         private string GetName(string path)
@@ -244,7 +300,7 @@ namespace Foster.Editor
             return p;
         }
 
-        private unsafe string NormalizePath(string path, bool isFullPath = true)
+        private string NormalizePath(string path, bool isFullPath = true)
         {
             if (isFullPath)
                 path = Path.GetRelativePath(AssetsPath, path);

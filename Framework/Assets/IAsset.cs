@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Foster.Framework.Json;
 
 namespace Foster.Framework
 {
-    public interface IAsset : IDisposable
+    public interface IAsset
     {
 
         /// <summary>

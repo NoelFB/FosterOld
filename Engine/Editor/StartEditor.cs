@@ -40,7 +40,8 @@ namespace Foster.Editor
 
             // open a window
             window = App.System.CreateWindow("Foster.Editor", 1280, 720, WindowFlags.ScaleToMonitor);
-            window.OnRender = Render;
+            window.OnRender += OnWindowRender;
+            window.OnClose += OnWindowClose;
 
             // batch2d
             batcher = new Batch2D();
@@ -71,6 +72,19 @@ namespace Foster.Editor
                 ContentColor = 0x000000,
                 Padding = new Vector2(8, 4)
             };
+        }
+
+        public void Launch(ProjectConfig config)
+        {
+            // remove start page
+            App.Modules.Remove(this);
+
+            // load project for the first time
+            var project = new Project(config);
+            project.Reload(true);
+
+            // start the main editor
+            App.Modules.Register(new ProjectEditor(project));
         }
 
         protected override void Update()
@@ -114,21 +128,21 @@ namespace Foster.Editor
             imgui.EndViewport();
         }
 
-        public void Launch(ProjectConfig config)
+        protected override void Shutdown()
         {
-            App.Modules.Remove(this);
-
-            var project = new Project(config);
-            project.Reload(true);
-
-            App.Modules.Register(new ProjectEditor(project));
-
+            window.OnRender -= OnWindowRender;
+            window.OnClose -= OnWindowClose;
         }
 
-        private void Render()
+        private void OnWindowRender()
         {
             App.Graphics.ClearColor(0x2d3047);
             batcher.Render();
+        }
+
+        private void OnWindowClose()
+        {
+            App.Exit();
         }
 
     }

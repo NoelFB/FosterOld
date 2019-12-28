@@ -38,25 +38,17 @@ namespace Foster.Framework
 
             public IAsset? Reload()
             {
-                IAsset? target = null;
+                IAsset? target = Bank.LoadAsset(Guid, Type);
 
-                if (Bank.GetAssetStream(Guid, out var stream, out var metadata) && stream != null)
+                if (target != null)
                 {
-                    target = AssetLoaders.Load(Type, Bank, stream, metadata);
+                    target.Guid = Guid;
 
-                    if (target != null)
-                    {
-                        target.Guid = Guid;
-
-                        if (asset == null)
-                            asset = new WeakReference<IAsset>(target);
-                        else
-                            asset.SetTarget(target);
-                    }
+                    if (asset == null)
+                        asset = new WeakReference<IAsset>(target);
+                    else
+                        asset.SetTarget(target);
                 }
-
-                if (stream != null)
-                    stream.Dispose();
 
                 return target;
             }
@@ -64,23 +56,20 @@ namespace Foster.Framework
             public void Unload()
             {
                 if (asset != null && asset.TryGetTarget(out var target))
-                {
-                    target.Dispose();
                     asset = null;
-                }
             }
         }
 
         private readonly Dictionary<Type, Dictionary<string, Entry>> byName;
         private readonly Dictionary<Guid, Entry> byGuid;
 
-        public AssetBank()
+        protected AssetBank()
         {
             byName = new Dictionary<Type, Dictionary<string, Entry>>();
             byGuid = new Dictionary<Guid, Entry>();
         }
 
-        protected abstract bool GetAssetStream(Guid guid, out Stream? stream, out JsonObject? metadata);
+        protected abstract IAsset? LoadAsset(Guid guid, Type type);
 
         protected void Add<T>(Guid guid, string name)
         {
@@ -153,7 +142,7 @@ namespace Foster.Framework
             if (byName.TryGetValue(typeof(T), out var dictionary))
             {
                 foreach (var entry in dictionary.Values)
-                    if (string.IsNullOrWhiteSpace(prefix) || entry.Name.StartsWith(prefix))
+                    if (string.IsNullOrWhiteSpace(prefix) || entry.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         var asset = entry.Get() as T;
                         if (asset != null)
