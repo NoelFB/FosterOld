@@ -1,5 +1,3 @@
-![foster](icon.png)
-
 # foster
 foster is an open source & cross-platform game framework made in C# dotnet core.
 
@@ -25,3 +23,52 @@ The Framework is meant to be completely independent and shouldn't require anythi
 ## dependencies
  - Each Platform implementation has its own dependencies
  - [stb_truetype](https://github.com/nothings/stb) for Font loading. We're using a [C# port](https://github.com/StbSharp/StbTrueTypeSharp)
+
+## example app
+```
+using Foster.Framework;
+
+internal class Program
+{
+
+    private static void Main(string[] args)
+    {
+        // register core modules (system, input, graphics)
+        App.Modules.Register<GLFW.GLFW_System>();
+        App.Modules.Register<GLFW.GLFW_Input>();
+        App.Modules.Register<OpenGL.GL_Graphics>();
+
+        // register our custom game module
+        App.Modules.Register<Game>();
+
+        // start the application
+        App.Start();
+    }
+
+    private class Game : Module
+    {
+        private Batch2D batch;
+        private Window window;
+
+        protected override void Startup()
+        {
+            window = App.System.CreateWindow("my app", 1280, 720);
+            window.OnRender += Render;
+            window.OnClose += App.Exit;
+
+            batch = new Batch2D();
+        }
+
+        protected override void Update()
+        {
+            batch.Clear();
+            batch.Rect(32, 32, 64, 64, Color.Red);
+        }
+
+        private void Render()
+        {
+            batch.Render();
+        }
+    }
+}
+```
