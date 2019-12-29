@@ -1,4 +1,5 @@
-﻿// This is taken from .NET System.Numerics
+﻿// This is taken from .NET System.Numerics:
+// https://github.com/microsoft/referencesource/blob/master/System.Numerics/System/Numerics/Quaternion.cs
 
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.

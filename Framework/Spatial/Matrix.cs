@@ -1,23 +1,20 @@
-﻿// This is taken from .NET System.Numerics
+﻿// This is taken from .NET System.Numerics:
+// https://github.com/microsoft/referencesource/blob/master/System.Numerics/System/Numerics/Matrix.cs
 
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Globalization;
-using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
     /// <summary>
     /// A structure encapsulating a 4x4 matrix.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
     public struct Matrix : IEquatable<Matrix>
     {
         #region Public Fields
-
         /// <summary>
         /// Value at row 1, column 1 of the matrix.
         /// </summary>
@@ -85,7 +82,6 @@ namespace Foster.Framework
         /// Value at row 4, column 4 of the matrix.
         /// </summary>
         public float M44;
-
         #endregion Public Fields
 
         private static readonly Matrix _identity = new Matrix
@@ -137,7 +133,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Constructs a Matrix4x4 from the given components.
+        /// Constructs a Matrix from the given components.
         /// </summary>
         public Matrix(float m11, float m12, float m13, float m14,
                          float m21, float m22, float m23, float m24,
@@ -166,9 +162,9 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Constructs a Matrix4x4 from the given Matrix3x2.
+        /// Constructs a Matrix from the given Matrix2D.
         /// </summary>
-        /// <param name="value">The source Matrix3x2.</param>
+        /// <param name="value">The source Matrix2D.</param>
         public Matrix(Matrix2D value)
         {
             M11 = value.M11;
@@ -272,7 +268,7 @@ namespace Foster.Framework
             }
             else
             {
-                faceDir = faceDir * ((1.0f / (float)Math.Sqrt(norm)));
+                faceDir = faceDir * (1.0f / (float)Math.Sqrt(norm));
             }
 
             Vector3 yaxis = rotateAxis;
@@ -879,7 +875,7 @@ namespace Foster.Framework
         /// <returns>The perspective projection matrix.</returns>
         public static Matrix CreatePerspectiveFieldOfView(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
         {
-            if (fieldOfView <= 0.0f || fieldOfView >= (float)Math.PI)
+            if (fieldOfView <= 0.0f || fieldOfView >= Math.PI)
                 throw new ArgumentOutOfRangeException(nameof(fieldOfView));
 
             if (nearPlaneDistance <= 0.0f)
@@ -903,12 +899,11 @@ namespace Foster.Framework
             result.M21 = result.M23 = result.M24 = 0.0f;
 
             result.M31 = result.M32 = 0.0f;
-            var negFarRange = float.IsPositiveInfinity(farPlaneDistance) ? -1.0f : farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
-            result.M33 = negFarRange;
+            result.M33 = farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
             result.M34 = -1.0f;
 
             result.M41 = result.M42 = result.M44 = 0.0f;
-            result.M43 = nearPlaneDistance * negFarRange;
+            result.M43 = nearPlaneDistance * farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
 
             return result;
         }
@@ -940,13 +935,12 @@ namespace Foster.Framework
             result.M22 = 2.0f * nearPlaneDistance / height;
             result.M21 = result.M23 = result.M24 = 0.0f;
 
-            var negFarRange = float.IsPositiveInfinity(farPlaneDistance) ? -1.0f : farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
-            result.M33 = negFarRange;
+            result.M33 = farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
             result.M31 = result.M32 = 0.0f;
             result.M34 = -1.0f;
 
             result.M41 = result.M42 = result.M44 = 0.0f;
-            result.M43 = nearPlaneDistance * negFarRange;
+            result.M43 = nearPlaneDistance * farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
 
             return result;
         }
@@ -982,11 +976,10 @@ namespace Foster.Framework
 
             result.M31 = (left + right) / (right - left);
             result.M32 = (top + bottom) / (top - bottom);
-            var negFarRange = float.IsPositiveInfinity(farPlaneDistance) ? -1.0f : farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
-            result.M33 = negFarRange;
+            result.M33 = farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
             result.M34 = -1.0f;
 
-            result.M43 = nearPlaneDistance * negFarRange;
+            result.M43 = nearPlaneDistance * farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
             result.M41 = result.M42 = result.M44 = 0.0f;
 
             return result;
@@ -1175,6 +1168,88 @@ namespace Foster.Framework
             return Matrix.CreateFromQuaternion(q);
         }
 
+        /// <summary>
+        /// Creates a Matrix that flattens geometry into a specified Plane as if casting a shadow from a specified light source.
+        /// </summary>
+        /// <param name="lightDirection">The direction from which the light that will cast the shadow is coming.</param>
+        /// <param name="plane">The Plane onto which the new matrix should flatten geometry so as to cast a shadow.</param>
+        /// <returns>A new Matrix that can be used to flatten geometry onto the specified plane from the specified direction.</returns>
+        public static Matrix CreateShadow(Vector3 lightDirection, Plane plane)
+        {
+            Plane p = Plane.Normalize(plane);
+
+            float dot = p.Normal.X * lightDirection.X + p.Normal.Y * lightDirection.Y + p.Normal.Z * lightDirection.Z;
+            float a = -p.Normal.X;
+            float b = -p.Normal.Y;
+            float c = -p.Normal.Z;
+            float d = -p.D;
+
+            Matrix result;
+
+            result.M11 = a * lightDirection.X + dot;
+            result.M21 = b * lightDirection.X;
+            result.M31 = c * lightDirection.X;
+            result.M41 = d * lightDirection.X;
+
+            result.M12 = a * lightDirection.Y;
+            result.M22 = b * lightDirection.Y + dot;
+            result.M32 = c * lightDirection.Y;
+            result.M42 = d * lightDirection.Y;
+
+            result.M13 = a * lightDirection.Z;
+            result.M23 = b * lightDirection.Z;
+            result.M33 = c * lightDirection.Z + dot;
+            result.M43 = d * lightDirection.Z;
+
+            result.M14 = 0.0f;
+            result.M24 = 0.0f;
+            result.M34 = 0.0f;
+            result.M44 = dot;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a Matrix that reflects the coordinate system about a specified Plane.
+        /// </summary>
+        /// <param name="value">The Plane about which to create a reflection.</param>
+        /// <returns>A new matrix expressing the reflection.</returns>
+        public static Matrix CreateReflection(Plane value)
+        {
+            value = Plane.Normalize(value);
+
+            float a = value.Normal.X;
+            float b = value.Normal.Y;
+            float c = value.Normal.Z;
+
+            float fa = -2.0f * a;
+            float fb = -2.0f * b;
+            float fc = -2.0f * c;
+
+            Matrix result;
+
+            result.M11 = fa * a + 1.0f;
+            result.M12 = fb * a;
+            result.M13 = fc * a;
+            result.M14 = 0.0f;
+
+            result.M21 = fa * b;
+            result.M22 = fb * b + 1.0f;
+            result.M23 = fc * b;
+            result.M24 = 0.0f;
+
+            result.M31 = fa * c;
+            result.M32 = fb * c;
+            result.M33 = fc * c + 1.0f;
+            result.M34 = 0.0f;
+
+            result.M41 = fa * value.D;
+            result.M42 = fb * value.D;
+            result.M43 = fc * value.D;
+            result.M44 = 1.0f;
+
+            return result;
+        }
 
         /// <summary>
         /// Calculates the determinant of the matrix.
@@ -1394,14 +1469,14 @@ namespace Foster.Framework
             return true;
         }
 
-        private struct CanonicalBasis
+        struct CanonicalBasis
         {
             public Vector3 Row0;
             public Vector3 Row1;
             public Vector3 Row2;
         };
 
-        private struct VectorBasis
+        struct VectorBasis
         {
             public unsafe Vector3* Element0;
             public unsafe Vector3* Element1;
@@ -1522,9 +1597,9 @@ namespace Foster.Framework
                         uint cc;
                         float fAbsX, fAbsY, fAbsZ;
 
-                        fAbsX = Math.Abs(pVectorBasis[a]->X);
-                        fAbsY = Math.Abs(pVectorBasis[a]->Y);
-                        fAbsZ = Math.Abs(pVectorBasis[a]->Z);
+                        fAbsX = (float)Math.Abs(pVectorBasis[a]->X);
+                        fAbsY = (float)Math.Abs(pVectorBasis[a]->Y);
+                        fAbsZ = (float)Math.Abs(pVectorBasis[a]->Z);
 
                         #region Ranking
                         if (fAbsX < fAbsY)
@@ -1678,7 +1753,7 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="matrix">The source matrix.</param>
         /// <returns>The transposed matrix.</returns>
-        public static unsafe Matrix Transpose(Matrix matrix)
+        public static Matrix Transpose(Matrix matrix)
         {
             Matrix result;
 
@@ -1709,7 +1784,7 @@ namespace Foster.Framework
         /// <param name="matrix2">The second source matrix.</param>
         /// <param name="amount">The relative weight of the second source matrix.</param>
         /// <returns>The interpolated matrix.</returns>
-        public static unsafe Matrix Lerp(Matrix matrix1, Matrix matrix2, float amount)
+        public static Matrix Lerp(Matrix matrix1, Matrix matrix2, float amount)
         {
             Matrix result;
 
@@ -1745,7 +1820,29 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="value">The source matrix.</param>
         /// <returns>The negated matrix.</returns>
-        public static Matrix Negate(Matrix value) => -value;
+        public static Matrix Negate(Matrix value)
+        {
+            Matrix result;
+
+            result.M11 = -value.M11;
+            result.M12 = -value.M12;
+            result.M13 = -value.M13;
+            result.M14 = -value.M14;
+            result.M21 = -value.M21;
+            result.M22 = -value.M22;
+            result.M23 = -value.M23;
+            result.M24 = -value.M24;
+            result.M31 = -value.M31;
+            result.M32 = -value.M32;
+            result.M33 = -value.M33;
+            result.M34 = -value.M34;
+            result.M41 = -value.M41;
+            result.M42 = -value.M42;
+            result.M43 = -value.M43;
+            result.M44 = -value.M44;
+
+            return result;
+        }
 
         /// <summary>
         /// Adds two matrices together.
@@ -1753,7 +1850,29 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The resulting matrix.</returns>
-        public static Matrix Add(Matrix value1, Matrix value2) => value1 + value2;
+        public static Matrix Add(Matrix value1, Matrix value2)
+        {
+            Matrix result;
+
+            result.M11 = value1.M11 + value2.M11;
+            result.M12 = value1.M12 + value2.M12;
+            result.M13 = value1.M13 + value2.M13;
+            result.M14 = value1.M14 + value2.M14;
+            result.M21 = value1.M21 + value2.M21;
+            result.M22 = value1.M22 + value2.M22;
+            result.M23 = value1.M23 + value2.M23;
+            result.M24 = value1.M24 + value2.M24;
+            result.M31 = value1.M31 + value2.M31;
+            result.M32 = value1.M32 + value2.M32;
+            result.M33 = value1.M33 + value2.M33;
+            result.M34 = value1.M34 + value2.M34;
+            result.M41 = value1.M41 + value2.M41;
+            result.M42 = value1.M42 + value2.M42;
+            result.M43 = value1.M43 + value2.M43;
+            result.M44 = value1.M44 + value2.M44;
+
+            return result;
+        }
 
         /// <summary>
         /// Subtracts the second matrix from the first.
@@ -1761,7 +1880,29 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the subtraction.</returns>
-        public static Matrix Subtract(Matrix value1, Matrix value2) => value1 - value2;
+        public static Matrix Subtract(Matrix value1, Matrix value2)
+        {
+            Matrix result;
+
+            result.M11 = value1.M11 - value2.M11;
+            result.M12 = value1.M12 - value2.M12;
+            result.M13 = value1.M13 - value2.M13;
+            result.M14 = value1.M14 - value2.M14;
+            result.M21 = value1.M21 - value2.M21;
+            result.M22 = value1.M22 - value2.M22;
+            result.M23 = value1.M23 - value2.M23;
+            result.M24 = value1.M24 - value2.M24;
+            result.M31 = value1.M31 - value2.M31;
+            result.M32 = value1.M32 - value2.M32;
+            result.M33 = value1.M33 - value2.M33;
+            result.M34 = value1.M34 - value2.M34;
+            result.M41 = value1.M41 - value2.M41;
+            result.M42 = value1.M42 - value2.M42;
+            result.M43 = value1.M43 - value2.M43;
+            result.M44 = value1.M44 - value2.M44;
+
+            return result;
+        }
 
         /// <summary>
         /// Multiplies a matrix by another matrix.
@@ -1769,7 +1910,36 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the multiplication.</returns>
-        public static Matrix Multiply(Matrix value1, Matrix value2) => value1 * value2;
+        public static Matrix Multiply(Matrix value1, Matrix value2)
+        {
+            Matrix result;
+
+            // First row
+            result.M11 = value1.M11 * value2.M11 + value1.M12 * value2.M21 + value1.M13 * value2.M31 + value1.M14 * value2.M41;
+            result.M12 = value1.M11 * value2.M12 + value1.M12 * value2.M22 + value1.M13 * value2.M32 + value1.M14 * value2.M42;
+            result.M13 = value1.M11 * value2.M13 + value1.M12 * value2.M23 + value1.M13 * value2.M33 + value1.M14 * value2.M43;
+            result.M14 = value1.M11 * value2.M14 + value1.M12 * value2.M24 + value1.M13 * value2.M34 + value1.M14 * value2.M44;
+
+            // Second row
+            result.M21 = value1.M21 * value2.M11 + value1.M22 * value2.M21 + value1.M23 * value2.M31 + value1.M24 * value2.M41;
+            result.M22 = value1.M21 * value2.M12 + value1.M22 * value2.M22 + value1.M23 * value2.M32 + value1.M24 * value2.M42;
+            result.M23 = value1.M21 * value2.M13 + value1.M22 * value2.M23 + value1.M23 * value2.M33 + value1.M24 * value2.M43;
+            result.M24 = value1.M21 * value2.M14 + value1.M22 * value2.M24 + value1.M23 * value2.M34 + value1.M24 * value2.M44;
+
+            // Third row
+            result.M31 = value1.M31 * value2.M11 + value1.M32 * value2.M21 + value1.M33 * value2.M31 + value1.M34 * value2.M41;
+            result.M32 = value1.M31 * value2.M12 + value1.M32 * value2.M22 + value1.M33 * value2.M32 + value1.M34 * value2.M42;
+            result.M33 = value1.M31 * value2.M13 + value1.M32 * value2.M23 + value1.M33 * value2.M33 + value1.M34 * value2.M43;
+            result.M34 = value1.M31 * value2.M14 + value1.M32 * value2.M24 + value1.M33 * value2.M34 + value1.M34 * value2.M44;
+
+            // Fourth row
+            result.M41 = value1.M41 * value2.M11 + value1.M42 * value2.M21 + value1.M43 * value2.M31 + value1.M44 * value2.M41;
+            result.M42 = value1.M41 * value2.M12 + value1.M42 * value2.M22 + value1.M43 * value2.M32 + value1.M44 * value2.M42;
+            result.M43 = value1.M41 * value2.M13 + value1.M42 * value2.M23 + value1.M43 * value2.M33 + value1.M44 * value2.M43;
+            result.M44 = value1.M41 * value2.M14 + value1.M42 * value2.M24 + value1.M43 * value2.M34 + value1.M44 * value2.M44;
+
+            return result;
+        }
 
         /// <summary>
         /// Multiplies a matrix by a scalar value.
@@ -1777,14 +1947,36 @@ namespace Foster.Framework
         /// <param name="value1">The source matrix.</param>
         /// <param name="value2">The scaling factor.</param>
         /// <returns>The scaled matrix.</returns>
-        public static Matrix Multiply(Matrix value1, float value2) => value1 * value2;
+        public static Matrix Multiply(Matrix value1, float value2)
+        {
+            Matrix result;
+
+            result.M11 = value1.M11 * value2;
+            result.M12 = value1.M12 * value2;
+            result.M13 = value1.M13 * value2;
+            result.M14 = value1.M14 * value2;
+            result.M21 = value1.M21 * value2;
+            result.M22 = value1.M22 * value2;
+            result.M23 = value1.M23 * value2;
+            result.M24 = value1.M24 * value2;
+            result.M31 = value1.M31 * value2;
+            result.M32 = value1.M32 * value2;
+            result.M33 = value1.M33 * value2;
+            result.M34 = value1.M34 * value2;
+            result.M41 = value1.M41 * value2;
+            result.M42 = value1.M42 * value2;
+            result.M43 = value1.M43 * value2;
+            result.M44 = value1.M44 * value2;
+
+            return result;
+        }
 
         /// <summary>
         /// Returns a new matrix with the negated elements of the given matrix.
         /// </summary>
         /// <param name="value">The source matrix.</param>
         /// <returns>The negated matrix.</returns>
-        public static unsafe Matrix operator -(Matrix value)
+        public static Matrix operator -(Matrix value)
         {
             Matrix m;
 
@@ -1814,7 +2006,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The resulting matrix.</returns>
-        public static unsafe Matrix operator +(Matrix value1, Matrix value2)
+        public static Matrix operator +(Matrix value1, Matrix value2)
         {
             Matrix m;
 
@@ -1844,7 +2036,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the subtraction.</returns>
-        public static unsafe Matrix operator -(Matrix value1, Matrix value2)
+        public static Matrix operator -(Matrix value1, Matrix value2)
         {
             Matrix m;
 
@@ -1874,7 +2066,7 @@ namespace Foster.Framework
         /// <param name="value1">The first source matrix.</param>
         /// <param name="value2">The second source matrix.</param>
         /// <returns>The result of the multiplication.</returns>
-        public static unsafe Matrix operator *(Matrix value1, Matrix value2)
+        public static Matrix operator *(Matrix value1, Matrix value2)
         {
             Matrix m;
 
@@ -1911,7 +2103,7 @@ namespace Foster.Framework
         /// <param name="value1">The source matrix.</param>
         /// <param name="value2">The scaling factor.</param>
         /// <returns>The scaled matrix.</returns>
-        public static unsafe Matrix operator *(Matrix value1, float value2)
+        public static Matrix operator *(Matrix value1, float value2)
         {
             Matrix m;
 
@@ -1940,12 +2132,13 @@ namespace Foster.Framework
         /// <param name="value1">The first matrix to compare.</param>
         /// <param name="value2">The second matrix to compare.</param>
         /// <returns>True if the given matrices are equal; False otherwise.</returns>
-        public static unsafe bool operator ==(Matrix value1, Matrix value2)
+        public static bool operator ==(Matrix value1, Matrix value2)
         {
             return (value1.M11 == value2.M11 && value1.M22 == value2.M22 && value1.M33 == value2.M33 && value1.M44 == value2.M44 && // Check diagonal element first for early out.
-                    value1.M12 == value2.M12 && value1.M13 == value2.M13 && value1.M14 == value2.M14 && value1.M21 == value2.M21 &&
-                    value1.M23 == value2.M23 && value1.M24 == value2.M24 && value1.M31 == value2.M31 && value1.M32 == value2.M32 &&
-                    value1.M34 == value2.M34 && value1.M41 == value2.M41 && value1.M42 == value2.M42 && value1.M43 == value2.M43);
+                                                value1.M12 == value2.M12 && value1.M13 == value2.M13 && value1.M14 == value2.M14 &&
+                    value1.M21 == value2.M21 && value1.M23 == value2.M23 && value1.M24 == value2.M24 &&
+                    value1.M31 == value2.M31 && value1.M32 == value2.M32 && value1.M34 == value2.M34 &&
+                    value1.M41 == value2.M41 && value1.M42 == value2.M42 && value1.M43 == value2.M43);
         }
 
         /// <summary>
@@ -1954,7 +2147,7 @@ namespace Foster.Framework
         /// <param name="value1">The first matrix to compare.</param>
         /// <param name="value2">The second matrix to compare.</param>
         /// <returns>True if the given matrices are not equal; False if they are equal.</returns>
-        public static unsafe bool operator !=(Matrix value1, Matrix value2)
+        public static bool operator !=(Matrix value1, Matrix value2)
         {
             return (value1.M11 != value2.M11 || value1.M12 != value2.M12 || value1.M13 != value2.M13 || value1.M14 != value2.M14 ||
                     value1.M21 != value2.M21 || value1.M22 != value2.M22 || value1.M23 != value2.M23 || value1.M24 != value2.M24 ||
@@ -1967,14 +2160,29 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="other">The matrix to compare this instance to.</param>
         /// <returns>True if the matrices are equal; False otherwise.</returns>
-        public bool Equals(Matrix other) => this == other;
+        public bool Equals(Matrix other)
+        {
+            return (M11 == other.M11 && M22 == other.M22 && M33 == other.M33 && M44 == other.M44 && // Check diagonal element first for early out.
+                                        M12 == other.M12 && M13 == other.M13 && M14 == other.M14 &&
+                    M21 == other.M21 && M23 == other.M23 && M24 == other.M24 &&
+                    M31 == other.M31 && M32 == other.M32 && M34 == other.M34 &&
+                    M41 == other.M41 && M42 == other.M42 && M43 == other.M43);
+        }
 
         /// <summary>
         /// Returns a boolean indicating whether the given Object is equal to this matrix instance.
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this matrix; False otherwise.</returns>
-        public override bool Equals(object? obj) => (obj is Matrix other) && (this == other);
+        public override bool Equals(object obj)
+        {
+            if (obj is Matrix)
+            {
+                return Equals((Matrix)obj);
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Returns a String representing this matrix instance.
@@ -1984,7 +2192,7 @@ namespace Foster.Framework
         {
             CultureInfo ci = CultureInfo.CurrentCulture;
 
-            return string.Format(ci, "{{ {{M11:{0} M12:{1} M13:{2} M14:{3}}} {{M21:{4} M22:{5} M23:{6} M24:{7}}} {{M31:{8} M32:{9} M33:{10} M34:{11}}} {{M41:{12} M42:{13} M43:{14} M44:{15}}} }}",
+            return String.Format(ci, "{{ {{M11:{0} M12:{1} M13:{2} M14:{3}}} {{M21:{4} M22:{5} M23:{6} M24:{7}}} {{M31:{8} M32:{9} M33:{10} M34:{11}}} {{M41:{12} M42:{13} M43:{14} M44:{15}}} }}",
                                  M11.ToString(ci), M12.ToString(ci), M13.ToString(ci), M14.ToString(ci),
                                  M21.ToString(ci), M22.ToString(ci), M23.ToString(ci), M24.ToString(ci),
                                  M31.ToString(ci), M32.ToString(ci), M33.ToString(ci), M34.ToString(ci),
@@ -1997,13 +2205,10 @@ namespace Foster.Framework
         /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return M11.GetHashCode() + M12.GetHashCode() + M13.GetHashCode() + M14.GetHashCode() +
-                       M21.GetHashCode() + M22.GetHashCode() + M23.GetHashCode() + M24.GetHashCode() +
-                       M31.GetHashCode() + M32.GetHashCode() + M33.GetHashCode() + M34.GetHashCode() +
-                       M41.GetHashCode() + M42.GetHashCode() + M43.GetHashCode() + M44.GetHashCode();
-            }
+            return M11.GetHashCode() + M12.GetHashCode() + M13.GetHashCode() + M14.GetHashCode() +
+                   M21.GetHashCode() + M22.GetHashCode() + M23.GetHashCode() + M24.GetHashCode() +
+                   M31.GetHashCode() + M32.GetHashCode() + M33.GetHashCode() + M34.GetHashCode() +
+                   M41.GetHashCode() + M42.GetHashCode() + M43.GetHashCode() + M44.GetHashCode();
         }
     }
 }
