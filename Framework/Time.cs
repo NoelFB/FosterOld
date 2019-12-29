@@ -16,6 +16,11 @@ namespace Foster.Framework
         public static int FixedStepTarget = 60;
 
         /// <summary>
+        /// The Maximum elapsed time a fixed update can take before skipping update calls
+        /// </summary>
+        public static TimeSpan FixedMaxElapsedTime = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
         /// The total running time of the application
         /// </summary>
         public static TimeSpan Duration { get; internal set; }
@@ -30,19 +35,28 @@ namespace Foster.Framework
         /// </summary>
         public static int FPS { get; internal set; }
 
-        public static bool OnInterval(double time, double delta, double interval, double offset = 0f)
+        /// <summary>
+        /// Returns true when the elapsed time passes a given interval based on the delta time
+        /// </summary>
+        public static bool OnInterval(double time, double delta, double interval, double offset)
         {
             return Math.Floor((time - offset - delta) / interval) < Math.Floor((time - offset) / interval);
         }
 
-        public static bool OnInterval(double interval, double delta, double offset = 0f)
+        /// <summary>
+        /// Returns true when the elapsed time passes a given interval based on the delta time
+        /// </summary>
+        public static bool OnInterval(double delta, double interval, double offset)
         {
-            return Math.Floor((Duration.TotalSeconds - offset - delta) / interval) < Math.Floor((Duration.TotalSeconds - offset) / interval);
+            return OnInterval(Duration.TotalSeconds, delta, interval, offset);
         }
 
-        public static bool OnInterval(double interval, double offset = 0f)
+        /// <summary>
+        /// Returns true when the elapsed time passes a given interval based on the delta time
+        /// </summary>
+        public static bool OnInterval(double interval, double offset = 0.0)
         {
-            return Math.Floor((Duration.TotalSeconds - offset - Delta) / interval) < Math.Floor((Duration.TotalSeconds - offset) / interval);
+            return OnInterval(Duration.TotalSeconds, Delta, interval, offset);
         }
 
     }

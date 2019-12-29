@@ -47,7 +47,8 @@ namespace Foster.Framework
 
         }
 
-        public SpriteFont(Stream stream, int size, string charset) : this(new FontSize(new Font(stream), size, charset))
+        public SpriteFont(Stream stream, int size, string charset)
+            : this(new FontSize(new Font(stream), size, charset))
         {
 
         }

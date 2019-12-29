@@ -128,10 +128,8 @@ namespace Foster.Framework
 
         protected readonly List<Context> contexts = new List<Context>();
 
-        protected System()
+        protected System() : base(100)
         {
-            Priority = 100;
-
             Windows = new ReadOnlyCollection<Window>(windows);
             Monitors = new ReadOnlyCollection<Monitor>(monitors);
             Contexts = new ReadOnlyCollection<Context>(contexts);

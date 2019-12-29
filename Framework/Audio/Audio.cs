@@ -7,9 +7,9 @@ namespace Foster.Framework
         public string ApiName { get; protected set; } = "Unknown";
         public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
-        protected Audio()
+        protected Audio() : base(400)
         {
-            Priority = 400;
+
         }
 
         protected internal override void Startup()

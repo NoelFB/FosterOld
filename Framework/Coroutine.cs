@@ -7,7 +7,7 @@ namespace Foster.Framework
     public class Coroutine
     {
         private readonly Stack<IEnumerator> stack = new Stack<IEnumerator>();
-        private float delay = 0f;
+        private float delay;
         private bool ended;
 
         public bool Finished { get; private set; }
@@ -63,7 +63,7 @@ namespace Foster.Framework
                     if (value is float || value is int)
                     {
                         delay = (float)value;
-                        if (delay == 0)
+                        if (delay <= 0)
                             Step();
                     }
                     else if (value is IEnumerator)

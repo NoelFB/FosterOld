@@ -6,21 +6,55 @@ namespace Foster.Framework
 {
     public static class App
     {
+        /// <summary>
+        /// Foster.Framework Version Number
+        /// </summary>
         public static readonly Version Version = new Version(0, 1, 0);
 
+        /// <summary>
+        /// Whether the Application is running
+        /// </summary>
         public static bool Running { get; private set; } = false;
+
+        /// <summary>
+        /// Whether the Application is exiting
+        /// </summary>
         public static bool Exiting { get; private set; } = false;
 
+        /// <summary>
+        /// A List of all the Application Modules
+        /// </summary>
         public static readonly ModuleList Modules = new ModuleList();
 
+        /// <summary>
+        /// Gets the System Module
+        /// </summary>
         public static System System => Modules.Get<System>();
+
+        /// <summary>
+        /// Gets the Graphics Module
+        /// </summary>
         public static Graphics Graphics => Modules.Get<Graphics>();
+
+        /// <summary>
+        /// Gets the Audio Module
+        /// </summary>
         public static Audio Audio => Modules.Get<Audio>();
+
+        /// <summary>
+        /// Gets the Input Module
+        /// </summary>
         public static Input Input => Modules.Get<Input>();
+
+        /// <summary>
+        /// Gets the First Window from the System, or null if there are none
+        /// </summary>
         public static Window? Window => System.Windows.Count > 0 ? System.Windows[0] : null;
 
-        public static TimeSpan MaxElapsedTime = TimeSpan.FromMilliseconds(500);
-
+        /// <summary>
+        /// Starts running the Application
+        /// You must register the System Module before calling this
+        /// </summary>
         public static void Start(Action? callback = null)
         {
             if (Running)
@@ -75,8 +109,8 @@ namespace Foster.Framework
                         }
 
                         // Do not allow any update to take longer than our maximum.
-                        if (accumulator > MaxElapsedTime)
-                            accumulator = MaxElapsedTime;
+                        if (accumulator > Time.FixedMaxElapsedTime)
+                            accumulator = Time.FixedMaxElapsedTime;
 
                         // do as many updates as we can
                         while (accumulator >= target)
@@ -136,7 +170,6 @@ namespace Foster.Framework
 
             // finalize
             Modules.Shutdown();
-            Modules.Clear();
             Exiting = false;
         }
 
@@ -147,6 +180,9 @@ namespace Foster.Framework
             Modules.AfterUpdate();
         }
 
+        /// <summary>
+        /// Begins Exiting the Application
+        /// </summary>
         public static void Exit()
         {
             if (Running && !Exiting)

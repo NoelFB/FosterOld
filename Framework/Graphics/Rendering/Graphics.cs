@@ -3,58 +3,6 @@ using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
-    [Flags]
-    public enum ClearFlags
-    {
-        None = 0,
-        Color = 1,
-        Depth = 2,
-        Stencil = 4,
-        All = 7
-    }
-
-    public enum DepthFunctions
-    {
-        /// <summary>
-        /// The depth test always passes.
-        /// </summary>
-        Always,
-
-        /// <summary>
-        /// The depth test never passes.
-        /// </summary>
-        Never,
-
-        /// <summary>
-        /// Passes if the fragment's depth value is less than the stored depth value.
-        /// </summary>
-        Less,
-
-        /// <summary>
-        /// Passes if the fragment's depth value is equal to the stored depth value.
-        /// </summary>
-        Equal,
-
-        /// <summary>
-        /// Passes if the fragment's depth value is less than or equal to the stored depth value.
-        /// </summary>
-        LessOrEqual,
-
-        /// <summary>
-        /// Passes if the fragment's depth value is greater than the stored depth value.
-        /// </summary>
-        Greater,
-
-        /// <summary>
-        /// Passes if the fragment's depth value is not equal to the stored depth value.
-        /// </summary>
-        NotEqual,
-
-        /// <summary>
-        /// Passes if the fragment's depth value is greater than or equal to the stored depth value.
-        /// </summary>
-        GreaterOrEqual
-    }
 
     public abstract class Graphics : Module
     {
@@ -177,9 +125,9 @@ namespace Foster.Framework
 
         #endregion
 
-        protected Graphics()
+        protected Graphics() : base(200)
         {
-            Priority = 200;
+
         }
 
         protected internal override void Startup()

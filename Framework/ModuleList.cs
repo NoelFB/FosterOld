@@ -8,8 +8,9 @@ namespace Foster.Framework
     public class ModuleList : IEnumerable<Module>
     {
 
-        private readonly List<Module> modules = new List<Module>();
+        private readonly List<Module?> modules = new List<Module?>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
+        private bool isRendering;
 
         /// <summary>
         /// Registers a Module
@@ -35,6 +36,9 @@ namespace Foster.Framework
         /// </summary>
         public T Register<T>(T module) where T : Module
         {
+            if (isRendering)
+                throw new Exception("Cannot Add or Remove Modules during Rendering");
+
             if (module.Registered)
                 throw new Exception("Module is already registered");
 
@@ -42,7 +46,8 @@ namespace Foster.Framework
             var type = module.GetType();
             while (type != typeof(Module))
             {
-                modulesByType[type] = module;
+                if (!modulesByType.ContainsKey(type))
+                    modulesByType[type] = module;
 
                 if (type.BaseType == null)
                     break;
@@ -50,7 +55,13 @@ namespace Foster.Framework
                 type = type.BaseType;
             }
 
-            modules.Add(module);
+            // insert in order
+            var insert = 0;
+            while (insert < modules.Count && (modules[insert]?.Priority ?? int.MinValue) <= module.Priority)
+                insert++;
+            modules.Insert(insert, module);
+
+            // registered
             module.Registered = true;
             module.MainThreadId = Thread.CurrentThread.ManagedThreadId;
             module.Initialized();
@@ -67,12 +78,22 @@ namespace Foster.Framework
         /// </summary>
         public void Remove(Module module)
         {
-            modules.Remove(module);
+            if (isRendering)
+                throw new Exception("Cannot Add or Remove Modules during Rendering");
+
+            if (module.Registered)
+                throw new Exception("Module is not already registered");
+
+            module.Shutdown();
+
+            var index = modules.IndexOf(module);
+            modules[index] = null;
 
             var type = module.GetType();
             while (type != typeof(Module))
             {
-                modulesByType.Remove(type);
+                if (modulesByType[type] == module)
+                    modulesByType.Remove(type);
 
                 if (type.BaseType == null)
                     break;
@@ -83,6 +104,9 @@ namespace Foster.Framework
             module.Registered = false;
         }
 
+        /// <summary>
+        /// Tries to get the First Module of the given type
+        /// </summary>
         public bool TryGet<T>(out T? module) where T : Module
         {
             if (modulesByType.TryGetValue(typeof(T), out var m))
@@ -95,6 +119,9 @@ namespace Foster.Framework
             return false;
         }
 
+        /// <summary>
+        /// Gets the First Module of the given type, if it exists, or throws an Exception
+        /// </summary>
         public T Get<T>() where T : Module
         {
             if (!modulesByType.TryGetValue(typeof(T), out var module))
@@ -103,6 +130,9 @@ namespace Foster.Framework
             return (T)module;
         }
 
+        /// <summary>
+        /// Checks if a Module of the given type exists
+        /// </summary>
         public bool Has<T>() where T : Module
         {
             return modulesByType.ContainsKey(typeof(T));
@@ -110,74 +140,92 @@ namespace Foster.Framework
 
         internal void Startup()
         {
-            modules.Sort((a, b) => a.Priority - b.Priority);
-
             for (int i = 0; i < modules.Count; i++)
-                modules[i].Startup();
+                modules[i]?.Startup();
         }
 
         internal void Shutdown()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i].Shutdown();
+                modules[i]?.Shutdown();
+
+            modules.Clear();
+            modulesByType.Clear();
         }
 
         internal void BeforeUpdate()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i].BeforeUpdate();
+                modules[i]?.BeforeUpdate();
         }
 
         internal void Update()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i].Update();
+                modules[i]?.Update();
         }
 
         internal void AfterUpdate()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i].AfterUpdate();
+                modules[i]?.AfterUpdate();
         }
 
         internal void ContextChanged(Context context)
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i].ContextChanged(context);
+                modules[i]?.ContextChanged(context);
         }
 
         internal void BeforeRender(Window window)
         {
+            isRendering = true;
+
             for (int i = 0; i < modules.Count; i++)
-                modules[i].BeforeRender(window);
+                modules[i]?.BeforeRender(window);
+
+            isRendering = false;
         }
 
         internal void AfterRender(Window window)
         {
+            isRendering = true;
+
             for (int i = 0; i < modules.Count; i++)
-                modules[i].AfterRender(window);
+                modules[i]?.AfterRender(window);
+
+            isRendering = false;
         }
 
         internal void Tick()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i].Tick();
-        }
+                modules[i]?.Tick();
 
-        public void Clear()
-        {
-            modules.Clear();
-            modulesByType.Clear();
+            // remove null module entries
+            int toRemove;
+            while ((toRemove = modules.IndexOf(null)) >= 0)
+                modules.RemoveAt(toRemove);
         }
 
         public IEnumerator<Module> GetEnumerator()
         {
-            return modules.GetEnumerator();
+            for (int i = 0; i < modules.Count; i++)
+            {
+                var module = modules[i];
+                if (module != null)
+                    yield return module;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return modules.GetEnumerator();
+            for (int i = 0; i < modules.Count; i++)
+            {
+                var module = modules[i];
+                if (module != null)
+                    yield return module;
+            }
         }
     }
 }

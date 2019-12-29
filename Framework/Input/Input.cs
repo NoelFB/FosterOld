@@ -23,9 +23,8 @@ namespace Foster.Framework
 
         internal List<WeakReference<VirtualButton>> virtualButtons = new List<WeakReference<VirtualButton>>();
 
-        protected Input()
+        protected Input() : base(300)
         {
-            Priority = 300;
             State = new InputState(this);
             LastState = new InputState(this);
             nextState = new InputState(this);
