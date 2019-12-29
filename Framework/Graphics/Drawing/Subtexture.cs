@@ -88,6 +88,11 @@ namespace Foster.Framework
         private Rect drawRect;
         private Rect sourceRect;
 
+        public Subtexture()
+        {
+
+        }
+
         public Subtexture(Texture texture)
             : this(texture, new Rect(0, 0, texture.Width, texture.Height))
         {
@@ -101,6 +106,14 @@ namespace Foster.Framework
         }
 
         public Subtexture(Texture texture, Rect source, Rect frame)
+        {
+            Texture = texture;
+            SourceRect = source;
+            DrawRect = new Rect(-frame.X, -frame.Y, source.Width, source.Height);
+            FrameRect = frame;
+        }
+
+        public void Reset(Texture texture, Rect source, Rect frame)
         {
             Texture = texture;
             SourceRect = source;

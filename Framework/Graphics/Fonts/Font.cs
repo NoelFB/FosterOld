@@ -124,7 +124,7 @@ namespace Foster.Framework
                 fontHandle.Free();
         }
 
-        public static byte[] ReadAllBytes(Stream stream)
+        private static byte[] ReadAllBytes(Stream stream)
         {
             byte[] buffer = new byte[stream.Length];
             stream.Read(buffer, 0, buffer.Length);

@@ -10,12 +10,12 @@ namespace Foster.Framework
         public class Character
         {
             public char Unicode;
-            public Subtexture? Image;
+            public Subtexture Image;
             public Vector2 Offset;
             public float Advance;
             public Dictionary<char, float> Kerning = new Dictionary<char, float>();
 
-            public Character(char unicode, Subtexture? image, Vector2 offset, float advance)
+            public Character(char unicode, Subtexture image, Vector2 offset, float advance)
             {
                 Unicode = unicode;
                 Image = image;
@@ -83,7 +83,7 @@ namespace Foster.Framework
                         packer.AddPixels(name, w, h, buffer);
 
                     // create character
-                    var sprChar = new Character(ch.Unicode, null, new Vector2(ch.OffsetX, ch.OffsetY), ch.Advance);
+                    var sprChar = new Character(ch.Unicode, new Subtexture(), new Vector2(ch.OffsetX, ch.OffsetY), ch.Advance);
                     Charset.Add(ch.Unicode, sprChar);
 
                     // get all kerning
@@ -99,11 +99,22 @@ namespace Foster.Framework
             }
 
             // link textures
-            var atlas = new Atlas(packer);
-            foreach (var kv in atlas.Subtextures)
+            var output = packer.Pack();
+            if (output != null)
             {
-                if (Charset.TryGetValue(kv.Key[0], out var ch))
-                    ch.Image = kv.Value;
+                for (int i = 0; i < output.Pages.Count; i ++)
+                {
+                    var texture = new Texture(output.Pages[i]);
+                    foreach (var entry in output.Entries.Values)
+                    {
+                        if (entry.Page != i)
+                            continue;
+
+                        if (Charset.TryGetValue(entry.Name[0], out var character))
+                            character.Image.Reset(texture, entry.Source, entry.Frame);
+                    }
+
+                }
             }
         }
 
