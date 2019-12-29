@@ -227,6 +227,16 @@ namespace Foster.Framework
             return (float)Math.Pow(x, y);
         }
 
+        public static float Round(float a)
+        {
+            return (float)Math.Round(a);
+        }
+
+        public static int RoundToInt(float a)
+        {
+            return (int)Math.Round(a, MidpointRounding.AwayFromZero);
+        }
+
         /// <summary>
         /// Adler32 checksum algorithm taken from zlib format specification: https://tools.ietf.org/html/rfc1950#section-9
         /// </summary>
