@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.Versioning;
 using System.Text;
 
-namespace Foster.Framework
+namespace Foster.Engine
 {
 
     public abstract class AssetBank

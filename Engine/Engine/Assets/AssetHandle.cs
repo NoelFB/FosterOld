@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Foster.Framework
+namespace Foster.Engine
 {
 
     public struct AssetHandle

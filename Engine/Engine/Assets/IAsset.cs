@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using Foster.Framework.Json;
 
-namespace Foster.Framework
+namespace Foster.Engine
 {
     public interface IAsset
     {
