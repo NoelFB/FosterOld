@@ -101,6 +101,8 @@ namespace Foster.Framework
 
         private readonly List<INode> nodes = new List<INode>();
 
+        private const float EPSILON = 0.00001f;
+
         public VirtualAxis(Input input)
         {
             Input = input;
@@ -130,7 +132,7 @@ namespace Foster.Framework
                     var time = nodes[i].Timestamp;
                     var val = nodes[i].Value(deadzone);
 
-                    if (time > 0 && val != 0 && time > timestamp)
+                    if (time > 0 && Math.Abs(val) > EPSILON && time > timestamp)
                     {
                         value = val;
                         timestamp = time;
@@ -145,7 +147,7 @@ namespace Foster.Framework
                     var time = nodes[i].Timestamp;
                     var val = nodes[i].Value(deadzone);
 
-                    if (time > 0 && val != 0 && time < timestamp)
+                    if (time > 0 && Math.Abs(val) > EPSILON && time < timestamp)
                     {
                         value = val;
                         timestamp = time;

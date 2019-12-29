@@ -4,13 +4,35 @@ namespace Foster.Framework
 {
     public class InputState
     {
-        public const int MaxControllers = 8;
+        /// <summary>
+        /// The Maximum number of Controllers
+        /// </summary>
+        public const int MaxControllers = 32;
 
+        /// <summary>
+        /// Our Input Module
+        /// </summary>
         public readonly Input Input;
+
+        /// <summary>
+        /// The Keyboard State
+        /// </summary>
         public readonly Keyboard Keyboard;
+
+        /// <summary>
+        /// The Mouse State
+        /// </summary>
         public readonly Mouse Mouse;
 
+        /// <summary>
+        /// A list of all the Controllers
+        /// </summary>
         private readonly Controller[] controllers;
+
+        /// <summary>
+        /// A Read-Only Collection of the Controllers
+        /// Note that they aren't necessarily connected
+        /// </summary>
         public readonly ReadOnlyCollection<Controller> Controllers;
 
         public InputState(Input input)

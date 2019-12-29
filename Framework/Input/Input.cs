@@ -7,18 +7,54 @@ namespace Foster.Framework
 
     public abstract class Input : Module
     {
+        /// <summary>
+        /// The underlying Input API name
+        /// </summary>
         public string ApiName { get; protected set; } = "Unknown";
+
+        /// <summary>
+        /// The underlying Input API version
+        /// </summary>
         public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
+        /// <summary>
+        /// The Current Input State
+        /// </summary>
         public readonly InputState State;
+
+        /// <summary>
+        /// The Input State of the previous frame
+        /// </summary>
         public readonly InputState LastState;
+
+        /// <summary>
+        /// The Input State of the next frame
+        /// </summary>
         private readonly InputState nextState;
 
+        /// <summary>
+        /// The Keyboard of the current State
+        /// </summary>
         public Keyboard Keyboard => State.Keyboard;
+
+        /// <summary>
+        /// The Mouse of the Current State
+        /// </summary>
         public Mouse Mouse => State.Mouse;
+
+        /// <summary>
+        /// The Controllers of the Current State
+        /// </summary>
         public ReadOnlyCollection<Controller> Controllers => State.Controllers;
 
+        /// <summary>
+        /// Default delay before a key or button starts repeating
+        /// </summary>
         public float RepeatDelay = 0.4f;
+
+        /// <summary>
+        /// Default interval that the repeat is triggered, in seconds
+        /// </summary>
         public float RepeatInterval = 0.03f;
 
         internal List<WeakReference<VirtualButton>> virtualButtons = new List<WeakReference<VirtualButton>>();
@@ -53,6 +89,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Sets the Mouse Cursor
+        /// </summary>
         public abstract void SetMouseCursor(Cursors cursors);
 
         protected void OnText(char value)

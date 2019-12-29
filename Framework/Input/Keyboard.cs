@@ -13,13 +13,39 @@ namespace Foster.Framework
         internal readonly bool[] released = new bool[MaxKeys];
         internal readonly ulong[] timestamp = new ulong[MaxKeys];
 
+        /// <summary>
+        /// The Input Module this Keyboard belong to
+        /// </summary>
         public readonly Input Input;
+
+        /// <summary>
+        /// Any Text that was typed over the last frame
+        /// </summary>
         public readonly StringBuilder Text = new StringBuilder();
 
+        internal Keyboard(Input input)
+        {
+            Input = input;
+        }
+
+        /// <summary>
+        /// Checks if the given key was pressed
+        /// </summary>
         public bool Pressed(Keys key) => pressed[(int)key];
+
+        /// <summary>
+        /// Checks if the given key is held
+        /// </summary>
         public bool Down(Keys key) => down[(int)key];
+
+        /// <summary>
+        /// Checks if the given key was released
+        /// </summary>
         public bool Released(Keys key) => released[(int)key];
 
+        /// <summary>
+        /// Checks if any of the given keys were pressed
+        /// </summary>
         public bool Pressed(ReadOnlySpan<Keys> keys)
         {
             for (int i = 0; i < keys.Length; i++)
@@ -29,6 +55,9 @@ namespace Foster.Framework
             return false;
         }
 
+        /// <summary>
+        /// Checks if any of the given keys are held
+        /// </summary>
         public bool Down(ReadOnlySpan<Keys> keys)
         {
             for (int i = 0; i < keys.Length; i++)
@@ -38,6 +67,9 @@ namespace Foster.Framework
             return false;
         }
 
+        /// <summary>
+        /// Checks if any of the given keys were released
+        /// </summary>
         public bool Released(ReadOnlySpan<Keys> keys)
         {
             for (int i = 0; i < keys.Length; i++)
@@ -47,11 +79,17 @@ namespace Foster.Framework
             return false;
         }
 
+        /// <summary>
+        /// Checks if the given key was Repeated
+        /// </summary>
         public bool Repeated(Keys key)
         {
             return Repeated(key, Input.RepeatDelay, Input.RepeatInterval);
         }
 
+        /// <summary>
+        /// Checks if the given key was Repeated, given the delay and interval
+        /// </summary>
         public bool Repeated(Keys key, float delay, float interval)
         {
             if (Pressed(key))
@@ -62,14 +100,12 @@ namespace Foster.Framework
             return Down(key) && (Time.Duration.TotalSeconds - time) > delay && Time.OnInterval(interval, time);
         }
 
+        /// <summary>
+        /// Gets the Timestamp of when the given key was last pressed
+        /// </summary>
         public ulong Timestamp(Keys key)
         {
             return timestamp[(int)key];
-        }
-
-        internal Keyboard(Input input)
-        {
-            Input = input;
         }
 
         internal void Copy(Keyboard other)

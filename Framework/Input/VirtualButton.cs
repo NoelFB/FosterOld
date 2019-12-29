@@ -87,6 +87,8 @@ namespace Foster.Framework
 
             private float pressedTimestamp;
 
+            private const float AXIS_EPSILON = 0.00001f;
+
             public bool Pressed(float buffer, double lastBufferConsumedTime)
             {
                 if (Pressed())
@@ -104,12 +106,13 @@ namespace Foster.Framework
             {
                 get
                 {
-                    if (Threshold == 0)
-                        return Input.Controllers[Index].Axis(Axis) != 0;
-                    else if (Threshold < 0)
+                    if (Math.Abs(Threshold) <= AXIS_EPSILON)
+                        return Math.Abs(Input.Controllers[Index].Axis(Axis)) > AXIS_EPSILON;
+
+                    if (Threshold < 0)
                         return Input.Controllers[Index].Axis(Axis) <= Threshold;
-                    else
-                        return Input.Controllers[Index].Axis(Axis) >= Threshold;
+                    
+                    return Input.Controllers[Index].Axis(Axis) >= Threshold;
                 }
             }
 
@@ -117,12 +120,13 @@ namespace Foster.Framework
             {
                 get
                 {
-                    if (Threshold == 0)
-                        return Input.LastState.Controllers[Index].Axis(Axis) != 0 && Input.Controllers[Index].Axis(Axis) == 0;
-                    else if (Threshold < 0)
+                    if (Math.Abs(Threshold) <= AXIS_EPSILON)
+                        return Math.Abs(Input.LastState.Controllers[Index].Axis(Axis)) > AXIS_EPSILON && Math.Abs(Input.Controllers[Index].Axis(Axis)) < AXIS_EPSILON;
+
+                    if (Threshold < 0)
                         return Input.LastState.Controllers[Index].Axis(Axis) <= Threshold && Input.Controllers[Index].Axis(Axis) > Threshold;
-                    else
-                        return Input.LastState.Controllers[Index].Axis(Axis) >= Threshold && Input.Controllers[Index].Axis(Axis) < Threshold;
+
+                    return Input.LastState.Controllers[Index].Axis(Axis) >= Threshold && Input.Controllers[Index].Axis(Axis) < Threshold;
                 }
             }
 
@@ -133,12 +137,13 @@ namespace Foster.Framework
 
             private bool Pressed()
             {
-                if (Threshold == 0)
-                    return (Input.LastState.Controllers[Index].Axis(Axis) == 0 && Input.Controllers[Index].Axis(Axis) != 0);
-                else if (Threshold < 0)
+                if (Math.Abs(Threshold) <= AXIS_EPSILON)
+                    return (Math.Abs(Input.LastState.Controllers[Index].Axis(Axis)) < AXIS_EPSILON && Math.Abs(Input.Controllers[Index].Axis(Axis)) > AXIS_EPSILON);
+
+                if (Threshold < 0)
                     return (Input.LastState.Controllers[Index].Axis(Axis) > Threshold && Input.Controllers[Index].Axis(Axis) <= Threshold);
-                else
-                    return (Input.LastState.Controllers[Index].Axis(Axis) < Threshold && Input.Controllers[Index].Axis(Axis) >= Threshold);
+                
+                return (Input.LastState.Controllers[Index].Axis(Axis) < Threshold && Input.Controllers[Index].Axis(Axis) >= Threshold);
             }
 
             public void Update()

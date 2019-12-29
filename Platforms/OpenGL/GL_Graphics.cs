@@ -21,7 +21,7 @@ namespace Foster.OpenGL
         private readonly DeleteResource deleteFramebuffer = GL.DeleteFramebuffer;
         private readonly DeleteResource deleteBuffer = GL.DeleteBuffer;
         private readonly DeleteResource deleteTexture = GL.DeleteTexture;
-        private readonly DeleteResource deleteProgram = (id) => GL.DeleteProgram(id);
+        private readonly DeleteResource deleteProgram = GL.DeleteProgram;
 
         protected override void Initialized()
         {
@@ -100,7 +100,7 @@ namespace Foster.OpenGL
                 DeleteResources(deleteFramebuffer, fboList);
         }
 
-        private unsafe void DeleteResources(DeleteResource deleter, List<uint> list)
+        private void DeleteResources(DeleteResource deleter, List<uint> list)
         {
             if (list.Count > 0)
             {
