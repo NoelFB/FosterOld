@@ -14,6 +14,18 @@ namespace Foster.Framework.Json
         {
         }
 
+        public static JsonObject FromFile(string path)
+        {
+            using var reader = new JsonReader(File.OpenRead(path));
+            return reader.ReadObject();
+        }
+
+        public static JsonObject FromString(string jsonString)
+        {
+            using var reader = new JsonReader(new StringReader(jsonString));
+            return reader.ReadObject();
+        }
+
         public JsonValue this[string key]
         {
             get => Value[key];

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Foster.Framework
 {
@@ -103,11 +104,6 @@ namespace Foster.Framework
 
         private readonly List<Source> sources = new List<Source>();
 
-        public Packer()
-        {
-
-        }
-
         public void AddPixels(string name, int width, int height, Span<Color> pixels)
         {
             AddSource(name, width, height, pixels);
@@ -121,7 +117,8 @@ namespace Foster.Framework
 
         public void AddFile(string name, string path)
         {
-            throw new NotImplementedException();
+            using var stream = File.OpenRead(path);
+            AddBitmap(name, new Bitmap(stream));
         }
 
         private void AddSource(string name, int width, int height, Span<Color> pixels)

@@ -1680,27 +1680,6 @@ namespace Foster.Framework
         /// <returns>The transposed matrix.</returns>
         public static unsafe Matrix Transpose(Matrix matrix)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                var row1 = Sse.LoadVector128(&matrix.M11);
-                var row2 = Sse.LoadVector128(&matrix.M21);
-                var row3 = Sse.LoadVector128(&matrix.M31);
-                var row4 = Sse.LoadVector128(&matrix.M41);
-
-                var l12 = Sse.UnpackLow(row1, row2);
-                var l34 = Sse.UnpackLow(row3, row4);
-                var h12 = Sse.UnpackHigh(row1, row2);
-                var h34 = Sse.UnpackHigh(row3, row4);
-
-                Sse.Store(&matrix.M11, Sse.MoveLowToHigh(l12, l34));
-                Sse.Store(&matrix.M21, Sse.MoveHighToLow(l34, l12));
-                Sse.Store(&matrix.M31, Sse.MoveLowToHigh(h12, h34));
-                Sse.Store(&matrix.M41, Sse.MoveHighToLow(h34, h12));
-
-                return matrix;
-            }
-#endif
             Matrix result;
 
             result.M11 = matrix.M11;
@@ -1732,17 +1711,6 @@ namespace Foster.Framework
         /// <returns>The interpolated matrix.</returns>
         public static unsafe Matrix Lerp(Matrix matrix1, Matrix matrix2, float amount)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                Vector128<float> amountVec = Vector128.Create(amount);
-                Sse.Store(&matrix1.M11, VectorMath.Lerp(Sse.LoadVector128(&matrix1.M11), Sse.LoadVector128(&matrix2.M11), amountVec));
-                Sse.Store(&matrix1.M21, VectorMath.Lerp(Sse.LoadVector128(&matrix1.M21), Sse.LoadVector128(&matrix2.M21), amountVec));
-                Sse.Store(&matrix1.M31, VectorMath.Lerp(Sse.LoadVector128(&matrix1.M31), Sse.LoadVector128(&matrix2.M31), amountVec));
-                Sse.Store(&matrix1.M41, VectorMath.Lerp(Sse.LoadVector128(&matrix1.M41), Sse.LoadVector128(&matrix2.M41), amountVec));
-                return matrix1;
-            }
-#endif
             Matrix result;
 
             // First row
@@ -1818,18 +1786,6 @@ namespace Foster.Framework
         /// <returns>The negated matrix.</returns>
         public static unsafe Matrix operator -(Matrix value)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                Vector128<float> zero = Vector128<float>.Zero;
-                Sse.Store(&value.M11, Sse.Subtract(zero, Sse.LoadVector128(&value.M11)));
-                Sse.Store(&value.M21, Sse.Subtract(zero, Sse.LoadVector128(&value.M21)));
-                Sse.Store(&value.M31, Sse.Subtract(zero, Sse.LoadVector128(&value.M31)));
-                Sse.Store(&value.M41, Sse.Subtract(zero, Sse.LoadVector128(&value.M41)));
-
-                return value;
-            }
-#endif
             Matrix m;
 
             m.M11 = -value.M11;
@@ -1860,16 +1816,6 @@ namespace Foster.Framework
         /// <returns>The resulting matrix.</returns>
         public static unsafe Matrix operator +(Matrix value1, Matrix value2)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                Sse.Store(&value1.M11, Sse.Add(Sse.LoadVector128(&value1.M11), Sse.LoadVector128(&value1.M11)));
-                Sse.Store(&value1.M21, Sse.Add(Sse.LoadVector128(&value1.M21), Sse.LoadVector128(&value1.M21)));
-                Sse.Store(&value1.M31, Sse.Add(Sse.LoadVector128(&value1.M31), Sse.LoadVector128(&value1.M31)));
-                Sse.Store(&value1.M41, Sse.Add(Sse.LoadVector128(&value1.M41), Sse.LoadVector128(&value1.M41)));
-                return value1;
-            }
-#endif
             Matrix m;
 
             m.M11 = value1.M11 + value2.M11;
@@ -1900,16 +1846,6 @@ namespace Foster.Framework
         /// <returns>The result of the subtraction.</returns>
         public static unsafe Matrix operator -(Matrix value1, Matrix value2)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                Sse.Store(&value1.M11, Sse.Subtract(Sse.LoadVector128(&value1.M11), Sse.LoadVector128(&value1.M11)));
-                Sse.Store(&value1.M21, Sse.Subtract(Sse.LoadVector128(&value1.M21), Sse.LoadVector128(&value1.M21)));
-                Sse.Store(&value1.M31, Sse.Subtract(Sse.LoadVector128(&value1.M31), Sse.LoadVector128(&value1.M31)));
-                Sse.Store(&value1.M41, Sse.Subtract(Sse.LoadVector128(&value1.M41), Sse.LoadVector128(&value1.M41)));
-                return value1;
-            }
-#endif
             Matrix m;
 
             m.M11 = value1.M11 - value2.M11;
@@ -1940,42 +1876,6 @@ namespace Foster.Framework
         /// <returns>The result of the multiplication.</returns>
         public static unsafe Matrix operator *(Matrix value1, Matrix value2)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                var row = Sse.LoadVector128(&value1.M11);
-                Sse.Store(&value1.M11,
-                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&value2.M11)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&value2.M21))),
-                            Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&value2.M31)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&value2.M41)))));
-
-                // 0x00 is _MM_SHUFFLE(0,0,0,0), 0x55 is _MM_SHUFFLE(1,1,1,1), etc.
-                // TODO: Replace with a method once it's added to the API.
-
-                row = Sse.LoadVector128(&value1.M21);
-                Sse.Store(&value1.M21,
-                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&value2.M11)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&value2.M21))),
-                            Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&value2.M31)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&value2.M41)))));
-
-                row = Sse.LoadVector128(&value1.M31);
-                Sse.Store(&value1.M31, 
-                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&value2.M11)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&value2.M21))),
-                            Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&value2.M31)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&value2.M41)))));
-
-                row = Sse.LoadVector128(&value1.M41);
-                Sse.Store(&value1.M41,
-                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&value2.M11)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&value2.M21))),
-                            Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&value2.M31)),
-                                    Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&value2.M41)))));
-                return value1;
-            }
-#endif
             Matrix m;
 
             // First row
@@ -2013,17 +1913,6 @@ namespace Foster.Framework
         /// <returns>The scaled matrix.</returns>
         public static unsafe Matrix operator *(Matrix value1, float value2)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                Vector128<float> value2Vec = Vector128.Create(value2);
-                Sse.Store(&value1.M11, Sse.Multiply(Sse.LoadVector128(&value1.M11), value2Vec));
-                Sse.Store(&value1.M21, Sse.Multiply(Sse.LoadVector128(&value1.M21), value2Vec));
-                Sse.Store(&value1.M31, Sse.Multiply(Sse.LoadVector128(&value1.M31), value2Vec));
-                Sse.Store(&value1.M41, Sse.Multiply(Sse.LoadVector128(&value1.M41), value2Vec));
-                return value1;
-            }
-#endif
             Matrix m;
 
             m.M11 = value1.M11 * value2;
@@ -2053,16 +1942,6 @@ namespace Foster.Framework
         /// <returns>True if the given matrices are equal; False otherwise.</returns>
         public static unsafe bool operator ==(Matrix value1, Matrix value2)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                return
-                    VectorMath.Equal(Sse.LoadVector128(&value1.M11), Sse.LoadVector128(&value2.M11)) &&
-                    VectorMath.Equal(Sse.LoadVector128(&value1.M21), Sse.LoadVector128(&value2.M21)) &&
-                    VectorMath.Equal(Sse.LoadVector128(&value1.M31), Sse.LoadVector128(&value2.M31)) &&
-                    VectorMath.Equal(Sse.LoadVector128(&value1.M41), Sse.LoadVector128(&value2.M41));
-            }
-#endif
             return (value1.M11 == value2.M11 && value1.M22 == value2.M22 && value1.M33 == value2.M33 && value1.M44 == value2.M44 && // Check diagonal element first for early out.
                     value1.M12 == value2.M12 && value1.M13 == value2.M13 && value1.M14 == value2.M14 && value1.M21 == value2.M21 &&
                     value1.M23 == value2.M23 && value1.M24 == value2.M24 && value1.M31 == value2.M31 && value1.M32 == value2.M32 &&
@@ -2077,16 +1956,6 @@ namespace Foster.Framework
         /// <returns>True if the given matrices are not equal; False if they are equal.</returns>
         public static unsafe bool operator !=(Matrix value1, Matrix value2)
         {
-#if HAS_INTRINSICS
-            if (Sse.IsSupported)
-            {
-                return
-                    VectorMath.NotEqual(Sse.LoadVector128(&value1.M11), Sse.LoadVector128(&value2.M11)) ||
-                    VectorMath.NotEqual(Sse.LoadVector128(&value1.M21), Sse.LoadVector128(&value2.M21)) ||
-                    VectorMath.NotEqual(Sse.LoadVector128(&value1.M31), Sse.LoadVector128(&value2.M31)) ||
-                    VectorMath.NotEqual(Sse.LoadVector128(&value1.M41), Sse.LoadVector128(&value2.M41));
-            }
-#endif
             return (value1.M11 != value2.M11 || value1.M12 != value2.M12 || value1.M13 != value2.M13 || value1.M14 != value2.M14 ||
                     value1.M21 != value2.M21 || value1.M22 != value2.M22 || value1.M23 != value2.M23 || value1.M24 != value2.M24 ||
                     value1.M31 != value2.M31 || value1.M32 != value2.M32 || value1.M33 != value2.M33 || value1.M34 != value2.M34 ||

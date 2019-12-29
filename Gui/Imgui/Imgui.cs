@@ -5,9 +5,6 @@ using System.Collections.Generic;
 namespace Foster.GuiSystem
 {
 
-    // TODO:
-    // Value Storage needs to exist
-
     public class Imgui
     {
 

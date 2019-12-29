@@ -27,7 +27,7 @@ namespace Foster.Framework
             Adam7 = 1
         }
 
-        private static readonly byte[] header = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
+        private static readonly byte[] header = { 137, 80, 78, 71, 13, 10, 26, 10 };
         private static readonly uint[] crcTable = new uint[256];
 
         static PngFormat()
