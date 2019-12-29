@@ -2,7 +2,7 @@
 
 namespace Foster.Framework
 {
-    public struct Quad3D : IProjectable
+    public struct Quad : IProjectable
     {
 
         public Vector3 A;
@@ -12,7 +12,7 @@ namespace Foster.Framework
 
         public Vector3 Center => (A + B + C + D) / 4f;
 
-        public Quad3D(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        public Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
         {
             A = a;
             B = b;
@@ -20,7 +20,7 @@ namespace Foster.Framework
             D = d;
         }
 
-        public Quad3D Translate(Vector3 amount)
+        public Quad Translate(Vector3 amount)
         {
             A += amount;
             B += amount;
@@ -63,7 +63,7 @@ namespace Foster.Framework
             return box;
         }
 
-        public override bool Equals(object? obj) => (obj is Quad3D other) && (this == other);
+        public override bool Equals(object? obj) => (obj is Quad other) && (this == other);
 
         public override int GetHashCode()
         {
@@ -75,30 +75,30 @@ namespace Foster.Framework
             return hash;
         }
 
-        public static Quad3D Transform(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Matrix matrix)
+        public static Quad Transform(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Matrix matrix)
         {
-            return new Quad3D(
+            return new Quad(
                 Vector3.Transform(a, matrix),
                 Vector3.Transform(b, matrix),
                 Vector3.Transform(c, matrix),
                 Vector3.Transform(d, matrix));
         }
 
-        public static Quad3D Transform(Quad3D quad, Matrix matrix)
+        public static Quad Transform(Quad quad, Matrix matrix)
         {
-            return new Quad3D(
+            return new Quad(
                 Vector3.Transform(quad.A, matrix),
                 Vector3.Transform(quad.B, matrix),
                 Vector3.Transform(quad.C, matrix),
                 Vector3.Transform(quad.D, matrix));
         }
 
-        public static bool operator ==(Quad3D a, Quad3D b)
+        public static bool operator ==(Quad a, Quad b)
         {
             return a.A == b.A && a.B == b.B && a.C == b.C && a.D == b.D;
         }
 
-        public static bool operator !=(Quad3D a, Quad3D b)
+        public static bool operator !=(Quad a, Quad b)
         {
             return a.A != b.A || a.B != b.B || a.C != b.C || a.D != b.D;
         }
