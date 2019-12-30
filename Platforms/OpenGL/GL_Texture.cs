@@ -32,13 +32,19 @@ namespace Foster.OpenGL
 
             switch (format)
             {
+                case TextureFormat.Red:
+                    glFormat = GLEnum.RED;
+                    break;
+                case TextureFormat.RG:
+                    glFormat = GLEnum.RG;
+                    break;
+                case TextureFormat.RGB:
+                    glFormat = GLEnum.RGB;
+                    break;
                 case TextureFormat.Color:
                     glFormat = GLEnum.RGBA;
                     break;
-                case TextureFormat.Depth24:
-                    glFormat = GLEnum.DEPTH_COMPONENT24;
-                    break;
-                case TextureFormat.Depth24Stencil8:
+                case TextureFormat.DepthStencil:
                     glFormat = GLEnum.DEPTH24_STENCIL8;
                     break;
                 default:

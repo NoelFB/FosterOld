@@ -34,7 +34,7 @@ namespace Foster.Framework
         /// </summary>
         public readonly Texture? Depth;
 
-        public Target(int width, int height) : this(width, height, new [] { TextureFormat.Color }, TextureFormat.Depth24Stencil8)
+        public Target(int width, int height) : this(width, height, new [] { TextureFormat.Color }, TextureFormat.DepthStencil)
         {
 
         }
@@ -51,7 +51,7 @@ namespace Foster.Framework
 
             // check attachment types
             for (int i = 0; i < colorAttachmentFormats.Length; i++)
-                if (!colorAttachmentFormats[i].IsColorFormat())
+                if (!colorAttachmentFormats[i].IsTextureFormat())
                     throw new Exception("Invalid Texture Format - Color Texture Attachments must be a Color Format");
 
             // create internal target

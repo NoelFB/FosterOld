@@ -59,10 +59,7 @@ namespace Foster.OpenGL
                     // depth stencil attachment
                     if (depth != null && depth is GL_Texture depthTexture)
                     {
-                        if (depthTexture.format == TextureFormat.Depth24)
-                            GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID, 0);
-                        else if (depthTexture.format == TextureFormat.Depth24Stencil8)
-                            GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID, 0);
+                        GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID, 0);
                     }
 
                     framebuffers.Add(context, id);

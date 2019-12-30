@@ -48,13 +48,11 @@ namespace Foster.Framework
         /// <summary>
         /// Clears the Depth of the current Target
         /// </summary>
-        /// <param name="depth"></param>
         public void ClearDepth(float depth) => Clear(ClearFlags.Depth, 0, depth, 0);
 
         /// <summary>
         /// Clears the Stencil Buffer of the current Target
         /// </summary>
-        /// <param name="stencil"></param>
         public void ClearStencil(int stencil) => Clear(ClearFlags.Stencil, 0, 0, stencil);
 
         /// <summary>
