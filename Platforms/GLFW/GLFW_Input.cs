@@ -180,11 +180,11 @@ namespace Foster.GLFW
         {
             if (action == 1)
             {
-                OnKeyDown((uint)key, (ulong)timer.ElapsedMilliseconds);
+                OnKeyDown((Keys)key, (ulong)timer.ElapsedMilliseconds);
             }
             else if (action == 0)
             {
-                OnKeyUp((uint)key, (ulong)timer.ElapsedMilliseconds);
+                OnKeyUp((Keys)key, (ulong)timer.ElapsedMilliseconds);
             }
         }
 

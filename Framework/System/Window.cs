@@ -3,12 +3,22 @@
 namespace Foster.Framework
 {
     /// <summary>
-    /// A platform Window
+    /// A platform Window.
+    ///
+    /// Note that not every Platform supports multiple Windows, in which case
+    /// creating more than one will throw an exception. You can check whether multiple
+    /// Windows is supported under Foster.Framework.System.SupportsMultipleWindows
     /// 
     /// Note that Screen Coordinates may be different on each platform.
     /// For example, on Windows High DPI displays, this is always 1-1 with
     /// the pixel size of the Window. On MacOS Retina displays, this is
     /// usually 1-2 with the pixel size of the Window.
+    ///
+    /// TODO:
+    /// Move the Platform Implementation of Window into an "Internal Window" class
+    /// so that the API can be `var window = new Window();` instead of `App.System.CreateWindow();`
+    /// much like ex. the Texture class.
+    /// 
     /// </summary>
     public abstract class Window
     {

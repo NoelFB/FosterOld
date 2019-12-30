@@ -99,17 +99,25 @@ namespace Foster.Framework
             nextState.Keyboard.Text.Append(value);
         }
 
-        protected void OnKeyDown(uint key, ulong timestamp)
+        protected void OnKeyDown(Keys key, ulong timestamp)
         {
-            nextState.Keyboard.down[key] = true;
-            nextState.Keyboard.pressed[key] = true;
-            nextState.Keyboard.timestamp[key] = timestamp;
+            uint id = (uint)key;
+            if (id >= Keyboard.MaxKeys)
+                throw new ArgumentOutOfRangeException(nameof(key), "Value is out of Range for supported keys");
+
+            nextState.Keyboard.down[id] = true;
+            nextState.Keyboard.pressed[id] = true;
+            nextState.Keyboard.timestamp[id] = timestamp;
         }
 
-        protected void OnKeyUp(uint key, ulong timestamp)
+        protected void OnKeyUp(Keys key, ulong timestamp)
         {
-            nextState.Keyboard.down[key] = false;
-            nextState.Keyboard.released[key] = true;
+            uint id = (uint)key;
+            if (id >= Keyboard.MaxKeys)
+                throw new ArgumentOutOfRangeException(nameof(key), "Value is out of Range for supported keys");
+
+            nextState.Keyboard.down[id] = false;
+            nextState.Keyboard.released[id] = true;
         }
 
         protected void OnMouseDown(MouseButtons button, ulong timestamp)
