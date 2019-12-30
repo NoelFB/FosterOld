@@ -2174,11 +2174,11 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this matrix; False otherwise.</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is Matrix)
+            if (obj != null && obj is Matrix matrix)
             {
-                return Equals((Matrix)obj);
+                return Equals(matrix);
             }
 
             return false;

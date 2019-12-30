@@ -259,11 +259,11 @@ namespace Foster.Framework
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this Plane; False otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is Plane)
+            if (obj != null && obj is Plane plane)
             {
-                return Equals((Plane)obj);
+                return Equals(plane);
             }
 
             return false;

@@ -8,7 +8,7 @@ namespace Foster.Framework
     public struct Color
     {
 
-        public static readonly Color Transparent = new Color(0x000000) * 0.0f;
+        public static readonly Color Transparent = new Color(0, 0, 0, 0);
         public static readonly Color White = new Color(0xffffff);
         public static readonly Color Black = new Color(0x000000);
         public static readonly Color Red = new Color(0xff0000);
@@ -16,40 +16,58 @@ namespace Foster.Framework
         public static readonly Color Blue = new Color(0x0000ff);
         public static readonly Color Yellow = new Color(0xffff00);
 
+        /// <summary>
+        /// The Color Value stored in a 32-bit unsigned integer
+        /// </summary>
         public uint ABGR;
 
+        /// <summary>
+        /// The Red Component
+        /// </summary>
         public byte R
         {
-            get { unchecked { return (byte)(ABGR); } }
+            get => (byte)ABGR;
             set => ABGR = (ABGR & 0xffffff00) | value;
         }
 
+        /// <summary>
+        /// The Green Component
+        /// </summary>
         public byte G
         {
-            get { unchecked { return (byte)(ABGR >> 8); } }
+            get => (byte)(ABGR >> 8);
             set => ABGR = (ABGR & 0xffff00ff) | ((uint)value << 8);
         }
 
+        /// <summary>
+        /// The Blue Component
+        /// </summary>
         public byte B
         {
-            get { unchecked { return (byte)(ABGR >> 16); } }
+            get => (byte)(ABGR >> 16);
             set => ABGR = (ABGR & 0xff00ffff) | ((uint)value << 16);
         }
 
+        /// <summary>
+        /// The Alpha Component
+        /// </summary>
         public byte A
         {
-            get { unchecked { return (byte)(ABGR >> 24); } }
+            get => (byte)(ABGR >> 24);
             set => ABGR = (ABGR & 0x00ffffff) | ((uint)value << 24);
         }
 
-        public Color(int rgb)
+        /// <summary>
+        /// Creates a color given the int32 RGB data
+        /// </summary>
+        public Color(int rgb, byte alpha = 255)
         {
             ABGR = 0;
 
             R = (byte)(rgb >> 16);
             G = (byte)(rgb >> 08);
             B = (byte)(rgb);
-            A = 255;
+            A = alpha;
         }
 
         public Color(int rgb, float alpha)
@@ -64,14 +82,11 @@ namespace Foster.Framework
 
         public Color(byte r, byte g, byte b, byte a)
         {
-            unchecked
-            {
-                ABGR = 0;
-                R = r;
-                G = g;
-                B = b;
-                A = a;
-            }
+            ABGR = 0;
+            R = r;
+            G = g;
+            B = b;
+            A = a;
         }
 
         public Color(int r, int g, int b, int a)
@@ -92,12 +107,19 @@ namespace Foster.Framework
             A = (byte)(a * 255);
         }
 
+        /// <summary>
+        /// Premultiplies the color value based on its Alpha component
+        /// </summary>
+        /// <returns></returns>
         public Color Premultiply()
         {
             byte a = A;
             return new Color((byte)(R * a / 255), (byte)(G * a / 255), (byte)(B * a / 255), a);
         }
 
+        /// <summary>
+        /// Converts the Color to a Vector4
+        /// </summary>
         public Vector4 ToVector4()
         {
             return new Vector4(R / 255f, G / 255f, B / 255f, A / 255f);
@@ -119,85 +141,127 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// The input string is the Components, R, G, B, and A. Ex. "RGBA" returns a hex string with those components
+        /// Returns a Hex String representation of the Color's given components
         /// </summary>
-        /// <param name="components"></param>
+        /// <param name="components">The Components, in any order. ex. "RGBA" or "RGB" or "ARGB"</param>
         /// <returns></returns>
         public string ToHexString(string components)
         {
-            string result = "";
+            const string HEX = "0123456789ABCDEF";
+            Span<char> result = stackalloc char[components.Length * 2];
 
             for (int i = 0; i < components.Length; i++)
             {
-                if (char.ToUpperInvariant(components[i]) == 'R')
+                switch (components[i])
                 {
-                    result += R.ToString("X2");
-                }
-                else if (char.ToUpperInvariant(components[i]) == 'G')
-                {
-                    result += G.ToString("X2");
-                }
-                else if (char.ToUpperInvariant(components[i]) == 'B')
-                {
-                    result += B.ToString("X2");
-                }
-                else if (char.ToUpperInvariant(components[i]) == 'A')
-                {
-                    result += A.ToString("X2");
+                    case 'R':
+                    case 'r':
+                        result[i * 2 + 0] = HEX[(R & 0xf0) >> 4];
+                        result[i * 2 + 1] = HEX[(R & 0x0f)];
+                        break;
+                    case 'G':
+                    case 'g':
+                        result[i * 2 + 0] = HEX[(G & 0xf0) >> 4];
+                        result[i * 2 + 1] = HEX[(G & 0x0f)];
+                        break;
+                    case 'B':
+                    case 'b':
+                        result[i * 2 + 0] = HEX[(B & 0xf0) >> 4];
+                        result[i * 2 + 1] = HEX[(B & 0x0f)];
+                        break;
+                    case 'A':
+                    case 'a':
+                        result[i * 2 + 0] = HEX[(A & 0xf0) >> 4];
+                        result[i * 2 + 1] = HEX[(A & 0x0f)];
+                        break;
                 }
             }
 
-            return result;
+            return new string(result);
         }
 
+        /// <summary>
+        /// Returns an RGB Hex string representation of the Color
+        /// </summary>
         public string ToHexStringRGB()
         {
             return ToHexString("RGB");
         }
 
+        /// <summary>
+        /// Returns an RGBA Hex string representation of the Color
+        /// </summary>
         public string ToHexStringRGBA()
         {
             return ToHexString("RGBA");
         }
 
+        /// <summary>
+        /// Creates a new Color with the given components from the given string value
+        /// </summary>
+        /// <param name="components">The components to parse in order, ex. "RGBA"</param>
+        /// <param name="value">The Hex value to parse</param>
+        /// <returns></returns>
         public static Color FromHexString(string components, ReadOnlySpan<char> value)
         {
-            Color color;
-            color.ABGR = 0xff000000;
+            // skip past useless string data (ex. if the string was 0xffffff or #ffffff)
+            if (value.Length > 0 && value[0] == '#')
+                value = value.Slice(1);
+            if (value.Length > 1 && value[0] == '0' && (value[1] == 'x' || value[1] == 'X'))
+                value = value.Slice(2);
+
+            var color = Transparent;
 
             for (int i = 0; i < components.Length && i * 2 + 2 <= value.Length; i++)
             {
-                if (char.ToUpperInvariant(components[i]) == 'R')
+                switch (components[i])
                 {
-                    color.R = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
-                }
-                else if (char.ToUpperInvariant(components[i]) == 'G')
-                {
-                    color.G = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
-                }
-                else if (char.ToUpperInvariant(components[i]) == 'B')
-                {
-                    color.B = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
-                }
-                else if (char.ToUpperInvariant(components[i]) == 'A')
-                {
-                    color.A = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                    case 'R':
+                    case 'r':
+                        color.R = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        break;
+                    case 'G':
+                    case 'g':
+                        color.G = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        break;
+                    case 'B':
+                    case 'b':
+                        color.B = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        break;
+                    case 'A':
+                    case 'a':
+                        color.A = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        break;
                 }
             }
 
             return color;
         }
 
+        /// <summary>
+        /// Creates a new Color from the given RGB Hex value
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Color FromHexStringRGB(string value)
         {
             return FromHexString("RGB", value);
         }
 
+        /// <summary>
+        /// Creates a new Color from the given RGBA Hex value
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Color FromHexStringRGBA(string value)
         {
             return FromHexString("RGBA", value);
         }
 
+        /// <summary>
+        /// Linearly interpolates between two colors
+        /// </summary>
+        /// <returns></returns>
         public static Color Lerp(Color a, Color b, float amount)
         {
             amount = Math.Max(0, Math.Min(1, amount));
@@ -210,18 +274,26 @@ namespace Foster.Framework
             );
         }
 
+        /// <summary>
+        /// Implicitely converts an int32 to a Color, ex 0xffffff
+        /// This does not include Alpha values
+        /// </summary>
+        /// <param name="color"></param>
         public static implicit operator Color(int color)
         {
             return new Color(color);
         }
 
-        public static Color operator *(Color value, float scale)
+        /// <summary>
+        /// Multiplies a Color by a scaler
+        /// </summary>
+        public static Color operator *(Color value, float scaler)
         {
             return new Color(
-                (int)(value.R * scale),
-                (int)(value.G * scale),
-                (int)(value.B * scale),
-                (int)(value.A * scale)
+                (int)(value.R * scaler),
+                (int)(value.G * scaler),
+                (int)(value.B * scaler),
+                (int)(value.A * scaler)
             );
         }
 
