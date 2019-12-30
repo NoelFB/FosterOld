@@ -190,7 +190,7 @@ namespace Foster.OpenGL
 
         private bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
         {
-            if (format.TryGetElement(attribute.Name, out var element, out var ptr))
+            if (format.TryGetAttribute(attribute.Name, out var element, out var ptr))
             {
                 // this is kind of messy because some attributes can take up multiple slots
                 // ex. a marix4x4 actually takes up 4 (size 16)
@@ -203,7 +203,7 @@ namespace Foster.OpenGL
                     GL.VertexAttribPointer(location, components, ConvertVertexType(element.Type), element.Normalized, format.Stride, new IntPtr(ptr));
                     GL.VertexAttribDivisor(location, divisor);
 
-                    ptr += components * element.ComponentSizeInBytes;
+                    ptr += components * element.ComponentSize;
                 }
 
                 return true;

@@ -5,8 +5,8 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
-        internal readonly GLFW_Context glfwContext;
-        internal GLFW.Window glfwWindowPointer => glfwWindowPointer;
+        internal readonly GLFW_Context GlfwContext;
+        internal GLFW.Window GlfwWindowPointer => GlfwContext.GlfwWindowPointer;
 
         private string title;
         private bool visible;
@@ -18,13 +18,13 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowPos(glfwWindowPointer, out int x, out int y);
+                GLFW.GetWindowPos(GlfwWindowPointer, out int x, out int y);
                 return new Point2(x, y);
             }
 
             set
             {
-                GLFW.SetWindowPos(glfwWindowPointer, value.X, value.Y);
+                GLFW.SetWindowPos(GlfwWindowPointer, value.X, value.Y);
             }
         }
 
@@ -32,13 +32,13 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowSize(glfwWindowPointer, out int w, out int h);
+                GLFW.GetWindowSize(GlfwWindowPointer, out int w, out int h);
                 return new Point2(w, h);
             }
 
             set
             {
-                GLFW.SetWindowSize(glfwWindowPointer, value.X, value.Y);
+                GLFW.SetWindowSize(GlfwWindowPointer, value.X, value.Y);
             }
         }
 
@@ -46,7 +46,7 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetCursorPos(glfwWindowPointer, out var xpos, out var ypos);
+                GLFW.GetCursorPos(GlfwWindowPointer, out var xpos, out var ypos);
                 return new Vector2((float)xpos, (float)ypos);
             }
         }
@@ -55,8 +55,8 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetCursorPos(glfwWindowPointer, out var curX, out var curY);
-                GLFW.GetWindowPos(glfwWindowPointer, out var winX, out var winY);
+                GLFW.GetCursorPos(GlfwWindowPointer, out var curX, out var curY);
+                GLFW.GetWindowPos(GlfwWindowPointer, out var winX, out var winY);
                 return new Vector2((float)curX + winX, (float)curY + winY);
             }
         }
@@ -65,12 +65,12 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowContentScale(glfwWindowPointer, out float x, out float y);
+                GLFW.GetWindowContentScale(GlfwWindowPointer, out float x, out float y);
                 return new Vector2(x, y);
             }
         }
 
-        public override bool Opened => !glfwContext.Disposed;
+        public override bool Opened => !GlfwContext.Disposed;
 
         public override bool Focused => focused;
 
@@ -79,21 +79,21 @@ namespace Foster.GLFW
         public override string Title
         {
             get => title;
-            set => GLFW.SetWindowTitle(glfwWindowPointer, title = value);
+            set => GLFW.SetWindowTitle(GlfwWindowPointer, title = value);
         }
 
         public override bool VSync { get; set; } = true;
 
         public override bool Bordered
         {
-            get => GLFW.GetWindowAttrib(glfwWindowPointer, GLFW.WindowAttributes.Decorated);
-            set => GLFW.SetWindowAttrib(glfwWindowPointer, GLFW.WindowAttributes.Decorated, value);
+            get => GLFW.GetWindowAttrib(GlfwWindowPointer, GLFW.WindowAttributes.Decorated);
+            set => GLFW.SetWindowAttrib(GlfwWindowPointer, GLFW.WindowAttributes.Decorated, value);
         }
 
         public override bool Resizable
         {
-            get => GLFW.GetWindowAttrib(glfwWindowPointer, GLFW.WindowAttributes.Resizable);
-            set => GLFW.SetWindowAttrib(glfwWindowPointer, GLFW.WindowAttributes.Resizable, value);
+            get => GLFW.GetWindowAttrib(GlfwWindowPointer, GLFW.WindowAttributes.Resizable);
+            set => GLFW.SetWindowAttrib(GlfwWindowPointer, GLFW.WindowAttributes.Resizable, value);
         }
 
         public override bool Fullscreen
@@ -109,13 +109,13 @@ namespace Foster.GLFW
             {
                 visible = value;
                 if (visible)
-                    GLFW.ShowWindow(glfwWindowPointer);
+                    GLFW.ShowWindow(GlfwWindowPointer);
                 else
-                    GLFW.HideWindow(glfwWindowPointer);
+                    GLFW.HideWindow(GlfwWindowPointer);
             }
         }
 
-        public override IntPtr Pointer => GLFW.GetWindowUserPointer(glfwWindowPointer.Ptr);
+        public override IntPtr Pointer => GLFW.GetWindowUserPointer(GlfwWindowPointer.Ptr);
 
         private readonly GLFW.WindowSizeFunc windowSizeCallbackRef;
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
@@ -123,15 +123,15 @@ namespace Foster.GLFW
 
         public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible) : base(system, context)
         {
-            this.glfwContext = context;
+            this.GlfwContext = context;
             this.title = title;
             this.visible = visible;
 
             System.SetCurrentContext(context);
             GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
-            GLFW.SetWindowSizeCallback(context.glfwWindowPointer, windowSizeCallbackRef = OnWindowResize);
-            GLFW.SetWindowFocusCallback(context.glfwWindowPointer, windowFocusCallbackRef = OnWindowFocus);
-            GLFW.SetCursorEnterCallback(context.glfwWindowPointer, windowCursorEnterCallbackRef = OnCursorEnter);
+            GLFW.SetWindowSizeCallback(context.GlfwWindowPointer, windowSizeCallbackRef = OnWindowResize);
+            GLFW.SetWindowFocusCallback(context.GlfwWindowPointer, windowFocusCallbackRef = OnWindowFocus);
+            GLFW.SetCursorEnterCallback(context.GlfwWindowPointer, windowCursorEnterCallbackRef = OnCursorEnter);
         }
 
         private void OnWindowResize(GLFW.Window window, int width, int height)
@@ -155,11 +155,11 @@ namespace Foster.GLFW
         {
             if (lastVsync != VSync)
             {
-                System.SetCurrentContext(glfwContext);
+                System.SetCurrentContext(GlfwContext);
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
 
-            GLFW.SwapBuffers(glfwWindowPointer);
+            GLFW.SwapBuffers(GlfwWindowPointer);
         }
 
         public override void Close()

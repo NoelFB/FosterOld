@@ -5,7 +5,7 @@ namespace Foster.GLFW
 {
     public class GLFW_Context : Context
     {
-        internal readonly GLFW.Window Handle;
+        internal readonly GLFW.Window GlfwWindowPointer;
 
         private bool disposed;
 
@@ -14,7 +14,7 @@ namespace Foster.GLFW
             if (window.Ptr == IntPtr.Zero)
                 throw new Exception("Unable to create Context");
 
-            Handle = window;
+            GlfwWindowPointer = window;
         }
 
         public override bool Disposed => disposed;
@@ -26,7 +26,7 @@ namespace Foster.GLFW
                 if (disposed)
                     return 0;
 
-                GLFW.GetFramebufferSize(Handle, out int width, out _);
+                GLFW.GetFramebufferSize(GlfwWindowPointer, out int width, out _);
                 return width;
             }
         }
@@ -38,7 +38,7 @@ namespace Foster.GLFW
                 if (disposed)
                     return 0;
 
-                GLFW.GetFramebufferSize(Handle, out _, out int height);
+                GLFW.GetFramebufferSize(GlfwWindowPointer, out _, out int height);
                 return height;
             }
         }
@@ -51,10 +51,10 @@ namespace Foster.GLFW
                     System.SetCurrentContext(null);
 
                 disposed = true;
-                GLFW.SetWindowShouldClose(Handle, true);
+                GLFW.SetWindowShouldClose(GlfwWindowPointer, true);
             }
         }
 
-        public static implicit operator IntPtr(GLFW_Context context) => context.Handle.Ptr;
+        public static implicit operator IntPtr(GLFW_Context context) => context.GlfwWindowPointer.Ptr;
     }
 }

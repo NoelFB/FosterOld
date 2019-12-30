@@ -9,7 +9,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Render Target
     /// </summary>
-    public class Target : IDisposable
+    public class Target
     {
 
         public readonly InternalTarget Internal;
