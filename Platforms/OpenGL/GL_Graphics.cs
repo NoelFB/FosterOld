@@ -125,9 +125,9 @@ namespace Foster.OpenGL
             return new GL_Texture(this, width, height);
         }
 
-        protected override InternalTarget CreateTarget(int width, int height, int textures = 1, bool depthBuffer = false, bool stencilBuffer = false)
+        protected override InternalTarget CreateTarget(int width, int height, int attachmentCount, DepthFormat depthFormat)
         {
-            return new GL_Target(this, width, height, textures, depthBuffer, stencilBuffer);
+            return new GL_Target(this, width, height, attachmentCount, depthFormat);
         }
 
         protected override InternalShader CreateShader(string vertexSource, string fragmentSource)

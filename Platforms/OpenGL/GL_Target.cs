@@ -10,14 +10,14 @@ namespace Foster.OpenGL
 
         private readonly GL_Graphics graphics;
         private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
-        private readonly uint renderBuffer;
+        private readonly uint depthBuffer;
 
-        internal GL_Target(GL_Graphics graphics, int width, int height, int textures, bool depthBuffer, bool stencilBuffer)
+        internal GL_Target(GL_Graphics graphics, int width, int height, int attachmentCount, DepthFormat depthFormat)
         {
             this.graphics = graphics;
 
             // texture (color) attachments
-            for (int i = 0; i < textures; i++)
+            for (int i = 0; i < attachmentCount; i++)
             {
                 attachments.Add(new GL_Texture(graphics, width, height)
                 {
@@ -25,17 +25,19 @@ namespace Foster.OpenGL
                 });
             }
 
-            // depth buffer
-            if (depthBuffer)
+            // depth 24
+            if (depthFormat == DepthFormat.Depth24)
             {
-                renderBuffer = GL.GenRenderbuffer();
-                GL.BindRenderbuffer(GLEnum.RENDERBUFFER, renderBuffer);
-                GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH24_STENCIL8, width, height);
+                depthBuffer = GL.GenRenderbuffer();
+                GL.BindRenderbuffer(GLEnum.RENDERBUFFER, depthBuffer);
+                GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH_COMPONENT24, width, height);
             }
-
-            if (stencilBuffer)
+            // depth 24 stencil 8
+            else if (depthFormat == DepthFormat.Depth24Stencil8)
             {
-                throw new NotImplementedException();
+                depthBuffer = GL.GenRenderbuffer();
+                GL.BindRenderbuffer(GLEnum.RENDERBUFFER, depthBuffer);
+                GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH24_STENCIL8, width, height);
             }
         }
 
@@ -63,8 +65,8 @@ namespace Foster.OpenGL
                         i++;
                     }
 
-                    if (renderBuffer > 0)
-                        GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, renderBuffer);
+                    if (depthBuffer > 0)
+                        GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthBuffer);
 
                     framebuffers.Add(context, id);
                 }

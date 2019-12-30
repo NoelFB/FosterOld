@@ -6,6 +6,9 @@ using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Render Target
+    /// </summary>
     public class Target : IDisposable
     {
 
@@ -26,17 +29,17 @@ namespace Foster.Framework
         /// </summary>
         public readonly ReadOnlyCollection<Texture> Attachments;
 
-        public Target(int width, int height, int textures = 1, bool depthBuffer = false) : this(App.Graphics, width, height, textures, depthBuffer)
+        public Target(int width, int height, int attachmentCount = 1, DepthFormat depthFormat = DepthFormat.None) : this(App.Graphics, width, height, attachmentCount, depthFormat)
         {
             
         }
 
-        public Target(Graphics graphics, int width, int height, int textures = 1, bool depthBuffer = false)
+        public Target(Graphics graphics, int width, int height, int attachmentCount = 1, DepthFormat depthFormat = DepthFormat.None)
         {
             Width = width;
             Height = height;
 
-            Internal = graphics.CreateTarget(width, height, textures, depthBuffer);
+            Internal = graphics.CreateTarget(width, height, attachmentCount, depthFormat);
 
             var attachments = new List<Texture>();
             foreach (var attachment in Internal.attachments)
