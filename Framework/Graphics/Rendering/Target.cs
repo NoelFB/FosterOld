@@ -80,7 +80,7 @@ namespace Foster.Framework
         {
             foreach (var attachment in Attachments)
                 attachment.Dispose();
-
+            Depth?.Dispose();
             Internal.Dispose();
         }
 

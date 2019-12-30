@@ -10,17 +10,25 @@ namespace Foster.Framework
         /// <summary>
         /// A lower priority is run first
         /// </summary>
-        protected internal int Priority { get; private set; }
+        protected internal readonly int Priority;
 
         /// <summary>
         /// The Application Main Thread ID
         /// </summary>
-        protected internal int MainThreadId { get; internal set; }
+        public int MainThreadId { get; internal set; }
 
         /// <summary>
         /// Whether the Module has been Registered by the Application
         /// </summary>
-        protected internal bool Registered { get; internal set; }
+        public bool Registered { get; internal set; }
+
+        /// <summary>
+        /// Creates the Module with the given Priority
+        /// </summary>
+        protected Module(int priority = 10000)
+        {
+            Priority = priority;
+        }
 
         /// <summary>
         /// Called immediately when the Module has been registered
@@ -84,10 +92,6 @@ namespace Foster.Framework
 
         private readonly List<Coroutine> routines = new List<Coroutine>();
 
-        protected Module(int priority = 10000)
-        {
-            Priority = priority;
-        }
 
         public void RunRoutine(Coroutine routine)
         {

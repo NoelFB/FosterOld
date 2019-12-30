@@ -181,7 +181,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Begins Exiting the Application
+        /// Begins Exiting the Application. This will not exit the application immediately and will finish the current Update.
         /// </summary>
         public static void Exit()
         {

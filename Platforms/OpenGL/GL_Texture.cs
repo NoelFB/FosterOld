@@ -84,7 +84,7 @@ namespace Foster.OpenGL
             GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)t);
         }
 
-        protected override unsafe void SetData<T>(Memory<T> buffer)
+        protected override unsafe void SetData<T>(ReadOnlyMemory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 

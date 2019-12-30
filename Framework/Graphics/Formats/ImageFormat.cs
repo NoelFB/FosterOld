@@ -8,7 +8,7 @@ namespace Foster.Framework
 
         public readonly string Name;
 
-        public ImageFormat(string name)
+        protected ImageFormat(string name)
         {
             Name = name;
         }

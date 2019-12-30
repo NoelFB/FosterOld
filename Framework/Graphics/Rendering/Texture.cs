@@ -3,6 +3,7 @@ using Foster.Framework.Internal;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
@@ -28,6 +29,19 @@ namespace Foster.Framework
         /// The Texture Data Format
         /// </summary>
         public readonly TextureFormat Format;
+
+        /// <summary>
+        /// The Size of the Texture, in bytes
+        /// </summary>
+        public int Size => Width * Height * (Format switch
+        {
+            TextureFormat.Color => 4,
+            TextureFormat.Red => 1,
+            TextureFormat.RG => 2,
+            TextureFormat.RGB => 3,
+            TextureFormat.DepthStencil => 4,
+            _ => throw new Exception("Invalid Texture Format")
+        });
 
         /// <summary>
         /// The Texture Filter to be used while drawing
@@ -77,6 +91,9 @@ namespace Foster.Framework
 
         internal Texture(Graphics graphics, InternalTexture? internalTexture, int width, int height, TextureFormat format)
         {
+            if (format == TextureFormat.None)
+                throw new Exception("Invalid Texture Format");
+
             Internal = internalTexture ?? graphics.CreateTexture(width, height, format);
             Width = width;
             Height = height;
@@ -99,22 +116,34 @@ namespace Foster.Framework
         /// <summary>
         /// Sets the Texture Color data from the given buffer
         /// </summary>
-        public void SetColor(Memory<Color> buffer) => Internal.SetData<Color>(buffer);
+        public void SetColor(ReadOnlyMemory<Color> buffer) => SetData<Color>(buffer);
 
         /// <summary>
         /// Writes the Texture Color data to the given buffer
         /// </summary>
-        public void GetColor(Memory<Color> buffer) => Internal.GetData<Color>(buffer);
+        public void GetColor(Memory<Color> buffer) => GetData<Color>(buffer);
 
         /// <summary>
         /// Sets the Texture data from the given buffer
         /// </summary>
-        public void SetData<T>(Memory<T> buffer) => Internal.SetData<T>(buffer);
+        public void SetData<T>(ReadOnlyMemory<T> buffer)
+        {
+            if (Marshal.SizeOf<T>() * buffer.Length < Size)
+                throw new Exception("Buffer is smaller than the Size of the Texture");
+
+            Internal.SetData(buffer);
+        }
 
         /// <summary>
         /// Writes the Texture data to the given buffer
         /// </summary>
-        public void GetData<T>(Memory<T> buffer) => Internal.GetData<T>(buffer);
+        public void GetData<T>(Memory<T> buffer)
+        {
+            if (Marshal.SizeOf<T>() * buffer.Length < Size)
+                throw new Exception("Buffer is smaller than the Size of the Texture");
+
+            Internal.GetData(buffer);
+        }
 
         /// <summary>
         /// Disposes the internal Texture resources
