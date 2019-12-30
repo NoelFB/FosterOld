@@ -140,12 +140,16 @@ namespace Foster.Framework
 
         internal void Startup()
         {
+            Console.WriteLine("Begin Modules Startup");
+
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.Startup();
         }
 
         internal void Shutdown()
         {
+            Console.WriteLine("Begin Modules Shutdown");
+
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.Shutdown();
 

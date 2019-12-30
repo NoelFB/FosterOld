@@ -49,13 +49,11 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new Rendering Context. This must be called from the Main Thread.
         /// </summary>
-        /// <returns></returns>
         public abstract Context CreateContext();
 
         /// <summary>
         /// Gets the current Rendering Context on the current Thread
         /// </summary>
-        /// <returns></returns>
         public Context? GetCurrentContext()
         {
             var threadId = Thread.CurrentThread.ManagedThreadId;
@@ -71,7 +69,6 @@ namespace Foster.Framework
         /// Sets the current Rendering Context on the current Thread
         /// Note that this will fail if the context is current on another thread
         /// </summary>
-        /// <param name="context"></param>
         public void SetCurrentContext(Context? context)
         {
             // context is already set on this thread
@@ -118,14 +115,21 @@ namespace Foster.Framework
         /// Gets a Pointer to a Platform rendering method of the given name
         /// This is used internally by the Graphics
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
         public abstract IntPtr GetProcAddress(string name);
 
+        /// <summary>
+        /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
+        /// </summary>
         protected readonly List<Window> windows = new List<Window>();
 
+        /// <summary>
+        /// Internal list of all Monitors owned by the System. The Platform implementation should maintain this.
+        /// </summary>
         protected readonly List<Monitor> monitors = new List<Monitor>();
 
+        /// <summary>
+        /// Internal list of all Contexts owned by the System. The Platform implementation should maintain this.
+        /// </summary>
         protected readonly List<Context> contexts = new List<Context>();
 
         protected System() : base(100)
@@ -138,6 +142,11 @@ namespace Foster.Framework
         protected internal override void Startup()
         {
             Console.WriteLine($" - System {ApiName} {ApiVersion}");
+        }
+
+        protected internal override void Shutdown()
+        {
+            Console.WriteLine($" - System {ApiName} {ApiVersion} : Shutdown");
         }
 
     }

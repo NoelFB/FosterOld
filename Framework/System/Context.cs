@@ -2,6 +2,10 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// The Graphics Context to which Windows and Off-screen buffers use for drawing.
+    /// Note that a Context can only be active on one thread at a time.
+    /// </summary>
     public abstract class Context : IDisposable
     {
 
