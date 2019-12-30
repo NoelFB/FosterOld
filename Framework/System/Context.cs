@@ -13,7 +13,7 @@ namespace Foster.Framework
         /// <summary>
         /// The System this Context belongs to
         /// </summary>
-        public abstract System System { get; }
+        public readonly System System;
 
         /// <summary>
         /// Whether the Context has been disposed
@@ -30,9 +30,9 @@ namespace Foster.Framework
         /// </summary>
         public abstract int Height { get; }
 
-        protected Context()
+        protected Context(System system)
         {
-
+            System = system;
         }
 
         /// <summary>

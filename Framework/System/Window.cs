@@ -134,17 +134,17 @@ namespace Foster.Framework
         /// <summary>
         /// The System this Window belongs to
         /// </summary>
-        public abstract System System { get; }
+        public readonly System System;
+
+        /// <summary>
+        /// The Rendering Context associated with this Window
+        /// </summary>
+        public readonly Context Context;
 
         /// <summary>
         /// Gets or Sets the Title of this Window
         /// </summary>
         public abstract string Title { get; set; }
-
-        /// <summary>
-        /// The Rendering Context associated with this Window
-        /// </summary>
-        public abstract Context Context { get; }
 
         /// <summary>
         /// Gets if the Window is currently Open
@@ -200,6 +200,12 @@ namespace Foster.Framework
         /// Whether the mouse is currently over this Window
         /// </summary>
         public abstract bool MouseOver { get; }
+
+        protected Window(System system, Context context)
+        {
+            System = system;
+            Context = context;
+        }
 
         /// <summary>
         /// Renders the Window. Call Present afterwards to display the rendered contents

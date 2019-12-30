@@ -7,7 +7,7 @@ using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
-    public class Mesh : IDisposable
+    public class Mesh
     {
         public readonly InternalMesh Internal;
 

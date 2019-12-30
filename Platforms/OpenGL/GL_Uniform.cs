@@ -14,21 +14,6 @@ namespace Foster.OpenGL
             Shader = shader;
         }
 
-        private static Types ToFosterType(GLEnum type)
-        {
-            switch (type)
-            {
-                case GLEnum.INT: return Types.Int;
-                case GLEnum.FLOAT: return Types.Float;
-                case GLEnum.FLOAT_VEC2: return Types.Float2;
-                case GLEnum.FLOAT_VEC3: return Types.Float3;
-                case GLEnum.FLOAT_VEC4: return Types.Float4;
-                case GLEnum.FLOAT_MAT3x2: return Types.Matrix2D;
-                case GLEnum.FLOAT_MAT4: return Types.Matrix;
-                case GLEnum.SAMPLER_2D: default: return Types.Texture2D;
-            }
-        }
-
         public unsafe void Upload(object? value)
         {
             if (lastValue == value)
@@ -95,6 +80,9 @@ namespace Foster.OpenGL
                         }
                         else if (value is Matrix m4x4)
                         {
+                            // TODO:
+                            // optimize this out? create pointer to struct and just send that?
+
                             matrix[00] = m4x4.M11;
                             matrix[01] = m4x4.M12;
                             matrix[02] = m4x4.M13;
@@ -119,6 +107,23 @@ namespace Foster.OpenGL
                 case Types.Texture2D:
                     GL.Uniform1i(Location, (int)(value ?? 0));
                     break;
+            }
+        }
+
+        private static Types ToFosterType(GLEnum type)
+        {
+            switch (type)
+            {
+                case GLEnum.INT: return Types.Int;
+                case GLEnum.FLOAT: return Types.Float;
+                case GLEnum.FLOAT_VEC2: return Types.Float2;
+                case GLEnum.FLOAT_VEC3: return Types.Float3;
+                case GLEnum.FLOAT_VEC4: return Types.Float4;
+                case GLEnum.FLOAT_MAT3x2: return Types.Matrix2D;
+                case GLEnum.FLOAT_MAT4: return Types.Matrix;
+                case GLEnum.SAMPLER_2D: return Types.Texture2D;
+
+                default: throw new InvalidOperationException("Unknown Enum Type");
             }
         }
     }

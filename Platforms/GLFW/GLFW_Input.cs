@@ -47,15 +47,15 @@ namespace Foster.GLFW
                     var context = (window.Context as GLFW_Context);
                     if (context != null)
                     {
-                        GLFW.SetKeyCallback(context.Handle, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
-                        GLFW.SetCharCallback(context.Handle, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
-                        GLFW.SetMouseButtonCallback(context.Handle, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
+                        GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
+                        GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
+                        GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
                     }
                 };
 
                 system.OnWindowClosed += (window) =>
                 {
-                    delegateTracker.Remove(window.context);
+                    delegateTracker.Remove(window.GlfwContext);
                 };
             }
             else
@@ -89,13 +89,13 @@ namespace Foster.GLFW
             return (ulong)timer.ElapsedMilliseconds;
         }
 
-        public override void SetMouseCursor(Cursors fosterCursor)
+        public override void SetMouseCursor(Cursors cursors)
         {
-            var cursor = GetCursor(fosterCursor);
+            var cursor = GetCursor(cursors);
             foreach (var window in App.System.Windows)
             {
                 if (window.Context is GLFW_Context ctx)
-                    GLFW.SetCursor(ctx.Handle, cursor);
+                    GLFW.SetCursor(ctx.GlfwWindowPointer, cursor);
             }
         }
 
@@ -190,6 +190,8 @@ namespace Foster.GLFW
 
         protected override void AfterUpdate()
         {
+            const float AXIS_EPSILON = 0.000001f;
+
             var timestamp = (ulong)timer.ElapsedMilliseconds;
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
             {
@@ -221,7 +223,7 @@ namespace Foster.GLFW
                             var current = GetGamepadAxis(index, axis);
                             var next = gamepadState.Axes[i];
 
-                            if (current != next)
+                            if (Math.Abs(current - next) > AXIS_EPSILON)
                                 OnGamepadAxis(index, axis, next, timestamp);
                         }
                     }
@@ -253,7 +255,7 @@ namespace Foster.GLFW
                                 var current = GetJoystickAxis(index, axis);
                                 var next = axes[i];
 
-                                if (current != next)
+                                if (Math.Abs(current - next) > AXIS_EPSILON)
                                     OnJoystickAxis(index, axis, next, timestamp);
                             }
                         }

@@ -11,12 +11,12 @@ namespace Foster.Framework
     {
 
         public static readonly VertexFormat VertexFormat = new VertexFormat(
-            new VertexElement("vPosition", VertexType.Float, 2),
-            new VertexElement("vTex", VertexType.Float, 2),
-            new VertexElement("vColor", VertexType.UnsignedByte, 4, true),
-            new VertexElement("vMult", VertexType.UnsignedByte, 1, true),
-            new VertexElement("vWash", VertexType.UnsignedByte, 1, true),
-            new VertexElement("vFill", VertexType.UnsignedByte, 1, true));
+            new VertexAttribute("vPosition", VertexType.Float, 2),
+            new VertexAttribute("vTex", VertexType.Float, 2),
+            new VertexAttribute("vColor", VertexType.UnsignedByte, 4, true),
+            new VertexAttribute("vMult", VertexType.UnsignedByte, 1, true),
+            new VertexAttribute("vWash", VertexType.UnsignedByte, 1, true),
+            new VertexAttribute("vFill", VertexType.UnsignedByte, 1, true));
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Vertex : IVertex

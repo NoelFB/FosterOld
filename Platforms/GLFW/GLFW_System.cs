@@ -47,7 +47,7 @@ namespace Foster.GLFW
                 }
             }
 
-            // Various Window Hints
+            // Various constant Window Hints
             GLFW.WindowHint(GLFW_Enum.DOUBLEBUFFER, true);
             GLFW.WindowHint(GLFW_Enum.DEPTH_BITS, 24);
             GLFW.WindowHint(GLFW_Enum.STENCIL_BITS, 8);
@@ -80,7 +80,7 @@ namespace Foster.GLFW
             // check for closing contexts
             for (int i = contexts.Count - 1; i >= 0; i--)
             {
-                if (contexts[i] is GLFW_Context context && GLFW.WindowShouldClose(context.Handle))
+                if (contexts[i] is GLFW_Context context && GLFW.WindowShouldClose(context.GlfwWindowPointer))
                 {
                     // see if we have a displayed window associated with this context
                     for (int j = 0; j < windows.Count; j++)
@@ -96,13 +96,13 @@ namespace Foster.GLFW
                     }
 
                     contexts.RemoveAt(i);
-                    GLFW.DestroyWindow(context.Handle);
+                    GLFW.DestroyWindow(context.GlfwWindowPointer);
                 }
             }
 
             // Update Monitors
             foreach (var monitor in monitors)
-                ((GLFW_Monitor)monitor).Update();
+                ((GLFW_Monitor)monitor).FetchProperties();
         }
 
         public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
@@ -157,7 +157,7 @@ namespace Foster.GLFW
         protected override void SetCurrentContextInternal(Context? context)
         {
             if (context is GLFW_Context ctx && ctx != null)
-                GLFW.MakeContextCurrent(ctx.Handle);
+                GLFW.MakeContextCurrent(ctx.GlfwWindowPointer);
             else
                 GLFW.MakeContextCurrent(IntPtr.Zero);
         }

@@ -9,16 +9,13 @@ namespace Foster.GLFW
 
         private bool disposed;
 
-        internal GLFW_Context(GLFW_System system, GLFW.Window window)
+        internal GLFW_Context(GLFW_System system, GLFW.Window window) : base(system)
         {
             if (window.Ptr == IntPtr.Zero)
                 throw new Exception("Unable to create Context");
 
-            System = system;
             Handle = window;
         }
-
-        public override Framework.System System { get; }
 
         public override bool Disposed => disposed;
 

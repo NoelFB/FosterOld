@@ -80,6 +80,11 @@ namespace Foster.OpenGL
             GL.DeleteShader(fragment);
         }
 
+        ~GL_Shader()
+        {
+            DisposeResources();
+        }
+
         public void Use(Material material)
         {
             GL.UseProgram(ID);

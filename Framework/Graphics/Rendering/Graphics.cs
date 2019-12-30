@@ -113,6 +113,10 @@ namespace Foster.Framework
 
         /// <summary>
         /// Creates a new Shader
+        /// 
+        /// TODO: this isn't api-agnostic and is not how the true implementation should work
+        /// see Shader.cs for more thoughts
+        /// 
         /// </summary>
         protected internal abstract InternalShader CreateShader(string vertexSource, string fragmentSource);
 

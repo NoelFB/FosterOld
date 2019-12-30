@@ -4,15 +4,16 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-// File Format Specification:
-// https://github.com/aseprite/aseprite/blob/master/docs/ase-file-specs.md
-
-// Note: I didn't test with with Indexed or Grayscale colors
-// Only implemented the stuff I needed / wanted, other stuff is ignored
-// Uses a few XNA structs (Color, Rectangle, Point)
-
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Parses the Contents of an Aseprite file
+    ///
+    /// Aseprite File Spec: https://github.com/aseprite/aseprite/blob/master/docs/ase-file-specs.md
+    ///
+    /// TODO: This is not a true or full implementation, and is missing several features (ex. blendmodes)
+    /// 
+    /// </summary>
     public class Aseprite
     {
         public enum Modes

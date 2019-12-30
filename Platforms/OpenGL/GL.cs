@@ -87,18 +87,6 @@ namespace Foster.OpenGL
 #endif
         }
 
-        private static void AssignDelegate<T>(ref T def, string name) where T : class
-        {
-            if (App.System == null)
-            {
-                throw new Exception("GL Module requires a System that implements ProcAddress");
-            }
-
-            IntPtr addr = App.System.GetProcAddress(name);
-            if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
-                def = del;
-        }
-
         private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, IntPtr message, IntPtr userParam);
 
 
@@ -434,7 +422,7 @@ namespace Foster.OpenGL
 
     }
 
-    public enum GLEnum : int
+    public enum GLEnum
     {
         // Hint Enum Value
         DONT_CARE = 0x1100,

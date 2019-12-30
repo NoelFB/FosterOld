@@ -286,7 +286,7 @@ namespace Foster.OpenGL
                 BlendOperations.Min => GLEnum.MIN,
                 BlendOperations.Max => GLEnum.MAX,
 
-                _ => throw new Exception($"Unsupported Blend Opteration {operation}"),
+                _ => throw new InvalidOperationException($"Unsupported Blend Opteration {operation}"),
             };
         }
 
@@ -314,7 +314,7 @@ namespace Foster.OpenGL
                 BlendFactors.Src1Alpha => GLEnum.SRC1_ALPHA,
                 BlendFactors.OneMinusSrc1Alpha => GLEnum.ONE_MINUS_SRC1_ALPHA,
 
-                _ => throw new Exception($"Unsupported Blend Factor {factor}"),
+                _ => throw new InvalidOperationException($"Unsupported Blend Factor {factor}"),
             };
         }
     }

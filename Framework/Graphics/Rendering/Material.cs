@@ -110,7 +110,14 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// The Shader this Material uses
+        /// </summary>
         public readonly Shader Shader;
+
+        /// <summary>
+        /// The list of all Parameters within this Material, based on its shader
+        /// </summary>
         public readonly ReadOnlyDictionary<string, Parameter> Parameters;
 
         public Material(Shader shader)
@@ -123,6 +130,9 @@ namespace Foster.Framework
             Parameters = new ReadOnlyDictionary<string, Parameter>(parameters);
         }
 
+        /// <summary>
+        /// Gets the Parameter with the given name, or null if it doesn't exist
+        /// </summary>
         public Parameter? this[string name]
         {
             get

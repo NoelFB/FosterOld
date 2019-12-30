@@ -5,9 +5,19 @@ namespace Foster.Framework
 {
     public class Bitmap
     {
-
+        /// <summary>
+        /// The Pixel array of the Bitmap
+        /// </summary>
         public readonly Color[] Pixels;
+
+        /// <summary>
+        /// The Width of the Bitmap, in Pixels
+        /// </summary>
         public readonly int Width;
+
+        /// <summary>
+        /// The Height of the Bitmap, in Pixels
+        /// </summary>
         public readonly int Height;
 
         public Bitmap(int width, int height)
@@ -49,17 +59,26 @@ namespace Foster.Framework
             throw new NotSupportedException("Stream either an invalid or not supported image format");
         }
 
+        /// <summary>
+        /// Premultiplies the Color data of the Bitmap
+        /// </summary>
         public void Premultiply()
         {
             for (int i = 0; i < Pixels.Length; i++)
                 Pixels[i] = Pixels[i].Premultiply();
         }
 
+        /// <summary>
+        /// Sets the contents of the bitmap to the given data
+        /// </summary>
         public void SetPixels(Memory<Color> pixels)
         {
-            SetPixels(new RectInt(0, 0, Width, Height), pixels);
+            pixels.Span.CopyTo(Pixels);
         }
 
+        /// <summary>
+        /// Sets the contents of the bitmap over the given Rect to the given data
+        /// </summary>
         public void SetPixels(RectInt desintation, Memory<Color> pixels)
         {
             var src = pixels.Span;
@@ -74,6 +93,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Clones the Bitmap
+        /// </summary>
         public Bitmap Clone()
         {
             return new Bitmap(Width, Height, new Memory<Color>(Pixels).ToArray());
