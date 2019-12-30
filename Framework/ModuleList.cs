@@ -81,7 +81,7 @@ namespace Foster.Framework
             if (isRendering)
                 throw new Exception("Cannot Add or Remove Modules during Rendering");
 
-            if (module.Registered)
+            if (!module.Registered)
                 throw new Exception("Module is not already registered");
 
             module.Shutdown();
