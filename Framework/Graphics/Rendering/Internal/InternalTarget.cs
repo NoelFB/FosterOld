@@ -7,6 +7,7 @@ namespace Foster.Framework.Internal
     {
 
         protected internal readonly List<InternalTexture> attachments = new List<InternalTexture>();
+        protected internal InternalTexture? depth;
 
     }
 }

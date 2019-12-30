@@ -106,12 +106,12 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new Color Texture of the given size
         /// </summary>
-        protected internal abstract InternalTexture CreateTexture(int width, int height);
+        protected internal abstract InternalTexture CreateTexture(int width, int height, TextureFormat format);
 
         /// <summary>
-        /// Creates a new render target of the given size, with the given amount of color, depth, and stencil buffers
+        /// Creates a new render target of the given size, with the given amount of color and depth buffers
         /// </summary>
-        protected internal abstract InternalTarget CreateTarget(int width, int height, int attachmentCount = 1, DepthFormat depthFormat = DepthFormat.None);
+        protected internal abstract InternalTarget CreateTarget(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
 
         /// <summary>
         /// Creates a new Shader

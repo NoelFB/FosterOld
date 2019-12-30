@@ -120,14 +120,14 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override InternalTexture CreateTexture(int width, int height)
+        protected override InternalTexture CreateTexture(int width, int height, TextureFormat format)
         {
-            return new GL_Texture(this, width, height);
+            return new GL_Texture(this, width, height, format);
         }
 
-        protected override InternalTarget CreateTarget(int width, int height, int attachmentCount, DepthFormat depthFormat)
+        protected override InternalTarget CreateTarget(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return new GL_Target(this, width, height, attachmentCount, depthFormat);
+            return new GL_Target(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
         protected override InternalShader CreateShader(string vertexSource, string fragmentSource)

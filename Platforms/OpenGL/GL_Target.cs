@@ -10,34 +10,23 @@ namespace Foster.OpenGL
 
         private readonly GL_Graphics graphics;
         private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
-        private readonly uint depthBuffer;
 
-        internal GL_Target(GL_Graphics graphics, int width, int height, int attachmentCount, DepthFormat depthFormat)
+        internal GL_Target(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
             this.graphics = graphics;
 
             // texture (color) attachments
-            for (int i = 0; i < attachmentCount; i++)
+            for (int i = 0; i < colorAttachmentFormats.Length; i++)
             {
-                attachments.Add(new GL_Texture(graphics, width, height)
+                attachments.Add(new GL_Texture(graphics, width, height, colorAttachmentFormats[i])
                 {
                     flipVertically = true
                 });
             }
 
-            // depth 24
-            if (depthFormat == DepthFormat.Depth24)
+            if (depthFormat != TextureFormat.None)
             {
-                depthBuffer = GL.GenRenderbuffer();
-                GL.BindRenderbuffer(GLEnum.RENDERBUFFER, depthBuffer);
-                GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH_COMPONENT24, width, height);
-            }
-            // depth 24 stencil 8
-            else if (depthFormat == DepthFormat.Depth24Stencil8)
-            {
-                depthBuffer = GL.GenRenderbuffer();
-                GL.BindRenderbuffer(GLEnum.RENDERBUFFER, depthBuffer);
-                GL.RenderbufferStorage(GLEnum.RENDERBUFFER, GLEnum.DEPTH24_STENCIL8, width, height);
+                depth = new GL_Texture(graphics, width, height, depthFormat);
             }
         }
 
@@ -52,12 +41,14 @@ namespace Foster.OpenGL
             if (context != null)
             {
                 // create new framebuffer if it's needed
+                // frame buffers are not shared between contexts
                 if (!framebuffers.TryGetValue(context, out uint id))
                 {
                     id = GL.GenFramebuffer();
 
                     GL.BindFramebuffer(GLEnum.FRAMEBUFFER, id);
 
+                    // color attachments
                     int i = 0;
                     foreach (GL_Texture texture in attachments)
                     {
@@ -65,8 +56,14 @@ namespace Foster.OpenGL
                         i++;
                     }
 
-                    if (depthBuffer > 0)
-                        GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthBuffer);
+                    // depth stencil attachment
+                    if (depth != null && depth is GL_Texture depthTexture)
+                    {
+                        if (depthTexture.format == TextureFormat.Depth24)
+                            GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID, 0);
+                        else if (depthTexture.format == TextureFormat.Depth24Stencil8)
+                            GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID, 0);
+                    }
 
                     framebuffers.Add(context, id);
                 }

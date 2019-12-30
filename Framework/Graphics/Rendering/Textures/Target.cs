@@ -29,36 +29,49 @@ namespace Foster.Framework
         /// </summary>
         public readonly ReadOnlyCollection<Texture> Attachments;
 
-        public Target(int width, int height, int attachmentCount = 1, DepthFormat depthFormat = DepthFormat.None) : this(App.Graphics, width, height, attachmentCount, depthFormat)
+        /// <summary>
+        /// Depth Attachment
+        /// </summary>
+        public readonly Texture? Depth;
+
+        public Target(int width, int height) : this(width, height, new [] { TextureFormat.Color }, TextureFormat.Depth24Stencil8)
+        {
+
+        }
+
+        public Target(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : this(App.Graphics, width, height, colorAttachmentFormats, depthFormat)
         {
             
         }
 
-        public Target(Graphics graphics, int width, int height, int attachmentCount = 1, DepthFormat depthFormat = DepthFormat.None)
+        public Target(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
             Width = width;
             Height = height;
 
-            Internal = graphics.CreateTarget(width, height, attachmentCount, depthFormat);
+            // check attachment types
+            for (int i = 0; i < colorAttachmentFormats.Length; i++)
+                if (!colorAttachmentFormats[i].IsColorFormat())
+                    throw new Exception("Invalid Texture Format - Color Texture Attachments must be a Color Format");
 
+            // create internal target
+            Internal = graphics.CreateTarget(width, height, colorAttachmentFormats, depthFormat);
+
+            // assign color attachments
             var attachments = new List<Texture>();
-            foreach (var attachment in Internal.attachments)
-                attachments.Add(new Texture(graphics, attachment, width, height));
-
+            for (int i = 0; i < colorAttachmentFormats.Length; i++)
+                attachments.Add(new Texture(graphics, Internal.attachments[i], width, height, colorAttachmentFormats[i]));
             Attachments = new ReadOnlyCollection<Texture>(attachments);
+
+            // assign depth buffer
+            if (depthFormat != TextureFormat.None)
+            {
+                if (!depthFormat.IsDepthStencilFormat())
+                    throw new Exception("Invalid Texture Format - Depth Texture must be Depth24 of Depth24Stencil8");
+
+                Depth = new Texture(graphics, Internal.depth, width, height, depthFormat);
+            }
         }
-
-        /// <summary>
-        /// Sets the Texture Color data from the given buffer
-        /// </summary>
-        /// <param name="buffer"></param>
-        public void SetColor(int attachment, Memory<Color> buffer) => Attachments[attachment].Internal.SetColor(buffer);
-
-        /// <summary>
-        /// Writes the Texture Color data to the given buffer
-        /// </summary>
-        /// <param name="buffer"></param>
-        public void GetColor(int attachment, Memory<Color> buffer) => Attachments[attachment].Internal.GetColor(buffer);
 
         /// <summary>
         /// Disposes the internal target resources

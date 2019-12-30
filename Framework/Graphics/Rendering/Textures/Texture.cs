@@ -25,6 +25,11 @@ namespace Foster.Framework
         public readonly int Height;
 
         /// <summary>
+        /// The Texture Data Format
+        /// </summary>
+        public readonly TextureFormat Format;
+
+        /// <summary>
         /// The Texture Filter to be used while drawing
         /// </summary>
         public TextureFilter Filter
@@ -55,26 +60,27 @@ namespace Foster.Framework
         private TextureWrap wrapX;
         private TextureWrap wrapY;
 
-        public Texture(Graphics graphics, int width, int height) : this(graphics, null, width, height)
+        public Texture(Graphics graphics, int width, int height, TextureFormat format = TextureFormat.Color) : this(graphics, null, width, height, format)
         {
 
         }
 
-        public Texture(int width, int height) : this(App.Graphics, width, height)
+        public Texture(int width, int height, TextureFormat format = TextureFormat.Color) : this(App.Graphics, width, height, format)
         {
 
         }
 
         public Texture(Bitmap bitmap) : this(App.Graphics, bitmap.Width, bitmap.Height)
         {
-            Internal.SetColor(bitmap.Pixels);
+            Internal.SetData<Color>(bitmap.Pixels);
         }
 
-        internal Texture(Graphics graphics, InternalTexture? internalTexture, int width, int height)
+        internal Texture(Graphics graphics, InternalTexture? internalTexture, int width, int height, TextureFormat format)
         {
-            Internal = internalTexture ?? graphics.CreateTexture(width, height);
+            Internal = internalTexture ?? graphics.CreateTexture(width, height, format);
             Width = width;
             Height = height;
+            Format = format;
             WrapX = TextureWrap.Clamp;
             WrapY = TextureWrap.Clamp;
             Filter = TextureFilter.Linear;
@@ -83,25 +89,32 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a Bitmap with the Texture Color data
         /// </summary>
-        /// <returns></returns>
         public Bitmap AsBitmap()
         {
             var bitmap = new Bitmap(Width, Height);
-            Internal.GetColor(new Memory<Color>(bitmap.Pixels));
+            Internal.GetData<Color>(new Memory<Color>(bitmap.Pixels));
             return bitmap;
         }
 
         /// <summary>
         /// Sets the Texture Color data from the given buffer
         /// </summary>
-        /// <param name="buffer"></param>
-        public void SetColor(Memory<Color> buffer) => Internal.SetColor(buffer);
+        public void SetColor(Memory<Color> buffer) => Internal.SetData<Color>(buffer);
 
         /// <summary>
         /// Writes the Texture Color data to the given buffer
         /// </summary>
-        /// <param name="buffer"></param>
-        public void GetColor(Memory<Color> buffer) => Internal.GetColor(buffer);
+        public void GetColor(Memory<Color> buffer) => Internal.GetData<Color>(buffer);
+
+        /// <summary>
+        /// Sets the Texture data from the given buffer
+        /// </summary>
+        public void SetData<T>(Memory<T> buffer) => Internal.SetData<T>(buffer);
+
+        /// <summary>
+        /// Writes the Texture data to the given buffer
+        /// </summary>
+        public void GetData<T>(Memory<T> buffer) => Internal.GetData<T>(buffer);
 
         /// <summary>
         /// Disposes the internal Texture resources

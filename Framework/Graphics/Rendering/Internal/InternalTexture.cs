@@ -14,7 +14,7 @@ namespace Foster.Framework.Internal
 
         protected internal abstract void SetFilter(TextureFilter filter);
         protected internal abstract void SetWrap(TextureWrap x, TextureWrap y);
-        protected internal abstract void SetColor(Memory<Color> buffer);
-        protected internal abstract void GetColor(Memory<Color> buffer);
+        protected internal abstract void SetData<T>(Memory<T> buffer);
+        protected internal abstract void GetData<T>(Memory<T> buffer);
     }
 }
