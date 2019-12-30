@@ -38,7 +38,7 @@ namespace Foster.GuiSystem
             Gui = gui;
             Title = title;
 
-            var node = new GuiDockNode(gui.Manager, GuiDockNode.Modes.Floating, position.Int());
+            var node = new GuiDockNode(gui, GuiDockNode.Modes.Floating, position.Int());
             node.InsertPanel(GuiDockNode.Placings.Center, this);
         }
 
@@ -48,7 +48,7 @@ namespace Foster.GuiSystem
             Title = title;
 
             if (dockWidth == null)
-                gui.Manager.Root.InsertPanel(GuiDockNode.Placings.Center, this);
+                gui.Root.InsertPanel(GuiDockNode.Placings.Center, this);
             else if (dockWidth.Node != null)
                 dockWidth.Node.InsertPanel(GuiDockNode.Placings.Center, this);
         }
@@ -102,7 +102,7 @@ namespace Foster.GuiSystem
 
             var node = panel?.Node;
             if (node == null)
-                node = Gui.Manager.Root;
+                node = Gui.Root;
 
             node.InsertPanel(placing, this);
         }
