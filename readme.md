@@ -12,7 +12,7 @@ foster is an open source & cross-platform game framework made in C# dotnet core.
 
 ## what's here
  - **Framework**: The main Framework with an abstract Platform implementation. Handles Input, Drawing, Windowing, etc.
- - **Platforms**: Platform implementations of the Framework modules (such as [https://www.glfw.org/](GLFW), [https://www.libsdl.org/](SDL2), OpenGL, DirectX, Vulkan, etc)
+ - **Platforms**: Platform implementations of the Framework modules (such as [GLFW](https://www.glfw.org/), [SLD2](https://www.libsdl.org/), OpenGL, DirectX, Vulkan, etc)
  - **Gui**: A simple dockable GUI system. Inspired by [immediate mode GUIs](https://github.com/ocornut/imgui) for widgets.
  - **Engine/Editor**: A Game Editor
  - **Engine/Runtime**: A Game Runtime
