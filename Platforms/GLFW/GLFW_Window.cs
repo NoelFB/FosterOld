@@ -123,15 +123,17 @@ namespace Foster.GLFW
 
         public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible) : base(system, context)
         {
-            this.GlfwContext = context;
+
             this.title = title;
             this.visible = visible;
 
+            GlfwContext = context;
             System.SetCurrentContext(context);
+
             GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
-            GLFW.SetWindowSizeCallback(context.GlfwWindowPointer, windowSizeCallbackRef = OnWindowResize);
-            GLFW.SetWindowFocusCallback(context.GlfwWindowPointer, windowFocusCallbackRef = OnWindowFocus);
-            GLFW.SetCursorEnterCallback(context.GlfwWindowPointer, windowCursorEnterCallbackRef = OnCursorEnter);
+            GLFW.SetWindowSizeCallback(GlfwWindowPointer, windowSizeCallbackRef = OnWindowResize);
+            GLFW.SetWindowFocusCallback(GlfwWindowPointer, windowFocusCallbackRef = OnWindowFocus);
+            GLFW.SetCursorEnterCallback(GlfwWindowPointer, windowCursorEnterCallbackRef = OnCursorEnter);
         }
 
         private void OnWindowResize(GLFW.Window window, int width, int height)

@@ -7,7 +7,7 @@ namespace Foster.GLFW
     {
         public readonly IntPtr Pointer;
 
-        private string name = "";
+        private string name;
         private bool isPrimary;
         private RectInt bounds;
         private Vector2 contentScale;
@@ -20,6 +20,8 @@ namespace Foster.GLFW
         public GLFW_Monitor(IntPtr pointer)
         {
             Pointer = pointer;
+
+            name = GLFW.GetMonitorName(Pointer);
             FetchProperties();
         }
 
@@ -28,7 +30,6 @@ namespace Foster.GLFW
             GLFW.GetMonitorContentScale(Pointer, out contentScale.X, out contentScale.Y);
             GLFW.GetMonitorWorkarea(Pointer, out bounds.X, out bounds.Y, out bounds.Width, out bounds.Height);
 
-            name = GLFW.GetMonitorName(Pointer);
             isPrimary = GLFW.GetPrimaryMonitor() == Pointer;
         }
     }
