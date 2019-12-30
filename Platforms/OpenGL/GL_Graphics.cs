@@ -81,8 +81,6 @@ namespace Foster.OpenGL
         protected override void AfterRender(Window window)
         {
             GL.Flush();
-
-            DeleteUnusedContextResources(window.Context);
         }
 
         protected override void ContextChanged(Context context)
