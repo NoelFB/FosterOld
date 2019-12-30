@@ -71,7 +71,7 @@ namespace Foster.Framework
         public bool Trim = true;
 
         /// <summary>
-        /// Max Page Size
+        /// Maximum Texture Size. If the packed data is too large it will be split into multiple pages
         /// </summary>
         public int MaxSize = 8192;
 
@@ -106,15 +106,10 @@ namespace Foster.Framework
 
         private readonly List<Source> sources = new List<Source>();
 
-        public void AddPixels(string name, int width, int height, Span<Color> pixels)
-        {
-            AddSource(name, width, height, pixels);
-        }
-
         public void AddBitmap(string name, Bitmap bitmap)
         {
             if (bitmap != null)
-                AddSource(name, bitmap.Width, bitmap.Height, new Span<Color>(bitmap.Pixels));
+                AddPixels(name, bitmap.Width, bitmap.Height, new ReadOnlySpan<Color>(bitmap.Pixels));
         }
 
         public void AddFile(string name, string path)
@@ -123,7 +118,7 @@ namespace Foster.Framework
             AddBitmap(name, new Bitmap(stream));
         }
 
-        private void AddSource(string name, int width, int height, Span<Color> pixels)
+        public void AddPixels(string name, int width, int height, ReadOnlySpan<Color> pixels)
         {
             HasUnpackedData = true;
 
@@ -195,12 +190,12 @@ namespace Foster.Framework
             sources.Add(source);
         }
 
-        private unsafe struct PackingNode
+        private struct PackingNode
         {
             public bool Used;
             public RectInt Rect;
-            public PackingNode* Right;
-            public PackingNode* Down;
+            public unsafe PackingNode* Right;
+            public unsafe PackingNode* Down;
         };
 
         public unsafe Output? Pack()
@@ -224,10 +219,13 @@ namespace Foster.Framework
             if (sources[0].Packed.Width > MaxSize || sources[0].Packed.Height > MaxSize)
                 throw new Exception("Source image is larger than max atlas size");
 
-            // we should never need more nodes than source images * 3
-            Span<PackingNode> buffer = (sources.Count <= 1000 ?
-                stackalloc PackingNode[sources.Count * 4] :
-                new PackingNode[sources.Count * 4]);
+            // TODO: why do we sometimes need more than source images * 3?
+            // for safety I've just made it 4 ... but it should really only be 3?
+
+            int nodeCount = sources.Count * 4;
+            Span<PackingNode> buffer = (nodeCount <= 2000 ?
+                stackalloc PackingNode[nodeCount] :
+                new PackingNode[nodeCount]);
 
             // using pointer operations here was faster
             fixed (PackingNode* nodes = buffer)
@@ -241,9 +239,9 @@ namespace Foster.Framework
                         continue;
                     }
 
-                    int from = packed;
-                    var index = nodes;
-                    var root = ResetNode(index++, 0, 0, sources[from].Packed.Width + Padding, sources[from].Packed.Height + Padding);
+                    var from = packed;
+                    var nodePtr = nodes;
+                    var rootPtr = ResetNode(nodePtr++, 0, 0, sources[from].Packed.Width + Padding, sources[from].Packed.Height + Padding);
 
                     while (packed < sources.Count)
                     {
@@ -255,35 +253,35 @@ namespace Foster.Framework
 
                         int w = sources[packed].Packed.Width + Padding;
                         int h = sources[packed].Packed.Height + Padding;
-                        var node = FindNode(root, w, h);
+                        var node = FindNode(rootPtr, w, h);
 
                         // try to expand
                         if (node == null)
                         {
-                            bool canGrowDown = (w <= root->Rect.Width) && (root->Rect.Height + h < MaxSize);
-                            bool canGrowRight = (h <= root->Rect.Height) && (root->Rect.Width + w < MaxSize);
-                            bool shouldGrowRight = canGrowRight && (root->Rect.Height >= (root->Rect.Width + w));
-                            bool shouldGrowDown = canGrowDown && (root->Rect.Width >= (root->Rect.Height + h));
+                            bool canGrowDown = (w <= rootPtr->Rect.Width) && (rootPtr->Rect.Height + h < MaxSize);
+                            bool canGrowRight = (h <= rootPtr->Rect.Height) && (rootPtr->Rect.Width + w < MaxSize);
+                            bool shouldGrowRight = canGrowRight && (rootPtr->Rect.Height >= (rootPtr->Rect.Width + w));
+                            bool shouldGrowDown = canGrowDown && (rootPtr->Rect.Width >= (rootPtr->Rect.Height + h));
 
                             if (canGrowDown || canGrowRight)
                             {
                                 // grow right
                                 if (shouldGrowRight || (!shouldGrowDown && canGrowRight))
                                 {
-                                    var next = ResetNode(index++, 0, 0, root->Rect.Width + w, root->Rect.Height);
+                                    var next = ResetNode(nodePtr++, 0, 0, rootPtr->Rect.Width + w, rootPtr->Rect.Height);
                                     next->Used = true;
-                                    next->Down = root;
-                                    next->Right = node = ResetNode(index++, root->Rect.Width, 0, w, root->Rect.Height);
-                                    root = next;
+                                    next->Down = rootPtr;
+                                    next->Right = node = ResetNode(nodePtr++, rootPtr->Rect.Width, 0, w, rootPtr->Rect.Height);
+                                    rootPtr = next;
                                 }
                                 // grow down
                                 else
                                 {
-                                    var next = ResetNode(index++, 0, 0, root->Rect.Width, root->Rect.Height + h);
+                                    var next = ResetNode(nodePtr++, 0, 0, rootPtr->Rect.Width, rootPtr->Rect.Height + h);
                                     next->Used = true;
-                                    next->Down = node = ResetNode(index++, 0, root->Rect.Height, root->Rect.Width, h);
-                                    next->Right = root;
-                                    root = next;
+                                    next->Down = node = ResetNode(nodePtr++, 0, rootPtr->Rect.Height, rootPtr->Rect.Width, h);
+                                    next->Right = rootPtr;
+                                    rootPtr = next;
                                 }
                             }
                         }
@@ -294,8 +292,8 @@ namespace Foster.Framework
 
                         // add
                         node->Used = true;
-                        node->Down = ResetNode(index++, node->Rect.X, node->Rect.Y + h, node->Rect.Width, node->Rect.Height - h);
-                        node->Right = ResetNode(index++, node->Rect.X + w, node->Rect.Y, node->Rect.Width - w, h);
+                        node->Down = ResetNode(nodePtr++, node->Rect.X, node->Rect.Y + h, node->Rect.Width, node->Rect.Height - h);
+                        node->Right = ResetNode(nodePtr++, node->Rect.X + w, node->Rect.Y, node->Rect.Width - w, h);
 
                         sources[packed].Packed.X = node->Rect.X;
                         sources[packed].Packed.Y = node->Rect.Y;
@@ -309,15 +307,15 @@ namespace Foster.Framework
                     {
                         pageWidth = 2;
                         pageHeight = 2;
-                        while (pageWidth < root->Rect.Width)
+                        while (pageWidth < rootPtr->Rect.Width)
                             pageWidth *= 2;
-                        while (pageHeight < root->Rect.Height)
+                        while (pageHeight < rootPtr->Rect.Height)
                             pageHeight *= 2;
                     }
                     else
                     {
-                        pageWidth = root->Rect.Width;
-                        pageHeight = root->Rect.Height;
+                        pageWidth = rootPtr->Rect.Width;
+                        pageHeight = rootPtr->Rect.Height;
                     }
 
                     // create each page
