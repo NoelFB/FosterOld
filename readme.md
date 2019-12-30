@@ -21,8 +21,9 @@ foster is an open source & cross-platform game framework made in C# dotnet core.
 The Framework is meant to be completely independent and shouldn't require anything else to make a game in (much like how XNA, SFML, etc, work). The Engine & Editor are just what I've constructed to make stuff, but they are not mandatory. At some point it may make sense to separate these repos.
 
 ## dependencies
- - Each Platform implementation has its own dependencies
+ - [dotnet core 3.0](https://dotnet.microsoft.com/download/dotnet-core/3.0) and [C# 8.0](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)
  - [stb_truetype](https://github.com/nothings/stb) for Font loading. We're using a [C# port](https://github.com/StbSharp/StbTrueTypeSharp)
+ - Each Platform implementation has its own dependencies
 
 ## example app
 ```
