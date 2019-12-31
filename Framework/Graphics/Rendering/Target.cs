@@ -51,7 +51,7 @@ namespace Foster.Framework
 
             // check attachment types
             for (int i = 0; i < colorAttachmentFormats.Length; i++)
-                if (!colorAttachmentFormats[i].IsTextureFormat())
+                if (!colorAttachmentFormats[i].IsTextureColorFormat())
                     throw new Exception("Invalid Texture Format - Color Texture Attachments must be a Color Format");
 
             // create internal target
@@ -67,7 +67,7 @@ namespace Foster.Framework
             if (depthFormat != TextureFormat.None)
             {
                 if (!depthFormat.IsDepthStencilFormat())
-                    throw new Exception("Invalid Texture Format - Depth Texture must be Depth24 of Depth24Stencil8");
+                    throw new Exception("Invalid Texture Format - Depth Texture must be DepthStencil Format");
 
                 Depth = new Texture(graphics, Internal.depth, width, height, depthFormat);
             }

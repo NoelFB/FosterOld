@@ -36,7 +36,7 @@ namespace Foster.Framework
 
     public static class TextureFormatExt
     {
-        public static bool IsTextureFormat(this TextureFormat format)
+        public static bool IsTextureColorFormat(this TextureFormat format)
         {
             return
                 format == TextureFormat.Color ||

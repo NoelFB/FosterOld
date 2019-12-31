@@ -4,30 +4,100 @@ using System.Collections.Generic;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Contains the Data of a Font at a given size
+    /// </summary>
     public class FontSize
     {
-
+        /// <summary>
+        /// A single Font Character
+        /// </summary>
         public class Character
         {
+            /// <summary>
+            /// The Unicode Value of the Character
+            /// </summary>
             public char Unicode;
+
+            /// <summary>
+            /// The Associated Glyph of the Character
+            /// </summary>
             public int Glyph;
+
+            /// <summary>
+            /// The Width (in pixels) of the Character
+            /// </summary>
             public int Width;
+
+            /// <summary>
+            /// The Height (in pixels) of the Character
+            /// </summary>
             public int Height;
+
+            /// <summary>
+            /// The Horizontal Advance (in pixels) of the Character
+            /// </summary>
             public float Advance;
+
+            /// <summary>
+            /// The X-Offset (in pixels) of the Character
+            /// </summary>
             public float OffsetX;
+
+            /// <summary>
+            /// The Y-Offset (in pixels) of the Character
+            /// </summary>
             public float OffsetY;
+
+            /// <summary>
+            /// Whether the Character has a Glyph. If not, this character cannot be rendered
+            /// </summary>
             public bool HasGlyph;
         };
 
+        /// <summary>
+        /// The Font associated with this Font Size
+        /// </summary>
         public readonly Font Font;
+
+        /// <summary>
+        /// The Size of the Font
+        /// </summary>
         public readonly int Size;
+
+        /// <summary>
+        /// The Ascent of the Font. This is the Font.Ascent * our Scale
+        /// </summary>
         public readonly float Ascent;
+
+        /// <summary>
+        /// The Descent of the Font. This is the Font.Descent * our Scale
+        /// </summary>
         public readonly float Descent;
+
+        /// <summary>
+        /// The LineGap of the Font. This is the Font.LineGap * our Scale
+        /// </summary>
         public readonly float LineGap;
+
+        /// <summary>
+        /// The Height of the Font. This is the Font.Height * our Scale
+        /// </summary>
         public readonly float Height;
+
+        /// <summary>
+        /// The LineHeight of the Font. This is the Font.LineHeight * our Scale
+        /// </summary>
         public readonly float LineHeight;
+
+        /// <summary>
+        /// The Scale of the Font Size
+        /// </summary>
         public readonly float Scale;
 
+        /// <summary>
+        /// The Character Set of the Font Size
+        /// </summary>
         public readonly Dictionary<char, Character> Charset = new Dictionary<char, Character>();
 
         public FontSize(Font font, int size, string charset)
@@ -80,6 +150,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the Kerning Value between two Unicode characters at the Font Size, or 0 if there is no Kerning
+        /// </summary>
         public float GetKerning(char unicode0, char unicode1)
         {
             if (Charset.TryGetValue(unicode0, out var char0) && Charset.TryGetValue(unicode1, out var char1))
@@ -93,6 +166,9 @@ namespace Foster.Framework
             return 0f;
         }
 
+        /// <summary>
+        /// Renders the Unicode character to a Bitmap at the Font Size, or null if the character doesn't exist
+        /// </summary>
         public Bitmap? Render(char unicode)
         {
             if (Charset.TryGetValue(unicode, out var ch) && ch.HasGlyph)
@@ -107,6 +183,9 @@ namespace Foster.Framework
             return null;
         }
 
+        /// <summary>
+        /// Renders the Unicode character to a buffer at the Font Size, and returns true on success
+        /// </summary>
         public unsafe bool Render(char unicode, Span<Color> buffer, out int width, out int height)
         {
             if (Charset.TryGetValue(unicode, out var ch) && ch.HasGlyph)

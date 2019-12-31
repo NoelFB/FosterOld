@@ -56,7 +56,7 @@ namespace Foster.Framework
                     return;
             }
 
-            throw new NotSupportedException("Stream either an invalid or not supported image format");
+            throw new NotSupportedException("Stream is either an invalid or not supported image format");
         }
 
         /// <summary>
@@ -81,6 +81,8 @@ namespace Foster.Framework
         /// </summary>
         public void SetPixels(RectInt desintation, Memory<Color> pixels)
         {
+            // TODO: perform bounds checking?
+
             var src = pixels.Span;
             var dst = new Span<Color>(Pixels);
 

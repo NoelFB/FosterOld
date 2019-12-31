@@ -19,7 +19,7 @@ namespace Foster.OpenGL
             // create vertex shader
             uint vertex = GL.CreateShader(GLEnum.VERTEX_SHADER);
             {
-                GL.ShaderSource(vertex, 1, new string[] { vertexSource }, new int[] { vertexSource.Length });
+                GL.ShaderSource(vertex, 1, new [] { vertexSource }, new int[] { vertexSource.Length });
                 GL.CompileShader(vertex);
 
                 string? vertexError = GL.GetShaderInfoLog(vertex);
@@ -30,7 +30,7 @@ namespace Foster.OpenGL
             // create fragment shader
             uint fragment = GL.CreateShader(GLEnum.FRAGMENT_SHADER);
             {
-                GL.ShaderSource(fragment, 1, new string[] { fragmentSource }, new int[] { fragmentSource.Length });
+                GL.ShaderSource(fragment, 1, new [] { fragmentSource }, new int[] { fragmentSource.Length });
                 GL.CompileShader(fragment);
 
                 string? fragmentError = GL.GetShaderInfoLog(fragment);
@@ -67,10 +67,7 @@ namespace Foster.OpenGL
                 GL.GetActiveUniform(ID, (uint)i, out int size, out GLEnum type, out string name);
                 int location = GL.GetUniformLocation(ID, name);
                 if (location >= 0)
-                {
-                    GL_Uniform uniform = new GL_Uniform(this, name, size, location, type);
-                    uniforms.Add(name, uniform);
-                }
+                    uniforms.Add(name, new GL_Uniform(this, name, size, location, type));
             }
 
             // dispose fragment and vertex shaders

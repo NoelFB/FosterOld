@@ -4,15 +4,39 @@ using System.IO;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Sprite Font is a Font rendered to a Texture at a given size, which is useful for drawing Text with sprite batchers
+    /// </summary>
     public class SpriteFont
     {
-
+        /// <summary>
+        /// A single Sprite Font Character
+        /// </summary>
         public class Character
         {
+            /// <summary>
+            /// The Unicode Value
+            /// </summary>
             public char Unicode;
+
+            /// <summary>
+            /// The rendered Character Image
+            /// </summary>            
             public Subtexture Image;
+
+            /// <summary>
+            /// The Offset to draw the Character at
+            /// </summary>
             public Vector2 Offset;
+
+            /// <summary>
+            /// The Amount to Advance the rendering by, horizontally
+            /// </summary>
             public float Advance;
+
+            /// <summary>
+            /// The Kerning value for following Characters
+            /// </summary>
             public Dictionary<char, float> Kerning = new Dictionary<char, float>();
 
             public Character(char unicode, Subtexture image, Vector2 offset, float advance)
@@ -24,15 +48,49 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// A list of all the Characters in the Sprite Font
+        /// </summary>
         public readonly Dictionary<char, Character> Charset = new Dictionary<char, Character>();
 
+        /// <summary>
+        /// The Font Family Name
+        /// </summary>
         public string FamilyName;
+
+        /// <summary>
+        /// The Font Style Name
+        /// </summary>
         public string StyleName;
+
+        /// <summary>
+        /// The Size of the Sprite Font
+        /// </summary>
         public int Size;
+
+        /// <summary>
+        /// The Font Ascent
+        /// </summary>
         public float Ascent;
+
+        /// <summary>
+        /// The Font Descent
+        /// </summary>
         public float Descent;
+
+        /// <summary>
+        /// The Line Gap of the Font. This is the vertical space between lines
+        /// </summary>
         public float LineGap;
+
+        /// <summary>
+        /// The Height of the Font (Ascent - Descent)
+        /// </summary>
         public float Height;
+
+        /// <summary>
+        /// The Line Height of the Font (Height + LineGap). This is the total height of a single line, including the line gap
+        /// </summary>
         public float LineHeight;
 
         public SpriteFont(string? familyName = null, string? styleName = null)
@@ -91,7 +149,7 @@ namespace Foster.Framework
                     foreach (var ch2 in fontSize.Charset.Values)
                     {
                         var kerning = fontSize.GetKerning(ch.Unicode, ch2.Unicode);
-                        if (kerning != 0)
+                        if (Math.Abs(kerning) > 0.000001f)
                             sprChar.Kerning[ch2.Unicode] = kerning;
                     }
                 }
@@ -119,11 +177,17 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Measures the Width of the given text
+        /// </summary>
         public float WidthOf(string text)
         {
             return WidthOf(text.AsSpan());
         }
 
+        /// <summary>
+        /// Measures the Width of the given text
+        /// </summary>
         public float WidthOf(ReadOnlySpan<char> text)
         {
             var width = 0f;

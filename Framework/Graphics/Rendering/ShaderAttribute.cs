@@ -5,12 +5,12 @@
         /// <summary>
         /// The name of the Attribute
         /// </summary>
-        public string Name { get; protected set; }
+        public readonly string Name;
 
         /// <summary>
         /// The Location of the Attribute in the Shader
         /// </summary>
-        public uint Location { get; protected set; }
+        public readonly uint Location;
 
         public ShaderAttribute(string name, uint location)
         {
