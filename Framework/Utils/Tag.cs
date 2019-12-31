@@ -7,26 +7,37 @@ namespace Foster.Framework
 
         public const uint Any = 0xFFFFFFFF;
 
-        public uint Flag;
+        public uint Mask;
 
-        public Tag(uint flag)
+        public Tag(uint mask)
         {
-            Flag = flag;
+            Mask = mask;
         }
 
-        public void Add(uint flag) => Flag |= flag;
-        public void Remove(uint flag) => Flag &= ~flag;
-        public bool Has(uint flag) => (Flag & flag) > 0;
+        public void Add(Tag tag)
+        {
+            Mask |= tag.Mask;
+        }
+
+        public void Remove(Tag tag)
+        {
+            Mask &= ~tag.Mask;
+        }
+
+        public bool Has(Tag tag)
+        {
+            return (Mask & tag.Mask) > 0;
+        }
 
         public static Tag Make(int index)
         {
             if (index < 0 || index > 31)
-                throw new Exception("Index must be between 0 and 31");
+                throw new ArgumentOutOfRangeException(nameof(index), "Index must be between 0 and 31");
 
             return new Tag((uint)(1 << index));
         }
 
-        public static implicit operator uint(Tag tag) => tag.Flag;
+        public static implicit operator uint(Tag tag) => tag.Mask;
         public static implicit operator Tag(uint val) => new Tag(val);
 
     }
