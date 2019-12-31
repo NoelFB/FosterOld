@@ -10,7 +10,6 @@ namespace Foster.Framework
 
         private readonly List<Module?> modules = new List<Module?>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
-        private bool isRendering;
 
         /// <summary>
         /// Registers a Module
@@ -36,9 +35,6 @@ namespace Foster.Framework
         /// </summary>
         public T Register<T>(T module) where T : Module
         {
-            if (isRendering)
-                throw new Exception("Cannot Add or Remove Modules during Rendering");
-
             if (module.Registered)
                 throw new Exception("Module is already registered");
 
@@ -78,9 +74,6 @@ namespace Foster.Framework
         /// </summary>
         public void Remove(Module module)
         {
-            if (isRendering)
-                throw new Exception("Cannot Add or Remove Modules during Rendering");
-
             if (!module.Registered)
                 throw new Exception("Module is not already registered");
 
@@ -183,22 +176,14 @@ namespace Foster.Framework
 
         internal void BeforeRender(Window window)
         {
-            isRendering = true;
-
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.BeforeRender(window);
-
-            isRendering = false;
         }
 
         internal void AfterRender(Window window)
         {
-            isRendering = true;
-
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.AfterRender(window);
-
-            isRendering = false;
         }
 
         internal void Tick()
