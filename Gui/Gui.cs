@@ -13,13 +13,13 @@ namespace Foster.GuiSystem
         public SpriteFont Font;
         public Vector2 ContentScale = Vector2.One;
 
-        internal readonly GuiDockNode Root;
-        internal readonly List<GuiDockNode> Floating = new List<GuiDockNode>();
-        internal readonly List<GuiDockNode> Standalone = new List<GuiDockNode>();
+        internal readonly DockNode Root;
+        internal readonly List<DockNode> Floating = new List<DockNode>();
+        internal readonly List<DockNode> Standalone = new List<DockNode>();
 
-        internal GuiDockNode? Dragging;
-        internal GuiDockNode? LastDockable;
-        internal GuiDockNode? NextDockable;
+        internal DockNode? Dragging;
+        internal DockNode? LastDockable;
+        internal DockNode? NextDockable;
 
         internal Cursors? NextCursor;
         internal Cursors? LastCursor;
@@ -43,7 +43,7 @@ namespace Foster.GuiSystem
             Window.OnRender += Render;
             Window.OnResize += Resize;
 
-            Root = new GuiDockNode(this, GuiDockNode.Modes.Root);
+            Root = new DockNode(this, DockNode.Modes.Root);
         }
 
         public Gui(SpriteFont font, string title, int width, int height) :

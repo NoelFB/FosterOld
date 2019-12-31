@@ -3,7 +3,7 @@ using System;
 
 namespace Foster.GuiSystem
 {
-    public class GuiPanel
+    public class Panel
     {
 
         /// <summary>
@@ -31,26 +31,26 @@ namespace Foster.GuiSystem
         /// </summary>
         public bool Opened => Node != null;
 
-        internal GuiDockNode? Node;
+        internal DockNode? Node;
 
-        public GuiPanel(Gui gui, string title, Rect position)
+        public Panel(Gui gui, string title, Rect position)
         {
             Gui = gui;
             Title = title;
 
-            var node = new GuiDockNode(gui, GuiDockNode.Modes.Floating, position.Int());
-            node.InsertPanel(GuiDockNode.Placings.Center, this);
+            var node = new DockNode(gui, DockNode.Modes.Floating, position.Int());
+            node.InsertPanel(DockNode.Placings.Center, this);
         }
 
-        public GuiPanel(Gui gui, string title, GuiPanel? dockWidth = null)
+        public Panel(Gui gui, string title, Panel? dockWidth = null)
         {
             Gui = gui;
             Title = title;
 
             if (dockWidth == null)
-                gui.Root.InsertPanel(GuiDockNode.Placings.Center, this);
+                gui.Root.InsertPanel(DockNode.Placings.Center, this);
             else if (dockWidth.Node != null)
-                dockWidth.Node.InsertPanel(GuiDockNode.Placings.Center, this);
+                dockWidth.Node.InsertPanel(DockNode.Placings.Center, this);
         }
 
         /// <summary>
@@ -74,29 +74,29 @@ namespace Foster.GuiSystem
         /// <summary>
         /// Docks this Panel with another existing panel
         /// </summary>
-        public void DockWith(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Center);
+        public void DockWith(Panel? panel) => Dock(panel, DockNode.Placings.Center);
 
         /// <summary>
         /// Docks this Panel to the left of an existing panel
         /// </summary>
-        public void DockLeftOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Left);
+        public void DockLeftOf(Panel? panel) => Dock(panel, DockNode.Placings.Left);
 
         /// <summary>
         /// Docks this Panel to the right of an existing panel
         /// </summary>
-        public void DockRightOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Right);
+        public void DockRightOf(Panel? panel) => Dock(panel, DockNode.Placings.Right);
 
         /// <summary>
         /// Docks this Panel to the bottom of an existing panel
         /// </summary>
-        public void DockBottomOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Bottom);
+        public void DockBottomOf(Panel? panel) => Dock(panel, DockNode.Placings.Bottom);
 
         /// <summary>
         /// Docks this Panel to the top of an existing panel
         /// </summary>
-        public void DockTopOf(GuiPanel? panel) => Dock(panel, GuiDockNode.Placings.Top);
+        public void DockTopOf(Panel? panel) => Dock(panel, DockNode.Placings.Top);
 
-        private void Dock(GuiPanel? panel, GuiDockNode.Placings placing)
+        private void Dock(Panel? panel, DockNode.Placings placing)
         {
             Node?.RemovePanel(this);
 

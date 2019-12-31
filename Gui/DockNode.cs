@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Foster.GuiSystem
 {
-    internal class GuiDockNode
+    internal class DockNode
     {
         public enum Modes
         {
@@ -41,13 +41,13 @@ namespace Foster.GuiSystem
         public readonly Window Window;
         public readonly Batch2D Batcher;
 
-        private GuiDockNode? parent;
-        private GuiDockNode? leftChild;
-        private GuiDockNode? rightChild;
+        private DockNode? parent;
+        private DockNode? leftChild;
+        private DockNode? rightChild;
         private float splitPoint = 0.5f;
         private bool splitHorizontally = true;
-        private readonly List<GuiPanel> panels = new List<GuiPanel>();
-        private GuiPanel? activePanel;
+        private readonly List<Panel> panels = new List<Panel>();
+        private Panel? activePanel;
         private Rect floatingBounds;
         private Dragging dragging = Dragging.None;
         private bool modifyingContent = false;
@@ -56,7 +56,7 @@ namespace Foster.GuiSystem
         private const float splitSize = 1f;
         private const float splitGrabSize = 8f;
 
-        public GuiDockNode(GuiDockNode parent)
+        public DockNode(DockNode parent)
         {
             this.parent = parent;
 
@@ -68,7 +68,7 @@ namespace Foster.GuiSystem
             Batcher = parent.Batcher;
         }
 
-        public GuiDockNode(Gui gui, Modes mode, Rect? bounds = null)
+        public DockNode(Gui gui, Modes mode, Rect? bounds = null)
         {
             Gui = gui;
             Imgui = Gui.Imgui;
@@ -119,14 +119,14 @@ namespace Foster.GuiSystem
             }
         }
 
-        public void InsertNode(Placings placing, GuiDockNode node)
+        public void InsertNode(Placings placing, DockNode node)
         {
             if (placing == Placings.Center && (leftChild != null || rightChild != null))
                 throw new Exception("Cannot insert into the center of a Docking Node that is split");
 
             if (placing == Placings.Center)
             {
-                var adding = new List<GuiPanel>();
+                var adding = new List<Panel>();
                 node.AllChildren(adding);
 
                 foreach (var panel in adding)
@@ -139,8 +139,8 @@ namespace Foster.GuiSystem
             {
                 modifyingContent = true;
 
-                var nextLeft = new GuiDockNode(this);
-                var nextRight = new GuiDockNode(this);
+                var nextLeft = new DockNode(this);
+                var nextRight = new DockNode(this);
 
                 (placing.IsTopLeft() ? nextLeft : nextRight).TakeContent(node);
                 (placing.IsTopLeft() ? nextRight : nextLeft).TakeContent(this);
@@ -155,7 +155,7 @@ namespace Foster.GuiSystem
             }
         }
 
-        public void InsertPanel(Placings placing, GuiPanel panel)
+        public void InsertPanel(Placings placing, Panel panel)
         {
             if (placing == Placings.Center && (leftChild != null || rightChild != null))
                 throw new Exception("Cannot insert into the center of a Docking Node that is split");
@@ -173,8 +173,8 @@ namespace Foster.GuiSystem
             {
                 modifyingContent = true;
 
-                var nextLeft = new GuiDockNode(this);
-                var nextRight = new GuiDockNode(this);
+                var nextLeft = new DockNode(this);
+                var nextRight = new DockNode(this);
 
                 (placing.IsTopLeft() ? nextLeft : nextRight).InsertPanel(Placings.Center, panel);
                 (placing.IsTopLeft() ? nextRight : nextLeft).TakeContent(this);
@@ -189,7 +189,7 @@ namespace Foster.GuiSystem
             }
         }
 
-        public void PopoutPanel(GuiPanel panel)
+        public void PopoutPanel(Panel panel)
         {
             if (panel.Node == this)
             {
@@ -198,14 +198,14 @@ namespace Foster.GuiSystem
                 if (baseNode.Mode == Modes.Standalone)
                 {
                     var rect = BoundsToScreen(Bounds);
-                    var node = new GuiDockNode(Gui, Modes.Standalone, rect);
+                    var node = new DockNode(Gui, Modes.Standalone, rect);
 
                     RemovePanel(panel);
                     node.InsertPanel(Placings.Center, panel);
                 }
                 else
                 {
-                    var node = new GuiDockNode(Gui, Modes.Floating, Bounds);
+                    var node = new DockNode(Gui, Modes.Floating, Bounds);
 
                     RemovePanel(panel);
                     node.InsertPanel(Placings.Center, panel);
@@ -213,7 +213,7 @@ namespace Foster.GuiSystem
             }
         }
 
-        public void RemovePanel(GuiPanel panel)
+        public void RemovePanel(Panel panel)
         {
             if (panel.Node == this)
             {
@@ -232,7 +232,7 @@ namespace Foster.GuiSystem
             }
         }
 
-        public void TakeContent(GuiDockNode absorbing)
+        public void TakeContent(DockNode absorbing)
         {
             leftChild = absorbing.leftChild;
             rightChild = absorbing.rightChild;
@@ -274,7 +274,7 @@ namespace Foster.GuiSystem
             {
                 if (parent != null)
                 {
-                    GuiDockNode? absorbing = null;
+                    DockNode? absorbing = null;
                     if (parent.leftChild == this)
                         absorbing = parent.rightChild;
                     else if (parent.rightChild == this)
@@ -351,7 +351,7 @@ namespace Foster.GuiSystem
             }
         }
 
-        public GuiDockNode Base
+        public DockNode Base
         {
             get
             {
@@ -378,11 +378,11 @@ namespace Foster.GuiSystem
             return new Rect(x, y, w, h);
         }
 
-        private bool IsChildOf(GuiDockNode? dock)
+        private bool IsChildOf(DockNode? dock)
         {
             if (dock != null)
             {
-                GuiDockNode? current = this;
+                DockNode? current = this;
                 while (current != null)
                 {
                     if (current == dock)
@@ -394,7 +394,7 @@ namespace Foster.GuiSystem
             return false;
         }
 
-        private void AllChildren(List<GuiPanel> append)
+        private void AllChildren(List<Panel> append)
         {
             foreach (var panel in panels)
                 append.Add(panel);
@@ -431,7 +431,7 @@ namespace Foster.GuiSystem
                         if (Gui.Window.Bounds.Contains(Window.Bounds))
                         {
                             var rect = ScreenToBounds(Gui.Window, Window.Bounds);
-                            var dock = new GuiDockNode(Gui, Modes.Floating, new Rect(rect.X, rect.Y, rect.Width, rect.Height));
+                            var dock = new DockNode(Gui, Modes.Floating, new Rect(rect.X, rect.Y, rect.Width, rect.Height));
 
                             dock.ID = ID;
                             dock.TakeContent(this);
@@ -460,7 +460,7 @@ namespace Foster.GuiSystem
                             try
                             {
                                 var rect = BoundsToScreen(floatingBounds);
-                                var dock = new GuiDockNode(Gui, Modes.Standalone, rect);
+                                var dock = new DockNode(Gui, Modes.Standalone, rect);
 
                                 dock.ID = ID;
                                 dock.TakeContent(this);
@@ -544,7 +544,7 @@ namespace Foster.GuiSystem
                             var windowId = Imgui.CurrentId;
                             var frameId = windowId;
                             var grabbingOffset = 0f;
-                            GuiPanel? grabbingPanel = null;
+                            Panel? grabbingPanel = null;
 
                             // The Tabs
                             {
@@ -831,6 +831,6 @@ namespace Foster.GuiSystem
 
     internal static class GuiDockNodePlacingExt
     {
-        public static bool IsTopLeft(this GuiDockNode.Placings placing) => placing == GuiDockNode.Placings.Left || placing == GuiDockNode.Placings.Top;
+        public static bool IsTopLeft(this DockNode.Placings placing) => placing == DockNode.Placings.Left || placing == DockNode.Placings.Top;
     }
 }
