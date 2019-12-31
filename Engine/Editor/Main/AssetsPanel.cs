@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Foster.Editor
 {
-    public class AssetsPanel : GuiPanel
+    public class AssetsPanel : Panel
     {
 
         public readonly ProjectEditor Editor;

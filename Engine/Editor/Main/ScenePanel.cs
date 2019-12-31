@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Foster.Editor
 {
-    public class ScenePanel : GuiPanel
+    public class ScenePanel : Panel
     {
 
         public readonly ProjectEditor Editor;

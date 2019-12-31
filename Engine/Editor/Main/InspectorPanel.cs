@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Foster.Editor
 {
-    public class InspectorPanel : GuiPanel
+    public class InspectorPanel : Panel
     {
 
         public readonly ProjectEditor Editor;
