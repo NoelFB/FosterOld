@@ -54,15 +54,7 @@ namespace Foster.Framework
         /// <summary>
         /// Called every frame
         /// </summary>
-        protected internal virtual void Update()
-        {
-            for (int i = 0; i < routines.Count; i ++)
-            {
-                routines[i].Update();
-                if (routines[i].Finished)
-                    routines.RemoveAt(i--);
-            }
-        }
+        protected internal virtual void Update() { }
 
         /// <summary>
         /// Called every frame after the Update function
@@ -89,19 +81,6 @@ namespace Foster.Framework
         /// Multiple update functions can be called per tick
         /// </summary>
         protected internal virtual void Tick() { }
-
-        private readonly List<Coroutine> routines = new List<Coroutine>();
-
-
-        public void RunRoutine(Coroutine routine)
-        {
-            routines.Add(routine);
-        }
-
-        public void RunRoutine(IEnumerator routine)
-        {
-            routines.Add(new Coroutine(routine));
-        }
 
     }
 }

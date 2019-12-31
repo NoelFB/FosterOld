@@ -72,11 +72,12 @@ namespace Foster.Framework
             return isPng;
         }
 
-        // This could likely be optimized a buuunch more
-        // We also ignore all checksums when reading because they don't seem super important for game usage
-
         public override unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels)
         {
+
+            // This could likely be optimized a buuunch more
+            // We also ignore all checksums when reading because they don't seem super important for game usage
+
             width = height = 0;
 
             var hasTransparency = false;

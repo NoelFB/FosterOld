@@ -17,6 +17,7 @@ namespace Foster.Editor
         public AssetHandle Inspecting;
 
         private bool reloading;
+        private Coroutine? reloadingRoutine = null;
 
         public ProjectEditor(Project project)
         {
@@ -57,7 +58,7 @@ namespace Foster.Editor
             if (!reloading && Project.IsWaitingForReload)
             {
                 reloading = true;
-                RunRoutine(Reload());
+                reloadingRoutine = new Coroutine(Reload());
             }
         }
 
@@ -76,6 +77,12 @@ namespace Foster.Editor
 
             UpdateTitle((Project.Compiler.IsAssemblyValid ? "ready" : "build error"));
             reloading = false;
+        }
+
+        protected override void Update()
+        {
+            if (reloadingRoutine != null && !reloadingRoutine.Finished)
+                reloadingRoutine.Update();
         }
 
         private void UpdateTitle(string status)
