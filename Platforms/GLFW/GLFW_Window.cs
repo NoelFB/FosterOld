@@ -152,7 +152,7 @@ namespace Foster.GLFW
             mouseOver = (entered != 0);
         }
 
-        protected override void Present()
+        public override void Present()
         {
             if (lastVsync != VSync)
             {
