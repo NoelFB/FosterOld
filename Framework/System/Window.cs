@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Foster.Framework
 {
@@ -219,8 +220,9 @@ namespace Foster.Framework
 
         /// <summary>
         /// Renders the Window. Call Present afterwards to display the rendered contents
+        /// This is internal to avoid the complication of being called from another Thread, etc.
         /// </summary>
-        public void Render()
+        protected internal void Render()
         {
             Context.MakeCurrent();
             App.Modules.BeforeRender(this);
@@ -231,7 +233,7 @@ namespace Foster.Framework
         /// <summary>
         /// Presents the drawn contents of the Window
         /// </summary>
-        public abstract void Present();
+        protected internal abstract void Present();
 
         /// <summary>
         /// Closes the Window

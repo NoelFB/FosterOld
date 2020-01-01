@@ -41,7 +41,6 @@ namespace Foster.GuiSystem
 
             Window = window;
             Window.OnRender += Render;
-            Window.OnResize += Resize;
 
             Root = new DockNode(this, DockNode.Modes.Root);
         }
@@ -116,13 +115,6 @@ namespace Foster.GuiSystem
             }
 
             Imgui.EndViewport();
-        }
-
-        private void Resize()
-        {
-            UpdateWorkspace();
-            Window.Render();
-            Window.Present();
         }
 
         private void Render()

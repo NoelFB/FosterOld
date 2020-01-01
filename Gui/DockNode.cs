@@ -93,11 +93,6 @@ namespace Foster.GuiSystem
                 Window.VSync = false;
                 Window.Bordered = false;
                 Window.OnRender = () => Batcher.Render();
-                Window.OnResize = () =>
-                {
-                    Window.Render();
-                    Window.Present();
-                };
                 Window.OnClose = () => Discard();
                 Window.Visible = true;
 
