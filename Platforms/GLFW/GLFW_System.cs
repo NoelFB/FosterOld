@@ -11,6 +11,13 @@ namespace Foster.GLFW
         public event Action<GLFW_Window>? OnWindowCreated;
         public event Action<GLFW_Window>? OnWindowClosed;
 
+        private readonly GLFW_Input input;
+
+        public GLFW_System() : base(new GLFW_Input())
+        {
+            input = (GLFW_Input)Input;
+        }
+
         protected override void Initialized()
         {
             // get API info
@@ -64,6 +71,9 @@ namespace Foster.GLFW
             CreateContext();
             SetCurrentContext(Contexts[0]);
 
+            // setup input
+            input.Init(this);
+
             base.Startup();
         }
 
@@ -103,6 +113,9 @@ namespace Foster.GLFW
             // Update Monitors
             foreach (var monitor in monitors)
                 ((GLFW_Monitor)monitor).FetchProperties();
+
+            // update input
+            input.AfterUpdate();
         }
 
         public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)

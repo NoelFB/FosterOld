@@ -1,19 +1,15 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Foster.GLFW
 {
     public class GLFW_Input : Input
     {
 
-        private readonly Stopwatch timer = new Stopwatch();
-
         // we need to keep track of delegates because otherwise they can be garbage collected
         // and then the C++ GLFW stuff is calling garbage collected delegates...
         private readonly Dictionary<GLFW_Context, List<Delegate>> delegateTracker = new Dictionary<GLFW_Context, List<Delegate>>();
-
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
 
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState()
@@ -22,49 +18,23 @@ namespace Foster.GLFW
             Axes = new float[(int)GLFW_Enum.GAMEPAD_AXIS_LAST + 1]
         };
 
-        protected override void Initialized()
+        internal void Init(GLFW_System system)
         {
-            timer.Start();
-
-            // get API info
+            system.OnWindowCreated += (window) =>
             {
-                GLFW.GetVersion(out int major, out int minor, out int rev);
-                ApiName = "GLFW";
-                ApiVersion = new Version(major, minor, rev);
-            }
-
-            base.Initialized();
-        }
-
-        protected override void Startup()
-        {
-            base.Startup();
-
-            if (App.System is GLFW_System system)
-            {
-                system.OnWindowCreated += (window) =>
+                var context = (window.Context as GLFW_Context);
+                if (context != null)
                 {
-                    var context = (window.Context as GLFW_Context);
-                    if (context != null)
-                    {
-                        GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
-                        GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
-                        GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
-                    }
-                };
+                    GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
+                    GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
+                    GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
+                }
+            };
 
-                system.OnWindowClosed += (window) =>
-                {
-                    delegateTracker.Remove(window.GlfwContext);
-                };
-            }
-            else
+            system.OnWindowClosed += (window) =>
             {
-                // TODO:
-                // Make GLFW_Input work even if the system is not a GLFW System?
-
-                throw new NotSupportedException("GLFW_Input requires a GLFW_System");
-            }
+                delegateTracker.Remove(window.GlfwContext);
+            };
 
             // find the already-connected joysticks
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
@@ -82,11 +52,6 @@ namespace Foster.GLFW
             list.Add(method);
 
             return method;
-        }
-
-        public override ulong Timestamp()
-        {
-            return (ulong)timer.ElapsedMilliseconds;
         }
 
         public override void SetMouseCursor(Cursors cursors)
@@ -163,11 +128,11 @@ namespace Foster.GLFW
 
             if (action == 1)
             {
-                OnMouseDown(mb, (ulong)timer.ElapsedMilliseconds);
+                OnMouseDown(mb, (ulong)Time.Duration.TotalMilliseconds);
             }
             else if (action == 0)
             {
-                OnMouseUp(mb, (ulong)timer.ElapsedMilliseconds);
+                OnMouseUp(mb, (ulong)Time.Duration.TotalMilliseconds);
             }
         }
 
@@ -180,19 +145,19 @@ namespace Foster.GLFW
         {
             if (action == 1)
             {
-                OnKeyDown((Keys)key, (ulong)timer.ElapsedMilliseconds);
+                OnKeyDown((Keys)key, (ulong)Time.Duration.TotalMilliseconds);
             }
             else if (action == 0)
             {
-                OnKeyUp((Keys)key, (ulong)timer.ElapsedMilliseconds);
+                OnKeyUp((Keys)key, (ulong)Time.Duration.TotalMilliseconds);
             }
         }
 
-        protected override void AfterUpdate()
+        internal void AfterUpdate()
         {
             const float AXIS_EPSILON = 0.000001f;
 
-            var timestamp = (ulong)timer.ElapsedMilliseconds;
+            var timestamp = (ulong)Time.Duration.TotalMilliseconds;
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
             {
                 uint index = (uint)jid;
@@ -262,8 +227,6 @@ namespace Foster.GLFW
                     }
                 }
             }
-
-            base.AfterUpdate();
         }
 
         private Buttons GamepadButtonToEnum(GLFW_Enum btn)

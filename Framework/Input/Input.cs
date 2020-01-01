@@ -5,18 +5,8 @@ using System.Collections.ObjectModel;
 namespace Foster.Framework
 {
 
-    public abstract class Input : Module
+    public abstract class Input
     {
-        /// <summary>
-        /// The underlying Input API name
-        /// </summary>
-        public string ApiName { get; protected set; } = "Unknown";
-
-        /// <summary>
-        /// The underlying Input API version
-        /// </summary>
-        public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
-
         /// <summary>
         /// The Current Input State
         /// </summary>
@@ -59,21 +49,14 @@ namespace Foster.Framework
 
         internal List<WeakReference<VirtualButton>> virtualButtons = new List<WeakReference<VirtualButton>>();
 
-        protected Input() : base(300)
+        protected Input()
         {
             State = new InputState(this);
             LastState = new InputState(this);
             nextState = new InputState(this);
         }
 
-        public abstract ulong Timestamp();
-
-        protected internal override void Startup()
-        {
-            Console.WriteLine($" - Input {ApiName} {ApiVersion}");
-        }
-
-        protected internal override void BeforeUpdate()
+        internal void BeforeUpdate()
         {
             LastState.Copy(State);
             State.Copy(nextState);

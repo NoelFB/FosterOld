@@ -13,7 +13,6 @@ namespace Foster.Engine
         private static void Main(string[] args)
         {
             App.Modules.Register<GLFW.GLFW_System>();
-            App.Modules.Register<GLFW.GLFW_Input>();
             App.Modules.Register<OpenGL.GL_Graphics>();
 
             App.Start(() =>

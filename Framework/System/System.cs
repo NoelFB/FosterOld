@@ -40,6 +40,59 @@ namespace Foster.Framework
         protected readonly ReadOnlyCollection<Context> Contexts;
 
         /// <summary>
+        /// System Input
+        public readonly Input Input;
+
+        /// <summary>
+        /// The application directory
+        /// </summary>
+        public virtual string Directory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
+
+        /// <summary>
+        /// Gets a Pointer to a Platform rendering method of the given name
+        /// This is used internally by the Graphics
+        /// </summary>
+        public abstract IntPtr GetProcAddress(string name);
+
+        /// <summary>
+        /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
+        /// </summary>
+        protected readonly List<Window> windows = new List<Window>();
+
+        /// <summary>
+        /// Internal list of all Monitors owned by the System. The Platform implementation should maintain this.
+        /// </summary>
+        protected readonly List<Monitor> monitors = new List<Monitor>();
+
+        /// <summary>
+        /// Internal list of all Contexts owned by the System. The Platform implementation should maintain this.
+        /// </summary>
+        protected readonly List<Context> contexts = new List<Context>();
+
+        protected System(Input input) : base(100)
+        {
+            Windows = new ReadOnlyCollection<Window>(windows);
+            Monitors = new ReadOnlyCollection<Monitor>(monitors);
+            Contexts = new ReadOnlyCollection<Context>(contexts);
+            Input = input;
+        }
+
+        protected internal override void Startup()
+        {
+            Console.WriteLine($" - System {ApiName} {ApiVersion}");
+        }
+
+        protected internal override void BeforeUpdate()
+        {
+            Input.BeforeUpdate();
+        }
+
+        protected internal override void Shutdown()
+        {
+            Console.WriteLine($" - System {ApiName} {ApiVersion} : Shutdown");
+        }
+
+        /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
         /// Note that on High DPI displays the given width and height may not match
         /// the resulting Window size.
@@ -105,49 +158,6 @@ namespace Foster.Framework
         /// Sets the current Rendering Context on the current Thread
         /// </summary>
         protected abstract void SetCurrentContextInternal(Context? context);
-
-        /// <summary>
-        /// The application directory
-        /// </summary>
-        public virtual string Directory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
-
-        /// <summary>
-        /// Gets a Pointer to a Platform rendering method of the given name
-        /// This is used internally by the Graphics
-        /// </summary>
-        public abstract IntPtr GetProcAddress(string name);
-
-        /// <summary>
-        /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
-        /// </summary>
-        protected readonly List<Window> windows = new List<Window>();
-
-        /// <summary>
-        /// Internal list of all Monitors owned by the System. The Platform implementation should maintain this.
-        /// </summary>
-        protected readonly List<Monitor> monitors = new List<Monitor>();
-
-        /// <summary>
-        /// Internal list of all Contexts owned by the System. The Platform implementation should maintain this.
-        /// </summary>
-        protected readonly List<Context> contexts = new List<Context>();
-
-        protected System() : base(100)
-        {
-            Windows = new ReadOnlyCollection<Window>(windows);
-            Monitors = new ReadOnlyCollection<Monitor>(monitors);
-            Contexts = new ReadOnlyCollection<Context>(contexts);
-        }
-
-        protected internal override void Startup()
-        {
-            Console.WriteLine($" - System {ApiName} {ApiVersion}");
-        }
-
-        protected internal override void Shutdown()
-        {
-            Console.WriteLine($" - System {ApiName} {ApiVersion} : Shutdown");
-        }
 
     }
 }

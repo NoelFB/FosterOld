@@ -42,9 +42,9 @@ namespace Foster.Framework
         public static Audio Audio => Modules.Get<Audio>();
 
         /// <summary>
-        /// Gets the Input Module
+        /// Gets the System Input
         /// </summary>
-        public static Input Input => Modules.Get<Input>();
+        public static Input Input => System.Input;
 
         /// <summary>
         /// Gets the First Window from the System, or null if there are none
