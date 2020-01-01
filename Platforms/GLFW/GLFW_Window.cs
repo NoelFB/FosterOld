@@ -5,7 +5,7 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
-        internal readonly GLFW_RenderingContext GlfwContext;
+        internal readonly GLFW_Context GlfwContext;
         internal GLFW.Window GlfwWindowPointer => GlfwContext.GlfwWindowPointer;
 
         private string title;
@@ -121,13 +121,14 @@ namespace Foster.GLFW
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
         private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
-        public GLFW_Window(GLFW_System system, GLFW_RenderingContext context, string title, bool visible) : base(system, context)
+        public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible) : base(system, context)
         {
+
             this.title = title;
             this.visible = visible;
 
             GlfwContext = context;
-            GlfwContext.MakeCurrent();
+            System.SetCurrentContext(context);
 
             GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             GLFW.SetWindowSizeCallback(GlfwWindowPointer, windowSizeCallbackRef = OnWindowResize);
@@ -156,7 +157,7 @@ namespace Foster.GLFW
         {
             if (lastVsync != VSync)
             {
-                Context.MakeCurrent();
+                System.SetCurrentContext(GlfwContext);
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
 

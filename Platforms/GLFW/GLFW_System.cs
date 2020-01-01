@@ -10,7 +10,6 @@ namespace Foster.GLFW
         public override bool SupportsMultipleWindows => true;
         public event Action<GLFW_Window>? OnWindowCreated;
         public event Action<GLFW_Window>? OnWindowClosed;
-        private GLFW_RenderingState? renderingState;
 
         protected override void Initialized()
         {
@@ -36,25 +35,22 @@ namespace Foster.GLFW
             if (App.Graphics.Api != GraphicsApi.OpenGL && App.Graphics.Api != GraphicsApi.Vulkan)
                 throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
 
+            // macOS requires versions to be set to 3.2
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                if (App.Graphics.Api == GraphicsApi.OpenGL)
+                {
+                    GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MAJOR, 3);
+                    GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MINOR, 2);
+                    GLFW.WindowHint(GLFW_Enum.OPENGL_PROFILE, 0x00032001);
+                    GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
+                }
+            }
+
             // Various constant Window Hints
             GLFW.WindowHint(GLFW_Enum.DOUBLEBUFFER, true);
             GLFW.WindowHint(GLFW_Enum.DEPTH_BITS, 24);
             GLFW.WindowHint(GLFW_Enum.STENCIL_BITS, 8);
-
-            // macOS requires OpenGL versions to be set to 3.2
-            if (App.Graphics.Api == GraphicsApi.OpenGL && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MAJOR, 3);
-                GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MINOR, 2);
-                GLFW.WindowHint(GLFW_Enum.OPENGL_PROFILE, 0x00032001);
-                GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
-            }
-
-            // Vulkan doesn't need an OpenGL context
-            if (App.Graphics.Api == GraphicsApi.Vulkan)
-            {
-                GLFW.WindowHint(GLFW_Enum.CLIENT_API, (int)GLFW_Enum.NO_API);
-            }
 
             // Monitors
             unsafe
@@ -65,8 +61,8 @@ namespace Foster.GLFW
             }
 
             // Our default shared context
-            var context = RenderingState.CreateContext();
-            context.MakeCurrent();
+            CreateContext();
+            SetCurrentContext(Contexts[0]);
 
             base.Startup();
         }
@@ -82,28 +78,25 @@ namespace Foster.GLFW
             GLFW.PollEvents();
 
             // check for closing contexts
-            if (RenderingState is GLFW_RenderingState state)
+            for (int i = contexts.Count - 1; i >= 0; i--)
             {
-                for (int i = state.Contexts.Count - 1; i >= 0; i--)
+                if (contexts[i] is GLFW_Context context && GLFW.WindowShouldClose(context.GlfwWindowPointer))
                 {
-                    if (state.Contexts[i] is GLFW_RenderingContext context && GLFW.WindowShouldClose(context.GlfwWindowPointer))
+                    // see if we have a displayed window associated with this context
+                    for (int j = 0; j < windows.Count; j++)
                     {
-                        // see if we have a displayed window associated with this context
-                        for (int j = 0; j < windows.Count; j++)
+                        if (windows[j].Context == context)
                         {
-                            if (windows[j] is GLFW_Window window && window.GlfwContext == context)
-                            {
-                                OnWindowClosed?.Invoke((GLFW_Window)windows[j]);
-                                windows[j].OnClose?.Invoke();
-                                windows[j].Close();
-                                windows.RemoveAt(j);
-                                break;
-                            }
+                            OnWindowClosed?.Invoke((GLFW_Window)windows[j]);
+                            windows[j].OnClose?.Invoke();
+                            windows[j].Close();
+                            windows.RemoveAt(j);
+                            break;
                         }
-
-                        state.RemoveContext(state.Contexts[i]);
-                        GLFW.DestroyWindow(context.GlfwWindowPointer);
                     }
+
+                    contexts.RemoveAt(i);
+                    GLFW.DestroyWindow(context.GlfwWindowPointer);
                 }
             }
 
@@ -112,19 +105,12 @@ namespace Foster.GLFW
                 ((GLFW_Monitor)monitor).FetchProperties();
         }
 
-        protected override RenderingState CreateRenderingState()
-        {
-            return renderingState = new GLFW_RenderingState(this);
-        }
-
-        protected override Window CreateWindowInternal(string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");
-            if (renderingState == null)
-                throw new Exception("Rendering State hasn't been created");
 
-            var context = renderingState.CreateContextInternal(title, width, height, flags);
+            var context = CreateContextInternal(title, width, height, flags);
             var window = new GLFW_Window(this, context, title, !flags.HasFlag(WindowFlags.Hidden));
             windows.Add(window);
 
@@ -138,7 +124,43 @@ namespace Foster.GLFW
             return GLFW.GetProcAddress(name);
         }
 
-        
+        public override Context CreateContext()
+        {
+            return CreateContextInternal("hidden-context", 128, 128, WindowFlags.Hidden);
+        }
+
+        private GLFW_Context CreateContextInternal(string title, int width, int height, WindowFlags flags)
+        {
+            if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
+                throw new Exception("Creating a Context must be called from the Main Thread");
+
+            GLFW.WindowHint(GLFW_Enum.VISIBLE, !flags.HasFlag(WindowFlags.Hidden));
+            GLFW.WindowHint(GLFW_Enum.FOCUS_ON_SHOW, false);
+            GLFW.WindowHint(GLFW_Enum.TRANSPARENT_FRAMEBUFFER, flags.HasFlag(WindowFlags.Transparent));
+            GLFW.WindowHint(GLFW_Enum.SCALE_TO_MONITOR, flags.HasFlag(WindowFlags.ScaleToMonitor));
+            GLFW.WindowHint(GLFW_Enum.SAMPLES, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
+
+            GLFW_Context? shared = null;
+            if (Contexts.Count > 0)
+                shared = Contexts[0] as GLFW_Context;
+
+            // GLFW has no way to create a context without a window
+            // so any background contexts also just create a hidden window
+
+            var window = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared ?? IntPtr.Zero);
+            var context = new GLFW_Context(this, window);
+            contexts.Add(context);
+
+            return context;
+        }
+
+        protected override void SetCurrentContextInternal(Context? context)
+        {
+            if (context is GLFW_Context ctx && ctx != null)
+                GLFW.MakeContextCurrent(ctx.GlfwWindowPointer);
+            else
+                GLFW.MakeContextCurrent(IntPtr.Zero);
+        }
     }
 
 }

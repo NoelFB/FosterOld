@@ -62,6 +62,11 @@ namespace Foster.Framework
         protected internal virtual void AfterUpdate() { }
 
         /// <summary>
+        /// Called when the Rendering Context in the System has changed
+        /// </summary>
+        protected internal virtual void ContextChanged(Context context) { }
+
+        /// <summary>
         /// Called when a Window is being rendered to, before the Window.OnRender callback
         /// </summary>
         protected internal virtual void BeforeRender(Window window) { }

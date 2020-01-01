@@ -112,19 +112,19 @@ namespace Foster.OpenGL
 
         private static Types ToFosterType(GLEnum type)
         {
-            return type switch
+            switch (type)
             {
-                GLEnum.INT => Types.Int,
-                GLEnum.FLOAT => Types.Float,
-                GLEnum.FLOAT_VEC2 => Types.Float2,
-                GLEnum.FLOAT_VEC3 => Types.Float3,
-                GLEnum.FLOAT_VEC4 => Types.Float4,
-                GLEnum.FLOAT_MAT3x2 => Types.Matrix2D,
-                GLEnum.FLOAT_MAT4 => Types.Matrix,
-                GLEnum.SAMPLER_2D => Types.Texture2D,
+                case GLEnum.INT: return Types.Int;
+                case GLEnum.FLOAT: return Types.Float;
+                case GLEnum.FLOAT_VEC2: return Types.Float2;
+                case GLEnum.FLOAT_VEC3: return Types.Float3;
+                case GLEnum.FLOAT_VEC4: return Types.Float4;
+                case GLEnum.FLOAT_MAT3x2: return Types.Matrix2D;
+                case GLEnum.FLOAT_MAT4: return Types.Matrix;
+                case GLEnum.SAMPLER_2D: return Types.Texture2D;
 
-                _ => throw new InvalidOperationException("Unknown Enum Type"),
-            };
+                default: throw new InvalidOperationException("Unknown Enum Type");
+            }
         }
     }
 }

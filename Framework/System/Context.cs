@@ -3,9 +3,10 @@
 namespace Foster.Framework
 {
     /// <summary>
-    /// The Graphics Context to use for drawing, usually associated with a Window
+    /// The Graphics Context to which Windows and Off-screen buffers use for drawing.
+    /// Note that a Context can only be active on one thread at a time.
     /// </summary>
-    public abstract class RenderingContext : IDisposable
+    public abstract class Context : IDisposable
     {
 
         /// <summary>
@@ -16,7 +17,7 @@ namespace Foster.Framework
         /// <summary>
         /// The System this Context belongs to
         /// </summary>
-        public readonly RenderingState RenderingState;
+        public readonly System System;
 
         /// <summary>
         /// Whether the Context has been disposed
@@ -33,9 +34,9 @@ namespace Foster.Framework
         /// </summary>
         public abstract int Height { get; }
 
-        protected RenderingContext(RenderingState state)
+        protected Context(System system)
         {
-            RenderingState = state;
+            System = system;
         }
 
         /// <summary>
@@ -44,29 +45,12 @@ namespace Foster.Framework
         /// </summary>
         public void MakeCurrent()
         {
-            RenderingState.SetCurrentContext(this);
-        }
-
-        /// <summary>
-        /// Unsets this Context from the current Thread, if it is currently Current
-        /// </summary>
-        public void MakeNotCurrent()
-        {
-            if (RenderingState.GetCurrentContext() == this)
-                RenderingState.SetCurrentContext(null);
+            System.SetCurrentContext(this);
         }
 
         /// <summary>
         /// Didposes the Context
         /// </summary>
-        public void Dispose()
-        {
-            if (RenderingState.GetCurrentContext() == this)
-                RenderingState.SetCurrentContext(null);
-
-            DisposeContextResources();
-        }
-
-        protected abstract void DisposeContextResources();
+        public abstract void Dispose();
     }
 }
