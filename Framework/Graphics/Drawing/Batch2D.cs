@@ -431,6 +431,18 @@ void main(void)
 
         #endregion
 
+        #region Line
+
+        public void Line(Vector2 from, Vector2 to, float thickness, Color color)
+        {
+            var perp = (to - from).Normalized;
+            perp = new Vector2(-perp.Y, perp.X) * thickness * .5f;
+
+            Quad(from + perp, from - perp, to - perp, to + perp, color);
+        }
+
+        #endregion
+
         #region Quad
 
         public void Quad(Quad2D quad, Color color)

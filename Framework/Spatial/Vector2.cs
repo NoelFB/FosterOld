@@ -97,6 +97,25 @@ namespace Foster.Framework
                 (vec.X * matrix.M12) + (vec.Y * matrix.M22) + matrix.M32);
         }
 
+        public static Vector2 Approach(Vector2 start, Vector2 target, float maxDelta)
+        {
+            var diff = target - start;
+            if (diff.Length <= maxDelta)
+                return target;
+            else
+                return start + diff.Normalized * maxDelta;
+        }
+
+        public static Vector2 ClampedLerp(Vector2 start, Vector2 end, float t)
+        {
+            if (t <= 0)
+                return start;
+            if (t >= 1)
+                return end;
+            else
+                return start + (end - start) * t;
+        }
+
         public static implicit operator Vector2(Point2 point) => new Vector2(point.X, point.Y);
         public static implicit operator Vector2(Point3 point) => new Vector2(point.X, point.Y);
         public static implicit operator Vector2(Vector3 vec) => new Vector2(vec.X, vec.Y);
