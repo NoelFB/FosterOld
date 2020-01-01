@@ -2,19 +2,23 @@
 using Foster.Framework.Internal;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Foster.OpenGL
 {
     public class GL_Graphics : Graphics
     {
+        // The Background Context isn't created until the Startup Event, but afterwards it's never null
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        internal RenderingContext BackgroundContext { get; private set; }
+        internal RenderingState RenderingState { get; private set; }
+#pragma warning restore CS8618 
 
         internal List<uint> BuffersToDelete = new List<uint>();
         internal List<uint> ProgramsToDelete = new List<uint>();
         internal List<uint> TexturesToDelete = new List<uint>();
-        internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
-        internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
-
-        private readonly List<Context> disposedContexts = new List<Context>();
+        internal Dictionary<RenderingContext, List<uint>> VertexArraysToDelete = new Dictionary<RenderingContext, List<uint>>();
+        internal Dictionary<RenderingContext, List<uint>> FrameBuffersToDelete = new Dictionary<RenderingContext, List<uint>>();
 
         private delegate void DeleteResource(uint id);
         private readonly DeleteResource deleteArray = GL.DeleteVertexArray;
@@ -22,6 +26,8 @@ namespace Foster.OpenGL
         private readonly DeleteResource deleteBuffer = GL.DeleteBuffer;
         private readonly DeleteResource deleteTexture = GL.DeleteTexture;
         private readonly DeleteResource deleteProgram = GL.DeleteProgram;
+
+        private readonly HashSet<RenderingContext> tempRemovingList = new HashSet<RenderingContext>();
 
         protected override void Initialized()
         {
@@ -39,6 +45,9 @@ namespace Foster.OpenGL
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
 
+            RenderingState = GetRenderingState(App.System);
+            BackgroundContext = RenderingState.CreateContext();
+
             base.Startup();
         }
 
@@ -49,32 +58,15 @@ namespace Foster.OpenGL
             DeleteResources(deleteProgram, ProgramsToDelete);
             DeleteResources(deleteTexture, TexturesToDelete);
 
-            // check for any resources we're still tracking that are in disposed contexts
+            // delete resources tied to specific contexts
+            if (VertexArraysToDelete.Count > 0 || FrameBuffersToDelete.Count > 0)
             {
-                lock (VertexArraysToDelete)
-                {
-                    foreach (var context in VertexArraysToDelete.Keys)
-                        if (context.Disposed)
-                            disposedContexts.Add(context);
-                }
+                var currentContext = RenderingState.GetCurrentContext();
 
-                lock (FrameBuffersToDelete)
-                {
-                    foreach (var context in FrameBuffersToDelete.Keys)
-                        if (context.Disposed)
-                            disposedContexts.Add(context);
-                }
+                DeleteContextResources(VertexArraysToDelete, deleteArray);
+                DeleteContextResources(FrameBuffersToDelete, deleteFramebuffer);
 
-                if (disposedContexts.Count > 0)
-                {
-                    foreach (var context in disposedContexts)
-                    {
-                        VertexArraysToDelete.Remove(context);
-                        FrameBuffersToDelete.Remove(context);
-                    }
-
-                    disposedContexts.Clear();
-                }
+                RenderingState.SetCurrentContext(currentContext);
             }
         }
 
@@ -83,29 +75,40 @@ namespace Foster.OpenGL
             GL.Flush();
         }
 
-        protected override void ContextChanged(Context context)
+        private void DeleteContextResources(Dictionary<RenderingContext, List<uint>> map, DeleteResource deleter)
         {
-            DeleteUnusedContextResources(context);
-        }
+            lock (map)
+            {
+                foreach (var kv in map)
+                {
+                    var context = kv.Key;
+                    var list = kv.Value;
 
-        private void DeleteUnusedContextResources(Context context)
-        {
-            // delete any VAOs or FrameBuffers associated with this context that need deleting
-            if (VertexArraysToDelete.TryGetValue(context, out var vaoList))
-                DeleteResources(deleteArray, vaoList);
+                    if (!context.Disposed && list.Count > 0)
+                    {
+                        if (context.ActiveThreadId == 0)
+                            context.MakeCurrent();
 
-            if (FrameBuffersToDelete.TryGetValue(context, out var fboList))
-                DeleteResources(deleteFramebuffer, fboList);
+                        if (context.ActiveThreadId == Thread.CurrentThread.ManagedThreadId)
+                        {
+                            DeleteResources(deleter, list);
+                            tempRemovingList.Add(context);
+                        }
+                    }
+                    else
+                        tempRemovingList.Add(context);
+                }
+
+                foreach (var ctx in tempRemovingList)
+                    map.Remove(ctx);
+            }
         }
 
         private void DeleteResources(DeleteResource deleter, List<uint> list)
         {
-            if (list.Count > 0)
-            {
-                for (int i = 0; i < list.Count; i++)
-                    deleter(list[i]);
-                list.Clear();
-            }
+            for (int i = 0; i < list.Count; i++)
+                deleter(list[i]);
+            list.Clear();
         }
 
         private RectInt viewport;
@@ -151,7 +154,7 @@ namespace Foster.OpenGL
             {
                 GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
 
-                var context = App.System.GetCurrentContext();
+                var context = RenderingState.GetCurrentContext();
                 if (context != null)
                     Viewport = new RectInt(0, 0, context.Width, context.Height);
             }

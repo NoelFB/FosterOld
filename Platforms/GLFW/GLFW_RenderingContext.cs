@@ -3,13 +3,13 @@ using System;
 
 namespace Foster.GLFW
 {
-    public class GLFW_Context : Context
+    public class GLFW_RenderingContext : RenderingContext
     {
         internal readonly GLFW.Window GlfwWindowPointer;
 
         private bool disposed;
 
-        internal GLFW_Context(GLFW_System system, GLFW.Window window) : base(system)
+        internal GLFW_RenderingContext(GLFW_RenderingState state, GLFW.Window window) : base(state)
         {
             if (window.Ptr == IntPtr.Zero)
                 throw new Exception("Unable to create Context");
@@ -43,18 +43,15 @@ namespace Foster.GLFW
             }
         }
 
-        public override void Dispose()
+        protected override void DisposeContextResources()
         {
             if (!disposed)
             {
-                if (System.GetCurrentContext() == this)
-                    System.SetCurrentContext(null);
-
                 disposed = true;
                 GLFW.SetWindowShouldClose(GlfwWindowPointer, true);
             }
         }
 
-        public static implicit operator IntPtr(GLFW_Context context) => context.GlfwWindowPointer.Ptr;
+        public static implicit operator IntPtr(GLFW_RenderingContext context) => context.GlfwWindowPointer.Ptr;
     }
 }

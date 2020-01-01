@@ -2,6 +2,7 @@
 using Foster.Framework.Internal;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Foster.OpenGL
 {
@@ -9,7 +10,7 @@ namespace Foster.OpenGL
     {
 
         private readonly GL_Graphics graphics;
-        private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
+        private readonly Dictionary<RenderingContext, uint> framebuffers = new Dictionary<RenderingContext, uint>();
 
         internal GL_Target(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
@@ -37,9 +38,26 @@ namespace Foster.OpenGL
 
         public void Bind()
         {
-            var context = App.System.GetCurrentContext();
-            if (context != null)
+            if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
+                lock (graphics.BackgroundContext)
+                {
+                    graphics.BackgroundContext.MakeCurrent();
+                    BindOnContext(graphics.BackgroundContext);
+                    GL.Flush();
+                    graphics.BackgroundContext.MakeNotCurrent();
+                }
+            }
+            else
+            {
+                BindOnContext(graphics.RenderingState.GetCurrentContext());
+            }
+
+            void BindOnContext(RenderingContext? context)
+            {
+                if (context == null)
+                    return;
+
                 // create new framebuffer if it's needed
                 // frame buffers are not shared between contexts
                 if (!framebuffers.TryGetValue(context, out uint id))

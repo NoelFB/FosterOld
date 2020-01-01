@@ -61,10 +61,10 @@ namespace Foster.Framework
 
         internal void Copy(InputState other)
         {
-            for (int i = 0; i < Controllers.Count; i++)
+            for (int i = 0; i < controllers.Length; i++)
             {
-                if (other.Controllers[i].Connected || (Controllers[i].Connected != other.Controllers[i].Connected))
-                    Controllers[i].Copy(other.Controllers[i]);
+                if (other.controllers[i].Connected || (controllers[i].Connected != other.controllers[i].Connected))
+                    controllers[i].Copy(other.controllers[i]);
             }
 
             Keyboard.Copy(other.Keyboard);

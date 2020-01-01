@@ -12,7 +12,7 @@ namespace Foster.GLFW
 
         // we need to keep track of delegates because otherwise they can be garbage collected
         // and then the C++ GLFW stuff is calling garbage collected delegates...
-        private readonly Dictionary<GLFW_Context, List<Delegate>> delegateTracker = new Dictionary<GLFW_Context, List<Delegate>>();
+        private readonly Dictionary<GLFW_RenderingContext, List<Delegate>> delegateTracker = new Dictionary<GLFW_RenderingContext, List<Delegate>>();
 
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
 
@@ -44,13 +44,9 @@ namespace Foster.GLFW
             {
                 system.OnWindowCreated += (window) =>
                 {
-                    var context = (window.Context as GLFW_Context);
-                    if (context != null)
-                    {
-                        GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
-                        GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
-                        GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
-                    }
+                    GLFW.SetKeyCallback(window.GlfwContext.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(window.GlfwContext, OnKeyCallback));
+                    GLFW.SetCharCallback(window.GlfwContext.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(window.GlfwContext, OnCharCallback));
+                    GLFW.SetMouseButtonCallback(window.GlfwContext.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(window.GlfwContext, OnMouseCallback));
                 };
 
                 system.OnWindowClosed += (window) =>
@@ -74,7 +70,7 @@ namespace Foster.GLFW
             }
         }
 
-        private T TrackDelegate<T>(GLFW_Context context, T method) where T : Delegate
+        private T TrackDelegate<T>(GLFW_RenderingContext context, T method) where T : Delegate
         {
             if (!delegateTracker.TryGetValue(context, out var list))
                 delegateTracker[context] = list = new List<Delegate>();
@@ -94,8 +90,8 @@ namespace Foster.GLFW
             var cursor = GetCursor(cursors);
             foreach (var window in App.System.Windows)
             {
-                if (window.Context is GLFW_Context ctx)
-                    GLFW.SetCursor(ctx.GlfwWindowPointer, cursor);
+                if (window is GLFW_Window glfwWindow)
+                    GLFW.SetCursor(glfwWindow.GlfwContext.GlfwWindowPointer, cursor);
             }
         }
 

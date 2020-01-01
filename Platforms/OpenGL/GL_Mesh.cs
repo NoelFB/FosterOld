@@ -4,14 +4,15 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Foster.OpenGL
 {
     public class GL_Mesh : InternalMesh
     {
 
-        private readonly Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
-        private readonly Dictionary<Context, bool> bindedArrays = new Dictionary<Context, bool>();
+        private readonly Dictionary<RenderingContext, uint> vertexArrays = new Dictionary<RenderingContext, uint>();
+        private readonly Dictionary<RenderingContext, bool> bindedArrays = new Dictionary<RenderingContext, bool>();
 
         private readonly GL_Graphics graphics;
         private uint indexBuffer;
@@ -27,9 +28,6 @@ namespace Foster.OpenGL
         internal GL_Mesh(GL_Graphics graphics)
         {
             this.graphics = graphics;
-
-            vertexBuffer = GL.GenBuffer();
-            indexBuffer = GL.GenBuffer();
         }
 
         ~GL_Mesh()
@@ -54,7 +52,7 @@ namespace Foster.OpenGL
                 bindedArrays.Clear();
             }
 
-            UploadBuffer(vertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexBufferSize);
+            UploadBuffer(ref vertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexBufferSize);
         }
 
         protected override void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format)
@@ -69,58 +67,78 @@ namespace Foster.OpenGL
             }
 
             // upload buffer data
-            UploadBuffer(instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceBufferSize);
+            UploadBuffer(ref instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceBufferSize);
         }
 
         protected override unsafe void UploadIndices(ReadOnlySequence<int> indices)
         {
-            UploadBuffer(indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, indices, ref indexBufferSize);
+            UploadBuffer(ref indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, indices, ref indexBufferSize);
         }
 
-        private unsafe void UploadBuffer<T>(uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
+        private unsafe void UploadBuffer<T>(ref uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
         {
-            var structSize = Marshal.SizeOf<T>();
-
-            GL.BindBuffer(type, id);
-
-            // resize the buffer
-            var neededBufferSize = data.Length * structSize;
-            if (currentBufferSize < neededBufferSize)
+            // we're on a background thread
+            if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
-                currentBufferSize = neededBufferSize;
-                GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.STATIC_DRAW);
+                lock (graphics.BackgroundContext)
+                {
+                    graphics.BackgroundContext.MakeCurrent();
+
+                    Upload(ref id, type, data, ref currentBufferSize);
+
+                    GL.Flush();
+
+                    graphics.BackgroundContext.MakeNotCurrent();
+                }
+            }
+            else
+            {
+                Upload(ref id, type, data, ref currentBufferSize);
             }
 
-            // upload the data
-            var offset = 0;
-            foreach (var memory in data)
+            static void Upload(ref uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
             {
-                using var pinned = memory.Pin();
-                GL.BufferSubData(type, new IntPtr(structSize * offset), new IntPtr(structSize * memory.Length), new IntPtr(pinned.Pointer));
-                offset += memory.Length;
-            }
+                if (id == 0)
+                    id = GL.GenBuffer();
 
-            GL.BindBuffer(type, 0);
+                var structSize = Marshal.SizeOf<T>();
+
+                GL.BindBuffer(type, id);
+
+                // resize the buffer
+                var neededBufferSize = data.Length * structSize;
+                if (currentBufferSize < neededBufferSize)
+                {
+                    currentBufferSize = neededBufferSize;
+                    GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.STATIC_DRAW);
+                }
+
+                // upload the data
+                var offset = 0;
+                foreach (var memory in data)
+                {
+                    using var pinned = memory.Pin();
+                    GL.BufferSubData(type, new IntPtr(structSize * offset), new IntPtr(structSize * memory.Length), new IntPtr(pinned.Pointer));
+                    offset += memory.Length;
+                }
+
+                GL.BindBuffer(type, 0);
+            }
         }
 
         protected override void Draw(int start, int elements)
         {
-            if (material == null)
-                throw new Exception("Trying to draw without a Material");
-
-            if (material.Shader.Internal is GL_Shader shader)
-                shader.Use(material);
-
-            if (BindVertexArray())
-            {
-                GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
-                GL.BindVertexArray(0);
-            }
+            BindAndDraw(start, elements, 0);
         }
 
         protected override void DrawInstances(int start, int elements, int instances)
         {
-            if (lastInstanceFormat == null || indexBuffer == 0)
+            BindAndDraw(start, elements, instances);
+        }
+
+        private void BindAndDraw(int start, int elements, int instances)
+        {
+            if (instances > 0 && (lastInstanceFormat == null || indexBuffer == 0))
                 throw new Exception("Instances must be assigned before being drawn");
 
             if (material == null)
@@ -129,22 +147,33 @@ namespace Foster.OpenGL
             if (material.Shader.Internal is GL_Shader shader)
                 shader.Use(material);
 
-            if (BindVertexArray())
+            // we're on a background thread
+            if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
-                GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
-                GL.BindVertexArray(0);
+                lock (graphics.BackgroundContext)
+                {
+                    graphics.BackgroundContext.MakeCurrent();
+
+                    BindAndDrawElements(graphics.BackgroundContext);
+
+                    GL.Flush();
+
+                    graphics.BackgroundContext.MakeNotCurrent();
+                }
             }
-        }
-
-        private bool BindVertexArray()
-        {
-            // Create the VAO on this context if it doesn't exist
-            // VAO's are not shared between contexts so it must exist on every one we try drawing with
-
-            var context = App.System.GetCurrentContext();
-            if (context != null && material != null)
+            else
             {
-                // create new array if it's needed
+                BindAndDrawElements(graphics.RenderingState.GetCurrentContext());
+            }
+
+            // bind and draw
+            void BindAndDrawElements(RenderingContext? context)
+            {
+                // can't do anything without a context ...
+                if (context == null || material == null)
+                    return;
+
+                // create new array if it doesn't exist on this context yet
                 if (!vertexArrays.TryGetValue(context, out uint id))
                     vertexArrays.Add(context, id = GL.GenVertexArray());
 
@@ -182,34 +211,36 @@ namespace Foster.OpenGL
                     GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, indexBuffer);
                 }
 
-                return true;
+                if (instances <= 0)
+                    GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
+                else
+                    GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
+                GL.BindVertexArray(0);
             }
 
-            return false;
-        }
-
-        private bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
-        {
-            if (format.TryGetAttribute(attribute.Name, out var element, out var ptr))
+            static bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
             {
-                // this is kind of messy because some attributes can take up multiple slots
-                // ex. a marix4x4 actually takes up 4 (size 16)
-                for (int i = 0, loc = 0; i < element.Components; i += 4, loc++)
+                if (format.TryGetAttribute(attribute.Name, out var element, out var ptr))
                 {
-                    var components = Math.Min(element.Components - i, 4);
-                    var location = (uint)(attribute.Location + loc);
+                    // this is kind of messy because some attributes can take up multiple slots
+                    // ex. a marix4x4 actually takes up 4 (size 16)
+                    for (int i = 0, loc = 0; i < element.Components; i += 4, loc++)
+                    {
+                        var components = Math.Min(element.Components - i, 4);
+                        var location = (uint)(attribute.Location + loc);
 
-                    GL.EnableVertexAttribArray(location);
-                    GL.VertexAttribPointer(location, components, ConvertVertexType(element.Type), element.Normalized, format.Stride, new IntPtr(ptr));
-                    GL.VertexAttribDivisor(location, divisor);
+                        GL.EnableVertexAttribArray(location);
+                        GL.VertexAttribPointer(location, components, ConvertVertexType(element.Type), element.Normalized, format.Stride, new IntPtr(ptr));
+                        GL.VertexAttribDivisor(location, divisor);
 
-                    ptr += components * element.ComponentSize;
+                        ptr += components * element.ComponentSize;
+                    }
+
+                    return true;
                 }
 
-                return true;
+                return false;
             }
-
-            return false;
         }
 
         protected override void DisposeResources()

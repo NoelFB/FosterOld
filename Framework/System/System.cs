@@ -35,76 +35,29 @@ namespace Foster.Framework
         public readonly ReadOnlyCollection<Monitor> Monitors;
 
         /// <summary>
-        /// A list of all the Rendering Contexts
+        /// The System Render State
+        /// This is internal because it should really only be used by the Graphics class.
+        /// Ex. OpenGL needs to handle Contexts, but nothing else should really touch this.
         /// </summary>
-        protected readonly ReadOnlyCollection<Context> Contexts;
+        protected internal readonly RenderingState RenderingState;
 
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
         /// Note that on High DPI displays the given width and height may not match
         /// the resulting Window size.
         /// </summary>
-        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
-
-        /// <summary>
-        /// Creates a new Rendering Context. This must be called from the Main Thread.
-        /// </summary>
-        public abstract Context CreateContext();
-
-        /// <summary>
-        /// Gets the current Rendering Context on the current Thread
-        /// </summary>
-        public Context? GetCurrentContext()
+        public Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
-            var threadId = Thread.CurrentThread.ManagedThreadId;
+            if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
+                throw new Exception("Creating a Window can only be done from the Main Thread");
 
-            for (int i = 0; i < Contexts.Count; i++)
-                if (Contexts[i].ActiveThreadId == threadId)
-                    return Contexts[i];
+            var window = CreateWindowInternal(title, width, height, flags);
+            window.Context.MakeCurrent();
 
-            return null;
+            return window;
         }
 
-        /// <summary>
-        /// Sets the current Rendering Context on the current Thread
-        /// Note that this will fail if the context is current on another thread
-        /// </summary>
-        public void SetCurrentContext(Context? context)
-        {
-            // context is already set on this thread
-            if (context != null && context.ActiveThreadId == Thread.CurrentThread.ManagedThreadId)
-                return;
-
-            // unset existing context
-            {
-                var current = GetCurrentContext();
-                if (current != null)
-                    current.ActiveThreadId = 0;
-            }
-
-            if (context != null)
-            {
-                if (context.Disposed)
-                    throw new Exception("The Context is Disposed");
-
-                // currently assigned to a different thread
-                if (context.ActiveThreadId != 0)
-                    throw new Exception("The Context is active on another Thread. A Context can only be current for a single Thread at a time. You must make it non-current on the old Thread before making setting it on another.");
-
-                context.ActiveThreadId = Thread.CurrentThread.ManagedThreadId;
-                SetCurrentContextInternal(context);
-                App.Modules.ContextChanged(context);
-            }
-            else
-            {
-                SetCurrentContextInternal(null);
-            }
-        }
-
-        /// <summary>
-        /// Sets the current Rendering Context on the current Thread
-        /// </summary>
-        protected abstract void SetCurrentContextInternal(Context? context);
+        protected abstract Window CreateWindowInternal(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         /// <summary>
         /// The application directory
@@ -128,15 +81,15 @@ namespace Foster.Framework
         protected readonly List<Monitor> monitors = new List<Monitor>();
 
         /// <summary>
-        /// Internal list of all Contexts owned by the System. The Platform implementation should maintain this.
+        /// Creates the Rendering State
         /// </summary>
-        protected readonly List<Context> contexts = new List<Context>();
+        protected abstract RenderingState CreateRenderingState();
 
         protected System() : base(100)
         {
             Windows = new ReadOnlyCollection<Window>(windows);
             Monitors = new ReadOnlyCollection<Monitor>(monitors);
-            Contexts = new ReadOnlyCollection<Context>(contexts);
+            RenderingState = CreateRenderingState();
         }
 
         protected internal override void Startup()

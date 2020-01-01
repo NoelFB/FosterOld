@@ -132,6 +132,11 @@ namespace Foster.Framework
 
         }
 
+        protected RenderingState GetRenderingState(System system)
+        {
+            return system.RenderingState;
+        }
+
         protected internal override void Startup()
         {
             Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");

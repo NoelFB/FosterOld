@@ -147,11 +147,6 @@ namespace Foster.Framework
         public readonly System System;
 
         /// <summary>
-        /// The Rendering Context associated with this Window
-        /// </summary>
-        public readonly Context Context;
-
-        /// <summary>
         /// Gets or Sets the Title of this Window
         /// </summary>
         public abstract string Title { get; set; }
@@ -211,7 +206,12 @@ namespace Foster.Framework
         /// </summary>
         public abstract bool MouseOver { get; }
 
-        protected Window(System system, Context context)
+        /// <summary>
+        /// The Rendering Context associated with this Window
+        /// </summary>
+        protected internal readonly RenderingContext Context;
+
+        protected Window(System system, RenderingContext context)
         {
             System = system;
             Context = context;
