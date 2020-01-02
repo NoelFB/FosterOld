@@ -18,9 +18,9 @@ namespace Foster.Framework
         internal readonly bool[] pressed = new bool[MaxButtons];
         internal readonly bool[] down = new bool[MaxButtons];
         internal readonly bool[] released = new bool[MaxButtons];
-        internal readonly ulong[] timestamp = new ulong[MaxButtons];
+        internal readonly long[] timestamp = new long[MaxButtons];
         internal readonly float[] axis = new float[MaxAxis];
-        internal readonly ulong[] axisTimestamp = new ulong[MaxAxis];
+        internal readonly long[] axisTimestamp = new long[MaxAxis];
 
         internal void Connect(string name, uint buttonCount, uint axisCount, bool isGamepad)
         {
@@ -41,9 +41,9 @@ namespace Foster.Framework
             Array.Fill(pressed, false);
             Array.Fill(down, false);
             Array.Fill(released, false);
-            Array.Fill(timestamp, 0UL);
+            Array.Fill(timestamp, 0L);
             Array.Fill(axis, 0);
-            Array.Fill(axisTimestamp, 0UL);
+            Array.Fill(axisTimestamp, 0L);
         }
 
         internal void Step()
@@ -71,9 +71,9 @@ namespace Foster.Framework
         public bool Pressed(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons && pressed[buttonIndex];
         public bool Pressed(Buttons button) => Pressed((int)button);
 
-        public ulong Timestamp(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons ? timestamp[buttonIndex] : 0;
-        public ulong Timestamp(Buttons button) => Timestamp((int)button);
-        public ulong Timestamp(Axes axis) => axisTimestamp[(int)axis];
+        public long Timestamp(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons ? timestamp[buttonIndex] : 0;
+        public long Timestamp(Buttons button) => Timestamp((int)button);
+        public long Timestamp(Axes axis) => axisTimestamp[(int)axis];
 
         public bool Down(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons && down[buttonIndex];
         public bool Down(Buttons button) => Down((int)button);

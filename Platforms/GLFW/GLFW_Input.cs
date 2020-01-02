@@ -128,11 +128,11 @@ namespace Foster.GLFW
 
             if (action == 1)
             {
-                OnMouseDown(mb, (ulong)Time.Duration.TotalMilliseconds);
+                OnMouseDown(mb);
             }
             else if (action == 0)
             {
-                OnMouseUp(mb, (ulong)Time.Duration.TotalMilliseconds);
+                OnMouseUp(mb);
             }
         }
 
@@ -145,11 +145,11 @@ namespace Foster.GLFW
         {
             if (action == 1)
             {
-                OnKeyDown((Keys)key, (ulong)Time.Duration.TotalMilliseconds);
+                OnKeyDown((Keys)key);
             }
             else if (action == 0)
             {
-                OnKeyUp((Keys)key, (ulong)Time.Duration.TotalMilliseconds);
+                OnKeyUp((Keys)key);
             }
         }
 
@@ -157,7 +157,6 @@ namespace Foster.GLFW
         {
             const float AXIS_EPSILON = 0.000001f;
 
-            var timestamp = (ulong)Time.Duration.TotalMilliseconds;
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
             {
                 uint index = (uint)jid;
@@ -174,11 +173,11 @@ namespace Foster.GLFW
 
                             if (!down && state == 1)
                             {
-                                OnGamepadButtonDown(index, button, timestamp);
+                                OnGamepadButtonDown(index, button);
                             }
                             else if (down && state == 0)
                             {
-                                OnGamepadButtonUp(index, button, timestamp);
+                                OnGamepadButtonUp(index, button);
                             }
                         }
 
@@ -189,7 +188,7 @@ namespace Foster.GLFW
                             var next = gamepadState.Axes[i];
 
                             if (Math.Abs(current - next) > AXIS_EPSILON)
-                                OnGamepadAxis(index, axis, next, timestamp);
+                                OnGamepadAxis(index, axis, next);
                         }
                     }
                     else
@@ -205,11 +204,11 @@ namespace Foster.GLFW
 
                                 if (!down && state == 1)
                                 {
-                                    OnJoystickButtonDown(index, button, timestamp);
+                                    OnJoystickButtonDown(index, button);
                                 }
                                 else if (down && state == 0)
                                 {
-                                    OnJoystickButtonUp(index, button, timestamp);
+                                    OnJoystickButtonUp(index, button);
                                 }
                             }
 
@@ -221,7 +220,7 @@ namespace Foster.GLFW
                                 var next = axes[i];
 
                                 if (Math.Abs(current - next) > AXIS_EPSILON)
-                                    OnJoystickAxis(index, axis, next, timestamp);
+                                    OnJoystickAxis(index, axis, next);
                             }
                         }
                     }

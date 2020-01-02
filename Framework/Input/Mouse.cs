@@ -9,7 +9,7 @@ namespace Foster.Framework
         internal readonly bool[] pressed = new bool[MaxButtons];
         internal readonly bool[] down = new bool[MaxButtons];
         internal readonly bool[] released = new bool[MaxButtons];
-        internal readonly ulong[] timestamp = new ulong[MaxButtons];
+        internal readonly long[] timestamp = new long[MaxButtons];
 
         public bool Pressed(MouseButtons button) => pressed[(int)button];
         public bool Down(MouseButtons button) => down[(int)button];

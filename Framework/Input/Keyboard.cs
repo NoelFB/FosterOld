@@ -11,7 +11,7 @@ namespace Foster.Framework
         internal readonly bool[] pressed = new bool[MaxKeys];
         internal readonly bool[] down = new bool[MaxKeys];
         internal readonly bool[] released = new bool[MaxKeys];
-        internal readonly ulong[] timestamp = new ulong[MaxKeys];
+        internal readonly long[] timestamp = new long[MaxKeys];
 
         /// <summary>
         /// The Input Module this Keyboard belong to
@@ -101,9 +101,9 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Gets the Timestamp of when the given key was last pressed
+        /// Gets the Timestamp of when the given key was last pressed, in Ticks
         /// </summary>
-        public ulong Timestamp(Keys key)
+        public long Timestamp(Keys key)
         {
             return timestamp[(int)key];
         }

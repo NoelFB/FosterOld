@@ -7,7 +7,7 @@ namespace Foster.Framework
     {
         private interface INode
         {
-            bool Pressed(float buffer, double lastBufferConsumedTime);
+            bool Pressed(float buffer, long lastBufferConsumedTime);
             bool Down { get; }
             bool Released { get; }
             bool Repeated(float delay, float interval);
@@ -19,13 +19,13 @@ namespace Foster.Framework
             public Input Input;
             public Keys Key;
 
-            public bool Pressed(float buffer, double lastBufferConsumedTime)
+            public bool Pressed(float buffer, long lastBufferConsumedTime)
             {
                 if (Input.Keyboard.Pressed(Key))
                     return true;
 
                 var timestamp = Input.Keyboard.Timestamp(Key);
-                var time = Time.Duration.TotalSeconds;
+                var time = Time.Duration.Ticks;
 
                 if (time - timestamp <= buffer && timestamp > lastBufferConsumedTime)
                     return true;
@@ -51,13 +51,13 @@ namespace Foster.Framework
             public int Index;
             public Buttons Button;
 
-            public bool Pressed(float buffer, double lastBufferConsumedTime)
+            public bool Pressed(float buffer, long lastBufferConsumedTime)
             {
                 if (Input.Controllers[Index].Pressed(Button))
                     return true;
 
                 var timestamp = Input.Controllers[Index].Timestamp(Button);
-                var time = Time.Duration.TotalSeconds;
+                var time = Time.Duration.Ticks;
 
                 if (time - timestamp <= buffer && timestamp > lastBufferConsumedTime)
                     return true;
@@ -89,12 +89,12 @@ namespace Foster.Framework
 
             private const float AXIS_EPSILON = 0.00001f;
 
-            public bool Pressed(float buffer, double lastBufferConsumedTime)
+            public bool Pressed(float buffer, long lastBufferConsumedTime)
             {
                 if (Pressed())
                     return true;
 
-                var time = Time.Duration.TotalSeconds;
+                var time = Time.Duration.Ticks;
 
                 if (time - pressedTimestamp <= buffer && pressedTimestamp > lastBufferConsumedTime)
                     return true;
@@ -162,7 +162,7 @@ namespace Foster.Framework
         }
 
         private readonly List<INode> nodes = new List<INode>();
-        private double lastBufferConsumeTime;
+        private long lastBufferConsumeTime;
 
         public readonly Input Input;
         public float RepeatDelay;
@@ -234,7 +234,7 @@ namespace Foster.Framework
 
         public void ConsumeBuffer()
         {
-            lastBufferConsumeTime = Time.Duration.TotalSeconds;
+            lastBufferConsumeTime = Time.Duration.Ticks;
         }
 
         public VirtualButton Add(params Keys[] keys)

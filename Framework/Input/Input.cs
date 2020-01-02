@@ -82,7 +82,7 @@ namespace Foster.Framework
             nextState.Keyboard.Text.Append(value);
         }
 
-        protected void OnKeyDown(Keys key, ulong timestamp)
+        protected void OnKeyDown(Keys key)
         {
             uint id = (uint)key;
             if (id >= Keyboard.MaxKeys)
@@ -90,10 +90,10 @@ namespace Foster.Framework
 
             nextState.Keyboard.down[id] = true;
             nextState.Keyboard.pressed[id] = true;
-            nextState.Keyboard.timestamp[id] = timestamp;
+            nextState.Keyboard.timestamp[id] = Time.Duration.Ticks;
         }
 
-        protected void OnKeyUp(Keys key, ulong timestamp)
+        protected void OnKeyUp(Keys key)
         {
             uint id = (uint)key;
             if (id >= Keyboard.MaxKeys)
@@ -103,14 +103,14 @@ namespace Foster.Framework
             nextState.Keyboard.released[id] = true;
         }
 
-        protected void OnMouseDown(MouseButtons button, ulong timestamp)
+        protected void OnMouseDown(MouseButtons button)
         {
             nextState.Mouse.down[(int)button] = true;
             nextState.Mouse.pressed[(int)button] = true;
-            nextState.Mouse.timestamp[(int)button] = timestamp;
+            nextState.Mouse.timestamp[(int)button] = Time.Duration.Ticks;
         }
 
-        protected void OnMouseUp(MouseButtons button, ulong timestamp)
+        protected void OnMouseUp(MouseButtons button)
         {
             nextState.Mouse.down[(int)button] = false;
             nextState.Mouse.released[(int)button] = true;
@@ -128,17 +128,17 @@ namespace Foster.Framework
                 nextState.Controllers[(int)index].Disconnect();
         }
 
-        protected void OnJoystickButtonDown(uint index, uint button, ulong timestamp)
+        protected void OnJoystickButtonDown(uint index, uint button)
         {
             if (index < InputState.MaxControllers && button < Controller.MaxButtons)
             {
                 nextState.Controllers[(int)index].down[button] = true;
                 nextState.Controllers[(int)index].pressed[button] = true;
-                nextState.Controllers[(int)index].timestamp[button] = timestamp;
+                nextState.Controllers[(int)index].timestamp[button] = Time.Duration.Ticks;
             }
         }
 
-        protected void OnJoystickButtonUp(uint index, uint button, ulong timestamp)
+        protected void OnJoystickButtonUp(uint index, uint button)
         {
             if (index < InputState.MaxControllers && button < Controller.MaxButtons)
             {
@@ -147,17 +147,17 @@ namespace Foster.Framework
             }
         }
 
-        protected void OnGamepadButtonDown(uint index, Buttons button, ulong timestamp)
+        protected void OnGamepadButtonDown(uint index, Buttons button)
         {
             if (index < InputState.MaxControllers && button != Buttons.None)
             {
                 nextState.Controllers[(int)index].down[(int)button] = true;
                 nextState.Controllers[(int)index].pressed[(int)button] = true;
-                nextState.Controllers[(int)index].timestamp[(int)button] = timestamp;
+                nextState.Controllers[(int)index].timestamp[(int)button] = Time.Duration.Ticks;
             }
         }
 
-        protected void OnGamepadButtonUp(uint index, Buttons button, ulong timestamp)
+        protected void OnGamepadButtonUp(uint index, Buttons button)
         {
             if (index < InputState.MaxControllers && button != Buttons.None)
             {
@@ -176,12 +176,12 @@ namespace Foster.Framework
             return (index < InputState.MaxControllers && button != Buttons.None && nextState.Controllers[(int)index].down[(int)button]);
         }
 
-        protected void OnJoystickAxis(uint index, uint axis, float value, ulong timestamp)
+        protected void OnJoystickAxis(uint index, uint axis, float value)
         {
             if (index < InputState.MaxControllers && axis < Controller.MaxAxis)
             {
                 nextState.Controllers[(int)index].axis[axis] = value;
-                nextState.Controllers[(int)index].axisTimestamp[axis] = timestamp;
+                nextState.Controllers[(int)index].axisTimestamp[axis] = Time.Duration.Ticks;
             }
         }
 
@@ -192,12 +192,12 @@ namespace Foster.Framework
             return 0;
         }
 
-        protected void OnGamepadAxis(uint index, Axes axis, float value, ulong timestamp)
+        protected void OnGamepadAxis(uint index, Axes axis, float value)
         {
             if (index < InputState.MaxControllers && axis != Axes.None)
             {
                 nextState.Controllers[(int)index].axis[(int)axis] = value;
-                nextState.Controllers[(int)index].axisTimestamp[(int)axis] = timestamp;
+                nextState.Controllers[(int)index].axisTimestamp[(int)axis] = Time.Duration.Ticks;
             }
         }
 
