@@ -4,6 +4,11 @@ namespace Foster.Framework
     public enum DepthFunctions
     {
         /// <summary>
+        /// The Depth Function is disabled / ignored
+        /// </summary>
+        None,
+
+        /// <summary>
         /// The depth test always passes.
         /// </summary>
         Always,

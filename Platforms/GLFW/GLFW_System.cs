@@ -124,7 +124,7 @@ namespace Foster.GLFW
                 throw new Exception("Creating a Window must be called from the Main Thread");
 
             var context = CreateContextInternal(title, width, height, flags);
-            var window = new GLFW_Window(this, context, title, !flags.HasFlag(WindowFlags.Hidden));
+            var window = new GLFW_Window(this, App.Graphics, context, title, !flags.HasFlag(WindowFlags.Hidden));
             windows.Add(window);
 
             OnWindowCreated?.Invoke(window);

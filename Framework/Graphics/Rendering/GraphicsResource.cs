@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Foster.Framework.Internal
 {
-    public abstract class InternalResource
+    public abstract class GraphicsResource
     {
 
         public bool IsDisposed { get; private set; }
 
-        protected internal void Dispose()
+        public void Dispose()
         {
             if (!IsDisposed)
             {

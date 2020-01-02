@@ -105,10 +105,6 @@ void main(void)
         public string TextureUniformName = "mainTexture";
         public string MatrixUniformName = "matrix";
 
-        public Matrix OrthographicMatrix =>
-            Matrix.CreateScale((1.0f / graphics.Viewport.Width) * 2, -(1.0f / graphics.Viewport.Height) * 2, 1f) *
-            Matrix.CreateTranslation(-1.0f, 1.0f, 0f);
-
         public Matrix2D MatrixStack = Matrix2D.Identity;
 
         private readonly Graphics graphics;
@@ -165,9 +161,9 @@ void main(void)
 
         public Batch2D(Graphics graphics)
         {
-            DefaultShader = new Shader(graphics, VertexSource, FragmentSource);
+            DefaultShader = Shader.Create(graphics, VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
-            Mesh = new Mesh(graphics);
+            Mesh = Mesh.Create(graphics);
 
             this.graphics = graphics;
             vertices = new Vertex[64];
@@ -190,12 +186,12 @@ void main(void)
 
         #region Rendering
 
-        public void Render()
+        public void Render(RenderTarget target)
         {
-            Render(OrthographicMatrix);
+            Render(target, target.RenderState.OrthographicMatrix);
         }
 
-        public void Render(Matrix matrix)
+        public void Render(RenderTarget target, Matrix matrix)
         {
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
 
@@ -209,8 +205,8 @@ void main(void)
                     dirty = false;
                 }
 
-                graphics.SetDepthTest(false);
-                graphics.SetCullMode(Cull.None);
+                target.RenderState.DepthFunction = DepthFunctions.None;
+                target.RenderState.CullMode = Cull.None;
 
                 // render batches
                 var shareState = false;
@@ -218,29 +214,29 @@ void main(void)
                 {
                     // remaining elements in the current batch
                     if (currentBatchInsert == i && currentBatch.Elements > 0)
-                        RenderBatch(currentBatch, ref shareState, ref matrix);
+                        RenderBatch(target, currentBatch, ref shareState, ref matrix);
 
                     // render the batch
-                    RenderBatch(batches[i], ref shareState, ref matrix);
+                    RenderBatch(target, batches[i], ref shareState, ref matrix);
                 }
 
                 // remaining elements in the current batch
                 if (currentBatchInsert == batches.Count && currentBatch.Elements > 0)
-                    RenderBatch(currentBatch, ref shareState, ref matrix);
+                    RenderBatch(target, currentBatch, ref shareState, ref matrix);
             }
         }
 
-        private void RenderBatch(Batch batch, ref bool shareState, ref Matrix matrix)
+        private void RenderBatch(RenderTarget target, Batch batch, ref bool shareState, ref Matrix matrix)
         {
             if (!shareState)
             {
                 if (batch.Scissor != null)
-                    graphics.SetScissor(batch.Scissor.Value);
+                    target.RenderState.Scissor = batch.Scissor.Value;
                 else
-                    graphics.DisableScissor();
+                    target.RenderState.Scissor = target.RenderState.Viewport;
 
                 // set BlendMode
-                graphics.SetBlendMode(batch.BlendMode);
+                target.RenderState.BlendMode = batch.BlendMode;
 
                 // Render the Mesh
                 // Note we apply the texture and matrix based on the current batch
@@ -251,7 +247,7 @@ void main(void)
                 Mesh.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
             }
 
-            Mesh.Draw(batch.Offset, batch.Elements);
+            Mesh.Draw(target, batch.Offset, batch.Elements);
             shareState = batch.NextHasSameState;
         }
 
@@ -470,7 +466,7 @@ void main(void)
             PushQuad();
             ExpandVertices(VertexCount + 4);
 
-            if (currentBatch.Texture?.Internal.FlipVertically ?? false)
+            if (currentBatch.Texture?.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
@@ -511,7 +507,7 @@ void main(void)
             PushQuad();
             ExpandVertices(VertexCount + 4);
 
-            if (currentBatch.Texture?.Internal.FlipVertically ?? false)
+            if (currentBatch.Texture?.FlipVertically ?? false)
                 FlipYUVs(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);

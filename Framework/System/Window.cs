@@ -129,7 +129,7 @@ namespace Foster.Framework
         /// <summary>
         /// A callback when the Window is redrawn
         /// </summary>
-        public Action? OnRender;
+        public Action<WindowTarget>? OnRender;
 
         /// <summary>
         /// A callback when the Window is resized by the user
@@ -211,27 +211,36 @@ namespace Foster.Framework
         /// </summary>
         public abstract bool MouseOver { get; }
 
-        protected Window(System system, Context context)
+        /// <summary>
+        /// The Window Rendering Target
+        /// </summary>
+        protected internal readonly WindowTarget Target;
+
+        protected Window(System system, Graphics graphics, Context context)
         {
             System = system;
             Context = context;
+            Target = graphics.CreateWindowTarget(this);
         }
 
         /// <summary>
         /// Renders the Window. Call Present afterwards to display the rendered contents
         /// </summary>
-        public void Render()
+        internal void Render()
         {
-            Context.MakeCurrent();
-            App.Modules.BeforeRender(this);
-            OnRender?.Invoke();
-            App.Modules.AfterRender(this);
+            Target.BeginRendering();
+            {
+                App.Modules.BeforeRender(Target);
+                OnRender?.Invoke(Target);
+                App.Modules.AfterRender(Target);
+            }
+            Target.EndRendering();
         }
 
         /// <summary>
         /// Presents the drawn contents of the Window
         /// </summary>
-        public abstract void Present();
+        protected internal abstract void Present();
 
         /// <summary>
         /// Closes the Window

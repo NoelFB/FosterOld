@@ -3,7 +3,7 @@ using System;
 
 namespace Foster.OpenGL
 {
-    public class GL_Uniform : ShaderUniform
+    internal class GL_Uniform : ShaderUniform
     {
         public readonly GL_Shader Shader;
         private object? lastValue;

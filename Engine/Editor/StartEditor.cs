@@ -134,10 +134,10 @@ namespace Foster.Editor
             window.OnClose -= OnWindowClose;
         }
 
-        private void OnWindowRender()
+        private void OnWindowRender(WindowTarget target)
         {
-            App.Graphics.ClearColor(0x2d3047);
-            batcher.Render();
+            target.Clear(0x2d3047);
+            batcher.Render(target);
         }
 
         private void OnWindowClose()

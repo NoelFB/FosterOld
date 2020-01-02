@@ -22,14 +22,8 @@ namespace Foster.Framework
     ///         be cross-platform and runtime available.
     /// 
     /// </summary>
-    public class Shader
+    public abstract class Shader : GraphicsResource
     {
-
-        /// <summary>
-        /// Internal Shader object
-        /// </summary>
-        public readonly InternalShader Internal;
-
         /// <summary>
         /// List of all Vertex Attributes, by Name
         /// </summary>
@@ -40,24 +34,24 @@ namespace Foster.Framework
         /// </summary>
         public readonly ReadOnlyDictionary<string, ShaderUniform> Uniforms;
 
-        public Shader(string vertex, string fragment) : this(App.Graphics, vertex, fragment)
-        {
 
+        protected readonly Dictionary<string, ShaderAttribute> attributes = new Dictionary<string, ShaderAttribute>();
+        protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
+
+        public static Shader Create(string vertex, string fragment)
+        {
+            return App.Graphics.CreateShader(vertex, fragment);
         }
 
-        public Shader(Graphics graphics, string vertex, string fragment)
+        public static Shader Create(Graphics graphics, string vertex, string fragment)
         {
-            Internal = graphics.CreateShader(vertex, fragment);
-            Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(Internal.uniforms);
-            Attributes = new ReadOnlyDictionary<string, ShaderAttribute>(Internal.attributes);
+            return graphics.CreateShader(vertex, fragment);
         }
 
-        /// <summary>
-        /// Disposes the internal Shader resources
-        /// </summary>
-        public void Dispose()
+        protected Shader()
         {
-            Internal.Dispose();
+            Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(uniforms);
+            Attributes = new ReadOnlyDictionary<string, ShaderAttribute>(attributes);
         }
 
     }

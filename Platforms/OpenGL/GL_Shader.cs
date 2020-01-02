@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 
 namespace Foster.OpenGL
 {
-    public class GL_Shader : InternalShader
+    internal class GL_Shader : Shader
     {
 
         private readonly GL_Graphics graphics;
@@ -96,7 +96,7 @@ namespace Foster.OpenGL
 
                 if (uniform.Type == ShaderUniform.Types.Texture2D)
                 {
-                    var texture = ((parameter.Value as Texture)?.Internal as GL_Texture);
+                    var texture = (parameter.Value as GL_Texture);
                     var id = texture?.ID ?? 0;
 
                     GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));

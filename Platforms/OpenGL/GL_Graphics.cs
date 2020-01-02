@@ -2,6 +2,7 @@
 using Foster.Framework.Internal;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Foster.OpenGL
 {
@@ -13,6 +14,7 @@ namespace Foster.OpenGL
         internal List<uint> TexturesToDelete = new List<uint>();
         internal Dictionary<Context, List<uint>> VertexArraysToDelete = new Dictionary<Context, List<uint>>();
         internal Dictionary<Context, List<uint>> FrameBuffersToDelete = new Dictionary<Context, List<uint>>();
+        internal Dictionary<Context, RenderState> lastContextRenderState = new Dictionary<Context, RenderState>();
 
         private readonly List<Context> disposedContexts = new List<Context>();
 
@@ -22,6 +24,8 @@ namespace Foster.OpenGL
         private readonly DeleteResource deleteBuffer = GL.DeleteBuffer;
         private readonly DeleteResource deleteTexture = GL.DeleteTexture;
         private readonly DeleteResource deleteProgram = GL.DeleteProgram;
+
+        internal Context BackgroundContext;
 
         protected override void Initialized()
         {
@@ -38,6 +42,8 @@ namespace Foster.OpenGL
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
+
+            BackgroundContext = App.System.CreateContext();
 
             base.Startup();
         }
@@ -78,7 +84,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void AfterRender(Window window)
+        protected override void AfterRender(WindowTarget target)
         {
             GL.Flush();
         }
@@ -108,139 +114,142 @@ namespace Foster.OpenGL
             }
         }
 
-        private RectInt viewport;
-
-        public override RectInt Viewport
+        public override Texture CreateTexture(int width, int height, TextureFormat format)
         {
-            get => viewport;
-            set
-            {
-                viewport = value;
-                GL.Viewport(viewport.X, viewport.Y, viewport.Width, viewport.Height);
-            }
+            return new GL_Texture(this, width, height, format, false);
         }
 
-        protected override InternalTexture CreateTexture(int width, int height, TextureFormat format)
+        public override RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return new GL_Texture(this, width, height, format);
+            return new GL_RenderTexture(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
-        protected override InternalTarget CreateTarget(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
-        {
-            return new GL_Target(this, width, height, colorAttachmentFormats, depthFormat);
-        }
-
-        protected override InternalShader CreateShader(string vertexSource, string fragmentSource)
+        public override Shader CreateShader(string vertexSource, string fragmentSource)
         {
             return new GL_Shader(this, vertexSource, fragmentSource);
         }
 
-        protected override InternalMesh CreateMesh()
+        public override Mesh CreateMesh()
         {
             return new GL_Mesh(this);
         }
 
-        public override void SetTarget(Target? target)
+        protected override WindowTarget CreateWindowTarget(Window window)
         {
-            if (target != null && target.Internal is GL_Target glTarget)
-            {
-                glTarget.Bind();
-                Viewport = new RectInt(0, 0, target.Width, target.Height);
-            }
-            else
-            {
-                GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
-
-                var context = App.System.GetCurrentContext();
-                if (context != null)
-                    Viewport = new RectInt(0, 0, context.Width, context.Height);
-            }
-
-            DisableScissor();
+            return new GL_WindowTarget(this, window);
         }
 
-        public override void SetDepthTest(bool enabled)
+        internal void ApplyRenderState(Context context, ref RenderState state)
         {
-            if (enabled)
-            {
-                GL.Enable(GLEnum.DEPTH_TEST);
-            }
-            else
-            {
-                GL.Disable(GLEnum.DEPTH_TEST);
-            }
-        }
+            var updateAll = false;
+            if (!lastContextRenderState.TryGetValue(context, out var lastState))
+                updateAll = true;
 
-        public override void SetDepthFunction(DepthFunctions func)
-        {
-            switch (func)
+            // Blend Mode
+            if (updateAll || lastState.BlendMode != state.BlendMode)
             {
-                case DepthFunctions.Always:
-                    GL.DepthFunc(GLEnum.ALWAYS);
-                    break;
-                case DepthFunctions.Equal:
-                    GL.DepthFunc(GLEnum.EQUAL);
-                    break;
-                case DepthFunctions.Greater:
-                    GL.DepthFunc(GLEnum.GREATER);
-                    break;
-                case DepthFunctions.GreaterOrEqual:
-                    GL.DepthFunc(GLEnum.GEQUAL);
-                    break;
-                case DepthFunctions.Less:
-                    GL.DepthFunc(GLEnum.LESS);
-                    break;
-                case DepthFunctions.LessOrEqual:
-                    GL.DepthFunc(GLEnum.LEQUAL);
-                    break;
-                case DepthFunctions.Never:
-                    GL.DepthFunc(GLEnum.NEVER);
-                    break;
-                case DepthFunctions.NotEqual:
-                    GL.DepthFunc(GLEnum.NOTEQUAL);
-                    break;
+                GLEnum op = GetBlendFunc(state.BlendMode.Operation);
+                GLEnum src = GetBlendFactor(state.BlendMode.Source);
+                GLEnum dst = GetBlendFactor(state.BlendMode.Destination);
 
-                default:
-                    throw new NotImplementedException();
+                GL.Enable(GLEnum.BLEND);
+                GL.BlendEquation(op);
+                GL.BlendFunc(src, dst);
             }
-        }
 
-        public override void SetCullMode(Cull mode)
-        {
-            if (mode == Cull.None)
+            // Depth Function
+            if (updateAll || lastState.DepthFunction != state.DepthFunction)
             {
-                GL.Disable(GLEnum.CULL_FACE);
-            }
-            else
-            {
-                GL.Enable(GLEnum.CULL_FACE);
-                if (mode == Cull.Back)
+                if (state.DepthFunction == DepthFunctions.None)
                 {
-                    GL.CullFace(GLEnum.BACK);
-                }
-                else if (mode == Cull.Front)
-                {
-                    GL.CullFace(GLEnum.FRONT);
+                    GL.Disable(GLEnum.DEPTH_TEST);
                 }
                 else
                 {
-                    GL.CullFace(GLEnum.FRONT_AND_BACK);
+                    GL.Enable(GLEnum.DEPTH_TEST);
+
+                    switch (state.DepthFunction)
+                    {
+                        case DepthFunctions.Always:
+                            GL.DepthFunc(GLEnum.ALWAYS);
+                            break;
+                        case DepthFunctions.Equal:
+                            GL.DepthFunc(GLEnum.EQUAL);
+                            break;
+                        case DepthFunctions.Greater:
+                            GL.DepthFunc(GLEnum.GREATER);
+                            break;
+                        case DepthFunctions.GreaterOrEqual:
+                            GL.DepthFunc(GLEnum.GEQUAL);
+                            break;
+                        case DepthFunctions.Less:
+                            GL.DepthFunc(GLEnum.LESS);
+                            break;
+                        case DepthFunctions.LessOrEqual:
+                            GL.DepthFunc(GLEnum.LEQUAL);
+                            break;
+                        case DepthFunctions.Never:
+                            GL.DepthFunc(GLEnum.NEVER);
+                            break;
+                        case DepthFunctions.NotEqual:
+                            GL.DepthFunc(GLEnum.NOTEQUAL);
+                            break;
+
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
+
+            // Cull Mode
+            if (updateAll || lastState.CullMode != state.CullMode)
+            {
+                if (state.CullMode == Cull.None)
+                {
+                    GL.Disable(GLEnum.CULL_FACE);
+                }
+                else
+                {
+                    GL.Enable(GLEnum.CULL_FACE);
+                    if (state.CullMode == Cull.Back)
+                    {
+                        GL.CullFace(GLEnum.BACK);
+                    }
+                    else if (state.CullMode == Cull.Front)
+                    {
+                        GL.CullFace(GLEnum.FRONT);
+                    }
+                    else
+                    {
+                        GL.CullFace(GLEnum.FRONT_AND_BACK);
+                    }
+                }
+            }
+
+            // Viewport
+            if (updateAll || lastState.Viewport != state.Viewport)
+            {
+                GL.Viewport(state.Viewport.X, state.Viewport.Y, state.Viewport.Width, state.Viewport.Height);
+            }
+
+            // Scissor
+            if (updateAll || lastState.Scissor != state.Scissor)
+            {
+                if (state.Scissor.X <= 0 && state.Scissor.Y <= 0 && state.Scissor.Right >= state.Viewport.Width && state.Scissor.Bottom >= state.Viewport.Height)
+                {
+                    GL.Disable(GLEnum.SCISSOR_TEST);
+                }
+                else
+                {
+                    GL.Enable(GLEnum.SCISSOR_TEST);
+                    GL.Scissor(state.Scissor.X, state.Viewport.Height - state.Scissor.Bottom, state.Scissor.Width, state.Scissor.Height);
+                }
+            }
+
+            lastContextRenderState[context] = state;
         }
 
-        public override void SetBlendMode(BlendMode blendMode)
-        {
-            GLEnum op = GetBlendFunc(blendMode.Operation);
-            GLEnum src = GetBlendFactor(blendMode.Source);
-            GLEnum dst = GetBlendFactor(blendMode.Destination);
-
-            GL.Enable(GLEnum.BLEND);
-            GL.BlendEquation(op);
-            GL.BlendFunc(src, dst);
-        }
-
-        public override void Clear(ClearFlags flags, Color color, float depth, int stencil)
+        internal void Clear(ClearFlags flags, Color color, float depth, int stencil)
         {
             var mask = GLEnum.ZERO;
 
@@ -263,17 +272,6 @@ namespace Foster.OpenGL
             }
 
             GL.Clear(mask);
-        }
-
-        public override void SetScissor(RectInt scissor)
-        {
-            GL.Enable(GLEnum.SCISSOR_TEST);
-            GL.Scissor(scissor.X, viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);
-        }
-
-        public override void DisableScissor()
-        {
-            GL.Disable(GLEnum.SCISSOR_TEST);
         }
 
         private static GLEnum GetBlendFunc(BlendOperations operation)

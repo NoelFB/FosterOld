@@ -7,13 +7,8 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
-    public class Texture
+    public abstract class Texture : GraphicsResource
     {
-
-        /// <summary>
-        /// The internal texture object
-        /// </summary>
-        public readonly InternalTexture Internal;
 
         /// <summary>
         /// Gets the Width of the Texture
@@ -49,7 +44,7 @@ namespace Foster.Framework
         public TextureFilter Filter
         {
             get => filter;
-            set => Internal.SetFilter(filter = value);
+            set => SetFilter(filter = value);
         }
 
         /// <summary>
@@ -58,7 +53,7 @@ namespace Foster.Framework
         public TextureWrap WrapX
         {
             get => wrapX;
-            set => Internal.SetWrap(wrapX = value, wrapY);
+            set => SetWrap(wrapX = value, wrapY);
         }
 
         /// <summary>
@@ -67,34 +62,37 @@ namespace Foster.Framework
         public TextureWrap WrapY
         {
             get => wrapY;
-            set => Internal.SetWrap(wrapX, wrapY = value);
+            set => SetWrap(wrapX, wrapY = value);
         }
+
+
+        /// <summary>
+        /// If the Texture should be flipped vertically when drawing
+        /// For example, OpenGL Render Targets usually require this
+        /// </summary>
+        public abstract bool FlipVertically { get; }
 
         private TextureFilter filter;
         private TextureWrap wrapX;
         private TextureWrap wrapY;
 
-        public Texture(Graphics graphics, int width, int height, TextureFormat format = TextureFormat.Color) : this(graphics, null, width, height, format)
+        public static Texture Create(int width, int height, TextureFormat format = TextureFormat.Color)
         {
-
+            return App.Graphics.CreateTexture(width, height, format);
         }
 
-        public Texture(int width, int height, TextureFormat format = TextureFormat.Color) : this(App.Graphics, width, height, format)
+        public static Texture Create(Bitmap bitmap)
         {
-
+            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height, TextureFormat.Color);
+            texture.SetData<Color>(bitmap.Pixels);
+            return texture;
         }
 
-        public Texture(Bitmap bitmap) : this(App.Graphics, bitmap.Width, bitmap.Height)
-        {
-            Internal.SetData<Color>(bitmap.Pixels);
-        }
-
-        internal Texture(Graphics graphics, InternalTexture? internalTexture, int width, int height, TextureFormat format)
+        protected Texture(int width, int height, TextureFormat format)
         {
             if (format == TextureFormat.None)
                 throw new Exception("Invalid Texture Format");
 
-            Internal = internalTexture ?? graphics.CreateTexture(width, height, format);
             Width = width;
             Height = height;
             Format = format;
@@ -109,7 +107,7 @@ namespace Foster.Framework
         public Bitmap AsBitmap()
         {
             var bitmap = new Bitmap(Width, Height);
-            Internal.GetData<Color>(new Memory<Color>(bitmap.Pixels));
+            GetData<Color>(new Memory<Color>(bitmap.Pixels));
             return bitmap;
         }
 
@@ -131,7 +129,7 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            Internal.SetData(buffer);
+            SetGraphicsData(buffer);
         }
 
         /// <summary>
@@ -142,15 +140,12 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            Internal.GetData(buffer);
+            GetGraphicsData(buffer);
         }
 
-        /// <summary>
-        /// Disposes the internal Texture resources
-        /// </summary>
-        public void Dispose()
-        {
-            Internal.Dispose();
-        }
+        protected abstract void SetFilter(TextureFilter filter);
+        protected abstract void SetWrap(TextureWrap x, TextureWrap y);
+        protected abstract void SetGraphicsData<T>(ReadOnlyMemory<T> buffer);
+        protected abstract void GetGraphicsData<T>(Memory<T> buffer);
     }
 }

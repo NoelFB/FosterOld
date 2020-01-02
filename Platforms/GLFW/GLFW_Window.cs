@@ -121,7 +121,7 @@ namespace Foster.GLFW
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
         private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
-        public GLFW_Window(GLFW_System system, GLFW_Context context, string title, bool visible) : base(system, context)
+        public GLFW_Window(GLFW_System system, Graphics graphics, GLFW_Context context, string title, bool visible) : base(system, graphics, context)
         {
 
             this.title = title;
@@ -153,7 +153,7 @@ namespace Foster.GLFW
             mouseOver = (entered != 0);
         }
 
-        public override void Present()
+        protected override void Present()
         {
             if (lastVsync != VSync)
             {

@@ -163,7 +163,7 @@ namespace Foster.Framework
             {
                 for (int i = 0; i < output.Pages.Count; i ++)
                 {
-                    var texture = new Texture(output.Pages[i]);
+                    var texture = Texture.Create(output.Pages[i]);
                     foreach (var entry in output.Entries.Values)
                     {
                         if (entry.Page != i)

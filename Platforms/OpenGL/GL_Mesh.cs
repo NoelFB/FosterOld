@@ -4,10 +4,11 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Foster.OpenGL
 {
-    public class GL_Mesh : InternalMesh
+    internal class GL_Mesh : Mesh
     {
 
         private readonly Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
@@ -103,113 +104,139 @@ namespace Foster.OpenGL
             GL.BindBuffer(type, 0);
         }
 
-        protected override void Draw(int start, int elements)
+        protected override void Draw(RenderTarget target, int start, int elements, int instances)
         {
-            if (material == null)
-                throw new Exception("Trying to draw without a Material");
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
 
-            if (material.Shader.Internal is GL_Shader shader)
-                shader.Use(material);
-
-            if (BindVertexArray())
-            {
-                GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
-                GL.BindVertexArray(0);
-            }
-        }
-
-        protected override void DrawInstances(int start, int elements, int instances)
-        {
-            if (lastInstanceFormat == null || indexBuffer == 0)
+            if (instances > 0 && (lastInstanceFormat == null || indexBuffer == 0))
                 throw new Exception("Instances must be assigned before being drawn");
 
             if (material == null)
                 throw new Exception("Trying to draw without a Material");
 
-            if (material.Shader.Internal is GL_Shader shader)
+            if (material.Shader is GL_Shader shader)
                 shader.Use(material);
 
-            if (BindVertexArray())
+            // don't need to check the thread for a Window Target since it can only be drawn from the Main thread
+            if (target is GL_WindowTarget windowTarget)
             {
-                GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
+                lock (windowTarget.Window.Context)
+                {
+                    windowTarget.Window.Context.MakeCurrent();
+                    Draw(target, windowTarget.Window.Context, material);
+                }
+            }
+            // if we're on a different thread, use the Background context
+            else if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                lock (graphics.BackgroundContext)
+                {
+                    graphics.BackgroundContext.MakeCurrent();
+                    Draw(target, graphics.BackgroundContext, material);
+                    GL.Flush();
+                    graphics.BackgroundContext.MakeNonCurrent();
+                }
+            }
+            // otherwise just draw, regardless of Context
+            else
+            {
+                var context = App.System.GetCurrentContext();
+                if (context == null)
+                    throw new Exception("Attempting to Draw without a Context");
+                
+                lock (context)
+                {
+                    Draw(target, context, material);
+                }
+            }
+
+            void Draw(RenderTarget target, Context context, Material material)
+            {
+                // bind target
+                if (target is GL_WindowTarget)
+                {
+                    GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
+                }
+                else if (target is GL_RenderTexture glRenderTexture)
+                {
+                    glRenderTexture.Bind(context);
+                }
+
+                // use render state
+                graphics.ApplyRenderState(context, ref target.RenderState);
+
+                // make sure our VAO is up to shape on the given context
+                {
+                    // create new array if it's needed
+                    if (!vertexArrays.TryGetValue(context, out uint id))
+                        vertexArrays.Add(context, id = GL.GenVertexArray());
+
+                    GL.BindVertexArray(id);
+
+                    // rebind data if needed
+                    if (!bindedArrays.TryGetValue(context, out var bound) || !bound)
+                    {
+                        bindedArrays[context] = true;
+
+                        // bind buffers and determine what attributes are on
+                        foreach (var attribute in material.Shader.Attributes.Values)
+                        {
+                            if (lastVertexFormat != null)
+                            {
+                                GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
+
+                                if (TrySetupAttribPointer(attribute, lastVertexFormat, 0))
+                                    continue;
+                            }
+
+                            if (lastInstanceFormat != null)
+                            {
+                                GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
+
+                                if (TrySetupAttribPointer(attribute, lastInstanceFormat, 1))
+                                    continue;
+                            }
+
+                            // nothing is using this so disable it
+                            GL.DisableVertexAttribArray(attribute.Location);
+                        }
+
+                        // bind our index buffer
+                        GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                    }
+                }
+
+                if (instances > 0)
+                    GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
+                else
+                    GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
                 GL.BindVertexArray(0);
             }
-        }
 
-        private bool BindVertexArray()
-        {
-            // Create the VAO on this context if it doesn't exist
-            // VAO's are not shared between contexts so it must exist on every one we try drawing with
-
-            var context = App.System.GetCurrentContext();
-            if (context != null && material != null)
+            static bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
             {
-                // create new array if it's needed
-                if (!vertexArrays.TryGetValue(context, out uint id))
-                    vertexArrays.Add(context, id = GL.GenVertexArray());
-
-                GL.BindVertexArray(id);
-
-                // rebind data if needed
-                if (!bindedArrays.TryGetValue(context, out var bound) || !bound)
+                if (format.TryGetAttribute(attribute.Name, out var element, out var ptr))
                 {
-                    bindedArrays[context] = true;
-
-                    // bind buffers and determine what attributes are on
-                    foreach (var attribute in material.Shader.Attributes.Values)
+                    // this is kind of messy because some attributes can take up multiple slots
+                    // ex. a marix4x4 actually takes up 4 (size 16)
+                    for (int i = 0, loc = 0; i < element.Components; i += 4, loc++)
                     {
-                        if (lastVertexFormat != null)
-                        {
-                            GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
+                        var components = Math.Min(element.Components - i, 4);
+                        var location = (uint)(attribute.Location + loc);
 
-                            if (TrySetupAttribPointer(attribute, lastVertexFormat, 0))
-                                continue;
-                        }
+                        GL.EnableVertexAttribArray(location);
+                        GL.VertexAttribPointer(location, components, ConvertVertexType(element.Type), element.Normalized, format.Stride, new IntPtr(ptr));
+                        GL.VertexAttribDivisor(location, divisor);
 
-                        if (lastInstanceFormat != null)
-                        {
-                            GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
-
-                            if (TrySetupAttribPointer(attribute, lastInstanceFormat, 1))
-                                continue;
-                        }
-
-                        // nothing is using this so disable it
-                        GL.DisableVertexAttribArray(attribute.Location);
+                        ptr += components * element.ComponentSize;
                     }
 
-                    // bind our index buffer
-                    GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                    return true;
                 }
 
-                return true;
+                return false;
             }
-
-            return false;
-        }
-
-        private bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
-        {
-            if (format.TryGetAttribute(attribute.Name, out var element, out var ptr))
-            {
-                // this is kind of messy because some attributes can take up multiple slots
-                // ex. a marix4x4 actually takes up 4 (size 16)
-                for (int i = 0, loc = 0; i < element.Components; i += 4, loc++)
-                {
-                    var components = Math.Min(element.Components - i, 4);
-                    var location = (uint)(attribute.Location + loc);
-
-                    GL.EnableVertexAttribArray(location);
-                    GL.VertexAttribPointer(location, components, ConvertVertexType(element.Type), element.Normalized, format.Stride, new IntPtr(ptr));
-                    GL.VertexAttribDivisor(location, divisor);
-
-                    ptr += components * element.ComponentSize;
-                }
-
-                return true;
-            }
-
-            return false;
         }
 
         protected override void DisposeResources()

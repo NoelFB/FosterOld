@@ -39,6 +39,11 @@ namespace Foster.Framework
             System = system;
         }
 
+        public bool IsCurrent()
+        {
+            return System.GetCurrentContext() == this;
+        }
+
         /// <summary>
         /// Sets this as the current Rendering Context on the current Thread
         /// Note that this will fail if the context is current on another thread
@@ -46,6 +51,12 @@ namespace Foster.Framework
         public void MakeCurrent()
         {
             System.SetCurrentContext(this);
+        }
+
+        public void MakeNonCurrent()
+        {
+            if (System.GetCurrentContext() == this)
+                System.SetCurrentContext(null);
         }
 
         /// <summary>

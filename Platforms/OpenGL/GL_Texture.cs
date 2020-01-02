@@ -4,52 +4,35 @@ using System;
 
 namespace Foster.OpenGL
 {
-    public class GL_Texture : InternalTexture
+    internal class GL_Texture : Texture
     {
 
         public uint ID { get; private set; }
 
         private readonly GL_Graphics graphics;
-        private readonly int width;
-        private readonly int height;
-
-        internal readonly TextureFormat format;
-        internal readonly GLEnum glFormat;
-        internal bool flipVertically;
+        private readonly GLEnum glFormat;
+        private readonly bool flipVertically;
         
         public override bool FlipVertically => flipVertically;
 
-        internal GL_Texture(GL_Graphics graphics, int width, int height, TextureFormat format)
+        internal GL_Texture(GL_Graphics graphics, int width, int height, TextureFormat format, bool flipVertically) : base(width, height, format)
         {
             this.graphics = graphics;
-            this.width = width;
-            this.height = height;
-            this.format = format;
+            this.flipVertically = flipVertically;
 
             ID = GL.GenTexture();
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
 
-            switch (format)
+            glFormat = format switch
             {
-                case TextureFormat.Red:
-                    glFormat = GLEnum.RED;
-                    break;
-                case TextureFormat.RG:
-                    glFormat = GLEnum.RG;
-                    break;
-                case TextureFormat.RGB:
-                    glFormat = GLEnum.RGB;
-                    break;
-                case TextureFormat.Color:
-                    glFormat = GLEnum.RGBA;
-                    break;
-                case TextureFormat.DepthStencil:
-                    glFormat = GLEnum.DEPTH24_STENCIL8;
-                    break;
-                default:
-                    throw new Exception("Invalid Texture Format");
-            }
+                TextureFormat.Red => GLEnum.RED,
+                TextureFormat.RG => GLEnum.RG,
+                TextureFormat.RGB => GLEnum.RGB,
+                TextureFormat.Color => GLEnum.RGBA,
+                TextureFormat.DepthStencil => GLEnum.DEPTH24_STENCIL8,
+                _ => throw new Exception("Invalid Texture Format"),
+            };
 
             GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glFormat, width, height, 0, glFormat, GLEnum.UNSIGNED_BYTE, new IntPtr(0));        
             GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MIN_FILTER, (int)GLEnum.LINEAR);
@@ -84,16 +67,16 @@ namespace Foster.OpenGL
             GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)t);
         }
 
-        protected override unsafe void SetData<T>(ReadOnlyMemory<T> buffer)
+        protected override unsafe void SetGraphicsData<T>(ReadOnlyMemory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
             GL.ActiveTexture((uint)GLEnum.TEXTURE0);
             GL.BindTexture(GLEnum.TEXTURE_2D, ID);
-            GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glFormat, width, height, 0, glFormat, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
+            GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glFormat, Width, Height, 0, glFormat, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
         }
 
-        protected override unsafe void GetData<T>(Memory<T> buffer)
+        protected override unsafe void GetGraphicsData<T>(Memory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 

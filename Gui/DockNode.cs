@@ -92,12 +92,7 @@ namespace Foster.GuiSystem
                 Window.Position = rounded.TopLeft;
                 Window.VSync = false;
                 Window.Bordered = false;
-                Window.OnRender = () => Batcher.Render();
-                Window.OnResize = () =>
-                {
-                    Window.Render();
-                    Window.Present();
-                };
+                Window.OnRender = (target) => Batcher.Render(target);
                 Window.OnClose = () => Discard();
                 Window.Visible = true;
 

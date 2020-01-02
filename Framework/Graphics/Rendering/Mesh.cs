@@ -7,10 +7,8 @@ using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
-    public class Mesh
+    public abstract class Mesh : GraphicsResource
     {
-        public readonly InternalMesh Internal;
-
         public int VertexCount { get; private set; }
         public int IndicesCount { get; private set; }
         public int InstanceCount { get; private set; }
@@ -20,24 +18,24 @@ namespace Foster.Framework
 
         private Material? material;
 
-        public Mesh(Graphics graphics)
-        {
-            Internal = graphics.CreateMesh();
-        }
-
-        public Mesh() : this(App.Graphics)
-        {
-
-        }
-
         public  Material? Material
         {
             get => material;
             set
             {
                 if (material != value)
-                    Internal.SetMaterial(material = value);
+                    SetMaterial(material = value);
             }
+        }
+
+        public static Mesh Create()
+        {
+            return App.Graphics.CreateMesh();
+        }
+
+        public static Mesh Create(Graphics graphics)
+        {
+            return graphics.CreateMesh();
         }
 
         public void SetVertices<T>(T[] vertices) where T : struct, IVertex
@@ -65,7 +63,7 @@ namespace Foster.Framework
             VertexCount = (int)vertices.Length;
             VertexFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
-            Internal.UploadVertices(vertices, VertexFormat);
+            UploadVertices(vertices, VertexFormat);
         }
 
         public void SetIndices(int[] indices)
@@ -81,7 +79,7 @@ namespace Foster.Framework
         public void SetIndices(ReadOnlySequence<int> indices)
         {
             IndicesCount = (int)indices.Length;
-            Internal.UploadIndices(indices);
+            UploadIndices(indices);
         }
 
         public void SetInstances<T>(T[] vertices) where T : struct, IVertex
@@ -109,36 +107,47 @@ namespace Foster.Framework
             InstanceCount = (int)vertices.Length;
             InstanceFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
-            Internal.UploadInstances(vertices, InstanceFormat);
+            UploadInstances(vertices, InstanceFormat);
         }
 
-        public void Draw()
+        public void Draw(RenderTarget target)
         {
-            Internal.Draw(0, ElementCount);
+            if (!target.Drawable)
+                throw new Exception("The Render Target cannot be drawn to");
+
+            Draw(target, 0, ElementCount, 0);
         }
 
-        public void Draw(int start, int elements)
+        public void Draw(RenderTarget target, int start, int elements)
         {
-            Internal.Draw(start, elements);
+            if (!target.Drawable)
+                throw new Exception("The Render Target cannot be drawn to");
+
+            Draw(target, start, elements, 0);
         }
 
-        public void DrawInstances()
+        public void DrawInstances(RenderTarget target)
         {
-            Internal.DrawInstances(0, ElementCount, InstanceCount);
+            if (!target.Drawable)
+                throw new Exception("The Render Target cannot be drawn to");
+
+            Draw(target, 0, ElementCount, InstanceCount);
         }
 
-        public void DrawInstances(int start, int elements, int instances)
+        public void DrawInstances(RenderTarget target, int start, int elements, int instances)
         {
-            Internal.DrawInstances(start, elements, instances);
+            if (!target.Drawable)
+                throw new Exception("The Render Target cannot be drawn to");
+
+            Draw(target, start, elements, instances);
         }
 
-        /// <summary>
-        /// Disposes the internal Mesh resources
-        /// </summary>
-        public void Dispose()
-        {
-            Internal.Dispose();
-        }
+        protected abstract void SetMaterial(Material? material);
+        protected abstract void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format);
+        protected abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
+        protected abstract void UploadIndices(ReadOnlySequence<int> indices);
+        protected abstract void Draw(RenderTarget target, int start, int elements, int instances);
+
 
     }
 }
