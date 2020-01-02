@@ -123,7 +123,6 @@ namespace Foster.GLFW
 
         public GLFW_Window(GLFW_System system, Graphics graphics, GLFW_Context context, string title, bool visible) : base(system, graphics, context)
         {
-
             this.title = title;
             this.visible = visible;
 

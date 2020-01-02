@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
-using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
@@ -61,6 +60,7 @@ namespace Foster.Framework
             this.height = height;
 
             Attachments = new ReadOnlyCollection<Texture>(attachments);
+            Viewport = new RectInt(0, 0, width, height);
             Drawable = true;
         }
 

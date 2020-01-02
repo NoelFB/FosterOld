@@ -1,5 +1,4 @@
 ﻿using Foster.Framework;
-using Foster.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -61,16 +60,16 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void ClearTarget(ClearFlags flags, Color color, float depth, int stencil)
+        protected override void ClearInternal(ClearFlags flags, Color color, float depth, int stencil)
         {
+            // if we're off the main thread, draw using the Background Context
             if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
                 lock (graphics.BackgroundContext)
                 {
                     graphics.BackgroundContext.MakeCurrent();
-                    Bind(graphics.BackgroundContext);
-                    graphics.ApplyRenderState(graphics.BackgroundContext, ref RenderState);
-                    graphics.Clear(flags, color, depth, stencil);
+                    Clear(graphics.BackgroundContext);
+                    GL.Flush();
                     graphics.BackgroundContext.MakeNonCurrent();
                 }
             }
@@ -83,10 +82,28 @@ namespace Foster.OpenGL
 
                 lock (context)
                 {
-                    Bind(context);
-                    graphics.ApplyRenderState(context, ref RenderState);
-                    graphics.Clear(flags, color, depth, stencil);
+                    Clear(context);
                 }
+            }
+
+            void Clear(Context context)
+            {
+                Bind(context);
+
+                // update the viewport
+                var meta = graphics.GetContextMeta(context);
+                if (meta.LastViewport == null || meta.LastViewport.Value != Viewport)
+                {
+                    GL.Viewport(Viewport.X, Viewport.Y, Viewport.Width, Viewport.Height);
+                    meta.LastViewport = Viewport;
+                }
+
+                // we disable the scissor for clearing
+                meta.ForceScissorUpdate = true;
+                GL.Disable(GLEnum.SCISSOR_TEST);
+
+                // clear
+                graphics.Clear(flags, color, depth, stencil);
             }
         }
 
@@ -95,16 +112,7 @@ namespace Foster.OpenGL
             if (framebuffers.Count > 0)
             {
                 foreach (var kv in framebuffers)
-                {
-                    var context = kv.Key;
-                    var framebuffer = kv.Value;
-
-                    if (!graphics.FrameBuffersToDelete.TryGetValue(context, out var list))
-                        graphics.FrameBuffersToDelete[context] = list = new List<uint>();
-
-                    list.Add(framebuffer);
-                }
-
+                    graphics.GetContextMeta(kv.Key).FrameBuffersToDelete.Add(kv.Value);
                 framebuffers.Clear();
             }
 

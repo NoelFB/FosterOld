@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace Foster.Editor
 {
@@ -19,6 +20,9 @@ namespace Foster.Editor
         private readonly Batch2D batcher;
 
         private List<string> existingProjects = new List<string>();
+
+        private RenderTexture test;
+        private bool ready = false;
 
         public StartEditor(string[] args)
         {
@@ -72,6 +76,22 @@ namespace Foster.Editor
                 ContentColor = 0x000000,
                 Padding = new Vector2(8, 4)
             };
+
+            var t = new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(1000);
+
+                test = RenderTexture.Create(400, 400);
+                test.Clear(Color.Red);
+
+                var m = new Batch2D();
+                m.Rect(0, 0, 32, 32, Color.Yellow);
+                m.Rect(16, 16, 100, 200, Color.Blue);
+                m.Render(test);
+
+                ready = true;
+            }));
+            t.Start();
         }
 
         public void Launch(ProjectConfig config)
@@ -123,7 +143,10 @@ namespace Foster.Editor
                     }
                 }
                 imgui.EndFrame();
+
             }
+            if (ready)
+                batcher.Image(test, Color.White);
 
             imgui.EndViewport();
         }

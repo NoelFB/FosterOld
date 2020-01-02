@@ -1,5 +1,4 @@
 ﻿using System;
-using Foster.Framework.Internal;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -72,9 +71,9 @@ namespace Foster.Framework
         /// </summary>
         public abstract bool FlipVertically { get; }
 
-        private TextureFilter filter;
-        private TextureWrap wrapX;
-        private TextureWrap wrapY;
+        private TextureFilter filter = TextureFilter.Linear;
+        private TextureWrap wrapX = TextureWrap.Clamp;
+        private TextureWrap wrapY = TextureWrap.Clamp;
 
         public static Texture Create(int width, int height, TextureFormat format = TextureFormat.Color)
         {
@@ -96,9 +95,6 @@ namespace Foster.Framework
             Width = width;
             Height = height;
             Format = format;
-            WrapX = TextureWrap.Clamp;
-            WrapY = TextureWrap.Clamp;
-            Filter = TextureFilter.Linear;
         }
 
         /// <summary>

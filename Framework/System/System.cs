@@ -37,7 +37,7 @@ namespace Foster.Framework
         /// <summary>
         /// A list of all the Rendering Contexts
         /// </summary>
-        protected readonly ReadOnlyCollection<Context> Contexts;
+        public readonly ReadOnlyCollection<Context> Contexts;
 
         /// <summary>
         /// System Input
@@ -94,10 +94,16 @@ namespace Foster.Framework
 
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
-        /// Note that on High DPI displays the given width and height may not match
-        /// the resulting Window size.
         /// </summary>
-        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
+        public Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        {
+            return CreateWindow(App.Graphics, title, width, height, flags);
+        }
+
+        /// <summary>
+        /// Creates a new Window. This must be called from the Main Thread.
+        /// </summary>
+        public abstract Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         /// <summary>
         /// Creates a new Rendering Context. This must be called from the Main Thread.

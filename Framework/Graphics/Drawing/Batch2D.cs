@@ -101,18 +101,15 @@ void main(void)
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
         public readonly Mesh Mesh;
+        public Matrix2D MatrixStack = Matrix2D.Identity;
 
         public string TextureUniformName = "mainTexture";
         public string MatrixUniformName = "matrix";
 
-        public Matrix2D MatrixStack = Matrix2D.Identity;
-
-        private readonly Graphics graphics;
         private readonly Stack<Matrix2D> matrixStack = new Stack<Matrix2D>();
-
         private Vertex[] vertices;
         private int[] indices;
-
+        private RenderPass pass;
         private readonly List<Batch> batches;
         private Batch currentBatch;
         private int currentBatchInsert;
@@ -165,7 +162,6 @@ void main(void)
             DefaultMaterial = new Material(DefaultShader);
             Mesh = Mesh.Create(graphics);
 
-            this.graphics = graphics;
             vertices = new Vertex[64];
             indices = new int[64];
             batches = new List<Batch>();
@@ -188,11 +184,13 @@ void main(void)
 
         public void Render(RenderTarget target)
         {
-            Render(target, target.RenderState.OrthographicMatrix);
+            Render(target, target.OrthographicMatrix);
         }
 
         public void Render(RenderTarget target, Matrix matrix)
         {
+            pass = new RenderPass(target, Mesh, DefaultMaterial);
+
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
 
             if (batches.Count > 0 || currentBatch.Elements > 0)
@@ -204,9 +202,6 @@ void main(void)
 
                     dirty = false;
                 }
-
-                target.RenderState.DepthFunction = DepthFunctions.None;
-                target.RenderState.CullMode = Cull.None;
 
                 // render batches
                 var shareState = false;
@@ -231,23 +226,27 @@ void main(void)
             if (!shareState)
             {
                 if (batch.Scissor != null)
-                    target.RenderState.Scissor = batch.Scissor.Value;
+                    pass.Scissor = batch.Scissor.Value;
                 else
-                    target.RenderState.Scissor = target.RenderState.Viewport;
+                    pass.Scissor = target.Viewport;
 
                 // set BlendMode
-                target.RenderState.BlendMode = batch.BlendMode;
+                pass.BlendMode = batch.BlendMode;
 
                 // Render the Mesh
                 // Note we apply the texture and matrix based on the current batch
                 // If the user set these on the Material themselves, they will be overwritten here
 
-                Mesh.Material = batch.Material ?? DefaultMaterial;
-                Mesh.Material[TextureUniformName]?.SetTexture(batch.Texture);
-                Mesh.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
+                pass.Material = batch.Material ?? DefaultMaterial;
+                pass.Material[TextureUniformName]?.SetTexture(batch.Texture);
+                pass.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
             }
 
-            Mesh.Draw(target, batch.Offset, batch.Elements);
+            pass.MeshStartElement = batch.Offset;
+            pass.MeshElementCount = batch.Elements;
+            pass.MeshInstanceCount = 0;
+            pass.Draw();
+
             shareState = batch.NextHasSameState;
         }
 

@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
@@ -15,18 +14,6 @@ namespace Foster.Framework
         public int ElementCount => IndicesCount / 3;
         public VertexFormat? VertexFormat { get; private set; } = null;
         public VertexFormat? InstanceFormat { get; private set; } = null;
-
-        private Material? material;
-
-        public  Material? Material
-        {
-            get => material;
-            set
-            {
-                if (material != value)
-                    SetMaterial(material = value);
-            }
-        }
 
         public static Mesh Create()
         {
@@ -110,43 +97,9 @@ namespace Foster.Framework
             UploadInstances(vertices, InstanceFormat);
         }
 
-        public void Draw(RenderTarget target)
-        {
-            if (!target.Drawable)
-                throw new Exception("The Render Target cannot be drawn to");
-
-            Draw(target, 0, ElementCount, 0);
-        }
-
-        public void Draw(RenderTarget target, int start, int elements)
-        {
-            if (!target.Drawable)
-                throw new Exception("The Render Target cannot be drawn to");
-
-            Draw(target, start, elements, 0);
-        }
-
-        public void DrawInstances(RenderTarget target)
-        {
-            if (!target.Drawable)
-                throw new Exception("The Render Target cannot be drawn to");
-
-            Draw(target, 0, ElementCount, InstanceCount);
-        }
-
-        public void DrawInstances(RenderTarget target, int start, int elements, int instances)
-        {
-            if (!target.Drawable)
-                throw new Exception("The Render Target cannot be drawn to");
-
-            Draw(target, start, elements, instances);
-        }
-
-        protected abstract void SetMaterial(Material? material);
         protected abstract void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format);
         protected abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
         protected abstract void UploadIndices(ReadOnlySequence<int> indices);
-        protected abstract void Draw(RenderTarget target, int start, int elements, int instances);
 
 
     }

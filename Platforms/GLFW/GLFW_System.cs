@@ -118,13 +118,13 @@ namespace Foster.GLFW
             input.AfterUpdate();
         }
 
-        public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        public override Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");
 
             var context = CreateContextInternal(title, width, height, flags);
-            var window = new GLFW_Window(this, App.Graphics, context, title, !flags.HasFlag(WindowFlags.Hidden));
+            var window = new GLFW_Window(this, graphics, context, title, !flags.HasFlag(WindowFlags.Hidden));
             windows.Add(window);
 
             OnWindowCreated?.Invoke(window);

@@ -1,5 +1,4 @@
 ﻿using System;
-using Foster.Framework.Internal;
 
 namespace Foster.Framework
 {
@@ -26,6 +25,16 @@ namespace Foster.Framework
         /// The Maximum Texture Width and Height supported, in pixels
         /// </summary>
         public int MaxTextureSize { get; protected set; } = 0;
+
+        protected Graphics() : base(200)
+        {
+
+        }
+
+        protected internal override void Startup()
+        {
+            Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");
+        }
 
         /// <summary>
         /// Creates a new Color Texture of the given size
@@ -56,14 +65,33 @@ namespace Foster.Framework
         /// </summary>
         protected internal abstract WindowTarget CreateWindowTarget(Window window);
 
-        protected Graphics() : base(200)
+        /// <summary>
+        /// Draws the given Render Pass
+        /// </summary>
+        public void Draw(ref RenderPass renderPass)
         {
+            if (renderPass.Target == null || !renderPass.Target.Drawable)
+                throw new Exception("Target is not Drawable");
 
+            if (renderPass.Mesh == null)
+                throw new Exception("Mesh cannot be null when drawing");
+
+            if (renderPass.Material == null)
+                throw new Exception("Material cannot be null when drawing");
+
+            if (renderPass.Mesh.InstanceCount > 0 && (renderPass.Mesh.InstanceFormat == null || (renderPass.Mesh.InstanceCount < renderPass.Mesh.InstanceCount)))
+                throw new Exception("Trying to draw more Instances than exist in the Mesh");
+
+            if (renderPass.Mesh.ElementCount < renderPass.MeshStartElement + renderPass.MeshElementCount)
+                throw new Exception("Trying to draw more Elements than exist in the Mesh");
+
+            PerformDraw(ref renderPass);
         }
 
-        protected internal override void Startup()
-        {
-            Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");
-        }
+        /// <summary>
+        /// Draws the given Render Pass
+        /// </summary>
+        protected abstract void PerformDraw(ref RenderPass drawState);
+
     }
 }

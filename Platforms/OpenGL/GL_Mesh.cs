@@ -1,5 +1,4 @@
 ﻿using Foster.Framework;
-using Foster.Framework.Internal;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -20,7 +19,7 @@ namespace Foster.OpenGL
         private uint instanceBuffer;
         private VertexFormat? lastVertexFormat;
         private VertexFormat? lastInstanceFormat;
-        private Material? material;
+        private Material? lastMaterial;
         private long indexBufferSize;
         private long vertexBufferSize;
         private long instanceBufferSize;
@@ -28,23 +27,11 @@ namespace Foster.OpenGL
         internal GL_Mesh(GL_Graphics graphics)
         {
             this.graphics = graphics;
-
-            vertexBuffer = GL.GenBuffer();
-            indexBuffer = GL.GenBuffer();
         }
 
         ~GL_Mesh()
         {
             DisposeResources();
-        }
-
-        protected override void SetMaterial(Material? material)
-        {
-            if (this.material != material)
-            {
-                this.material = material;
-                bindedArrays.Clear();
-            }
         }
 
         protected override void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format)
@@ -55,14 +42,11 @@ namespace Foster.OpenGL
                 bindedArrays.Clear();
             }
 
-            UploadBuffer(vertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexBufferSize);
+            UploadBuffer(ref vertexBuffer, GLEnum.ARRAY_BUFFER, vertices, ref vertexBufferSize);
         }
 
         protected override void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format)
         {
-            if (instanceBuffer == 0)
-                instanceBuffer = GL.GenBuffer();
-
             if (format != lastInstanceFormat)
             {
                 lastInstanceFormat = format;
@@ -70,148 +54,112 @@ namespace Foster.OpenGL
             }
 
             // upload buffer data
-            UploadBuffer(instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceBufferSize);
+            UploadBuffer(ref instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceBufferSize);
         }
 
         protected override unsafe void UploadIndices(ReadOnlySequence<int> indices)
         {
-            UploadBuffer(indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, indices, ref indexBufferSize);
+            UploadBuffer(ref indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, indices, ref indexBufferSize);
         }
 
-        private unsafe void UploadBuffer<T>(uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
+        private unsafe void UploadBuffer<T>(ref uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
         {
-            var structSize = Marshal.SizeOf<T>();
+            if (IsDisposed)
+                throw new Exception("Mesh is Disposed");
 
-            GL.BindBuffer(type, id);
-
-            // resize the buffer
-            var neededBufferSize = data.Length * structSize;
-            if (currentBufferSize < neededBufferSize)
-            {
-                currentBufferSize = neededBufferSize;
-                GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.STATIC_DRAW);
-            }
-
-            // upload the data
-            var offset = 0;
-            foreach (var memory in data)
-            {
-                using var pinned = memory.Pin();
-                GL.BufferSubData(type, new IntPtr(structSize * offset), new IntPtr(structSize * memory.Length), new IntPtr(pinned.Pointer));
-                offset += memory.Length;
-            }
-
-            GL.BindBuffer(type, 0);
-        }
-
-        protected override void Draw(RenderTarget target, int start, int elements, int instances)
-        {
-            if (target == null)
-                throw new ArgumentNullException(nameof(target));
-
-            if (instances > 0 && (lastInstanceFormat == null || indexBuffer == 0))
-                throw new Exception("Instances must be assigned before being drawn");
-
-            if (material == null)
-                throw new Exception("Trying to draw without a Material");
-
-            if (material.Shader is GL_Shader shader)
-                shader.Use(material);
-
-            // don't need to check the thread for a Window Target since it can only be drawn from the Main thread
-            if (target is GL_WindowTarget windowTarget)
-            {
-                lock (windowTarget.Window.Context)
-                {
-                    windowTarget.Window.Context.MakeCurrent();
-                    Draw(target, windowTarget.Window.Context, material);
-                }
-            }
-            // if we're on a different thread, use the Background context
-            else if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
+            if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
                 lock (graphics.BackgroundContext)
                 {
                     graphics.BackgroundContext.MakeCurrent();
-                    Draw(target, graphics.BackgroundContext, material);
+
+                    UploadBufferData(ref id, type, data, ref currentBufferSize);
                     GL.Flush();
+
                     graphics.BackgroundContext.MakeNonCurrent();
                 }
             }
-            // otherwise just draw, regardless of Context
             else
             {
-                var context = App.System.GetCurrentContext();
-                if (context == null)
-                    throw new Exception("Attempting to Draw without a Context");
-                
-                lock (context)
-                {
-                    Draw(target, context, material);
-                }
+                UploadBufferData(ref id, type, data, ref currentBufferSize);
             }
 
-            void Draw(RenderTarget target, Context context, Material material)
+            static void UploadBufferData(ref uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
             {
-                // bind target
-                if (target is GL_WindowTarget)
+                if (id == 0)
+                    id = GL.GenBuffer();
+
+                GL.BindBuffer(type, id);
+
+                var structSize = Marshal.SizeOf<T>();
+
+                // resize the buffer
+                var neededBufferSize = data.Length * structSize;
+                if (currentBufferSize < neededBufferSize)
                 {
-                    GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
+                    currentBufferSize = neededBufferSize;
+                    GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.STATIC_DRAW);
                 }
-                else if (target is GL_RenderTexture glRenderTexture)
+
+                // upload the data
+                var offset = 0;
+                foreach (var memory in data)
                 {
-                    glRenderTexture.Bind(context);
+                    using var pinned = memory.Pin();
+                    GL.BufferSubData(type, new IntPtr(structSize * offset), new IntPtr(structSize * memory.Length), new IntPtr(pinned.Pointer));
+                    offset += memory.Length;
                 }
 
-                // use render state
-                graphics.ApplyRenderState(context, ref target.RenderState);
+                GL.BindBuffer(type, 0);
+            }
+        }
 
-                // make sure our VAO is up to shape on the given context
+        internal void Bind(Context context, Material material)
+        {
+            // make sure our VAO is up to shape on the given context
+            {
+                // create new array if it's needed on this context
+                if (!vertexArrays.TryGetValue(context, out uint id))
+                    vertexArrays.Add(context, id = GL.GenVertexArray());
+
+                GL.BindVertexArray(id);
+
+                // we will need to change attribute pointers probably
+                if (lastMaterial != null && lastMaterial.Shader != material.Shader)
+                    bindedArrays.Clear();
+                lastMaterial = material;
+
+                // rebind data if needed
+                if (!bindedArrays.TryGetValue(context, out var bound) || !bound)
                 {
-                    // create new array if it's needed
-                    if (!vertexArrays.TryGetValue(context, out uint id))
-                        vertexArrays.Add(context, id = GL.GenVertexArray());
+                    bindedArrays[context] = true;
 
-                    GL.BindVertexArray(id);
-
-                    // rebind data if needed
-                    if (!bindedArrays.TryGetValue(context, out var bound) || !bound)
+                    // bind buffers and determine what attributes are on
+                    foreach (var attribute in material.Shader.Attributes.Values)
                     {
-                        bindedArrays[context] = true;
-
-                        // bind buffers and determine what attributes are on
-                        foreach (var attribute in material.Shader.Attributes.Values)
+                        if (lastVertexFormat != null)
                         {
-                            if (lastVertexFormat != null)
-                            {
-                                GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
+                            GL.BindBuffer(GLEnum.ARRAY_BUFFER, vertexBuffer);
 
-                                if (TrySetupAttribPointer(attribute, lastVertexFormat, 0))
-                                    continue;
-                            }
-
-                            if (lastInstanceFormat != null)
-                            {
-                                GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
-
-                                if (TrySetupAttribPointer(attribute, lastInstanceFormat, 1))
-                                    continue;
-                            }
-
-                            // nothing is using this so disable it
-                            GL.DisableVertexAttribArray(attribute.Location);
+                            if (TrySetupAttribPointer(attribute, lastVertexFormat, 0))
+                                continue;
                         }
 
-                        // bind our index buffer
-                        GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, indexBuffer);
-                    }
-                }
+                        if (lastInstanceFormat != null)
+                        {
+                            GL.BindBuffer(GLEnum.ARRAY_BUFFER, instanceBuffer);
 
-                if (instances > 0)
-                    GL.DrawElementsInstanced(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3), instances);
-                else
-                    GL.DrawElements(GLEnum.TRIANGLES, elements * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * start * 3));
-                GL.BindVertexArray(0);
+                            if (TrySetupAttribPointer(attribute, lastInstanceFormat, 1))
+                                continue;
+                        }
+
+                        // nothing is using this so disable it
+                        GL.DisableVertexAttribArray(attribute.Location);
+                    }
+
+                    // bind our index buffer
+                    GL.BindBuffer(GLEnum.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                }
             }
 
             static bool TrySetupAttribPointer(ShaderAttribute attribute, VertexFormat format, uint divisor)
@@ -241,30 +189,22 @@ namespace Foster.OpenGL
 
         protected override void DisposeResources()
         {
-            if (vertexBuffer != 0)
-            {
+            if (vertexBuffer > 0)
                 graphics.BuffersToDelete.Add(vertexBuffer);
+
+            if (indexBuffer > 0)
                 graphics.BuffersToDelete.Add(indexBuffer);
 
-                if (instanceBuffer > 0)
-                    graphics.BuffersToDelete.Add(instanceBuffer);
+            if (instanceBuffer > 0)
+                graphics.BuffersToDelete.Add(instanceBuffer);
 
-                foreach (var kv in vertexArrays)
-                {
-                    var context = kv.Key;
-                    var vertexArray = kv.Value;
+            foreach (var kv in vertexArrays)
+                graphics.GetContextMeta(kv.Key).VertexArraysToDelete.Add(kv.Value);
 
-                    if (!graphics.VertexArraysToDelete.TryGetValue(context, out var list))
-                        graphics.VertexArraysToDelete[context] = list = new List<uint>();
-
-                    list.Add(vertexArray);
-                }
-
-                vertexArrays.Clear();
-                vertexBuffer = 0;
-                indexBuffer = 0;
-                instanceBuffer = 0;
-            }
+            vertexArrays.Clear();
+            vertexBuffer = 0;
+            indexBuffer = 0;
+            instanceBuffer = 0;
         }
 
         private static GLEnum ConvertVertexType(VertexType value)

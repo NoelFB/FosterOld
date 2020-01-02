@@ -21,7 +21,7 @@ namespace Foster.Framework
 
         internal void BeginRendering()
         {
-            RenderState = new RenderState(this);
+            Viewport = new RectInt(0, 0, Width, Height);
             Drawable = true;
         }
 

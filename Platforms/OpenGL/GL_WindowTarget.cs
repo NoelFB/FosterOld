@@ -15,16 +15,25 @@ namespace Foster.OpenGL
             this.graphics = graphics;
         }
 
-        protected override void ClearTarget(ClearFlags flags, Color color, float depth, int stencil)
+        protected override void ClearInternal(ClearFlags flags, Color color, float depth, int stencil)
         {
-            // Window Targets can only be cleared from the main thread
-            // so we don't need to do any thread / context checks ...
-
             lock (Window.Context)
             {
                 Window.Context.MakeCurrent();
-                GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
-                graphics.ApplyRenderState(Window.Context, ref RenderState);
+
+                // update the viewport
+                var meta = graphics.GetContextMeta(Window.Context);
+                if (meta.LastViewport == null || meta.LastViewport.Value != Viewport)
+                {
+                    GL.Viewport(Viewport.X, Viewport.Y, Viewport.Width, Viewport.Height);
+                    meta.LastViewport = Viewport;
+                }
+
+                // we disable the scissor for clearing
+                meta.ForceScissorUpdate = true;
+                GL.Disable(GLEnum.SCISSOR_TEST);
+
+                // clear
                 graphics.Clear(flags, color, depth, stencil);
             }
         }

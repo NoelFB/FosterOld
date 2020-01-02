@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Foster.Framework.Internal
+namespace Foster.Framework
 {
     public abstract class GraphicsResource
     {

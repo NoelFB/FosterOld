@@ -228,6 +228,8 @@ namespace Foster.Framework
         /// </summary>
         internal void Render()
         {
+            // The Window Target is only allowed to be rendered to during this call
+            // So we wrap the render calls
             Target.BeginRendering();
             {
                 App.Modules.BeforeRender(Target);

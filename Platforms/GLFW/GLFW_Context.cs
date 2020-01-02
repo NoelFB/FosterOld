@@ -48,7 +48,7 @@ namespace Foster.GLFW
             if (!disposed)
             {
                 if (System.GetCurrentContext() == this)
-                    System.SetCurrentContext(null);
+                    System.SetCurrentContext(System.Contexts[0]);
 
                 disposed = true;
                 GLFW.SetWindowShouldClose(GlfwWindowPointer, true);

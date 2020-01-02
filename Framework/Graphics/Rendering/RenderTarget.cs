@@ -1,5 +1,4 @@
-﻿using Foster.Framework.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,9 +18,9 @@ namespace Foster.Framework
         public abstract int Height { get; }
 
         /// <summary>
-        /// The Target Render State
+        /// The Render State Viewport
         /// </summary>
-        public RenderState RenderState;
+        public RectInt Viewport;
 
         /// <summary>
         /// Whether the Render Target can be drawn to
@@ -29,35 +28,37 @@ namespace Foster.Framework
         public bool Drawable { get; protected set; }
 
         /// <summary>
-        /// Creates a Target of the given size
+        /// Orthographic Matrix based on the Viewport of this Render Target
         /// </summary>
-        public RenderTarget()
-        {
-            RenderState = new RenderState(this);
-        }
+        public Matrix OrthographicMatrix =>
+            Matrix.CreateScale((1.0f / Viewport.Width) * 2, -(1.0f / Viewport.Height) * 2, 1f) *
+            Matrix.CreateTranslation(-1.0f, 1.0f, 0f);
 
         /// <summary>
         /// Clears the Color of the Target
         /// </summary>
-        public void Clear(Color color) => ClearTarget(ClearFlags.Color, color, 0, 0);
+        public void Clear(Color color) => Clear(ClearFlags.Color, color, 0, 0);
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        public void Clear(Color color, float depth, int stencil) => ClearTarget(ClearFlags.All, color, depth, stencil);
+        public void Clear(Color color, float depth, int stencil) => Clear(ClearFlags.All, color, depth, stencil);
 
+        /// <summary>
+        /// Clears the Target
+        /// </summary>
         public void Clear(ClearFlags flags, Color color, float depth, int stencil)
         {
             if (!Drawable)
                 throw new Exception("Render Target cannot currently be drawn to");
 
-            ClearTarget(flags, color, depth, stencil);
+            ClearInternal(flags, color, depth, stencil);
         }
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        protected abstract void ClearTarget(ClearFlags flags, Color color, float depth, int stencil);
+        protected abstract void ClearInternal(ClearFlags flags, Color color, float depth, int stencil);
 
     }
 }
