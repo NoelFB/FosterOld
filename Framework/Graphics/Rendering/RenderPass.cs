@@ -10,11 +10,6 @@ namespace Foster.Framework
     public struct RenderPass
     {
         /// <summary>
-        /// Target to Draw To
-        /// </summary>
-        public RenderTarget Target;
-
-        /// <summary>
         /// Material to use
         /// </summary>
         public Material Material;
@@ -57,39 +52,27 @@ namespace Foster.Framework
         /// <summary>
         /// The Render State Scissor Rectangle
         /// </summary>
-        public RectInt Scissor;
+        public RectInt? Scissor;
 
         /// <summary>
-        /// Creates a Render Pass based on the given target, mesh, and material
+        /// Creates a Render Pass based on the given mesh and material
         /// </summary>
-        public RenderPass(RenderTarget target, Mesh mesh, Material material)
+        public RenderPass(Mesh mesh, Material material)
         {
-            Target = target;
             Mesh = mesh;
             Material = material;
             MeshStartElement = 0;
             MeshElementCount = mesh.IndicesCount;
             MeshInstanceCount = mesh.InstanceCount;
-            Scissor = new RectInt(0, 0, target.Width, target.Height);
+            Scissor = null;
             BlendMode = BlendMode.Normal;
             DepthFunction = DepthFunctions.None;
             CullMode = Cull.None;
         }
 
-        /// <summary>
-        /// Performs the Render Pass
-        /// </summary>
-        public void Draw()
+        public void RenderTo(RenderTarget target)
         {
-            App.Graphics.Draw(ref this);
-        }
-
-        /// <summary>
-        /// Performs the Render Pass
-        /// </summary>
-        public void Draw(Graphics graphics)
-        {
-            graphics.Draw(ref this);
+            target.Render(ref this);
         }
     }
 }

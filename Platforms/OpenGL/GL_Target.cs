@@ -5,13 +5,13 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_RenderTexture : RenderTexture
+    internal class GL_Target : Target
     {
 
         private readonly GL_Graphics graphics;
         private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
 
-        internal GL_RenderTexture(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(width, height)
+        internal GL_Target(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(width, height)
         {
             this.graphics = graphics;
 
@@ -23,7 +23,7 @@ namespace Foster.OpenGL
                 Depth = new GL_Texture(graphics, width, height, depthFormat, true);
         }
 
-        ~GL_RenderTexture()
+        ~GL_Target()
         {
             DisposeResources();
         }
@@ -62,49 +62,12 @@ namespace Foster.OpenGL
 
         protected override void ClearInternal(ClearFlags flags, Color color, float depth, int stencil)
         {
-            // if we're off the main thread, draw using the Background Context
-            if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
-            {
-                lock (graphics.BackgroundContext)
-                {
-                    graphics.BackgroundContext.MakeCurrent();
-                    Clear(graphics.BackgroundContext);
-                    GL.Flush();
-                    graphics.BackgroundContext.MakeNonCurrent();
-                }
-            }
-            // otherwise just draw, regardless of Context
-            else
-            {
-                var context = App.System.GetCurrentContext();
-                if (context == null)
-                    throw new Exception("Attempting to Draw without a Context");
+            graphics.ClearTarget(this, flags, color, depth, stencil);
+        }
 
-                lock (context)
-                {
-                    Clear(context);
-                }
-            }
-
-            void Clear(Context context)
-            {
-                Bind(context);
-
-                // update the viewport
-                var meta = graphics.GetContextMeta(context);
-                if (meta.LastViewport == null || meta.LastViewport.Value != Viewport)
-                {
-                    GL.Viewport(Viewport.X, Viewport.Y, Viewport.Width, Viewport.Height);
-                    meta.LastViewport = Viewport;
-                }
-
-                // we disable the scissor for clearing
-                meta.ForceScissorUpdate = true;
-                GL.Disable(GLEnum.SCISSOR_TEST);
-
-                // clear
-                graphics.Clear(flags, color, depth, stencil);
-            }
+        protected override void RenderInternal(ref RenderPass pass)
+        {
+            graphics.RenderToTarget(this, ref pass);
         }
 
         protected override void DisposeResources()

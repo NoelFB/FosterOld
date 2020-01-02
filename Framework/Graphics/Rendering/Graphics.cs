@@ -44,7 +44,7 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new render texture of the given size, with the given amount of color and depth buffers
         /// </summary>
-        public abstract RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
+        public abstract Target CreateTarget(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
 
         /// <summary>
         /// Creates a new Shader
@@ -64,34 +64,6 @@ namespace Foster.Framework
         /// Creates a Window Target for the given Window
         /// </summary>
         protected internal abstract WindowTarget CreateWindowTarget(Window window);
-
-        /// <summary>
-        /// Draws the given Render Pass
-        /// </summary>
-        public void Draw(ref RenderPass renderPass)
-        {
-            if (renderPass.Target == null || !renderPass.Target.Drawable)
-                throw new Exception("Target is not Drawable");
-
-            if (renderPass.Mesh == null)
-                throw new Exception("Mesh cannot be null when drawing");
-
-            if (renderPass.Material == null)
-                throw new Exception("Material cannot be null when drawing");
-
-            if (renderPass.Mesh.InstanceCount > 0 && (renderPass.Mesh.InstanceFormat == null || (renderPass.Mesh.InstanceCount < renderPass.Mesh.InstanceCount)))
-                throw new Exception("Trying to draw more Instances than exist in the Mesh");
-
-            if (renderPass.Mesh.ElementCount < renderPass.MeshStartElement + renderPass.MeshElementCount)
-                throw new Exception("Trying to draw more Elements than exist in the Mesh");
-
-            PerformDraw(ref renderPass);
-        }
-
-        /// <summary>
-        /// Draws the given Render Pass
-        /// </summary>
-        protected abstract void PerformDraw(ref RenderPass drawState);
 
     }
 }

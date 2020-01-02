@@ -18,6 +18,7 @@ namespace Foster.OpenGL
         {
             public List<uint> VertexArraysToDelete = new List<uint>();
             public List<uint> FrameBuffersToDelete = new List<uint>();
+            public RenderTarget? LastRenderTarget;
             public RenderPass? LastRenderState;
             public RectInt? LastViewport;
             public bool ForceScissorUpdate;
@@ -131,9 +132,9 @@ namespace Foster.OpenGL
             return new GL_Texture(this, width, height, format, false);
         }
 
-        public override RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public override Target CreateTarget(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return new GL_RenderTexture(this, width, height, colorAttachmentFormats, depthFormat);
+            return new GL_Target(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
         public override Shader CreateShader(string vertexSource, string fragmentSource)
@@ -151,39 +152,92 @@ namespace Foster.OpenGL
             return new GL_WindowTarget(this, window);
         }
 
-        internal void Clear(ClearFlags flags, Color color, float depth, int stencil)
+        internal void ClearTarget(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
         {
-            var mask = GLEnum.ZERO;
-
-            if (flags.HasFlag(ClearFlags.Color))
-            {
-                GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
-                mask |= GLEnum.COLOR_BUFFER_BIT;
-            }
-
-            if (flags.HasFlag(ClearFlags.Depth))
-            {
-                GL.ClearDepth(depth);
-                mask |= GLEnum.DEPTH_BUFFER_BIT;
-            }
-
-            if (flags.HasFlag(ClearFlags.Stencil))
-            {
-                GL.ClearStencil(stencil);
-                mask |= GLEnum.STENCIL_BUFFER_BIT;
-            }
-
-            GL.Clear(mask);
-        }
-
-        protected override void PerformDraw(ref RenderPass state)
-        {
-            if (state.Target is GL_WindowTarget windowTarget)
+            if (target is GL_WindowTarget windowTarget)
             {
                 lock (windowTarget.Window.Context)
                 {
                     windowTarget.Window.Context.MakeCurrent();
-                    Draw(ref state, windowTarget.Window.Context);
+                    Clear(windowTarget.Window.Context);
+                }
+            }
+            else if (target is GL_Target renderTexture)
+            {
+                // if we're off the main thread, draw using the Background Context
+                if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
+                {
+                    lock (BackgroundContext)
+                    {
+                        BackgroundContext.MakeCurrent();
+                        renderTexture.Bind(BackgroundContext);
+                        Clear(BackgroundContext);
+                        GL.Flush();
+                        BackgroundContext.MakeNonCurrent();
+                    }
+                }
+                // otherwise just draw, regardless of Context
+                else
+                {
+                    var context = App.System.GetCurrentContext();
+                    if (context == null)
+                        throw new Exception("Attempting to Draw without a Context");
+
+                    lock (context)
+                    {
+                        renderTexture.Bind(context);
+                        Clear(context);
+                    }
+                }
+            }
+
+            void Clear(Context context)
+            {
+                // update the viewport
+                var meta = GetContextMeta(context);
+                if (meta.LastViewport == null || meta.LastViewport.Value != target.Viewport)
+                {
+                    GL.Viewport(target.Viewport.X, target.Viewport.Y, target.Viewport.Width, target.Viewport.Height);
+                    meta.LastViewport = target.Viewport;
+                }
+
+                // we disable the scissor for clearing
+                meta.ForceScissorUpdate = true;
+                GL.Disable(GLEnum.SCISSOR_TEST);
+
+                // clear
+                var mask = GLEnum.ZERO;
+
+                if (flags.HasFlag(ClearFlags.Color))
+                {
+                    GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
+                    mask |= GLEnum.COLOR_BUFFER_BIT;
+                }
+
+                if (flags.HasFlag(ClearFlags.Depth))
+                {
+                    GL.ClearDepth(depth);
+                    mask |= GLEnum.DEPTH_BUFFER_BIT;
+                }
+
+                if (flags.HasFlag(ClearFlags.Stencil))
+                {
+                    GL.ClearStencil(stencil);
+                    mask |= GLEnum.STENCIL_BUFFER_BIT;
+                }
+
+                GL.Clear(mask);
+            }
+        }
+
+        internal void RenderToTarget(RenderTarget target, ref RenderPass state)
+        {
+            if (target is GL_WindowTarget windowTarget)
+            {
+                lock (windowTarget.Window.Context)
+                {
+                    windowTarget.Window.Context.MakeCurrent();
+                    Draw(target, ref state, windowTarget.Window.Context);
                 }
             }
             else if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -191,7 +245,7 @@ namespace Foster.OpenGL
                 lock (BackgroundContext)
                 {
                     BackgroundContext.MakeCurrent();
-                    Draw(ref state, BackgroundContext);
+                    Draw(target, ref state, BackgroundContext);
                     GL.Flush();
                     BackgroundContext.MakeNonCurrent();
                 }
@@ -204,11 +258,11 @@ namespace Foster.OpenGL
 
                 lock (context)
                 {
-                    Draw(ref state, context);
+                    Draw(target, ref state, context);
                 }
             }
 
-            void Draw(ref RenderPass state, Context context)
+            void Draw(RenderTarget target, ref RenderPass state, Context context)
             {
                 RenderPass lastState;
 
@@ -225,16 +279,18 @@ namespace Foster.OpenGL
                 contextMeta.LastRenderState = state;
 
                 // Bind the Target
-                if (updateAll || lastState.Target != state.Target)
+                if (updateAll || contextMeta.LastRenderTarget != target)
                 {
-                    if (state.Target is GL_WindowTarget)
+                    if (target is GL_WindowTarget)
                     {
                         GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     }
-                    else if (state.Target is GL_RenderTexture glRenderTexture)
+                    else if (target is GL_Target glRenderTexture)
                     {
                         glRenderTexture.Bind(context);
                     }
+
+                    contextMeta.LastRenderTarget = target;
                 }
 
                 // Use the Shader
@@ -322,24 +378,26 @@ namespace Foster.OpenGL
                 }
 
                 // Viewport
-                if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != state.Target.Viewport)
+                if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != target.Viewport)
                 {
-                    GL.Viewport(state.Target.Viewport.X, state.Target.Viewport.Y, state.Target.Viewport.Width, state.Target.Viewport.Height);
-                    contextMeta.LastViewport = state.Target.Viewport;
+                    GL.Viewport(target.Viewport.X, target.Viewport.Y, target.Viewport.Width, target.Viewport.Height);
+                    contextMeta.LastViewport = target.Viewport;
                 }
 
                 // Scissor
                 if (updateAll || lastState.Scissor != state.Scissor || contextMeta.ForceScissorUpdate)
                 {
-                    if (state.Scissor.X <= 0 && state.Scissor.Y <= 0 && state.Scissor.Right >= state.Target.Viewport.Width && state.Scissor.Bottom >= state.Target.Viewport.Height)
+                    if (state.Scissor == null)
                     {
                         GL.Disable(GLEnum.SCISSOR_TEST);
                     }
                     else
                     {
                         GL.Enable(GLEnum.SCISSOR_TEST);
-                        GL.Scissor(state.Scissor.X, state.Target.Viewport.Height - state.Scissor.Bottom, state.Scissor.Width, state.Scissor.Height);
+                        GL.Scissor(state.Scissor.Value.X, target.Viewport.Height - state.Scissor.Value.Bottom, state.Scissor.Value.Width, state.Scissor.Value.Height);
                     }
+
+                    contextMeta.ForceScissorUpdate = false;
                 }
 
                 // Draw the Mesh

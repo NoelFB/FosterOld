@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Render Target
     /// </summary>
-    public abstract class RenderTexture : RenderTarget
+    public abstract class Target : RenderTarget
     {
         protected readonly List<Texture> attachments = new List<Texture>();
         private readonly int width;
@@ -34,27 +34,27 @@ namespace Foster.Framework
         /// </summary>
         public override int Height => height;
 
-        public static RenderTexture Create(int width, int height)
+        public static Target Create(int width, int height)
         {
-            return App.Graphics.CreateRenderTexture(width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil);
+            return App.Graphics.CreateTarget(width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil);
         }
 
-        public static RenderTexture Create(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public static Target Create(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return App.Graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
+            return App.Graphics.CreateTarget(width, height, colorAttachmentFormats, depthFormat);
         }
 
-        public static RenderTexture Create(Graphics graphics, int width, int height)
+        public static Target Create(Graphics graphics, int width, int height)
         {
-            return graphics.CreateRenderTexture(width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil);
+            return graphics.CreateTarget(width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil);
         }
 
-        public static RenderTexture Create(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public static Target Create(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
+            return graphics.CreateTarget(width, height, colorAttachmentFormats, depthFormat);
         }
 
-        protected RenderTexture(int width, int height)
+        protected Target(int width, int height)
         {
             this.width = width;
             this.height = height;
@@ -71,6 +71,6 @@ namespace Foster.Framework
             Depth?.Dispose();
         }
 
-        public static implicit operator Texture(RenderTexture target) => target.Attachments[0];
+        public static implicit operator Texture(Target target) => target.Attachments[0];
     }
 }

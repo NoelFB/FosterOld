@@ -17,25 +17,12 @@ namespace Foster.OpenGL
 
         protected override void ClearInternal(ClearFlags flags, Color color, float depth, int stencil)
         {
-            lock (Window.Context)
-            {
-                Window.Context.MakeCurrent();
+            graphics.ClearTarget(this, flags, color, depth, stencil);
+        }
 
-                // update the viewport
-                var meta = graphics.GetContextMeta(Window.Context);
-                if (meta.LastViewport == null || meta.LastViewport.Value != Viewport)
-                {
-                    GL.Viewport(Viewport.X, Viewport.Y, Viewport.Width, Viewport.Height);
-                    meta.LastViewport = Viewport;
-                }
-
-                // we disable the scissor for clearing
-                meta.ForceScissorUpdate = true;
-                GL.Disable(GLEnum.SCISSOR_TEST);
-
-                // clear
-                graphics.Clear(flags, color, depth, stencil);
-            }
+        protected override void RenderInternal(ref RenderPass pass)
+        {
+            graphics.RenderToTarget(this, ref pass);
         }
 
         protected override void DisposeResources()

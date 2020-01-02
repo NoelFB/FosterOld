@@ -21,7 +21,7 @@ namespace Foster.Editor
 
         private List<string> existingProjects = new List<string>();
 
-        private RenderTexture test;
+        private Target test;
         private bool ready = false;
 
         public StartEditor(string[] args)
@@ -81,7 +81,7 @@ namespace Foster.Editor
             {
                 Thread.Sleep(1000);
 
-                test = RenderTexture.Create(400, 400);
+                test = Target.Create(400, 400);
                 test.Clear(Color.Red);
 
                 var m = new Batch2D();

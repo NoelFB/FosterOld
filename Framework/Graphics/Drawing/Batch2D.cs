@@ -189,7 +189,7 @@ void main(void)
 
         public void Render(RenderTarget target, Matrix matrix)
         {
-            pass = new RenderPass(target, Mesh, DefaultMaterial);
+            pass = new RenderPass(Mesh, DefaultMaterial);
 
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
 
@@ -245,7 +245,7 @@ void main(void)
             pass.MeshStartElement = batch.Offset;
             pass.MeshElementCount = batch.Elements;
             pass.MeshInstanceCount = 0;
-            pass.Draw();
+            pass.RenderTo(target);
 
             shareState = batch.NextHasSameState;
         }
