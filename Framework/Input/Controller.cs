@@ -28,6 +28,7 @@ namespace Foster.Framework
             Buttons = (int)Math.Min(buttonCount, MaxButtons);
             Axes = (int)Math.Min(axisCount, MaxAxis);
             IsGamepad = isGamepad;
+            Connected = true;
         }
 
         internal void Disconnect()
