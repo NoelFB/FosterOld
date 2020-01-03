@@ -25,11 +25,6 @@ namespace Foster.Framework
         public abstract bool SupportsMultipleWindows { get; }
 
         /// <summary>
-        /// Whether the System can support the given Graphics API
-        /// </summary>
-        public abstract bool SupportsGraphicsApi(GraphicsApi api);
-
-        /// <summary>
         /// A list of all opened Windows
         /// </summary>
         public readonly ReadOnlyCollection<Window> Windows;
@@ -66,14 +61,23 @@ namespace Foster.Framework
 
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
+        /// 
+        /// Not every Platform supports multiple Windows, in which case
+        /// creating more than one will throw an exception. You can check whether multiple
+        /// Windows is supported with System.SupportsMultipleWindows.
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         /// <summary>
-        /// Gets an OpenGL Graphics Device
+        /// Whether the System can support the given Graphics API
+        /// </summary>
+        public abstract bool SupportsGraphicsApi(GraphicsApi api);
+
+        /// <summary>
+        /// Gets an OpenGL Graphics Device and returns null if the System does not support it.
         /// This is internal as it should only be used by the Graphics Module
         /// </summary>
-        protected internal abstract GLDevice? GetOpenGLGraphicsDevice();
+        protected internal virtual GLDevice? GetOpenGLGraphicsDevice() => null;
 
         protected internal override void Startup()
         {

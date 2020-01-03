@@ -10,13 +10,12 @@ namespace Foster.GLFW
     internal class GLFW_GLDevice : GLDevice
     {
 
-        public readonly GLFW_System System;
-
+        private readonly GLFW_System system;
         private readonly List<GLFW_GLContext> contexts = new List<GLFW_GLContext>();
 
         public GLFW_GLDevice(GLFW_System system)
         {
-            System = system;
+            this.system = system;
         }
 
         public override IntPtr GetProcAddress(string name)
@@ -29,10 +28,7 @@ namespace Foster.GLFW
             // GLFW has no way to create a context without a window ...
             // so we create a Window and just hide it
 
-            var window = System.CreateGlfwWindow("hidden-context", 128, 128, WindowFlags.Hidden);
-            var context = new GLFW_GLContext(window);
-            contexts.Add(context);
-            return context;
+            return Add(system.CreateGlfwWindow("hidden-context", 128, 128, WindowFlags.Hidden));
         }
 
         public override GLContext GetWindowContext(Window window)
@@ -55,6 +51,11 @@ namespace Foster.GLFW
                 GLFW.MakeContextCurrent(IntPtr.Zero);
         }
 
+        internal void SetCurrentContext(GLFW.Window window)
+        {
+            GLFW.MakeContextCurrent(window.Ptr);
+        }
+
         public override GLContext? GetCurrentContext()
         {
             var ptr = GLFW.GetCurrentContext();
@@ -68,9 +69,11 @@ namespace Foster.GLFW
             return null;
         }
 
-        internal void Add(GLFW.Window window)
+        internal GLFW_GLContext Add(GLFW.Window window)
         {
-            contexts.Add(new GLFW_GLContext(window));
+            var context = new GLFW_GLContext(window);
+            contexts.Add(context);
+            return context;
         }
 
         internal void Remove(GLFW.Window window)
@@ -79,16 +82,6 @@ namespace Foster.GLFW
                 if (contexts[i] is GLFW_GLContext context && context.window.Ptr == window.Ptr)
                 {
                     contexts.RemoveAt(i);
-                    break;
-                }
-        }
-
-        internal void SetCurrentContext(GLFW.Window window)
-        {
-            for (int i = 0; i < contexts.Count; i++)
-                if (contexts[i] is GLFW_GLContext context && context.window.Ptr == window.Ptr)
-                {
-                    SetCurrentContext(contexts[i]);
                     break;
                 }
         }

@@ -3,11 +3,7 @@
 namespace Foster.Framework
 {
     /// <summary>
-    /// A platform Window.
-    ///
-    /// Not every Platform supports multiple Windows, in which case
-    /// creating more than one will throw an exception. You can check whether multiple
-    /// Windows is supported under Foster.Framework.System.SupportsMultipleWindows.
+    /// A Window.
     /// 
     /// Screen Coordinates may be different on each platform.
     /// For example, on Windows High DPI displays, this is always 1-1 with
@@ -16,7 +12,6 @@ namespace Foster.Framework
     /// 
     /// The Window is only able to be Rendered to during is OnRender callback. Attempting
     /// to render to the Window outside of that will throw an exception.
-    /// 
     /// </summary>
     public abstract class Window : RenderTarget
     {

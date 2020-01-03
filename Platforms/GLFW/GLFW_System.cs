@@ -117,12 +117,12 @@ namespace Foster.GLFW
         {
             GLFW.PollEvents();
 
-            // check for closing contexts
+            // check for closing windows
             for (int i = windowPointers.Count - 1; i >= 0; i--)
             {
                 if (GLFW.WindowShouldClose(windowPointers[i]))
                 {
-                    // see if we have a displayed window associated with this context
+                    // see if we have a GLFW_Window associated
                     for (int j = 0; j < windows.Count; j++)
                     {
                         if (windows[j] is GLFW_Window window && window.window.Ptr == windowPointers[i].Ptr)
@@ -167,12 +167,12 @@ namespace Foster.GLFW
             // create GLFW Window
             var ptr = CreateGlfwWindow(title, width, height, flags);
 
-            // start listening for input on this Window
-            input.StartListening(ptr);
-
             // Add to the GL Device if it exists
             if (glDevice != null)
                 glDevice.Add(ptr);
+
+            // start listening for input on this Window
+            input.StartListening(ptr);
 
             // create the actual Window object
             var window = new GLFW_Window(this, ptr, title, !flags.HasFlag(WindowFlags.Hidden));
