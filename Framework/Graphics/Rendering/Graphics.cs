@@ -26,6 +26,11 @@ namespace Foster.Framework
         /// </summary>
         public int MaxTextureSize { get; protected set; } = 0;
 
+        /// <summary>
+        /// System Graphics Device
+        /// </summary>
+        protected GraphicsDevice Device => App.System.GraphicsDevice;
+
         protected Graphics() : base(200)
         {
 

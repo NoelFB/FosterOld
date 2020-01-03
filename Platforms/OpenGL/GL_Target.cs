@@ -9,7 +9,7 @@ namespace Foster.OpenGL
     {
 
         private readonly GL_Graphics graphics;
-        private readonly Dictionary<Context, uint> framebuffers = new Dictionary<Context, uint>();
+        private readonly Dictionary<GraphicsContext, uint> framebuffers = new Dictionary<GraphicsContext, uint>();
 
         internal GL_Target(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(width, height)
         {
@@ -28,7 +28,7 @@ namespace Foster.OpenGL
             DisposeResources();
         }
 
-        public void Bind(Context context)
+        public void Bind(GraphicsContext context)
         {
             // create new framebuffer if it's needed
             // frame buffers are not shared between contexts

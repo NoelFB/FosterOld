@@ -20,10 +20,12 @@ namespace Foster.OpenGL
             {
                 lock (graphics.BackgroundContext)
                 {
-                    graphics.BackgroundContext.MakeCurrent();
+                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+
                     Create();
                     GL.Flush();
-                    graphics.BackgroundContext.MakeNonCurrent();
+
+                    graphics.Device.SetCurrentContext(null);
                 }
             }
             else

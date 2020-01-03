@@ -9,7 +9,7 @@ namespace Foster.GLFW
 
         // we need to keep track of delegates because otherwise they can be garbage collected
         // and then the C++ GLFW stuff is calling garbage collected delegates...
-        private readonly Dictionary<GLFW_Context, List<Delegate>> delegateTracker = new Dictionary<GLFW_Context, List<Delegate>>();
+        private readonly Dictionary<GLFW_GraphicsContext, List<Delegate>> delegateTracker = new Dictionary<GLFW_GraphicsContext, List<Delegate>>();
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
 
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState()
@@ -18,11 +18,11 @@ namespace Foster.GLFW
             Axes = new float[(int)GLFW_Enum.GAMEPAD_AXIS_LAST + 1]
         };
 
-        internal void Init(GLFW_System system)
+        public GLFW_Input(GLFW_System system)
         {
             system.OnWindowCreated += (window) =>
             {
-                var context = (window.Context as GLFW_Context);
+                var context = (window.Context as GLFW_GraphicsContext);
                 if (context != null)
                 {
                     GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
@@ -44,7 +44,7 @@ namespace Foster.GLFW
             }
         }
 
-        private T TrackDelegate<T>(GLFW_Context context, T method) where T : Delegate
+        private T TrackDelegate<T>(GLFW_GraphicsContext context, T method) where T : Delegate
         {
             if (!delegateTracker.TryGetValue(context, out var list))
                 delegateTracker[context] = list = new List<Delegate>();
@@ -59,7 +59,7 @@ namespace Foster.GLFW
             var cursor = GetCursor(cursors);
             foreach (var window in App.System.Windows)
             {
-                if (window.Context is GLFW_Context ctx)
+                if (window.Context is GLFW_GraphicsContext ctx)
                     GLFW.SetCursor(ctx.GlfwWindowPointer, cursor);
             }
         }

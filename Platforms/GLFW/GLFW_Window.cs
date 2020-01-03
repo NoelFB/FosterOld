@@ -5,7 +5,7 @@ namespace Foster.GLFW
 {
     public class GLFW_Window : Window
     {
-        internal readonly GLFW_Context GlfwContext;
+        internal readonly GLFW_GraphicsContext GlfwContext;
         internal GLFW.Window GlfwWindowPointer => GlfwContext.GlfwWindowPointer;
 
         private string title;
@@ -39,6 +39,15 @@ namespace Foster.GLFW
             set
             {
                 GLFW.SetWindowSize(GlfwWindowPointer, value.X, value.Y);
+            }
+        }
+
+        public override Point2 DrawableSize
+        {
+            get
+            {
+                GLFW.GetFramebufferSize(GlfwWindowPointer, out int width, out int height);
+                return new Point2(width, height);
             }
         }
 
@@ -121,13 +130,13 @@ namespace Foster.GLFW
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
         private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
-        public GLFW_Window(GLFW_System system, Graphics graphics, GLFW_Context context, string title, bool visible) : base(system, graphics, context)
+        public GLFW_Window(GLFW_System system, Graphics graphics, GLFW_GraphicsContext context, string title, bool visible) : base(system, graphics, context)
         {
             this.title = title;
             this.visible = visible;
 
             GlfwContext = context;
-            System.SetCurrentContext(context);
+            system.GraphicsDevice.SetCurrentContext(context);
 
             GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             GLFW.SetWindowSizeCallback(GlfwWindowPointer, windowSizeCallbackRef = OnWindowResize);
@@ -156,7 +165,7 @@ namespace Foster.GLFW
         {
             if (lastVsync != VSync)
             {
-                System.SetCurrentContext(GlfwContext);
+                ((GLFW_System)System).GraphicsDevice.SetCurrentContext(GlfwContext);
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
 

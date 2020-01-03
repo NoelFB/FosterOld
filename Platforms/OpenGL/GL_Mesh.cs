@@ -10,8 +10,8 @@ namespace Foster.OpenGL
     internal class GL_Mesh : Mesh
     {
 
-        private readonly Dictionary<Context, uint> vertexArrays = new Dictionary<Context, uint>();
-        private readonly Dictionary<Context, bool> bindedArrays = new Dictionary<Context, bool>();
+        private readonly Dictionary<GraphicsContext, uint> vertexArrays = new Dictionary<GraphicsContext, uint>();
+        private readonly Dictionary<GraphicsContext, bool> bindedArrays = new Dictionary<GraphicsContext, bool>();
 
         private readonly GL_Graphics graphics;
         private uint indexBuffer;
@@ -71,12 +71,12 @@ namespace Foster.OpenGL
             {
                 lock (graphics.BackgroundContext)
                 {
-                    graphics.BackgroundContext.MakeCurrent();
+                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
 
                     UploadBufferData(ref id, type, data, ref currentBufferSize);
                     GL.Flush();
 
-                    graphics.BackgroundContext.MakeNonCurrent();
+                    graphics.Device.SetCurrentContext(null);
                 }
             }
             else
@@ -114,7 +114,7 @@ namespace Foster.OpenGL
             }
         }
 
-        internal void Bind(Context context, Material material)
+        internal void Bind(GraphicsContext context, Material material)
         {
             // make sure our VAO is up to shape on the given context
             {

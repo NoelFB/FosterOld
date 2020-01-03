@@ -28,7 +28,7 @@ namespace Foster.Framework
         /// <summary>
         /// Whether the Render Target can be drawn to
         /// </summary>
-        public bool Drawable { get; protected set; }
+        public bool Drawable { get; internal protected set; }
 
         /// <summary>
         /// Orthographic Matrix based on the Viewport of this Render Target

@@ -35,24 +35,19 @@ namespace Foster.Framework
         public readonly ReadOnlyCollection<Monitor> Monitors;
 
         /// <summary>
-        /// A list of all the Rendering Contexts
-        /// </summary>
-        public readonly ReadOnlyCollection<Context> Contexts;
-
-        /// <summary>
         /// System Input
         public readonly Input Input;
+
+        /// <summary>
+        /// System Graphics Device
+        /// We keep this Internal as the Graphics Module is really the only thing that should be touching this
+        /// </summary>
+        protected internal readonly GraphicsDevice GraphicsDevice;
 
         /// <summary>
         /// The application directory
         /// </summary>
         public virtual string Directory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
-
-        /// <summary>
-        /// Gets a Pointer to a Platform rendering method of the given name
-        /// This is used internally by the Graphics
-        /// </summary>
-        public abstract IntPtr GetProcAddress(string name);
 
         /// <summary>
         /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
@@ -64,17 +59,13 @@ namespace Foster.Framework
         /// </summary>
         protected readonly List<Monitor> monitors = new List<Monitor>();
 
-        /// <summary>
-        /// Internal list of all Contexts owned by the System. The Platform implementation should maintain this.
-        /// </summary>
-        protected readonly List<Context> contexts = new List<Context>();
-
-        protected System(Input input) : base(100)
+        protected System() : base(100)
         {
             Windows = new ReadOnlyCollection<Window>(windows);
             Monitors = new ReadOnlyCollection<Monitor>(monitors);
-            Contexts = new ReadOnlyCollection<Context>(contexts);
-            Input = input;
+
+            Input = CreateInput();
+            GraphicsDevice = CreateGraphicsDevice();
         }
 
         protected internal override void Startup()
@@ -101,68 +92,19 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Creates the Input Manager
+        /// </summary>
+        protected abstract Input CreateInput();
+
+        /// <summary>
+        /// Creates the Graphics Device
+        /// </summary>
+        protected abstract GraphicsDevice CreateGraphicsDevice();
+
+        /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
         /// </summary>
         public abstract Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None);
-
-        /// <summary>
-        /// Creates a new Rendering Context. This must be called from the Main Thread.
-        /// </summary>
-        public abstract Context CreateContext();
-
-        /// <summary>
-        /// Gets the current Rendering Context on the current Thread
-        /// </summary>
-        public Context? GetCurrentContext()
-        {
-            var threadId = Thread.CurrentThread.ManagedThreadId;
-
-            for (int i = 0; i < Contexts.Count; i++)
-                if (Contexts[i].ActiveThreadId == threadId)
-                    return Contexts[i];
-
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the current Rendering Context on the current Thread
-        /// Note that this will fail if the context is current on another thread
-        /// </summary>
-        public void SetCurrentContext(Context? context)
-        {
-            // context is already set on this thread
-            if (context != null && context.ActiveThreadId == Thread.CurrentThread.ManagedThreadId)
-                return;
-
-            // unset existing context
-            {
-                var current = GetCurrentContext();
-                if (current != null)
-                    current.ActiveThreadId = 0;
-            }
-
-            if (context != null)
-            {
-                if (context.Disposed)
-                    throw new Exception("The Context is Disposed");
-
-                // currently assigned to a different thread
-                if (context.ActiveThreadId != 0)
-                    throw new Exception("The Context is active on another Thread. A Context can only be current for a single Thread at a time. You must make it non-current on the old Thread before making setting it on another.");
-
-                context.ActiveThreadId = Thread.CurrentThread.ManagedThreadId;
-                SetCurrentContextInternal(context);
-            }
-            else
-            {
-                SetCurrentContextInternal(null);
-            }
-        }
-
-        /// <summary>
-        /// Sets the current Rendering Context on the current Thread
-        /// </summary>
-        protected abstract void SetCurrentContextInternal(Context? context);
 
     }
 }

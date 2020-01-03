@@ -88,26 +88,31 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// The Drawable Size of the Window, in Pixels
+        /// </summary>
+        public abstract Point2 DrawableSize { get; }
+
+        /// <summary>
         /// The Drawable Width of the Window, in Pixels
         /// </summary>
-        public int DrawableWidth => Context.Width;
+        public int DrawableWidth => DrawableSize.X;
 
         /// <summary>
         /// The Drawable Height of the Window, in Pixels
         /// </summary>
-        public int DrawableHeight => Context.Height;
+        public int DrawableHeight => DrawableSize.Y;
 
         /// <summary>
         /// The drawable bounds of the Window, in Pixels
         /// </summary>
-        public RectInt DrawableBounds => new RectInt(0, 0, Context.Width, Context.Height);
+        public RectInt DrawableBounds => new RectInt(0, 0, DrawableWidth, DrawableHeight);
 
         /// <summary>
         /// The scale of the Drawable size compared to the Window size
         /// On Windows and Linux this is always 1.
         /// On MacOS Retina displays this is 2.
         /// </summary>
-        public Vector2 DrawableScale => new Vector2(Context.Width / (float)Width, Context.Height / (float)Height);
+        public Vector2 DrawableScale => new Vector2(DrawableWidth / (float)Width, DrawableHeight / (float)Height);
 
         /// <summary>
         /// The Content Scale of the Window
@@ -144,7 +149,7 @@ namespace Foster.Framework
         /// <summary>
         /// The Rendering Context associated with this Window
         /// </summary>
-        public readonly Context Context;
+        public readonly GraphicsContext Context;
 
         /// <summary>
         /// Gets or Sets the Title of this Window
@@ -208,10 +213,11 @@ namespace Foster.Framework
 
         /// <summary>
         /// The Window Rendering Target
+        /// This should only be used during the Render call, so we keep it internal
         /// </summary>
-        protected internal readonly WindowTarget Target;
+        internal readonly WindowTarget Target;
 
-        protected Window(System system, Graphics graphics, Context context)
+        protected Window(System system, Graphics graphics, GraphicsContext context)
         {
             System = system;
             Context = context;
@@ -224,14 +230,16 @@ namespace Foster.Framework
         internal void Render()
         {
             // The Window Target is only allowed to be rendered to during this call
-            // So we wrap the render calls
-            Target.BeginRendering();
-            {
-                App.Modules.BeforeRender(Target);
-                OnRender?.Invoke(Target);
-                App.Modules.AfterRender(Target);
-            }
-            Target.EndRendering();
+            // it greatly simplifies the various states for the Graphics Module
+
+            Target.Drawable = true;
+            Target.Viewport = new RectInt(0, 0, DrawableWidth, DrawableHeight);
+
+            App.Modules.BeforeRender(Target);
+            OnRender?.Invoke(Target);
+            App.Modules.AfterRender(Target);
+
+            Target.Drawable = false;
         }
 
         /// <summary>
