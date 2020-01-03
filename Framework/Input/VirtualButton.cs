@@ -26,8 +26,8 @@ namespace Foster.Framework
 
                 var timestamp = Input.Keyboard.Timestamp(Key);
                 var time = Time.Duration.Ticks;
-
-                if (time - timestamp <= buffer && timestamp > lastBufferConsumedTime)
+                
+                if (time - timestamp <= TimeSpan.FromSeconds(buffer).Ticks && timestamp > lastBufferConsumedTime)
                     return true;
 
                 return false;
@@ -59,7 +59,7 @@ namespace Foster.Framework
                 var timestamp = Input.Controllers[Index].Timestamp(Button);
                 var time = Time.Duration.Ticks;
 
-                if (time - timestamp <= buffer && timestamp > lastBufferConsumedTime)
+                if (time - timestamp <= TimeSpan.FromSeconds(buffer).Ticks && timestamp > lastBufferConsumedTime)
                     return true;
 
                 return false;
@@ -96,7 +96,7 @@ namespace Foster.Framework
 
                 var time = Time.Duration.Ticks;
 
-                if (time - pressedTimestamp <= buffer && pressedTimestamp > lastBufferConsumedTime)
+                if (time - pressedTimestamp <= TimeSpan.FromSeconds(buffer).Ticks && pressedTimestamp > lastBufferConsumedTime)
                     return true;
 
                 return false;
