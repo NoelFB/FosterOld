@@ -25,6 +25,11 @@ namespace Foster.Framework
         public abstract bool SupportsMultipleWindows { get; }
 
         /// <summary>
+        /// Whether the System can support the given Graphics API
+        /// </summary>
+        public abstract bool SupportsGraphicsApi(GraphicsApi api);
+
+        /// <summary>
         /// A list of all opened Windows
         /// </summary>
         public readonly ReadOnlyCollection<Window> Windows;
@@ -36,13 +41,7 @@ namespace Foster.Framework
 
         /// <summary>
         /// System Input
-        public readonly Input Input;
-
-        /// <summary>
-        /// System Graphics Device
-        /// We keep this Internal as the Graphics Module is really the only thing that should be touching this
-        /// </summary>
-        protected internal readonly GraphicsDevice GraphicsDevice;
+        public abstract Input Input { get; }
 
         /// <summary>
         /// The application directory
@@ -63,14 +62,25 @@ namespace Foster.Framework
         {
             Windows = new ReadOnlyCollection<Window>(windows);
             Monitors = new ReadOnlyCollection<Monitor>(monitors);
-
-            Input = CreateInput();
-            GraphicsDevice = CreateGraphicsDevice();
         }
+
+        /// <summary>
+        /// Creates a new Window. This must be called from the Main Thread.
+        /// </summary>
+        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
+
+        /// <summary>
+        /// Gets an OpenGL Graphics Device
+        /// This is internal as it should only be used by the Graphics Module
+        /// </summary>
+        protected internal abstract GLDevice? GetOpenGLGraphicsDevice();
 
         protected internal override void Startup()
         {
             Console.WriteLine($" - System {ApiName} {ApiVersion}");
+
+            if (!SupportsGraphicsApi(App.Graphics.Api))
+                throw new Exception($"System Module doesn't support Graphics API {App.Graphics.Api}");
         }
 
         protected internal override void BeforeUpdate()
@@ -82,21 +92,6 @@ namespace Foster.Framework
         {
             Console.WriteLine($" - System {ApiName} {ApiVersion} : Shutdown");
         }
-
-        /// <summary>
-        /// Creates a new Window. This must be called from the Main Thread.
-        /// </summary>
-        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
-
-        /// <summary>
-        /// Creates the Input Manager
-        /// </summary>
-        protected abstract Input CreateInput();
-
-        /// <summary>
-        /// Creates the Graphics Device
-        /// </summary>
-        protected abstract GraphicsDevice CreateGraphicsDevice();
 
     }
 }

@@ -21,7 +21,7 @@ namespace Foster.Framework
     public abstract class Window : RenderTarget
     {
         /// <summary>
-        /// A pointer to the underlying System Window
+        /// A pointer to the underlying OS Window
         /// </summary>
         public abstract IntPtr Pointer { get; }
 
@@ -145,16 +145,6 @@ namespace Foster.Framework
         public Action<Window>? OnFocus;
 
         /// <summary>
-        /// The System this Window belongs to
-        /// </summary>
-        public readonly System System;
-
-        /// <summary>
-        /// The Rendering Context associated with this Window
-        /// </summary>
-        public readonly GraphicsContext Context;
-
-        /// <summary>
         /// Gets or Sets the Title of this Window
         /// </summary>
         public abstract string Title { get; set; }
@@ -213,12 +203,6 @@ namespace Foster.Framework
         /// Whether the mouse is currently over this Window
         /// </summary>
         public abstract bool MouseOver { get; }
-
-        protected Window(System system, GraphicsContext context)
-        {
-            System = system;
-            Context = context;
-        }
 
         /// <summary>
         /// Renders the Window. Call Present afterwards to display the rendered contents

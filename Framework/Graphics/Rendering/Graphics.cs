@@ -27,9 +27,9 @@ namespace Foster.Framework
         public int MaxTextureSize { get; protected set; } = 0;
 
         /// <summary>
-        /// System Graphics Device
+        /// System OpenGL Device
         /// </summary>
-        protected GraphicsDevice Device => App.System.GraphicsDevice;
+        protected GLDevice? GetOpenGLGraphicsDevice() => App.System.GetOpenGLGraphicsDevice();
 
         protected Graphics() : base(200)
         {

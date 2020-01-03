@@ -6,9 +6,9 @@ namespace Foster.OpenGL
 {
     internal class GL_Bindings
     {
-        private readonly GraphicsDevice device;
+        private readonly GLDevice device;
 
-        public GL_Bindings(GraphicsDevice device)
+        public GL_Bindings(GLDevice device)
         {
             this.device = device ?? throw new Exception("GL Module requires a System that implements ProcAddress");
 

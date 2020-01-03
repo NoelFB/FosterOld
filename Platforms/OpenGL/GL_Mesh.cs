@@ -10,8 +10,8 @@ namespace Foster.OpenGL
     internal class GL_Mesh : Mesh
     {
 
-        private readonly Dictionary<GraphicsContext, uint> vertexArrays = new Dictionary<GraphicsContext, uint>();
-        private readonly Dictionary<GraphicsContext, bool> bindedArrays = new Dictionary<GraphicsContext, bool>();
+        private readonly Dictionary<GLContext, uint> vertexArrays = new Dictionary<GLContext, uint>();
+        private readonly Dictionary<GLContext, bool> bindedArrays = new Dictionary<GLContext, bool>();
 
         private readonly GL_Graphics graphics;
         private uint indexBuffer;
@@ -111,7 +111,7 @@ namespace Foster.OpenGL
             }
         }
 
-        internal void Bind(GraphicsContext context, Material material)
+        internal void Bind(GLContext context, Material material)
         {
             // make sure our VAO is up to shape on the given context
             {

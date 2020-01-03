@@ -9,7 +9,7 @@ namespace Foster.GLFW
 
         // we need to keep track of delegates because otherwise they can be garbage collected
         // and then the C++ GLFW stuff is calling garbage collected delegates...
-        private readonly Dictionary<GLFW_GraphicsContext, List<Delegate>> delegateTracker = new Dictionary<GLFW_GraphicsContext, List<Delegate>>();
+        private readonly Dictionary<IntPtr, List<Delegate>> delegateTracker = new Dictionary<IntPtr, List<Delegate>>();
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
 
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState()
@@ -28,26 +28,25 @@ namespace Foster.GLFW
             }
         }
 
-        internal void StartWatchingContext(GLFW_GraphicsContext context)
+        internal void StartListening(GLFW.Window window)
         {
-            GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
-            GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
-            GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
+            GLFW.SetKeyCallback(window.Ptr, TrackDelegate<GLFW.KeyFunc>(window.Ptr, OnKeyCallback));
+            GLFW.SetCharCallback(window.Ptr, TrackDelegate<GLFW.CharFunc>(window.Ptr, OnCharCallback));
+            GLFW.SetMouseButtonCallback(window.Ptr, TrackDelegate<GLFW.MouseButtonFunc>(window.Ptr, OnMouseCallback));
         }
 
-        internal void StopWatchingContext(GLFW_GraphicsContext context)
+        internal void StopListening(GLFW.Window window)
         {
-            GLFW.SetKeyCallback(context.GlfwWindowPointer, null);
-            GLFW.SetCharCallback(context.GlfwWindowPointer, null);
-            GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, null);
-
-            delegateTracker.Remove(context);
+            GLFW.SetKeyCallback(window.Ptr, null);
+            GLFW.SetCharCallback(window.Ptr, null);
+            GLFW.SetMouseButtonCallback(window.Ptr, null);
+            delegateTracker.Remove(window.Ptr);
         }
 
-        private T TrackDelegate<T>(GLFW_GraphicsContext context, T method) where T : Delegate
+        private T TrackDelegate<T>(IntPtr windowPtr, T method) where T : Delegate
         {
-            if (!delegateTracker.TryGetValue(context, out var list))
-                delegateTracker[context] = list = new List<Delegate>();
+            if (!delegateTracker.TryGetValue(windowPtr, out var list))
+                delegateTracker[windowPtr] = list = new List<Delegate>();
 
             list.Add(method);
 
@@ -57,10 +56,11 @@ namespace Foster.GLFW
         public override void SetMouseCursor(Cursors cursors)
         {
             var cursor = GetCursor(cursors);
-            foreach (var window in App.System.Windows)
+
+            for (int i = 0; i < App.System.Windows.Count; i ++)
             {
-                if (window.Context is GLFW_GraphicsContext ctx)
-                    GLFW.SetCursor(ctx.GlfwWindowPointer, cursor);
+                if (App.System.Windows[i] is GLFW_Window window)
+                    GLFW.SetCursor(window.window, cursor);
             }
         }
 

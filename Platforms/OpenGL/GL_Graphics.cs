@@ -8,9 +8,10 @@ namespace Foster.OpenGL
 {
     public class GL_Graphics : Graphics
     {
-        // The Background Context can be null up until Startup, at which point it never is again
+        // The GL Device & Background Context can be null up until Startup, at which point they never are again
 #pragma warning disable CS8618
-        internal GraphicsContext BackgroundContext;
+        internal GLDevice Device;
+        internal GLContext BackgroundContext;
 #pragma warning restore CS8618
 
         // Stores info about the Context
@@ -24,16 +25,14 @@ namespace Foster.OpenGL
             public bool ForceScissorUpdate;
         }
 
-        internal new GraphicsDevice Device => base.Device;
-
         // various resources waiting to be deleted
         internal List<uint> BuffersToDelete = new List<uint>();
         internal List<uint> ProgramsToDelete = new List<uint>();
         internal List<uint> TexturesToDelete = new List<uint>();
 
         // list of Contexts and their associated Metadata
-        private readonly Dictionary<GraphicsContext, ContextMeta> contextMetadata = new Dictionary<GraphicsContext, ContextMeta>();
-        private readonly List<GraphicsContext> disposedContexts = new List<GraphicsContext>();
+        private readonly Dictionary<GLContext, ContextMeta> contextMetadata = new Dictionary<GLContext, ContextMeta>();
+        private readonly List<GLContext> disposedContexts = new List<GLContext>();
 
         // stored delegates for deleting graphics resources
         private delegate void DeleteResource(uint id);
@@ -53,13 +52,14 @@ namespace Foster.OpenGL
 
         protected override void Startup()
         {
+            Device = GetOpenGLGraphicsDevice() ?? throw new Exception("System does not implement a GL Device");
+            BackgroundContext = Device.CreateContext();
+
             GL.Init(Device);
             GL.DepthMask(true);
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
-
-            BackgroundContext = Device.CreateContext();
 
             base.Startup();
         }
@@ -88,13 +88,12 @@ namespace Foster.OpenGL
                     {
                         var context = kv.Key;
                         var meta = kv.Value;
-                        if (context.Disposed)
+
+                        if (context.IsDisposed)
                         {
                             disposedContexts.Add(context);
                         }
-                        else if (
-                            (meta.FrameBuffersToDelete.Count > 0 || meta.VertexArraysToDelete.Count > 0) && 
-                            (context.ActiveThreadId == 0 || context == lastContext))
+                        else if (meta.FrameBuffersToDelete.Count > 0 || meta.VertexArraysToDelete.Count > 0)
                         {
                             lock (context)
                             {
@@ -129,7 +128,7 @@ namespace Foster.OpenGL
             }
         }
 
-        internal ContextMeta GetContextMeta(GraphicsContext context)
+        internal ContextMeta GetContextMeta(GLContext context)
         {
             if (!contextMetadata.TryGetValue(context, out var meta))
                 contextMetadata[context] = meta = new ContextMeta();
@@ -158,12 +157,13 @@ namespace Foster.OpenGL
 
         protected override void ClearInternal(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
         {
-            if (target is Window windowTarget)
+            if (target is Window window)
             {
-                lock (windowTarget.Context)
+                var context = Device.GetWindowContext(window);
+                lock (context)
                 {
-                    Device.SetCurrentContext(windowTarget.Context);
-                    Clear(windowTarget.Context);
+                    Device.SetCurrentContext(context);
+                    Clear(context);
                 }
             }
             else if (target is GL_RenderTexture renderTexture)
@@ -197,7 +197,7 @@ namespace Foster.OpenGL
                 }
             }
 
-            void Clear(GraphicsContext context)
+            void Clear(GLContext context)
             {
                 // update the viewport
                 var meta = GetContextMeta(context);
@@ -238,12 +238,13 @@ namespace Foster.OpenGL
 
         protected override void RenderInternal(RenderTarget target, ref RenderPass pass)
         {
-            if (target is Window windowTarget)
+            if (target is Window window)
             {
-                lock (windowTarget.Context)
+                var context = Device.GetWindowContext(window);
+                lock (context)
                 {
-                    Device.SetCurrentContext(windowTarget.Context);
-                    Draw(target, ref pass, windowTarget.Context);
+                    Device.SetCurrentContext(context);
+                    Draw(target, ref pass, context);
                 }
             }
             else if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -270,7 +271,7 @@ namespace Foster.OpenGL
                 }
             }
 
-            void Draw(RenderTarget target, ref RenderPass pass, GraphicsContext context)
+            void Draw(RenderTarget target, ref RenderPass pass, GLContext context)
             {
                 RenderPass lastPass;
 
