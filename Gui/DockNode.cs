@@ -92,8 +92,8 @@ namespace Foster.GuiSystem
                 Window.Position = rounded.TopLeft;
                 Window.VSync = false;
                 Window.Bordered = false;
-                Window.OnRender = (target) => Batcher.Render(target);
-                Window.OnClose = () => Discard();
+                Window.OnRender = (window) => Batcher.Render(window);
+                Window.OnClose = (window) => Discard();
                 Window.Visible = true;
 
                 Gui.Standalone.Add(this);
@@ -282,8 +282,6 @@ namespace Foster.GuiSystem
             else if (Mode == Modes.Standalone)
             {
                 Window.Close();
-                Batcher.DefaultShader.Dispose();
-                Batcher.Mesh.Dispose();
                 Gui.Standalone.Remove(this);
             }
             else if (Mode == Modes.Floating)

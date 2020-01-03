@@ -53,7 +53,7 @@ namespace Foster.Editor
             Project.Dispose();
         }
 
-        private void OnWindowFocus()
+        private void OnWindowFocus(Window window)
         {
             if (!reloading && Project.IsWaitingForReload)
             {
@@ -62,7 +62,7 @@ namespace Foster.Editor
             }
         }
 
-        private void OnWindowClose()
+        private void OnWindowClose(Window window)
         {
             App.Exit();
         }

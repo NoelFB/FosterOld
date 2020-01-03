@@ -117,9 +117,9 @@ namespace Foster.GuiSystem
             Imgui.EndViewport();
         }
 
-        private void Render(WindowTarget target)
+        private void Render(Window window)
         {
-            Batcher.Render(target);
+            Batcher.Render(window);
         }
     }
 }

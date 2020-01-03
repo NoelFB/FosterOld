@@ -21,9 +21,6 @@ namespace Foster.Editor
 
         private List<string> existingProjects = new List<string>();
 
-        private Target test;
-        private bool ready = false;
-
         public StartEditor(string[] args)
         {
             // find existing projects
@@ -76,22 +73,6 @@ namespace Foster.Editor
                 ContentColor = 0x000000,
                 Padding = new Vector2(8, 4)
             };
-
-            var t = new Thread(new ThreadStart(() =>
-            {
-                Thread.Sleep(1000);
-
-                test = Target.Create(400, 400);
-                test.Clear(Color.Red);
-
-                var m = new Batch2D();
-                m.Rect(0, 0, 32, 32, Color.Yellow);
-                m.Rect(16, 16, 100, 200, Color.Blue);
-                m.Render(test);
-
-                ready = true;
-            }));
-            t.Start();
         }
 
         public void Launch(ProjectConfig config)
@@ -145,8 +126,6 @@ namespace Foster.Editor
                 imgui.EndFrame();
 
             }
-            if (ready)
-                batcher.Image(test, Color.White);
 
             imgui.EndViewport();
         }
@@ -157,13 +136,13 @@ namespace Foster.Editor
             window.OnClose -= OnWindowClose;
         }
 
-        private void OnWindowRender(WindowTarget target)
+        private void OnWindowRender(Window window)
         {
-            target.Clear(0x2d3047);
-            batcher.Render(target);
+            App.Graphics.Clear(window, 0x2d3047);
+            batcher.Render(window);
         }
 
-        private void OnWindowClose()
+        private void OnWindowClose(Window window)
         {
             App.Exit();
         }
