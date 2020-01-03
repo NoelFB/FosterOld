@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public abstract class Mesh : GraphicsResource
+    public abstract class Mesh
     {
         public int VertexCount { get; private set; }
         public int IndicesCount { get; private set; }

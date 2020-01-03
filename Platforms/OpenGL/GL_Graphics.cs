@@ -107,7 +107,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void AfterRender(WindowTarget target)
+        protected override void AfterRender(Window window)
         {
             GL.Flush();
         }
@@ -134,9 +134,9 @@ namespace Foster.OpenGL
             return new GL_Texture(this, width, height, format, false);
         }
 
-        public override Target CreateTarget(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public override RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return new GL_Target(this, width, height, colorAttachmentFormats, depthFormat);
+            return new GL_RenderTexture(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
         public override Shader CreateShader(string vertexSource, string fragmentSource)
@@ -149,22 +149,17 @@ namespace Foster.OpenGL
             return new GL_Mesh(this);
         }
 
-        protected override WindowTarget CreateWindowTarget(Window window)
+        protected override void ClearInternal(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
         {
-            return new GL_WindowTarget(this, window);
-        }
-
-        internal void ClearTarget(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
-        {
-            if (target is GL_WindowTarget windowTarget)
+            if (target is Window windowTarget)
             {
-                lock (windowTarget.Window.Context)
+                lock (windowTarget.Context)
                 {
-                    Device.SetCurrentContext(windowTarget.Window.Context);
-                    Clear(windowTarget.Window.Context);
+                    Device.SetCurrentContext(windowTarget.Context);
+                    Clear(windowTarget.Context);
                 }
             }
-            else if (target is GL_Target renderTexture)
+            else if (target is GL_RenderTexture renderTexture)
             {
                 // if we're off the main thread, draw using the Background Context
                 if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -234,14 +229,14 @@ namespace Foster.OpenGL
             }
         }
 
-        internal void RenderToTarget(RenderTarget target, ref RenderPass state)
+        protected override void RenderInternal(RenderTarget target, ref RenderPass pass)
         {
-            if (target is GL_WindowTarget windowTarget)
+            if (target is Window windowTarget)
             {
-                lock (windowTarget.Window.Context)
+                lock (windowTarget.Context)
                 {
-                    Device.SetCurrentContext(windowTarget.Window.Context);
-                    Draw(target, ref state, windowTarget.Window.Context);
+                    Device.SetCurrentContext(windowTarget.Context);
+                    Draw(target, ref pass, windowTarget.Context);
                 }
             }
             else if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -250,7 +245,7 @@ namespace Foster.OpenGL
                 {
                     Device.SetCurrentContext(BackgroundContext);
 
-                    Draw(target, ref state, BackgroundContext);
+                    Draw(target, ref pass, BackgroundContext);
                     GL.Flush();
 
                     Device.SetCurrentContext(null);
@@ -264,13 +259,13 @@ namespace Foster.OpenGL
 
                 lock (context)
                 {
-                    Draw(target, ref state, context);
+                    Draw(target, ref pass, context);
                 }
             }
 
-            void Draw(RenderTarget target, ref RenderPass state, GraphicsContext context)
+            void Draw(RenderTarget target, ref RenderPass pass, GraphicsContext context)
             {
-                RenderPass lastState;
+                RenderPass lastPass;
 
                 // get the previous state
                 var updateAll = false;
@@ -278,20 +273,20 @@ namespace Foster.OpenGL
                 if (contextMeta.LastRenderState == null)
                 {
                     updateAll = true;
-                    lastState = state;
+                    lastPass = pass;
                 }
                 else
-                    lastState = contextMeta.LastRenderState.Value;
-                contextMeta.LastRenderState = state;
+                    lastPass = contextMeta.LastRenderState.Value;
+                contextMeta.LastRenderState = pass;
 
                 // Bind the Target
                 if (updateAll || contextMeta.LastRenderTarget != target)
                 {
-                    if (target is GL_WindowTarget)
+                    if (target is Window)
                     {
                         GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     }
-                    else if (target is GL_Target glRenderTexture)
+                    else if (target is GL_RenderTexture glRenderTexture)
                     {
                         glRenderTexture.Bind(context);
                     }
@@ -300,19 +295,19 @@ namespace Foster.OpenGL
                 }
 
                 // Use the Shader
-                if (state.Material.Shader is GL_Shader glShader)
-                    glShader.Use(state.Material);
+                if (pass.Material.Shader is GL_Shader glShader)
+                    glShader.Use(pass.Material);
 
                 // Bind the Mesh
-                if (state.Mesh is GL_Mesh glMesh)
-                    glMesh.Bind(context, state.Material);
+                if (pass.Mesh is GL_Mesh glMesh)
+                    glMesh.Bind(context, pass.Material);
 
                 // Blend Mode
-                if (updateAll || lastState.BlendMode != state.BlendMode)
+                if (updateAll || lastPass.BlendMode != pass.BlendMode)
                 {
-                    GLEnum op = GetBlendFunc(state.BlendMode.Operation);
-                    GLEnum src = GetBlendFactor(state.BlendMode.Source);
-                    GLEnum dst = GetBlendFactor(state.BlendMode.Destination);
+                    GLEnum op = GetBlendFunc(pass.BlendMode.Operation);
+                    GLEnum src = GetBlendFactor(pass.BlendMode.Source);
+                    GLEnum dst = GetBlendFactor(pass.BlendMode.Destination);
 
                     GL.Enable(GLEnum.BLEND);
                     GL.BlendEquation(op);
@@ -320,9 +315,9 @@ namespace Foster.OpenGL
                 }
 
                 // Depth Function
-                if (updateAll || lastState.DepthFunction != state.DepthFunction)
+                if (updateAll || lastPass.DepthFunction != pass.DepthFunction)
                 {
-                    if (state.DepthFunction == DepthFunctions.None)
+                    if (pass.DepthFunction == DepthFunctions.None)
                     {
                         GL.Disable(GLEnum.DEPTH_TEST);
                     }
@@ -330,7 +325,7 @@ namespace Foster.OpenGL
                     {
                         GL.Enable(GLEnum.DEPTH_TEST);
 
-                        switch (state.DepthFunction)
+                        switch (pass.DepthFunction)
                         {
                             case DepthFunctions.Always:
                                 GL.DepthFunc(GLEnum.ALWAYS);
@@ -364,9 +359,9 @@ namespace Foster.OpenGL
                 }
 
                 // Cull Mode
-                if (updateAll || lastState.CullMode != state.CullMode)
+                if (updateAll || lastPass.CullMode != pass.CullMode)
                 {
-                    if (state.CullMode == Cull.None)
+                    if (pass.CullMode == Cull.None)
                     {
                         GL.Disable(GLEnum.CULL_FACE);
                     }
@@ -374,9 +369,9 @@ namespace Foster.OpenGL
                     {
                         GL.Enable(GLEnum.CULL_FACE);
 
-                        if (state.CullMode == Cull.Back)
+                        if (pass.CullMode == Cull.Back)
                             GL.CullFace(GLEnum.BACK);
-                        else if (state.CullMode == Cull.Front)
+                        else if (pass.CullMode == Cull.Front)
                             GL.CullFace(GLEnum.FRONT);
                         else
                             GL.CullFace(GLEnum.FRONT_AND_BACK);
@@ -391,16 +386,16 @@ namespace Foster.OpenGL
                 }
 
                 // Scissor
-                if (updateAll || lastState.Scissor != state.Scissor || contextMeta.ForceScissorUpdate)
+                if (updateAll || lastPass.Scissor != pass.Scissor || contextMeta.ForceScissorUpdate)
                 {
-                    if (state.Scissor == null)
+                    if (pass.Scissor == null)
                     {
                         GL.Disable(GLEnum.SCISSOR_TEST);
                     }
                     else
                     {
                         GL.Enable(GLEnum.SCISSOR_TEST);
-                        GL.Scissor(state.Scissor.Value.X, target.Viewport.Height - state.Scissor.Value.Bottom, state.Scissor.Value.Width, state.Scissor.Value.Height);
+                        GL.Scissor(pass.Scissor.Value.X, target.Viewport.Height - pass.Scissor.Value.Bottom, pass.Scissor.Value.Width, pass.Scissor.Value.Height);
                     }
 
                     contextMeta.ForceScissorUpdate = false;
@@ -408,13 +403,13 @@ namespace Foster.OpenGL
 
                 // Draw the Mesh
                 {
-                    if (state.MeshInstanceCount > 0)
+                    if (pass.MeshInstanceCount > 0)
                     {
-                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, state.MeshElementCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * state.MeshStartElement * 3), state.MeshInstanceCount);
+                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, pass.MeshElementCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshStartElement * 3), pass.MeshInstanceCount);
                     }
                     else
                     {
-                        GL.DrawElements(GLEnum.TRIANGLES, state.MeshElementCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * state.MeshStartElement * 3));
+                        GL.DrawElements(GLEnum.TRIANGLES, pass.MeshElementCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshStartElement * 3));
                     }
 
                     GL.BindVertexArray(0);

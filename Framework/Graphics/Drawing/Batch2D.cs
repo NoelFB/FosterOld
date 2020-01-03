@@ -98,6 +98,7 @@ void main(void)
 
         #endregion
 
+        public readonly Graphics Graphics;
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
         public readonly Mesh Mesh;
@@ -158,6 +159,7 @@ void main(void)
 
         public Batch2D(Graphics graphics)
         {
+            Graphics = graphics;
             DefaultShader = Shader.Create(graphics, VertexSource, FragmentSource);
             DefaultMaterial = new Material(DefaultShader);
             Mesh = Mesh.Create(graphics);
@@ -245,7 +247,8 @@ void main(void)
             pass.MeshStartElement = batch.Offset;
             pass.MeshElementCount = batch.Elements;
             pass.MeshInstanceCount = 0;
-            pass.RenderTo(target);
+
+            Graphics.Render(target, ref pass);
 
             shareState = batch.NextHasSameState;
         }

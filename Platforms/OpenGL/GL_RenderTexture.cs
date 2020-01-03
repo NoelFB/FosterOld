@@ -5,13 +5,13 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Target : Target
+    internal class GL_RenderTexture : RenderTexture, IDisposable
     {
 
         private readonly GL_Graphics graphics;
         private readonly Dictionary<GraphicsContext, uint> framebuffers = new Dictionary<GraphicsContext, uint>();
 
-        internal GL_Target(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(width, height)
+        internal GL_RenderTexture(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(width, height)
         {
             this.graphics = graphics;
 
@@ -23,9 +23,9 @@ namespace Foster.OpenGL
                 Depth = new GL_Texture(graphics, width, height, depthFormat, true);
         }
 
-        ~GL_Target()
+        ~GL_RenderTexture()
         {
-            DisposeResources();
+            Dispose();
         }
 
         public void Bind(GraphicsContext context)
@@ -60,17 +60,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void ClearInternal(ClearFlags flags, Color color, float depth, int stencil)
-        {
-            graphics.ClearTarget(this, flags, color, depth, stencil);
-        }
-
-        protected override void RenderInternal(ref RenderPass pass)
-        {
-            graphics.RenderToTarget(this, ref pass);
-        }
-
-        protected override void DisposeResources()
+        public void Dispose()
         {
             if (framebuffers.Count > 0)
             {
@@ -78,8 +68,6 @@ namespace Foster.OpenGL
                     graphics.GetContextMeta(kv.Key).FrameBuffersToDelete.Add(kv.Value);
                 framebuffers.Clear();
             }
-
-            base.DisposeResources();
         }
 
     }

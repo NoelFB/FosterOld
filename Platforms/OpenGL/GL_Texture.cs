@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Texture : Texture
+    internal class GL_Texture : Texture, IDisposable
     {
 
         public uint ID { get; private set; }
@@ -63,7 +63,7 @@ namespace Foster.OpenGL
 
         ~GL_Texture()
         {
-            DisposeResources();
+            Dispose();
         }
 
         protected override void SetFilter(TextureFilter filter)
@@ -185,7 +185,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void DisposeResources()
+        public void Dispose()
         {
             if (ID != 0)
             {

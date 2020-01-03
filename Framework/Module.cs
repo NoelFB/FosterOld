@@ -64,12 +64,12 @@ namespace Foster.Framework
         /// <summary>
         /// Called when a Window is being rendered to, before the Window.OnRender callback
         /// </summary>
-        protected internal virtual void BeforeRender(WindowTarget target) { }
+        protected internal virtual void BeforeRender(Window window) { }
 
         /// <summary>
         /// Called when a Window is being rendered to, after the Window.OnRender callback
         /// </summary>
-        protected internal virtual void AfterRender(WindowTarget target) { }
+        protected internal virtual void AfterRender(Window window) { }
 
         /// <summary>
         /// Called every Tick of the Application

@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Shader : Shader
+    internal class GL_Shader : Shader, IDisposable
     {
 
         private readonly GL_Graphics graphics;
@@ -99,7 +99,7 @@ namespace Foster.OpenGL
 
         ~GL_Shader()
         {
-            DisposeResources();
+            Dispose();
         }
 
         public unsafe void Use(Material material)
@@ -231,7 +231,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void DisposeResources()
+        public void Dispose()
         {
             if (ID != 0)
             {

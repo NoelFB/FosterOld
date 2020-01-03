@@ -15,7 +15,7 @@ namespace Foster.Framework
     /// usually 1-2 with the pixel size of the Window.
     /// 
     /// </summary>
-    public abstract class Window
+    public abstract class Window : RenderTarget
     {
         /// <summary>
         /// A pointer to the underlying System Window
@@ -95,12 +95,12 @@ namespace Foster.Framework
         /// <summary>
         /// The Drawable Width of the Window, in Pixels
         /// </summary>
-        public int DrawableWidth => DrawableSize.X;
+        public override int DrawableWidth => DrawableSize.X;
 
         /// <summary>
         /// The Drawable Height of the Window, in Pixels
         /// </summary>
-        public int DrawableHeight => DrawableSize.Y;
+        public override int DrawableHeight => DrawableSize.Y;
 
         /// <summary>
         /// The drawable bounds of the Window, in Pixels
@@ -124,22 +124,22 @@ namespace Foster.Framework
         /// <summary>
         /// A callback when the Window is about to close
         /// </summary>
-        public Action? OnClose;
+        public Action<Window>? OnClose;
 
         /// <summary>
         /// A callback when the Window is redrawn
         /// </summary>
-        public Action<WindowTarget>? OnRender;
+        public Action<Window>? OnRender;
 
         /// <summary>
         /// A callback when the Window is resized by the user
         /// </summary>
-        public Action? OnResize;
+        public Action<Window>? OnResize;
 
         /// <summary>
         /// A callback when the Window is focused
         /// </summary>
-        public Action? OnFocus;
+        public Action<Window>? OnFocus;
 
         /// <summary>
         /// The System this Window belongs to
@@ -211,17 +211,10 @@ namespace Foster.Framework
         /// </summary>
         public abstract bool MouseOver { get; }
 
-        /// <summary>
-        /// The Window Rendering Target
-        /// This should only be used during the Render call, so we keep it internal
-        /// </summary>
-        internal readonly WindowTarget Target;
-
-        protected Window(System system, Graphics graphics, GraphicsContext context)
+        protected Window(System system, GraphicsContext context)
         {
             System = system;
             Context = context;
-            Target = graphics.CreateWindowTarget(this);
         }
 
         /// <summary>
@@ -232,14 +225,14 @@ namespace Foster.Framework
             // The Window Target is only allowed to be rendered to during this call
             // it greatly simplifies the various states for the Graphics Module
 
-            Target.Drawable = true;
-            Target.Viewport = new RectInt(0, 0, DrawableWidth, DrawableHeight);
+            Drawable = true;
+            Viewport = new RectInt(0, 0, DrawableWidth, DrawableHeight);
 
-            App.Modules.BeforeRender(Target);
-            OnRender?.Invoke(Target);
-            App.Modules.AfterRender(Target);
+            App.Modules.BeforeRender(this);
+            OnRender?.Invoke(this);
+            App.Modules.AfterRender(this);
 
-            Target.Drawable = false;
+            Drawable = false;
         }
 
         /// <summary>

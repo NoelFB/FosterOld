@@ -21,7 +21,7 @@ namespace Foster.Framework
     ///         be cross-platform and runtime available.
     /// 
     /// </summary>
-    public abstract class Shader : GraphicsResource
+    public abstract class Shader
     {
         /// <summary>
         /// List of all Vertex Attributes, by Name

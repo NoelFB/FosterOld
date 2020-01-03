@@ -69,10 +69,5 @@ namespace Foster.Framework
             DepthFunction = DepthFunctions.None;
             CullMode = Cull.None;
         }
-
-        public void RenderTo(RenderTarget target)
-        {
-            target.Render(ref this);
-        }
     }
 }

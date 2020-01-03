@@ -168,16 +168,16 @@ namespace Foster.Framework
                 modules[i]?.AfterUpdate();
         }
 
-        internal void BeforeRender(WindowTarget target)
+        internal void BeforeRender(Window window)
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.BeforeRender(target);
+                modules[i]?.BeforeRender(window);
         }
 
-        internal void AfterRender(WindowTarget target)
+        internal void AfterRender(Window window)
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.AfterRender(target);
+                modules[i]?.AfterRender(window);
         }
 
         internal void Tick()

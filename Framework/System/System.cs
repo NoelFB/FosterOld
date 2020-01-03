@@ -86,15 +86,7 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new Window. This must be called from the Main Thread.
         /// </summary>
-        public Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
-        {
-            return CreateWindow(App.Graphics, title, width, height, flags);
-        }
-
-        /// <summary>
-        /// Creates a new Window. This must be called from the Main Thread.
-        /// </summary>
-        public abstract Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None);
+        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         /// <summary>
         /// Creates the Input Manager

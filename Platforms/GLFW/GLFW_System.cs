@@ -105,7 +105,7 @@ namespace Foster.GLFW
                         if (windows[j].Context == context)
                         {
                             OnWindowClosed?.Invoke((GLFW_Window)windows[j]);
-                            windows[j].OnClose?.Invoke();
+                            windows[j].OnClose?.Invoke(windows[j]);
                             windows[j].Close();
                             windows.RemoveAt(j);
                             break;
@@ -125,13 +125,13 @@ namespace Foster.GLFW
             Input.AfterUpdate();
         }
 
-        public override Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");
 
             var context = GraphicsDevice.CreateContextInternal(title, width, height, flags);
-            var window = new GLFW_Window(this, graphics, context, title, !flags.HasFlag(WindowFlags.Hidden));
+            var window = new GLFW_Window(this, context, title, !flags.HasFlag(WindowFlags.Hidden));
             windows.Add(window);
 
             OnWindowCreated?.Invoke(window);

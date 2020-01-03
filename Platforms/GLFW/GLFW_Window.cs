@@ -130,7 +130,7 @@ namespace Foster.GLFW
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
         private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
-        public GLFW_Window(GLFW_System system, Graphics graphics, GLFW_GraphicsContext context, string title, bool visible) : base(system, graphics, context)
+        public GLFW_Window(GLFW_System system, GLFW_GraphicsContext context, string title, bool visible) : base(system, context)
         {
             this.title = title;
             this.visible = visible;
@@ -146,14 +146,14 @@ namespace Foster.GLFW
 
         private void OnWindowResize(GLFW.Window window, int width, int height)
         {
-            OnResize?.Invoke();
+            OnResize?.Invoke(this);
         }
 
         private void OnWindowFocus(GLFW.Window window, int focused)
         {
             this.focused = (focused != 0);
             if (this.focused)
-                OnFocus?.Invoke();
+                OnFocus?.Invoke(this);
         }
 
         private void OnCursorEnter(GLFW.Window window, int entered)

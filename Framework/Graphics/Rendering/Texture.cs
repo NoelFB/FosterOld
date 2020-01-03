@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
-    public abstract class Texture : GraphicsResource
+    public abstract class Texture
     {
 
         /// <summary>

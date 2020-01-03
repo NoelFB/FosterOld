@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Mesh : Mesh
+    internal class GL_Mesh : Mesh, IDisposable
     {
 
         private readonly Dictionary<GraphicsContext, uint> vertexArrays = new Dictionary<GraphicsContext, uint>();
@@ -31,7 +31,7 @@ namespace Foster.OpenGL
 
         ~GL_Mesh()
         {
-            DisposeResources();
+            Dispose();
         }
 
         protected override void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format)
@@ -64,9 +64,6 @@ namespace Foster.OpenGL
 
         private unsafe void UploadBuffer<T>(ref uint id, GLEnum type, ReadOnlySequence<T> data, ref long currentBufferSize)
         {
-            if (IsDisposed)
-                throw new Exception("Mesh is Disposed");
-
             if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
                 lock (graphics.BackgroundContext)
@@ -187,7 +184,22 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void DisposeResources()
+        private static GLEnum ConvertVertexType(VertexType value)
+        {
+            return value switch
+            {
+                VertexType.Byte => GLEnum.BYTE,
+                VertexType.UnsignedByte => GLEnum.UNSIGNED_BYTE,
+                VertexType.Short => GLEnum.SHORT,
+                VertexType.UnsignedShort => GLEnum.UNSIGNED_SHORT,
+                VertexType.Int => GLEnum.INT,
+                VertexType.UnsignedInt => GLEnum.UNSIGNED_INT,
+                VertexType.Float => GLEnum.FLOAT,
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        public void Dispose()
         {
             if (vertexBuffer > 0)
                 graphics.BuffersToDelete.Add(vertexBuffer);
@@ -205,21 +217,6 @@ namespace Foster.OpenGL
             vertexBuffer = 0;
             indexBuffer = 0;
             instanceBuffer = 0;
-        }
-
-        private static GLEnum ConvertVertexType(VertexType value)
-        {
-            return value switch
-            {
-                VertexType.Byte => GLEnum.BYTE,
-                VertexType.UnsignedByte => GLEnum.UNSIGNED_BYTE,
-                VertexType.Short => GLEnum.SHORT,
-                VertexType.UnsignedShort => GLEnum.UNSIGNED_SHORT,
-                VertexType.Int => GLEnum.INT,
-                VertexType.UnsignedInt => GLEnum.UNSIGNED_INT,
-                VertexType.Float => GLEnum.FLOAT,
-                _ => throw new NotImplementedException(),
-            };
         }
     }
 }
