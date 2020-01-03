@@ -18,30 +18,30 @@ namespace Foster.GLFW
             Axes = new float[(int)GLFW_Enum.GAMEPAD_AXIS_LAST + 1]
         };
 
-        public GLFW_Input(GLFW_System system)
+        internal void Init()
         {
-            system.OnWindowCreated += (window) =>
-            {
-                var context = (window.Context as GLFW_GraphicsContext);
-                if (context != null)
-                {
-                    GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
-                    GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
-                    GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
-                }
-            };
-
-            system.OnWindowClosed += (window) =>
-            {
-                delegateTracker.Remove(window.GlfwContext);
-            };
-
             // find the already-connected joysticks
             for (int jid = 0; jid <= (int)GLFW_Enum.JOYSTICK_LAST; jid++)
             {
                 if (GLFW.JoystickPresent(jid) != 0)
                     OnJoystickCallback(jid, GLFW_Enum.CONNECTED);
             }
+        }
+
+        internal void StartWatchingContext(GLFW_GraphicsContext context)
+        {
+            GLFW.SetKeyCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.KeyFunc>(context, OnKeyCallback));
+            GLFW.SetCharCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.CharFunc>(context, OnCharCallback));
+            GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, TrackDelegate<GLFW.MouseButtonFunc>(context, OnMouseCallback));
+        }
+
+        internal void StopWatchingContext(GLFW_GraphicsContext context)
+        {
+            GLFW.SetKeyCallback(context.GlfwWindowPointer, null);
+            GLFW.SetCharCallback(context.GlfwWindowPointer, null);
+            GLFW.SetMouseButtonCallback(context.GlfwWindowPointer, null);
+
+            delegateTracker.Remove(context);
         }
 
         private T TrackDelegate<T>(GLFW_GraphicsContext context, T method) where T : Delegate

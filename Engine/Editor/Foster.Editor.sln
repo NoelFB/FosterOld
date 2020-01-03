@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.GLFW", "..\..\Platfo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foster.Engine", "..\Engine\Foster.Engine.csproj", "{2A13B49D-2467-4A29-A729-A89B04C7CD52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foster.Vulkan", "..\..\Platforms\Vulkan\Foster.Vulkan.csproj", "{D4516375-5158-4F5F-B810-31C7FF948BD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{2A13B49D-2467-4A29-A729-A89B04C7CD52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A13B49D-2467-4A29-A729-A89B04C7CD52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A13B49D-2467-4A29-A729-A89B04C7CD52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4516375-5158-4F5F-B810-31C7FF948BD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4516375-5158-4F5F-B810-31C7FF948BD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4516375-5158-4F5F-B810-31C7FF948BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4516375-5158-4F5F-B810-31C7FF948BD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

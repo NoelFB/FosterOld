@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Texture : Texture, IDisposable
+    internal class GL_Texture : Texture
     {
 
         public uint ID { get; private set; }
@@ -127,7 +127,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override unsafe void SetGraphicsData<T>(ReadOnlyMemory<T> buffer)
+        protected override unsafe void SetDataInternal<T>(ReadOnlyMemory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -156,7 +156,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override unsafe void GetGraphicsData<T>(Memory<T> buffer)
+        protected override unsafe void GetDataInternal<T>(Memory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -185,7 +185,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (ID != 0)
             {

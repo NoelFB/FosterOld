@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_RenderTexture : RenderTexture, IDisposable
+    internal class GL_RenderTexture : RenderTexture
     {
 
         private readonly GL_Graphics graphics;
@@ -60,7 +60,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (framebuffers.Count > 0)
             {

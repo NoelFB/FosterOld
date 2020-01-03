@@ -64,6 +64,13 @@ namespace Foster.OpenGL
             base.Startup();
         }
 
+        protected override void Shutdown()
+        {
+            BackgroundContext.Dispose();
+
+            base.Shutdown();
+        }
+
         protected override void Tick()
         {
             // delete any GL graphics resources that are shared between contexts

@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Render Target
     /// </summary>
-    public abstract class RenderTexture : RenderTarget
+    public abstract class RenderTexture : RenderTarget, IDisposable
     {
         protected readonly List<Texture> attachments = new List<Texture>();
         private readonly int width;
@@ -63,6 +63,8 @@ namespace Foster.Framework
             Viewport = new RectInt(0, 0, width, height);
             Drawable = true;
         }
+
+        public abstract void Dispose();
 
         public static implicit operator Texture(RenderTexture target) => target.Attachments[0];
     }

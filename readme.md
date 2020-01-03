@@ -66,10 +66,10 @@ internal class Program
             batch.Rect(32, 32, 64, 64, Color.Red);
         }
 
-        private void Render(WindowTarget target)
+        private void Render(Window window)
         {
-            target.Clear(Color.Black);
-            batch.Render(target);
+            App.Graphics.Clear(window, Color.Black);
+            batch.Render(window);
         }
     }
 }

@@ -9,9 +9,6 @@ namespace Foster.GLFW
     {
         public override bool SupportsMultipleWindows => true;
 
-        internal event Action<GLFW_Window>? OnWindowCreated;
-        internal event Action<GLFW_Window>? OnWindowClosed;
-
         // These values are set from the Constructor fo the System class
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         internal new GLFW_Input Input;
@@ -20,7 +17,7 @@ namespace Foster.GLFW
 
         protected override Input CreateInput()
         {
-            return Input = new GLFW_Input(this);
+            return Input = new GLFW_Input();
         }
 
         protected override GraphicsDevice CreateGraphicsDevice()
@@ -53,16 +50,17 @@ namespace Foster.GLFW
                 throw new Exception("GLFW Only supports OpenGL and Vulkan Graphics APIs");
 
             // macOS requires versions to be set to 3.2
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && App.Graphics.Api == GraphicsApi.OpenGL)
             {
-                if (App.Graphics.Api == GraphicsApi.OpenGL)
-                {
-                    GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MAJOR, 3);
-                    GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MINOR, 2);
-                    GLFW.WindowHint(GLFW_Enum.OPENGL_PROFILE, 0x00032001);
-                    GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
-                }
+                GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MAJOR, 3);
+                GLFW.WindowHint(GLFW_Enum.CONTEXT_VERSION_MINOR, 2);
+                GLFW.WindowHint(GLFW_Enum.OPENGL_PROFILE, 0x00032001);
+                GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
             }
+
+            // Non-OpenGL Graphics APIs need to let GLFW know ...
+            if (App.Graphics.Api != GraphicsApi.OpenGL)
+                GLFW.WindowHint(GLFW_Enum.OPENGL_API, (int)GLFW_Enum.NO_API);
 
             // Various constant Window Hints
             GLFW.WindowHint(GLFW_Enum.DOUBLEBUFFER, true);
@@ -81,16 +79,38 @@ namespace Foster.GLFW
             GraphicsDevice.CreateContext();
             GraphicsDevice.SetCurrentContext(GraphicsDevice.Contexts[0]);
 
+            // Init Input
+            Input.Init();
+
             base.Startup();
         }
 
         protected override void Shutdown()
         {
             base.Shutdown();
+
+            // destroy all contexts
+            foreach (var context in GraphicsDevice.Contexts)
+                context.Dispose();
+            Poll();
+
+            // terminate GLFW
             GLFW.Terminate();
         }
 
         protected override void AfterUpdate()
+        {
+            Poll();
+
+            // Update Monitors
+            foreach (var monitor in monitors)
+                ((GLFW_Monitor)monitor).FetchProperties();
+
+            // update input
+            Input.AfterUpdate();
+        }
+
+        private void Poll()
         {
             GLFW.PollEvents();
 
@@ -104,10 +124,12 @@ namespace Foster.GLFW
                     {
                         if (windows[j].Context == context)
                         {
-                            OnWindowClosed?.Invoke((GLFW_Window)windows[j]);
+                            Input.StopWatchingContext(context);
+
                             windows[j].OnClose?.Invoke(windows[j]);
                             windows[j].Close();
                             windows.RemoveAt(j);
+
                             break;
                         }
                     }
@@ -116,13 +138,6 @@ namespace Foster.GLFW
                     GLFW.DestroyWindow(context.GlfwWindowPointer);
                 }
             }
-
-            // Update Monitors
-            foreach (var monitor in monitors)
-                ((GLFW_Monitor)monitor).FetchProperties();
-
-            // update input
-            Input.AfterUpdate();
         }
 
         public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
@@ -134,7 +149,7 @@ namespace Foster.GLFW
             var window = new GLFW_Window(this, context, title, !flags.HasFlag(WindowFlags.Hidden));
             windows.Add(window);
 
-            OnWindowCreated?.Invoke(window);
+            Input.StartWatchingContext(context);
 
             return window;
         }

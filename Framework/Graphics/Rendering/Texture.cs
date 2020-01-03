@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
-    public abstract class Texture
+    public abstract class Texture : IDisposable
     {
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            SetGraphicsData(buffer);
+            SetDataInternal(buffer);
         }
 
         /// <summary>
@@ -136,12 +136,14 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            GetGraphicsData(buffer);
+            GetDataInternal(buffer);
         }
 
         protected abstract void SetFilter(TextureFilter filter);
         protected abstract void SetWrap(TextureWrap x, TextureWrap y);
-        protected abstract void SetGraphicsData<T>(ReadOnlyMemory<T> buffer);
-        protected abstract void GetGraphicsData<T>(Memory<T> buffer);
+        protected abstract void SetDataInternal<T>(ReadOnlyMemory<T> buffer);
+        protected abstract void GetDataInternal<T>(Memory<T> buffer);
+
+        public abstract void Dispose();
     }
 }

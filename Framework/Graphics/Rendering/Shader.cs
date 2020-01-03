@@ -21,7 +21,7 @@ namespace Foster.Framework
     ///         be cross-platform and runtime available.
     /// 
     /// </summary>
-    public abstract class Shader
+    public abstract class Shader : IDisposable
     {
         /// <summary>
         /// List of all Vertex Attributes, by Name
@@ -52,6 +52,8 @@ namespace Foster.Framework
             Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(uniforms);
             Attributes = new ReadOnlyDictionary<string, ShaderAttribute>(attributes);
         }
+
+        public abstract void Dispose();
 
     }
 }

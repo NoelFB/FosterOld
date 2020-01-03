@@ -342,28 +342,28 @@ namespace Foster.GLFW
         public static extern void SetCursor(Window window, IntPtr cursor);
 
         [DllImport(DLL, EntryPoint = "glfwSetKeyCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern KeyFunc SetKeyCallback(Window window, KeyFunc callback);
+        public static extern KeyFunc SetKeyCallback(Window window, KeyFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetCharCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CharFunc SetCharCallback(Window window, CharFunc callback);
+        public static extern CharFunc SetCharCallback(Window window, CharFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetCharModsCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CharmodsFunc SetCharModsCallback(Window window, CharmodsFunc callback);
+        public static extern CharmodsFunc SetCharModsCallback(Window window, CharmodsFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetMouseButtonCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern MouseButtonFunc SetMouseButtonCallback(Window window, MouseButtonFunc callback);
+        public static extern MouseButtonFunc SetMouseButtonCallback(Window window, MouseButtonFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetCursorPosCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CursorPosFunc SetCursorPosCallback(Window window, CursorPosFunc callback);
+        public static extern CursorPosFunc SetCursorPosCallback(Window window, CursorPosFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetCursorEnterCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CursorEnterFunc SetCursorEnterCallback(Window window, CursorEnterFunc callback);
+        public static extern CursorEnterFunc SetCursorEnterCallback(Window window, CursorEnterFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetScrollCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ScrollFunc SetScrollCallback(Window window, ScrollFunc callback);
+        public static extern ScrollFunc SetScrollCallback(Window window, ScrollFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwSetDropCallback", CallingConvention = CallingConvention.Cdecl)]
-        public static extern DropFunc SetDropCallback(Window window, DropFunc callback);
+        public static extern DropFunc SetDropCallback(Window window, DropFunc? callback);
 
         [DllImport(DLL, EntryPoint = "glfwJoystickPresent", CallingConvention = CallingConvention.Cdecl)]
         public static extern int JoystickPresent(int jid);

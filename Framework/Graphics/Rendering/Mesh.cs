@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public abstract class Mesh
+    public abstract class Mesh : IDisposable
     {
         public int VertexCount { get; private set; }
         public int IndicesCount { get; private set; }
@@ -101,6 +101,6 @@ namespace Foster.Framework
         protected abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
         protected abstract void UploadIndices(ReadOnlySequence<int> indices);
 
-
+        public abstract void Dispose();
     }
 }

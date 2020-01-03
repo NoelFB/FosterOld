@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Mesh : Mesh, IDisposable
+    internal class GL_Mesh : Mesh
     {
 
         private readonly Dictionary<GraphicsContext, uint> vertexArrays = new Dictionary<GraphicsContext, uint>();
@@ -199,7 +199,7 @@ namespace Foster.OpenGL
             };
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (vertexBuffer > 0)
                 graphics.BuffersToDelete.Add(vertexBuffer);
@@ -214,6 +214,8 @@ namespace Foster.OpenGL
                 graphics.GetContextMeta(kv.Key).VertexArraysToDelete.Add(kv.Value);
 
             vertexArrays.Clear();
+            bindedArrays.Clear();
+
             vertexBuffer = 0;
             indexBuffer = 0;
             instanceBuffer = 0;
