@@ -5,14 +5,17 @@ namespace Foster.Framework
     /// <summary>
     /// A platform Window.
     ///
-    /// Note that not every Platform supports multiple Windows, in which case
+    /// Not every Platform supports multiple Windows, in which case
     /// creating more than one will throw an exception. You can check whether multiple
-    /// Windows is supported under Foster.Framework.System.SupportsMultipleWindows
+    /// Windows is supported under Foster.Framework.System.SupportsMultipleWindows.
     /// 
-    /// Note that Screen Coordinates may be different on each platform.
+    /// Screen Coordinates may be different on each platform.
     /// For example, on Windows High DPI displays, this is always 1-1 with
     /// the pixel size of the Window. On MacOS Retina displays, this is
     /// usually 1-2 with the pixel size of the Window.
+    /// 
+    /// The Window is only able to be Rendered to during is OnRender callback. Attempting
+    /// to render to the Window outside of that will throw an exception.
     /// 
     /// </summary>
     public abstract class Window : RenderTarget
