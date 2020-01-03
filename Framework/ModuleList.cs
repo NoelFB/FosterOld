@@ -168,12 +168,6 @@ namespace Foster.Framework
                 modules[i]?.AfterUpdate();
         }
 
-        internal void ContextChanged(Context context)
-        {
-            for (int i = 0; i < modules.Count; i++)
-                modules[i]?.ContextChanged(context);
-        }
-
         internal void BeforeRender(WindowTarget target)
         {
             for (int i = 0; i < modules.Count; i++)
