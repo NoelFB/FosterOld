@@ -92,6 +92,11 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Creates a new Window. This must be called from the Main Thread.
+        /// </summary>
+        public abstract Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None);
+
+        /// <summary>
         /// Creates the Input Manager
         /// </summary>
         protected abstract Input CreateInput();
@@ -100,11 +105,6 @@ namespace Foster.Framework
         /// Creates the Graphics Device
         /// </summary>
         protected abstract GraphicsDevice CreateGraphicsDevice();
-
-        /// <summary>
-        /// Creates a new Window. This must be called from the Main Thread.
-        /// </summary>
-        public abstract Window CreateWindow(Graphics graphics, string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
     }
 }
