@@ -9,6 +9,6 @@ namespace Foster.Framework
     /// </summary>
     public interface IGraphicsVulkan
     {
-
+        IntPtr GetVulkanInstancePointer();
     }
 }

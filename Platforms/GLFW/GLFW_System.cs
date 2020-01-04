@@ -12,6 +12,7 @@ namespace Foster.GLFW
         private readonly GLFW_Input input;
         internal List<GLFW.Window> windowPointers = new List<GLFW.Window>();
         private readonly List<GLFW_GLContext> glContexts = new List<GLFW_GLContext>();
+        private readonly List<IntPtr> vkSurfaces = new List<IntPtr>();
 
         public GLFW_System()
         {
@@ -59,14 +60,11 @@ namespace Foster.GLFW
             // Vulkan Setup
             else if (App.Graphics is IGraphicsVulkan)
             {
-                GLFW.WindowHint(GLFW_Enum.OPENGL_API, (int)GLFW_Enum.NO_API);
-
-                if (GLFW.VulkanSupported() != 0)
-                    throw new Exception("Vulkan is not supported on this platform");
+                GLFW.WindowHint(GLFW_Enum.CLIENT_API, (int)GLFW_Enum.NO_API);
             }
             else
             {
-                GLFW.WindowHint(GLFW_Enum.OPENGL_API, (int)GLFW_Enum.NO_API);
+                GLFW.WindowHint(GLFW_Enum.CLIENT_API, (int)GLFW_Enum.NO_API);
             }
 
             // Various constant Window Hints
@@ -144,6 +142,10 @@ namespace Foster.GLFW
                                 break;
                             }
                     }
+                    else if (App.Graphics is IGraphicsVulkan)
+                    {
+
+                    }
 
                     GLFW.DestroyWindow(windowPointers[i]);
                     windowPointers.RemoveAt(i);
@@ -164,7 +166,9 @@ namespace Foster.GLFW
 
             // Add the GL Context
             if (App.Graphics is IGraphicsOpenGL)
+            {
                 glContexts.Add(new GLFW_GLContext(ptr));
+            }
 
             // create the actual Window object
             var window = new GLFW_Window(this, ptr, title, !flags.HasFlag(WindowFlags.Hidden));
@@ -186,7 +190,19 @@ namespace Foster.GLFW
 
             // create the GLFW Window and return thr pointer
             var ptr = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared);
+            if (ptr == IntPtr.Zero)
+                throw new Exception("Unable to create a new Window");
             windowPointers.Add(ptr);
+
+            // create the Vulkan surface
+            if (App.Graphics is IGraphicsVulkan vulkan)
+            {
+                var result = GLFW.CreateWindowSurface(vulkan.GetVulkanInstancePointer(), ptr, IntPtr.Zero, out var surface);
+                if (result != 0)
+                    throw new Exception("Unable to create a Vulkan Surface");
+
+                vkSurfaces.Add(surface);
+            }
 
             return ptr;
         }
@@ -246,6 +262,35 @@ namespace Foster.GLFW
         {
             GLFW.MakeContextCurrent(window.Ptr);
         }
+
+        #endregion
+
+        #region ISystemVulkan Method Calls
+
+        public IntPtr GetVKProcAddress(IntPtr instance, string name)
+        {
+            return GLFW.GetInstanceProcAddress(instance, name);
+        }
+
+        public List<string> GetVKExtensions()
+        {
+            unsafe
+            {
+                var ptr = (byte**)GLFW.GetRequiredInstanceExtensions(out uint count);
+                var list = new List<string>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    var str = Marshal.PtrToStringAnsi(new IntPtr(ptr[i]));
+                    if (str != null)
+                        list.Add(str);
+                }
+
+                return new List<string>(list);
+            }
+        }
+
+
 
         #endregion
     }

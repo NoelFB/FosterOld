@@ -6,6 +6,12 @@ namespace Foster.Framework
 {
     public static class App
     {
+
+        /// <summary>
+        /// The Application Name
+        /// </summary>
+        public static string Name = "Foster Application";
+
         /// <summary>
         /// Foster.Framework Version Number
         /// </summary>

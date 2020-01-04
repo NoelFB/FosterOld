@@ -448,7 +448,16 @@ namespace Foster.GLFW
         public static extern int VulkanSupported();
 
         [DllImport(DLL, EntryPoint = "glfwGetRequiredInstanceExtensions", CallingConvention = CallingConvention.Cdecl)]
-        public static extern string[] GetRequiredInstanceExtensions(out uint count);
+        public static extern IntPtr GetRequiredInstanceExtensions (out uint count);
+
+        [DllImport(DLL, EntryPoint = "glfwGetInstanceProcAddress", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetInstanceProcAddress(IntPtr instance, [MarshalAs(UnmanagedType.LPStr)] string procname);
+
+        [DllImport(DLL, EntryPoint = "glfwGetPhysicalDevicePresentationSupport", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetPhysicalDevicePresentationSupport(IntPtr instance, IntPtr device, uint queuefamily);
+
+        [DllImport(DLL, EntryPoint = "glfwCreateWindowSurface", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int CreateWindowSurface(IntPtr instance, Window window, IntPtr allocator, out IntPtr surface);
 
     }
 
