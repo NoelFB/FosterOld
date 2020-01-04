@@ -68,23 +68,9 @@ namespace Foster.Framework
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
-        /// <summary>
-        /// Whether the System can support the given Graphics API
-        /// </summary>
-        public abstract bool SupportsGraphicsApi(GraphicsApi api);
-
-        /// <summary>
-        /// Gets an OpenGL Graphics Device and returns null if the System does not support it.
-        /// This is internal as it should only be used by the Graphics Module
-        /// </summary>
-        protected internal virtual GLDevice? GetOpenGLGraphicsDevice() => null;
-
         protected internal override void Startup()
         {
             Console.WriteLine($" - System {ApiName} {ApiVersion}");
-
-            if (!SupportsGraphicsApi(App.Graphics.Api))
-                throw new Exception($"System Module doesn't support Graphics API {App.Graphics.Api}");
         }
 
         protected internal override void BeforeUpdate()

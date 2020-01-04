@@ -6,12 +6,12 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    public class GL_Graphics : Graphics
+    public class GL_Graphics : Graphics, IGraphicsOpenGL
     {
         // The GL Device & Background Context can be null up until Startup, at which point they never are again
 #pragma warning disable CS8618
-        internal GLDevice Device;
-        internal GLContext BackgroundContext;
+        internal ISystemOpenGL System => App.System as ISystemOpenGL ?? throw new Exception("System does not implement IGLSystem");
+        internal ISystemOpenGL.Context BackgroundContext;
 #pragma warning restore CS8618
 
         // Stores info about the Context
@@ -31,8 +31,8 @@ namespace Foster.OpenGL
         internal List<uint> TexturesToDelete = new List<uint>();
 
         // list of Contexts and their associated Metadata
-        private readonly Dictionary<GLContext, ContextMeta> contextMetadata = new Dictionary<GLContext, ContextMeta>();
-        private readonly List<GLContext> disposedContexts = new List<GLContext>();
+        private readonly Dictionary<ISystemOpenGL.Context, ContextMeta> contextMetadata = new Dictionary<ISystemOpenGL.Context, ContextMeta>();
+        private readonly List<ISystemOpenGL.Context> disposedContexts = new List<ISystemOpenGL.Context>();
 
         // stored delegates for deleting graphics resources
         private delegate void DeleteResource(uint id);
@@ -44,18 +44,15 @@ namespace Foster.OpenGL
 
         protected override void Initialized()
         {
-            Api = GraphicsApi.OpenGL;
             ApiName = "OpenGL";
-
             base.Initialized();
         }
 
         protected override void Startup()
         {
-            Device = GetOpenGLGraphicsDevice() ?? throw new Exception("System does not implement a GL Device");
-            BackgroundContext = Device.CreateContext();
+            BackgroundContext = System.CreateGLContext();
 
-            GL.Init(Device);
+            GL.Init(System);
             GL.DepthMask(true);
 
             MaxTextureSize = GL.MaxTextureSize;
@@ -80,7 +77,7 @@ namespace Foster.OpenGL
 
             // check for any resources we're still tracking that are tied to contexts
             {
-                var lastContext = Device.GetCurrentContext();
+                var lastContext = System.GetCurrentGLContext();
 
                 lock (contextMetadata)
                 {
@@ -97,12 +94,12 @@ namespace Foster.OpenGL
                         {
                             lock (context)
                             {
-                                Device.SetCurrentContext(context);
+                                System.SetCurrentGLContext(context);
 
                                 DeleteResources(deleteFramebuffer, meta.FrameBuffersToDelete);
                                 DeleteResources(deleteArray, meta.VertexArraysToDelete);
 
-                                Device.SetCurrentContext(lastContext);
+                                System.SetCurrentGLContext(lastContext);
                             }
                         }
                     }
@@ -128,7 +125,7 @@ namespace Foster.OpenGL
             }
         }
 
-        internal ContextMeta GetContextMeta(GLContext context)
+        internal ContextMeta GetContextMeta(ISystemOpenGL.Context context)
         {
             if (!contextMetadata.TryGetValue(context, out var meta))
                 contextMetadata[context] = meta = new ContextMeta();
@@ -159,10 +156,10 @@ namespace Foster.OpenGL
         {
             if (target is Window window)
             {
-                var context = Device.GetWindowContext(window);
+                var context = System.GetWindowGLContext(window);
                 lock (context)
                 {
-                    Device.SetCurrentContext(context);
+                    System.SetCurrentGLContext(context);
                     Clear(context);
                 }
             }
@@ -173,19 +170,19 @@ namespace Foster.OpenGL
                 {
                     lock (BackgroundContext)
                     {
-                        Device.SetCurrentContext(BackgroundContext);
+                        System.SetCurrentGLContext(BackgroundContext);
 
                         renderTexture.Bind(BackgroundContext);
                         Clear(BackgroundContext);
                         GL.Flush();
 
-                        Device.SetCurrentContext(null);
+                        System.SetCurrentGLContext(null);
                     }
                 }
                 // otherwise just draw, regardless of Context
                 else
                 {
-                    var context = Device.GetCurrentContext();
+                    var context = System.GetCurrentGLContext();
                     if (context == null)
                         throw new Exception("Attempting to Draw without a Context");
 
@@ -197,7 +194,7 @@ namespace Foster.OpenGL
                 }
             }
 
-            void Clear(GLContext context)
+            void Clear(ISystemOpenGL.Context context)
             {
                 // update the viewport
                 var meta = GetContextMeta(context);
@@ -240,10 +237,10 @@ namespace Foster.OpenGL
         {
             if (target is Window window)
             {
-                var context = Device.GetWindowContext(window);
+                var context = System.GetWindowGLContext(window);
                 lock (context)
                 {
-                    Device.SetCurrentContext(context);
+                    System.SetCurrentGLContext(context);
                     Draw(target, ref pass, context);
                 }
             }
@@ -251,17 +248,17 @@ namespace Foster.OpenGL
             {
                 lock (BackgroundContext)
                 {
-                    Device.SetCurrentContext(BackgroundContext);
+                    System.SetCurrentGLContext(BackgroundContext);
 
                     Draw(target, ref pass, BackgroundContext);
                     GL.Flush();
 
-                    Device.SetCurrentContext(null);
+                    System.SetCurrentGLContext(null);
                 }
             }
             else
             {
-                var context = Device.GetCurrentContext();
+                var context = System.GetCurrentGLContext();
                 if (context == null)
                     throw new Exception("Context is null");
 
@@ -271,7 +268,7 @@ namespace Foster.OpenGL
                 }
             }
 
-            void Draw(RenderTarget target, ref RenderPass pass, GLContext context)
+            void Draw(RenderTarget target, ref RenderPass pass, ISystemOpenGL.Context context)
             {
                 RenderPass lastPass;
 

@@ -6,11 +6,11 @@ namespace Foster.OpenGL
 {
     internal class GL_Bindings
     {
-        private readonly GLDevice device;
+        private readonly ISystemOpenGL system;
 
-        public GL_Bindings(GLDevice device)
+        public GL_Bindings(ISystemOpenGL system)
         {
-            this.device = device ?? throw new Exception("GL Module requires a System that implements ProcAddress");
+            this.system = system ?? throw new Exception("GL Module requires a System that implements ProcAddress");
 
             CreateDelegate(ref glDebugMessageCallback, "glDebugMessageCallback");
             CreateDelegate(ref glFlush, "glFlush");
@@ -114,7 +114,7 @@ namespace Foster.OpenGL
 
         private void CreateDelegate<T>(ref T def, string name) where T : class
         {
-            var addr = device.GetProcAddress(name);
+            var addr = system.GetGLProcAddress(name);
             if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
                 def = del;
         }

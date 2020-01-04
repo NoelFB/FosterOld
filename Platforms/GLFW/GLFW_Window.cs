@@ -139,9 +139,9 @@ namespace Foster.GLFW
             this.visible = visible;
 
             // opengl swap interval
-            if (system.glDevice != null)
+            if (App.Graphics is IGraphicsOpenGL)
             {
-                system.glDevice.SetCurrentContext(window);
+                system.SetCurrentGLContext(window);
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
 
@@ -171,9 +171,9 @@ namespace Foster.GLFW
         {
             if (lastVsync != VSync)
             {
-                if (system.glDevice != null)
+                if (App.Graphics is IGraphicsOpenGL)
                 {
-                    system.glDevice.SetCurrentContext(window);
+                    system.SetCurrentGLContext(window);
                     GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
                 }
             }

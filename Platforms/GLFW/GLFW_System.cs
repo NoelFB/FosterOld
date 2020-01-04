@@ -6,12 +6,12 @@ using System.Threading;
 
 namespace Foster.GLFW
 {
-    public class GLFW_System : Framework.System
+    public class GLFW_System : Framework.System, ISystemOpenGL, ISystemVulkan
     {
 
         private readonly GLFW_Input input;
-        internal GLFW_GLDevice? glDevice;
         internal List<GLFW.Window> windowPointers = new List<GLFW.Window>();
+        private readonly List<GLFW_GLContext> glContexts = new List<GLFW_GLContext>();
 
         public GLFW_System()
         {
@@ -21,10 +21,9 @@ namespace Foster.GLFW
         protected override void Initialized()
         {
             GLFW.GetVersion(out int major, out int minor, out int rev);
+
             ApiName = "GLFW";
             ApiVersion = new Version(major, minor, rev);
-
-            base.Initialized();
         }
 
         public override bool SupportsMultipleWindows => true;
@@ -42,7 +41,7 @@ namespace Foster.GLFW
             }
 
             // OpenGL Setup
-            if (App.Graphics.Api == GraphicsApi.OpenGL)
+            if (App.Graphics is IGraphicsOpenGL)
             {
                 // macOS requires versions to be set to 3.2
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -54,12 +53,11 @@ namespace Foster.GLFW
                 }
 
                 // create the GL Device
-                glDevice = new GLFW_GLDevice(this);
-                glDevice.CreateContext();
-                glDevice.SetCurrentContext(windowPointers[0]);
+                CreateGLContext();
+                SetCurrentGLContext(windowPointers[0]);
             }
             // Vulkan Setup
-            else if (App.Graphics.Api == GraphicsApi.Vulkan)
+            else if (App.Graphics is IGraphicsVulkan)
             {
                 GLFW.WindowHint(GLFW_Enum.OPENGL_API, (int)GLFW_Enum.NO_API);
 
@@ -137,26 +135,20 @@ namespace Foster.GLFW
                         }
                     }
 
-                    if (glDevice != null)
-                        glDevice.Remove(windowPointers[i]);
+                    if (App.Graphics is IGraphicsOpenGL)
+                    {
+                        for (int j = 0; j < glContexts.Count; j ++)
+                            if (glContexts[j].window.Ptr == windowPointers[i].Ptr)
+                            {
+                                glContexts.RemoveAt(j);
+                                break;
+                            }
+                    }
 
                     GLFW.DestroyWindow(windowPointers[i]);
                     windowPointers.RemoveAt(i);
                 }
             }
-        }
-
-        public override bool SupportsGraphicsApi(GraphicsApi api)
-        {
-            if (api == GraphicsApi.None || api == GraphicsApi.OpenGL || api == GraphicsApi.Vulkan)
-                return true;
-
-            return false;
-        }
-
-        protected override GLDevice? GetOpenGLGraphicsDevice()
-        {
-            return glDevice;
         }
 
         public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
@@ -167,12 +159,12 @@ namespace Foster.GLFW
             // create GLFW Window
             var ptr = CreateGlfwWindow(title, width, height, flags);
 
-            // Add to the GL Device if it exists
-            if (glDevice != null)
-                glDevice.Add(ptr);
-
             // start listening for input on this Window
             input.StartListening(ptr);
+
+            // Add the GL Context
+            if (App.Graphics is IGraphicsOpenGL)
+                glContexts.Add(new GLFW_GLContext(ptr));
 
             // create the actual Window object
             var window = new GLFW_Window(this, ptr, title, !flags.HasFlag(WindowFlags.Hidden));
@@ -195,9 +187,67 @@ namespace Foster.GLFW
             // create the GLFW Window and return thr pointer
             var ptr = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared);
             windowPointers.Add(ptr);
+
             return ptr;
         }
 
+        #region ISystemOpenGL Method Calls
+
+        public IntPtr GetGLProcAddress(string name)
+        {
+            return GLFW.GetProcAddress(name);
+        }
+
+        public ISystemOpenGL.Context CreateGLContext()
+        {
+            // GLFW has no way to create a context without a window ...
+            // so we create a Window and just hide it
+
+            var ptr = CreateGlfwWindow("hidden-context", 128, 128, WindowFlags.Hidden);
+            var context = new GLFW_GLContext(ptr);
+            glContexts.Add(context);
+            return context;
+        }
+
+        public ISystemOpenGL.Context GetWindowGLContext(Window window)
+        {
+            if (window is GLFW_Window glfwWindow)
+            {
+                for (int i = 0; i < glContexts.Count; i++)
+                    if (glContexts[i].window.Ptr == glfwWindow.window.Ptr)
+                        return glContexts[i];
+            }
+
+            throw new Exception("Window does not have a valid Context");
+        }
+
+        public ISystemOpenGL.Context? GetCurrentGLContext()
+        {
+            var ptr = GLFW.GetCurrentContext();
+            if (ptr != IntPtr.Zero)
+            {
+                for (int i = 0; i < glContexts.Count; i++)
+                    if (glContexts[i].window.Ptr == ptr)
+                        return glContexts[i];
+            }
+
+            return null;
+        }
+
+        public void SetCurrentGLContext(ISystemOpenGL.Context? context)
+        {
+            if (context is GLFW_GLContext ctx && ctx != null)
+                GLFW.MakeContextCurrent(ctx.window);
+            else
+                GLFW.MakeContextCurrent(IntPtr.Zero);
+        }
+
+        internal void SetCurrentGLContext(GLFW.Window window)
+        {
+            GLFW.MakeContextCurrent(window.Ptr);
+        }
+
+        #endregion
     }
 
 }

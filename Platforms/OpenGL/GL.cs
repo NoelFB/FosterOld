@@ -23,9 +23,9 @@ namespace Foster.OpenGL
         private static GL_Bindings bindings;
 #pragma warning restore CS8618
 
-        public static void Init(GLDevice device)
+        public static void Init(ISystemOpenGL system)
         {
-            bindings = new GL_Bindings(device);
+            bindings = new GL_Bindings(system);
 
             GetIntegerv((GLEnum)0x821B, out MajorVersion);
             GetIntegerv((GLEnum)0x821C, out MinorVersion);

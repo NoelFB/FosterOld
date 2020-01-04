@@ -34,12 +34,12 @@ namespace Foster.OpenGL
             {
                 lock(graphics.BackgroundContext)
                 {
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
 
                     Init();
                     GL.Flush();
 
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
                 }
             }
             else
@@ -74,12 +74,12 @@ namespace Foster.OpenGL
             {
                 lock (graphics.BackgroundContext)
                 {
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
 
                     SetFilter(ID, f);
                     GL.Flush();
 
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
                 }
             }
             else
@@ -105,12 +105,12 @@ namespace Foster.OpenGL
             {
                 lock (graphics.BackgroundContext)
                 {
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
 
                     SetFilter(ID, s, t);
                     GL.Flush();
 
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
                 }
             }
             else
@@ -135,12 +135,12 @@ namespace Foster.OpenGL
             {
                 lock (graphics.BackgroundContext)
                 {
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
 
                     Upload();
                     GL.Flush();
 
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
                 }
             }
             else
@@ -164,12 +164,12 @@ namespace Foster.OpenGL
             {
                 lock (graphics.BackgroundContext)
                 {
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
 
                     Download();
                     GL.Flush();
 
-                    graphics.Device.SetCurrentContext(graphics.BackgroundContext);
+                    graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
                 }
             }
             else

@@ -7,11 +7,6 @@ namespace Foster.Framework
     {
 
         /// <summary>
-        /// The underlying Graphics API
-        /// </summary>
-        public GraphicsApi Api { get; protected set; } = GraphicsApi.None;
-
-        /// <summary>
         /// The underlying Graphics API Name
         /// </summary>
         public string ApiName { get; protected set; } = "Unknown";
@@ -25,11 +20,6 @@ namespace Foster.Framework
         /// The Maximum Texture Width and Height supported, in pixels
         /// </summary>
         public int MaxTextureSize { get; protected set; } = 0;
-
-        /// <summary>
-        /// System OpenGL Device
-        /// </summary>
-        protected GLDevice? GetOpenGLGraphicsDevice() => App.System.GetOpenGLGraphicsDevice();
 
         protected Graphics() : base(200)
         {

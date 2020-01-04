@@ -3,7 +3,7 @@ using System;
 
 namespace Foster.GLFW
 {
-    public class GLFW_GLContext : GLContext
+    public class GLFW_GLContext : ISystemOpenGL.Context
     {
         internal readonly GLFW.Window window;
         internal bool disposed;
