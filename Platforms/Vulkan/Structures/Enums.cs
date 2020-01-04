@@ -1,0 +1,1037 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Foster.Vulkan
+{
+
+    internal enum VkResult
+    {
+        SUCCESS = 0,
+        NOT_READY = 1,
+        TIMEOUT = 2,
+        EVENT_SET = 3,
+        EVENT_RESET = 4,
+        INCOMPLETE = 5,
+        ERROR_OUT_OF_HOST_MEMORY = -1,
+        ERROR_OUT_OF_DEVICE_MEMORY = -2,
+        ERROR_INITIALIZATION_FAILED = -3,
+        ERROR_DEVICE_LOST = -4,
+        ERROR_MEMORY_MAP_FAILED = -5,
+        ERROR_LAYER_NOT_PRESENT = -6,
+        ERROR_EXTENSION_NOT_PRESENT = -7,
+        ERROR_FEATURE_NOT_PRESENT = -8,
+        ERROR_INCOMPATIBLE_DRIVER = -9,
+        ERROR_TOO_MANY_OBJECTS = -10,
+        ERROR_FORMAT_NOT_SUPPORTED = -11,
+        ERROR_FRAGMENTED_POOL = -12,
+        ERROR_SURFACE_LOST_KHR = -1000000000,
+        ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
+        SUBOPTIMAL_KHR = 1000001003,
+        ERROR_OUT_OF_DATE_KHR = -1000001004,
+        ERROR_INCOMPATIBLE_DISPLAY_KHR = -1000003001,
+        ERROR_VALIDATION_FAILED_EXT = -1000011001,
+        ERROR_INVALID_SHADER_NV = -1000012000,
+        RESULT_BEGIN_RANGE = ERROR_FRAGMENTED_POOL,
+        RESULT_END_RANGE = INCOMPLETE,
+        RESULT_RANGE_SIZE = (INCOMPLETE - ERROR_FRAGMENTED_POOL + 1),
+        RESULT_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkStructureType
+    {
+        APPLICATION_INFO = 0,
+        INSTANCE_CREATE_INFO = 1,
+        DEVICE_QUEUE_CREATE_INFO = 2,
+        DEVICE_CREATE_INFO = 3,
+        SUBMIT_INFO = 4,
+        MEMORY_ALLOCATE_INFO = 5,
+        MAPPED_MEMORY_RANGE = 6,
+        BIND_SPARSE_INFO = 7,
+        FENCE_CREATE_INFO = 8,
+        SEMAPHORE_CREATE_INFO = 9,
+        EVENT_CREATE_INFO = 10,
+        QUERY_POOL_CREATE_INFO = 11,
+        BUFFER_CREATE_INFO = 12,
+        BUFFER_VIEW_CREATE_INFO = 13,
+        IMAGE_CREATE_INFO = 14,
+        IMAGE_VIEW_CREATE_INFO = 15,
+        SHADER_MODULE_CREATE_INFO = 16,
+        PIPELINE_CACHE_CREATE_INFO = 17,
+        PIPELINE_SHADER_STAGE_CREATE_INFO = 18,
+        PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,
+        PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,
+        PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
+        PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
+        PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
+        PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
+        PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
+        PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,
+        PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
+        GRAPHICS_PIPELINE_CREATE_INFO = 28,
+        COMPUTE_PIPELINE_CREATE_INFO = 29,
+        PIPELINE_LAYOUT_CREATE_INFO = 30,
+        SAMPLER_CREATE_INFO = 31,
+        DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,
+        DESCRIPTOR_POOL_CREATE_INFO = 33,
+        DESCRIPTOR_SET_ALLOCATE_INFO = 34,
+        WRITE_DESCRIPTOR_SET = 35,
+        COPY_DESCRIPTOR_SET = 36,
+        FRAMEBUFFER_CREATE_INFO = 37,
+        RENDER_PASS_CREATE_INFO = 38,
+        COMMAND_POOL_CREATE_INFO = 39,
+        COMMAND_BUFFER_ALLOCATE_INFO = 40,
+        COMMAND_BUFFER_INHERITANCE_INFO = 41,
+        COMMAND_BUFFER_BEGIN_INFO = 42,
+        RENDER_PASS_BEGIN_INFO = 43,
+        BUFFER_MEMORY_BARRIER = 44,
+        IMAGE_MEMORY_BARRIER = 45,
+        MEMORY_BARRIER = 46,
+        LOADER_INSTANCE_CREATE_INFO = 47,
+        LOADER_DEVICE_CREATE_INFO = 48,
+        SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
+        PRESENT_INFO_KHR = 1000001001,
+        DISPLAY_MODE_CREATE_INFO_KHR = 1000002000,
+        DISPLAY_SURFACE_CREATE_INFO_KHR = 1000002001,
+        DISPLAY_PRESENT_INFO_KHR = 1000003000,
+        XLIB_SURFACE_CREATE_INFO_KHR = 1000004000,
+        XCB_SURFACE_CREATE_INFO_KHR = 1000005000,
+        WAYLAND_SURFACE_CREATE_INFO_KHR = 1000006000,
+        MIR_SURFACE_CREATE_INFO_KHR = 1000007000,
+        ANDROID_SURFACE_CREATE_INFO_KHR = 1000008000,
+        WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
+        DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = 1000011000,
+        PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = 1000018000,
+        DEBUG_MARKER_OBJECT_NAME_INFO_EXT = 1000022000,
+        DEBUG_MARKER_OBJECT_TAG_INFO_EXT = 1000022001,
+        DEBUG_MARKER_MARKER_INFO_EXT = 1000022002,
+        DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV = 1000026000,
+        DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV = 1000026001,
+        DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV = 1000026002,
+        EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV = 1000056000,
+        EXPORT_MEMORY_ALLOCATE_INFO_NV = 1000056001,
+        IMPORT_MEMORY_WIN32_HANDLE_INFO_NV = 1000057000,
+        EXPORT_MEMORY_WIN32_HANDLE_INFO_NV = 1000057001,
+        WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV = 1000058000,
+        VALIDATION_FLAGS_EXT = 1000061000,
+        BEGIN_RANGE = APPLICATION_INFO,
+        END_RANGE = LOADER_DEVICE_CREATE_INFO,
+        RANGE_SIZE = (LOADER_DEVICE_CREATE_INFO - APPLICATION_INFO + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSystemAllocationScope
+    {
+        COMMAND = 0,
+        OBJECT = 1,
+        CACHE = 2,
+        DEVICE = 3,
+        INSTANCE = 4,
+        BEGIN_RANGE = COMMAND,
+        END_RANGE = INSTANCE,
+        RANGE_SIZE = (INSTANCE - COMMAND + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkInternalAllocationType
+    {
+        EXECUTABLE = 0,
+        BEGIN_RANGE = EXECUTABLE,
+        END_RANGE = EXECUTABLE,
+        RANGE_SIZE = (EXECUTABLE - EXECUTABLE + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkFormat
+    {
+        UNDEFINED = 0,
+        R4G4_UNORM_PACK8 = 1,
+        R4G4B4A4_UNORM_PACK16 = 2,
+        B4G4R4A4_UNORM_PACK16 = 3,
+        R5G6B5_UNORM_PACK16 = 4,
+        B5G6R5_UNORM_PACK16 = 5,
+        R5G5B5A1_UNORM_PACK16 = 6,
+        B5G5R5A1_UNORM_PACK16 = 7,
+        A1R5G5B5_UNORM_PACK16 = 8,
+        R8_UNORM = 9,
+        R8_SNORM = 10,
+        R8_USCALED = 11,
+        R8_SSCALED = 12,
+        R8_UINT = 13,
+        R8_SINT = 14,
+        R8_SRGB = 15,
+        R8G8_UNORM = 16,
+        R8G8_SNORM = 17,
+        R8G8_USCALED = 18,
+        R8G8_SSCALED = 19,
+        R8G8_UINT = 20,
+        R8G8_SINT = 21,
+        R8G8_SRGB = 22,
+        R8G8B8_UNORM = 23,
+        R8G8B8_SNORM = 24,
+        R8G8B8_USCALED = 25,
+        R8G8B8_SSCALED = 26,
+        R8G8B8_UINT = 27,
+        R8G8B8_SINT = 28,
+        R8G8B8_SRGB = 29,
+        B8G8R8_UNORM = 30,
+        B8G8R8_SNORM = 31,
+        B8G8R8_USCALED = 32,
+        B8G8R8_SSCALED = 33,
+        B8G8R8_UINT = 34,
+        B8G8R8_SINT = 35,
+        B8G8R8_SRGB = 36,
+        R8G8B8A8_UNORM = 37,
+        R8G8B8A8_SNORM = 38,
+        R8G8B8A8_USCALED = 39,
+        R8G8B8A8_SSCALED = 40,
+        R8G8B8A8_UINT = 41,
+        R8G8B8A8_SINT = 42,
+        R8G8B8A8_SRGB = 43,
+        B8G8R8A8_UNORM = 44,
+        B8G8R8A8_SNORM = 45,
+        B8G8R8A8_USCALED = 46,
+        B8G8R8A8_SSCALED = 47,
+        B8G8R8A8_UINT = 48,
+        B8G8R8A8_SINT = 49,
+        B8G8R8A8_SRGB = 50,
+        A8B8G8R8_UNORM_PACK32 = 51,
+        A8B8G8R8_SNORM_PACK32 = 52,
+        A8B8G8R8_USCALED_PACK32 = 53,
+        A8B8G8R8_SSCALED_PACK32 = 54,
+        A8B8G8R8_UINT_PACK32 = 55,
+        A8B8G8R8_SINT_PACK32 = 56,
+        A8B8G8R8_SRGB_PACK32 = 57,
+        A2R10G10B10_UNORM_PACK32 = 58,
+        A2R10G10B10_SNORM_PACK32 = 59,
+        A2R10G10B10_USCALED_PACK32 = 60,
+        A2R10G10B10_SSCALED_PACK32 = 61,
+        A2R10G10B10_UINT_PACK32 = 62,
+        A2R10G10B10_SINT_PACK32 = 63,
+        A2B10G10R10_UNORM_PACK32 = 64,
+        A2B10G10R10_SNORM_PACK32 = 65,
+        A2B10G10R10_USCALED_PACK32 = 66,
+        A2B10G10R10_SSCALED_PACK32 = 67,
+        A2B10G10R10_UINT_PACK32 = 68,
+        A2B10G10R10_SINT_PACK32 = 69,
+        R16_UNORM = 70,
+        R16_SNORM = 71,
+        R16_USCALED = 72,
+        R16_SSCALED = 73,
+        R16_UINT = 74,
+        R16_SINT = 75,
+        R16_SFLOAT = 76,
+        R16G16_UNORM = 77,
+        R16G16_SNORM = 78,
+        R16G16_USCALED = 79,
+        R16G16_SSCALED = 80,
+        R16G16_UINT = 81,
+        R16G16_SINT = 82,
+        R16G16_SFLOAT = 83,
+        R16G16B16_UNORM = 84,
+        R16G16B16_SNORM = 85,
+        R16G16B16_USCALED = 86,
+        R16G16B16_SSCALED = 87,
+        R16G16B16_UINT = 88,
+        R16G16B16_SINT = 89,
+        R16G16B16_SFLOAT = 90,
+        R16G16B16A16_UNORM = 91,
+        R16G16B16A16_SNORM = 92,
+        R16G16B16A16_USCALED = 93,
+        R16G16B16A16_SSCALED = 94,
+        R16G16B16A16_UINT = 95,
+        R16G16B16A16_SINT = 96,
+        R16G16B16A16_SFLOAT = 97,
+        R32_UINT = 98,
+        R32_SINT = 99,
+        R32_SFLOAT = 100,
+        R32G32_UINT = 101,
+        R32G32_SINT = 102,
+        R32G32_SFLOAT = 103,
+        R32G32B32_UINT = 104,
+        R32G32B32_SINT = 105,
+        R32G32B32_SFLOAT = 106,
+        R32G32B32A32_UINT = 107,
+        R32G32B32A32_SINT = 108,
+        R32G32B32A32_SFLOAT = 109,
+        R64_UINT = 110,
+        R64_SINT = 111,
+        R64_SFLOAT = 112,
+        R64G64_UINT = 113,
+        R64G64_SINT = 114,
+        R64G64_SFLOAT = 115,
+        R64G64B64_UINT = 116,
+        R64G64B64_SINT = 117,
+        R64G64B64_SFLOAT = 118,
+        R64G64B64A64_UINT = 119,
+        R64G64B64A64_SINT = 120,
+        R64G64B64A64_SFLOAT = 121,
+        B10G11R11_UFLOAT_PACK32 = 122,
+        E5B9G9R9_UFLOAT_PACK32 = 123,
+        D16_UNORM = 124,
+        X8_D24_UNORM_PACK32 = 125,
+        D32_SFLOAT = 126,
+        S8_UINT = 127,
+        D16_UNORM_S8_UINT = 128,
+        D24_UNORM_S8_UINT = 129,
+        D32_SFLOAT_S8_UINT = 130,
+        BC1_RGB_UNORM_BLOCK = 131,
+        BC1_RGB_SRGB_BLOCK = 132,
+        BC1_RGBA_UNORM_BLOCK = 133,
+        BC1_RGBA_SRGB_BLOCK = 134,
+        BC2_UNORM_BLOCK = 135,
+        BC2_SRGB_BLOCK = 136,
+        BC3_UNORM_BLOCK = 137,
+        BC3_SRGB_BLOCK = 138,
+        BC4_UNORM_BLOCK = 139,
+        BC4_SNORM_BLOCK = 140,
+        BC5_UNORM_BLOCK = 141,
+        BC5_SNORM_BLOCK = 142,
+        BC6H_UFLOAT_BLOCK = 143,
+        BC6H_SFLOAT_BLOCK = 144,
+        BC7_UNORM_BLOCK = 145,
+        BC7_SRGB_BLOCK = 146,
+        ETC2_R8G8B8_UNORM_BLOCK = 147,
+        ETC2_R8G8B8_SRGB_BLOCK = 148,
+        ETC2_R8G8B8A1_UNORM_BLOCK = 149,
+        ETC2_R8G8B8A1_SRGB_BLOCK = 150,
+        ETC2_R8G8B8A8_UNORM_BLOCK = 151,
+        ETC2_R8G8B8A8_SRGB_BLOCK = 152,
+        EAC_R11_UNORM_BLOCK = 153,
+        EAC_R11_SNORM_BLOCK = 154,
+        EAC_R11G11_UNORM_BLOCK = 155,
+        EAC_R11G11_SNORM_BLOCK = 156,
+        ASTC_4x4_UNORM_BLOCK = 157,
+        ASTC_4x4_SRGB_BLOCK = 158,
+        ASTC_5x4_UNORM_BLOCK = 159,
+        ASTC_5x4_SRGB_BLOCK = 160,
+        ASTC_5x5_UNORM_BLOCK = 161,
+        ASTC_5x5_SRGB_BLOCK = 162,
+        ASTC_6x5_UNORM_BLOCK = 163,
+        ASTC_6x5_SRGB_BLOCK = 164,
+        ASTC_6x6_UNORM_BLOCK = 165,
+        ASTC_6x6_SRGB_BLOCK = 166,
+        ASTC_8x5_UNORM_BLOCK = 167,
+        ASTC_8x5_SRGB_BLOCK = 168,
+        ASTC_8x6_UNORM_BLOCK = 169,
+        ASTC_8x6_SRGB_BLOCK = 170,
+        ASTC_8x8_UNORM_BLOCK = 171,
+        ASTC_8x8_SRGB_BLOCK = 172,
+        ASTC_10x5_UNORM_BLOCK = 173,
+        ASTC_10x5_SRGB_BLOCK = 174,
+        ASTC_10x6_UNORM_BLOCK = 175,
+        ASTC_10x6_SRGB_BLOCK = 176,
+        ASTC_10x8_UNORM_BLOCK = 177,
+        ASTC_10x8_SRGB_BLOCK = 178,
+        ASTC_10x10_UNORM_BLOCK = 179,
+        ASTC_10x10_SRGB_BLOCK = 180,
+        ASTC_12x10_UNORM_BLOCK = 181,
+        ASTC_12x10_SRGB_BLOCK = 182,
+        ASTC_12x12_UNORM_BLOCK = 183,
+        ASTC_12x12_SRGB_BLOCK = 184,
+        PVRTC1_2BPP_UNORM_BLOCK_IMG = 1000054000,
+        PVRTC1_4BPP_UNORM_BLOCK_IMG = 1000054001,
+        PVRTC2_2BPP_UNORM_BLOCK_IMG = 1000054002,
+        PVRTC2_4BPP_UNORM_BLOCK_IMG = 1000054003,
+        PVRTC1_2BPP_SRGB_BLOCK_IMG = 1000054004,
+        PVRTC1_4BPP_SRGB_BLOCK_IMG = 1000054005,
+        PVRTC2_2BPP_SRGB_BLOCK_IMG = 1000054006,
+        PVRTC2_4BPP_SRGB_BLOCK_IMG = 1000054007,
+        BEGIN_RANGE = UNDEFINED,
+        END_RANGE = ASTC_12x12_SRGB_BLOCK,
+        RANGE_SIZE = (ASTC_12x12_SRGB_BLOCK - UNDEFINED + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageType
+    {
+        TYPE_1D = 0,
+        TYPE_2D = 1,
+        TYPE_3D = 2,
+        TYPE_BEGIN_RANGE = TYPE_1D,
+        TYPE_END_RANGE = TYPE_3D,
+        TYPE_RANGE_SIZE = (TYPE_3D - TYPE_1D + 1),
+        TYPE_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageTiling
+    {
+        OPTIMAL = 0,
+        LINEAR = 1,
+        BEGIN_RANGE = OPTIMAL,
+        END_RANGE = LINEAR,
+        RANGE_SIZE = (LINEAR - OPTIMAL + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkPhysicalDeviceType
+    {
+        OTHER = 0,
+        INTEGRATED_GPU = 1,
+        DISCRETE_GPU = 2,
+        VIRTUAL_GPU = 3,
+        CPU = 4,
+        BEGIN_RANGE = OTHER,
+        END_RANGE = CPU,
+        RANGE_SIZE = (CPU - OTHER + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkQueryType
+    {
+        OCCLUSION = 0,
+        PIPELINE_STATISTICS = 1,
+        TIMESTAMP = 2,
+        BEGIN_RANGE = OCCLUSION,
+        END_RANGE = TIMESTAMP,
+        RANGE_SIZE = (TIMESTAMP - OCCLUSION + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSharingMode
+    {
+        EXCLUSIVE = 0,
+        CONCURRENT = 1,
+        BEGIN_RANGE = EXCLUSIVE,
+        END_RANGE = CONCURRENT,
+        RANGE_SIZE = (CONCURRENT - EXCLUSIVE + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageLayout
+    {
+        UNDEFINED = 0,
+        GENERAL = 1,
+        COLOR_ATTACHMENT_OPTIMAL = 2,
+        DEPTH_STENCIL_ATTACHMENT_OPTIMAL = 3,
+        DEPTH_STENCIL_READ_ONLY_OPTIMAL = 4,
+        SHADER_READ_ONLY_OPTIMAL = 5,
+        TRANSFER_SRC_OPTIMAL = 6,
+        TRANSFER_DST_OPTIMAL = 7,
+        PREINITIALIZED = 8,
+        PRESENT_SRC_KHR = 1000001002,
+        BEGIN_RANGE = UNDEFINED,
+        END_RANGE = PREINITIALIZED,
+        RANGE_SIZE = (PREINITIALIZED - UNDEFINED + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageViewType
+    {
+        TYPE_1D = 0,
+        TYPE_2D = 1,
+        TYPE_3D = 2,
+        TYPE_CUBE = 3,
+        TYPE_1D_ARRAY = 4,
+        TYPE_2D_ARRAY = 5,
+        TYPE_CUBE_ARRAY = 6,
+        TYPE_BEGIN_RANGE = TYPE_1D,
+        TYPE_END_RANGE = TYPE_CUBE_ARRAY,
+        TYPE_RANGE_SIZE = (TYPE_CUBE_ARRAY - TYPE_1D + 1),
+        TYPE_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkComponentSwizzle
+    {
+        IDENTITY = 0,
+        ZERO = 1,
+        ONE = 2,
+        R = 3,
+        G = 4,
+        B = 5,
+        A = 6,
+        BEGIN_RANGE = IDENTITY,
+        END_RANGE = A,
+        RANGE_SIZE = (A - IDENTITY + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkVertexInputRate
+    {
+        VERTEX = 0,
+        INSTANCE = 1,
+        BEGIN_RANGE = VERTEX,
+        END_RANGE = INSTANCE,
+        RANGE_SIZE = (INSTANCE - VERTEX + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkPrimitiveTopology
+    {
+        POINT_LIST = 0,
+        LINE_LIST = 1,
+        LINE_STRIP = 2,
+        TRIANGLE_LIST = 3,
+        TRIANGLE_STRIP = 4,
+        TRIANGLE_FAN = 5,
+        LINE_LIST_WITH_ADJACENCY = 6,
+        LINE_STRIP_WITH_ADJACENCY = 7,
+        TRIANGLE_LIST_WITH_ADJACENCY = 8,
+        TRIANGLE_STRIP_WITH_ADJACENCY = 9,
+        PATCH_LIST = 10,
+        BEGIN_RANGE = POINT_LIST,
+        END_RANGE = PATCH_LIST,
+        RANGE_SIZE = (PATCH_LIST - POINT_LIST + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkPolygonMode
+    {
+        FILL = 0,
+        LINE = 1,
+        POINT = 2,
+        BEGIN_RANGE = FILL,
+        END_RANGE = POINT,
+        RANGE_SIZE = (POINT - FILL + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkFrontFace
+    {
+        COUNTER_CLOCKWISE = 0,
+        CLOCKWISE = 1,
+        BEGIN_RANGE = COUNTER_CLOCKWISE,
+        END_RANGE = CLOCKWISE,
+        RANGE_SIZE = (CLOCKWISE - COUNTER_CLOCKWISE + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCompareOp
+    {
+        NEVER = 0,
+        LESS = 1,
+        EQUAL = 2,
+        LESS_OR_EQUAL = 3,
+        GREATER = 4,
+        NOT_EQUAL = 5,
+        GREATER_OR_EQUAL = 6,
+        ALWAYS = 7,
+        BEGIN_RANGE = NEVER,
+        END_RANGE = ALWAYS,
+        RANGE_SIZE = (ALWAYS - NEVER + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkStencilOp
+    {
+        KEEP = 0,
+        ZERO = 1,
+        REPLACE = 2,
+        INCREMENT_AND_CLAMP = 3,
+        DECREMENT_AND_CLAMP = 4,
+        INVERT = 5,
+        INCREMENT_AND_WRAP = 6,
+        DECREMENT_AND_WRAP = 7,
+        BEGIN_RANGE = KEEP,
+        END_RANGE = DECREMENT_AND_WRAP,
+        RANGE_SIZE = (DECREMENT_AND_WRAP - KEEP + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkLogicOp
+    {
+        CLEAR = 0,
+        AND = 1,
+        AND_REVERSE = 2,
+        COPY = 3,
+        AND_INVERTED = 4,
+        NO_OP = 5,
+        XOR = 6,
+        OR = 7,
+        NOR = 8,
+        EQUIVALENT = 9,
+        INVERT = 10,
+        OR_REVERSE = 11,
+        COPY_INVERTED = 12,
+        OR_INVERTED = 13,
+        NAND = 14,
+        SET = 15,
+        BEGIN_RANGE = CLEAR,
+        END_RANGE = SET,
+        RANGE_SIZE = (SET - CLEAR + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkBlendFactor
+    {
+        ZERO = 0,
+        ONE = 1,
+        SRC_COLOR = 2,
+        ONE_MINUS_SRC_COLOR = 3,
+        DST_COLOR = 4,
+        ONE_MINUS_DST_COLOR = 5,
+        SRC_ALPHA = 6,
+        ONE_MINUS_SRC_ALPHA = 7,
+        DST_ALPHA = 8,
+        ONE_MINUS_DST_ALPHA = 9,
+        CONSTANT_COLOR = 10,
+        ONE_MINUS_CONSTANT_COLOR = 11,
+        CONSTANT_ALPHA = 12,
+        ONE_MINUS_CONSTANT_ALPHA = 13,
+        SRC_ALPHA_SATURATE = 14,
+        SRC1_COLOR = 15,
+        ONE_MINUS_SRC1_COLOR = 16,
+        SRC1_ALPHA = 17,
+        ONE_MINUS_SRC1_ALPHA = 18,
+        BEGIN_RANGE = ZERO,
+        END_RANGE = ONE_MINUS_SRC1_ALPHA,
+        RANGE_SIZE = (ONE_MINUS_SRC1_ALPHA - ZERO + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkBlendOp
+    {
+        ADD = 0,
+        SUBTRACT = 1,
+        REVERSE_SUBTRACT = 2,
+        MIN = 3,
+        MAX = 4,
+        BEGIN_RANGE = ADD,
+        END_RANGE = MAX,
+        RANGE_SIZE = (MAX - ADD + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkDynamicState
+    {
+        VIEWPORT = 0,
+        SCISSOR = 1,
+        LINE_WIDTH = 2,
+        DEPTH_BIAS = 3,
+        BLEND_CONSTANTS = 4,
+        DEPTH_BOUNDS = 5,
+        STENCIL_COMPARE_MASK = 6,
+        STENCIL_WRITE_MASK = 7,
+        STENCIL_REFERENCE = 8,
+        BEGIN_RANGE = VIEWPORT,
+        END_RANGE = STENCIL_REFERENCE,
+        RANGE_SIZE = (STENCIL_REFERENCE - VIEWPORT + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkFilter
+    {
+        NEAREST = 0,
+        LINEAR = 1,
+        CUBIC_IMG = 1000015000,
+        BEGIN_RANGE = NEAREST,
+        END_RANGE = LINEAR,
+        RANGE_SIZE = (LINEAR - NEAREST + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSamplerMipmapMode
+    {
+        NEAREST = 0,
+        LINEAR = 1,
+        BEGIN_RANGE = NEAREST,
+        END_RANGE = LINEAR,
+        RANGE_SIZE = (LINEAR - NEAREST + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSamplerAddressMode
+    {
+        REPEAT = 0,
+        MIRRORED_REPEAT = 1,
+        CLAMP_TO_EDGE = 2,
+        CLAMP_TO_BORDER = 3,
+        MIRROR_CLAMP_TO_EDGE = 4,
+        BEGIN_RANGE = REPEAT,
+        END_RANGE = CLAMP_TO_BORDER,
+        RANGE_SIZE = (CLAMP_TO_BORDER - REPEAT + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkBorderColor
+    {
+        FLOAT_TRANSPARENT_BLACK = 0,
+        INT_TRANSPARENT_BLACK = 1,
+        FLOAT_OPAQUE_BLACK = 2,
+        INT_OPAQUE_BLACK = 3,
+        FLOAT_OPAQUE_WHITE = 4,
+        INT_OPAQUE_WHITE = 5,
+        BEGIN_RANGE = FLOAT_TRANSPARENT_BLACK,
+        END_RANGE = INT_OPAQUE_WHITE,
+        RANGE_SIZE = (INT_OPAQUE_WHITE - FLOAT_TRANSPARENT_BLACK + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkDescriptorType
+    {
+        SAMPLER = 0,
+        COMBINED_IMAGE_SAMPLER = 1,
+        SAMPLED_IMAGE = 2,
+        STORAGE_IMAGE = 3,
+        UNIFORM_TEXEL_BUFFER = 4,
+        STORAGE_TEXEL_BUFFER = 5,
+        UNIFORM_BUFFER = 6,
+        STORAGE_BUFFER = 7,
+        UNIFORM_BUFFER_DYNAMIC = 8,
+        STORAGE_BUFFER_DYNAMIC = 9,
+        INPUT_ATTACHMENT = 10,
+        BEGIN_RANGE = SAMPLER,
+        END_RANGE = INPUT_ATTACHMENT,
+        RANGE_SIZE = (INPUT_ATTACHMENT - SAMPLER + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkAttachmentLoadOp
+    {
+        LOAD = 0,
+        CLEAR = 1,
+        DONT_CARE = 2,
+        BEGIN_RANGE = LOAD,
+        END_RANGE = DONT_CARE,
+        RANGE_SIZE = (DONT_CARE - LOAD + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkAttachmentStoreOp
+    {
+        STORE = 0,
+        DONT_CARE = 1,
+        BEGIN_RANGE = STORE,
+        END_RANGE = DONT_CARE,
+        RANGE_SIZE = (DONT_CARE - STORE + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkPipelineBindPoint
+    {
+        GRAPHICS = 0,
+        COMPUTE = 1,
+        BEGIN_RANGE = GRAPHICS,
+        END_RANGE = COMPUTE,
+        RANGE_SIZE = (COMPUTE - GRAPHICS + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCommandBufferLevel
+    {
+        PRIMARY = 0,
+        SECONDARY = 1,
+        BEGIN_RANGE = PRIMARY,
+        END_RANGE = SECONDARY,
+        RANGE_SIZE = (SECONDARY - PRIMARY + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkIndexType
+    {
+        UINT16 = 0,
+        UINT32 = 1,
+        BEGIN_RANGE = UINT16,
+        END_RANGE = UINT32,
+        RANGE_SIZE = (UINT32 - UINT16 + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSubpassContents
+    {
+        INLINE = 0,
+        SECONDARY_COMMAND_BUFFERS = 1,
+        BEGIN_RANGE = INLINE,
+        END_RANGE = SECONDARY_COMMAND_BUFFERS,
+        RANGE_SIZE = (SECONDARY_COMMAND_BUFFERS - INLINE + 1),
+        MAX_ENUM = 0x7FFFFFFF
+    }
+
+
+    internal enum VkFormatFeatureFlagBits
+    {
+        SAMPLED_IMAGE_BIT = 0x00000001,
+        STORAGE_IMAGE_BIT = 0x00000002,
+        STORAGE_IMAGE_ATOMIC_BIT = 0x00000004,
+        UNIFORM_TEXEL_BUFFER_BIT = 0x00000008,
+        STORAGE_TEXEL_BUFFER_BIT = 0x00000010,
+        STORAGE_TEXEL_BUFFER_ATOMIC_BIT = 0x00000020,
+        VERTEX_BUFFER_BIT = 0x00000040,
+        COLOR_ATTACHMENT_BIT = 0x00000080,
+        COLOR_ATTACHMENT_BLEND_BIT = 0x00000100,
+        DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000200,
+        BLIT_SRC_BIT = 0x00000400,
+        BLIT_DST_BIT = 0x00000800,
+        SAMPLED_IMAGE_FILTER_LINEAR_BIT = 0x00001000,
+        SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG = 0x00002000,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageUsageFlagBits
+    {
+        TRANSFER_SRC_BIT = 0x00000001,
+        TRANSFER_DST_BIT = 0x00000002,
+        SAMPLED_BIT = 0x00000004,
+        STORAGE_BIT = 0x00000008,
+        COLOR_ATTACHMENT_BIT = 0x00000010,
+        DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
+        TRANSIENT_ATTACHMENT_BIT = 0x00000040,
+        INPUT_ATTACHMENT_BIT = 0x00000080,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageCreateFlagBits
+    {
+        SPARSE_BINDING_BIT = 0x00000001,
+        SPARSE_RESIDENCY_BIT = 0x00000002,
+        SPARSE_ALIASED_BIT = 0x00000004,
+        MUTABLE_FORMAT_BIT = 0x00000008,
+        CUBE_COMPATIBLE_BIT = 0x00000010,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSampleCountFlagBits
+    {
+        COUNT_1_BIT = 0x00000001,
+        COUNT_2_BIT = 0x00000002,
+        COUNT_4_BIT = 0x00000004,
+        COUNT_8_BIT = 0x00000008,
+        COUNT_16_BIT = 0x00000010,
+        COUNT_32_BIT = 0x00000020,
+        COUNT_64_BIT = 0x00000040,
+        COUNT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkQueueFlagBits
+    {
+        GRAPHICS_BIT = 0x00000001,
+        COMPUTE_BIT = 0x00000002,
+        TRANSFER_BIT = 0x00000004,
+        SPARSE_BINDING_BIT = 0x00000008,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkMemoryPropertyFlagBits
+    {
+        DEVICE_LOCAL_BIT = 0x00000001,
+        HOST_VISIBLE_BIT = 0x00000002,
+        HOST_COHERENT_BIT = 0x00000004,
+        HOST_CACHED_BIT = 0x00000008,
+        LAZILY_ALLOCATED_BIT = 0x00000010,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkMemoryHeapFlagBits
+    {
+        DEVICE_LOCAL_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkPipelineStageFlagBits
+    {
+        TOP_OF_PIPE_BIT = 0x00000001,
+        DRAW_INDIRECT_BIT = 0x00000002,
+        VERTEX_INPUT_BIT = 0x00000004,
+        VERTEX_SHADER_BIT = 0x00000008,
+        TESSELLATION_CONTROL_SHADER_BIT = 0x00000010,
+        TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020,
+        GEOMETRY_SHADER_BIT = 0x00000040,
+        FRAGMENT_SHADER_BIT = 0x00000080,
+        EARLY_FRAGMENT_TESTS_BIT = 0x00000100,
+        LATE_FRAGMENT_TESTS_BIT = 0x00000200,
+        COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,
+        COMPUTE_SHADER_BIT = 0x00000800,
+        TRANSFER_BIT = 0x00001000,
+        BOTTOM_OF_PIPE_BIT = 0x00002000,
+        HOST_BIT = 0x00004000,
+        ALL_GRAPHICS_BIT = 0x00008000,
+        ALL_COMMANDS_BIT = 0x00010000,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkImageAspectFlagBits
+    {
+        COLOR_BIT = 0x00000001,
+        DEPTH_BIT = 0x00000002,
+        STENCIL_BIT = 0x00000004,
+        METADATA_BIT = 0x00000008,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSparseImageFormatFlagBits
+    {
+        SINGLE_MIPTAIL_BIT = 0x00000001,
+        ALIGNED_MIP_SIZE_BIT = 0x00000002,
+        NONSTANDARD_BLOCK_SIZE_BIT = 0x00000004,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkSparseMemoryBindFlagBits
+    {
+        METADATA_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkFenceCreateFlagBits
+    {
+        SIGNALED_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkQueryPipelineStatisticFlagBits
+    {
+        INPUT_ASSEMBLY_VERTICES_BIT = 0x00000001,
+        INPUT_ASSEMBLY_PRIMITIVES_BIT = 0x00000002,
+        VERTEX_SHADER_INVOCATIONS_BIT = 0x00000004,
+        GEOMETRY_SHADER_INVOCATIONS_BIT = 0x00000008,
+        GEOMETRY_SHADER_PRIMITIVES_BIT = 0x00000010,
+        CLIPPING_INVOCATIONS_BIT = 0x00000020,
+        CLIPPING_PRIMITIVES_BIT = 0x00000040,
+        FRAGMENT_SHADER_INVOCATIONS_BIT = 0x00000080,
+        TESSELLATION_CONTROL_SHADER_PATCHES_BIT = 0x00000100,
+        TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT = 0x00000200,
+        COMPUTE_SHADER_INVOCATIONS_BIT = 0x00000400,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkQueryResultFlagBits
+    {
+        RESULT_64_BIT = 0x00000001,
+        RESULT_WAIT_BIT = 0x00000002,
+        RESULT_WITH_AVAILABILITY_BIT = 0x00000004,
+        RESULT_PARTIAL_BIT = 0x00000008,
+        RESULT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkBufferCreateFlagBits
+    {
+        SPARSE_BINDING_BIT = 0x00000001,
+        SPARSE_RESIDENCY_BIT = 0x00000002,
+        SPARSE_ALIASED_BIT = 0x00000004,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkBufferUsageFlagBits
+    {
+        TRANSFER_SRC_BIT = 0x00000001,
+        TRANSFER_DST_BIT = 0x00000002,
+        UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
+        STORAGE_TEXEL_BUFFER_BIT = 0x00000008,
+        UNIFORM_BUFFER_BIT = 0x00000010,
+        STORAGE_BUFFER_BIT = 0x00000020,
+        INDEX_BUFFER_BIT = 0x00000040,
+        VERTEX_BUFFER_BIT = 0x00000080,
+        INDIRECT_BUFFER_BIT = 0x00000100,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkPipelineCreateFlagBits
+    {
+        DISABLE_OPTIMIZATION_BIT = 0x00000001,
+        ALLOW_DERIVATIVES_BIT = 0x00000002,
+        DERIVATIVE_BIT = 0x00000004,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkShaderStageFlagBits
+    {
+        VERTEX_BIT = 0x00000001,
+        TESSELLATION_CONTROL_BIT = 0x00000002,
+        TESSELLATION_EVALUATION_BIT = 0x00000004,
+        GEOMETRY_BIT = 0x00000008,
+        FRAGMENT_BIT = 0x00000010,
+        COMPUTE_BIT = 0x00000020,
+        ALL_GRAPHICS = 0x0000001F,
+        ALL = 0x7FFFFFFF,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCullModeFlagBits
+    {
+        NONE = 0,
+        FRONT_BIT = 0x00000001,
+        BACK_BIT = 0x00000002,
+        FRONT_AND_BACK = 0x00000003,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkColorComponentFlagBits
+    {
+        R_BIT = 0x00000001,
+        G_BIT = 0x00000002,
+        B_BIT = 0x00000004,
+        A_BIT = 0x00000008,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkDescriptorPoolCreateFlagBits
+    {
+        FREE_DESCRIPTOR_SET_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkAttachmentDescriptionFlagBits
+    {
+        MAY_ALIAS_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkAccessFlagBits
+    {
+        INDIRECT_COMMAND_READ_BIT = 0x00000001,
+        INDEX_READ_BIT = 0x00000002,
+        VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
+        UNIFORM_READ_BIT = 0x00000008,
+        INPUT_ATTACHMENT_READ_BIT = 0x00000010,
+        SHADER_READ_BIT = 0x00000020,
+        SHADER_WRITE_BIT = 0x00000040,
+        COLOR_ATTACHMENT_READ_BIT = 0x00000080,
+        COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,
+        DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
+        DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
+        TRANSFER_READ_BIT = 0x00000800,
+        TRANSFER_WRITE_BIT = 0x00001000,
+        HOST_READ_BIT = 0x00002000,
+        HOST_WRITE_BIT = 0x00004000,
+        MEMORY_READ_BIT = 0x00008000,
+        MEMORY_WRITE_BIT = 0x00010000,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkDependencyFlagBits
+    {
+        BY_REGION_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCommandPoolCreateFlagBits
+    {
+        TRANSIENT_BIT = 0x00000001,
+        RESET_COMMAND_BUFFER_BIT = 0x00000002,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCommandPoolResetFlagBits
+    {
+        RELEASE_RESOURCES_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCommandBufferUsageFlagBits
+    {
+        ONE_TIME_SUBMIT_BIT = 0x00000001,
+        RENDER_PASS_CONTINUE_BIT = 0x00000002,
+        SIMULTANEOUS_USE_BIT = 0x00000004,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkQueryControlFlagBits
+    {
+        PRECISE_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkCommandBufferResetFlagBits
+    {
+        RELEASE_RESOURCES_BIT = 0x00000001,
+        FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+
+    internal enum VkStencilFaceFlagBits
+    {
+        FACE_FRONT_BIT = 0x00000001,
+        FACE_BACK_BIT = 0x00000002,
+        FRONT_AND_BACK = 0x00000003,
+        FACE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+    }
+}

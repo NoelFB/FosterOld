@@ -30,10 +30,10 @@ namespace Foster.Vulkan
                 {
                     sType = VkStructureType.APPLICATION_INFO,
                     pApplicationName = name,
-                    applicationVersion = VK_Utils.Version(1, 0, 0),
+                    applicationVersion = Utils.Version(1, 0, 0),
                     pEngineName = engine,
-                    engineVersion = VK_Utils.Version(App.Version.Major, App.Version.Minor, App.Version.Revision),
-                    apiVersion = VK_Utils.Version(1, 0, 0),
+                    engineVersion = Utils.Version(App.Version.Major, App.Version.Minor, App.Version.Revision),
+                    apiVersion = Utils.Version(1, 0, 0),
                 };
 
                 // get the required Vulkan Extensions

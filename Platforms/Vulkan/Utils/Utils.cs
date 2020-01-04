@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Foster.Vulkan
 {
-    internal static class VK_Utils
+    internal static class Utils
     {
 
         public static uint Version(int major, int minor, int patch)
