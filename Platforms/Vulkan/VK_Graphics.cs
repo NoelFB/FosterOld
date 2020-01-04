@@ -31,10 +31,10 @@ namespace Foster.Vulkan
                 {
                     sType = VkStructureType.ApplicationInfo,
                     pApplicationName = name,
-                    applicationVersion = Utils.ToVulkanVersion(1, 0, 0),
+                    applicationVersion = VK.MAKE_VERSION(1, 0, 0),
                     pEngineName = engine,
-                    engineVersion = Utils.ToVulkanVersion(App.Version.Major, App.Version.Minor, App.Version.Revision),
-                    apiVersion = Utils.ToVulkanVersion(1, 0, 0),
+                    engineVersion = VK.MAKE_VERSION(App.Version),
+                    apiVersion = VK.MAKE_VERSION(1, 0, 0),
                 };
 
                 // get the required Vulkan Extensions
@@ -78,7 +78,12 @@ namespace Foster.Vulkan
             {
                 VkPhysicalDeviceProperties properties;
                 VK.GetPhysicalDeviceProperties(PhysicalDevice, &properties);
-                ApiVersion = Utils.FromVulkanVersion(properties.apiVersion);
+                ApiVersion = VK.UNMAKE_VERSION(properties.apiVersion);
+
+                int length = 0;
+                while (length < VkConst.MAX_PHYSICAL_DEVICE_NAME_SIZE && properties.deviceName[length] != 0)
+                    length++;
+                DeviceName = Encoding.UTF8.GetString(properties.deviceName, length);
             }
 
             base.Startup();

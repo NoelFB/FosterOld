@@ -70,7 +70,7 @@ namespace Foster.Framework
 
         protected internal override void Startup()
         {
-            Console.WriteLine($" - System {ApiName} {ApiVersion}");
+            Console.WriteLine($" - System: {ApiName} {ApiVersion}");
         }
 
         protected internal override void BeforeUpdate()

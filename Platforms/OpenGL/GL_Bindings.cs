@@ -12,6 +12,7 @@ namespace Foster.OpenGL
         {
             this.system = system ?? throw new Exception("GL Module requires a System that implements ProcAddress");
 
+            CreateDelegate(ref glGetString, "glGetString");
             CreateDelegate(ref glDebugMessageCallback, "glDebugMessageCallback");
             CreateDelegate(ref glFlush, "glFlush");
             CreateDelegate(ref glEnable, "glEnable");
@@ -118,6 +119,10 @@ namespace Foster.OpenGL
             if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
                 def = del;
         }
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate IntPtr GetString(GLEnum name);
+        public GetString glGetString;
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void DebugMessageCallback(IntPtr callback, IntPtr userdata);

@@ -57,6 +57,7 @@ namespace Foster.OpenGL
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
+            DeviceName = GL.GetString(GLEnum.RENDERER);
 
             base.Startup();
         }

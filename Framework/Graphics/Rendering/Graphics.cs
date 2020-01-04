@@ -17,6 +17,11 @@ namespace Foster.Framework
         public Version ApiVersion { get; protected set; } = new Version(0, 0, 0);
 
         /// <summary>
+        /// The Underlying Graphics Device Name
+        /// </summary>
+        public string DeviceName { get; protected set; } = "Unknown";
+
+        /// <summary>
         /// The Maximum Texture Width and Height supported, in pixels
         /// </summary>
         public int MaxTextureSize { get; protected set; } = 0;
@@ -28,7 +33,7 @@ namespace Foster.Framework
 
         protected internal override void Startup()
         {
-            Console.WriteLine($" - Graphics {ApiName} {ApiVersion}");
+            Console.WriteLine($" - Graphics: {ApiName} {ApiVersion} ({DeviceName})");
         }
 
         /// <summary>

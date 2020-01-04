@@ -1479,7 +1479,7 @@ namespace Foster.Vulkan
         public float maxSamplerAnisotropy;
         public UInt32 maxViewports;
         fixed UInt32 maxViewportDimensions[2];
-        fixed float viewportBoundsRange[2];
+        public fixed float viewportBoundsRange[2];
         public UInt32 viewportSubPixelBits;
         public UIntPtr minMemoryMapAlignment;
         public VkDeviceSize minTexelBufferOffsetAlignment;
@@ -1512,8 +1512,8 @@ namespace Foster.Vulkan
         public UInt32 maxCullDistances;
         public UInt32 maxCombinedClipAndCullDistances;
         public UInt32 discreteQueuePriorities;
-        fixed float pointSizeRange[2];
-        fixed float lineWidthRange[2];
+        public fixed float pointSizeRange[2];
+        public fixed float lineWidthRange[2];
         public float pointSizeGranularity;
         public float lineWidthGranularity;
         public VkBool32 strictLines;
@@ -1539,8 +1539,8 @@ namespace Foster.Vulkan
         public UInt32 vendorID;
         public UInt32 deviceID;
         public VkPhysicalDeviceType deviceType;
-        fixed byte deviceName[(int)VkConst.MAX_PHYSICAL_DEVICE_NAME_SIZE];
-        fixed byte pipelineCacheUUID[(int)VkConst.UUID_SIZE];
+        public fixed byte deviceName[(int)VkConst.MAX_PHYSICAL_DEVICE_NAME_SIZE];
+        public fixed byte pipelineCacheUUID[(int)VkConst.UUID_SIZE];
         public VkPhysicalDeviceLimits limits;
         public VkPhysicalDeviceSparseProperties sparseProperties;
     }
@@ -1645,16 +1645,16 @@ namespace Foster.Vulkan
 
     internal unsafe struct VkExtensionProperties
     {
-        fixed byte extensionName[(int)VkConst.MAX_EXTENSION_NAME_SIZE];
+        public fixed byte extensionName[(int)VkConst.MAX_EXTENSION_NAME_SIZE];
         public UInt32 specVersion;
     }
 
     internal unsafe struct VkLayerProperties
     {
-        fixed byte layerName[(int)VkConst.MAX_EXTENSION_NAME_SIZE];
+        public fixed byte layerName[(int)VkConst.MAX_EXTENSION_NAME_SIZE];
         public UInt32 specVersion;
         public UInt32 implementationVersion;
-        fixed byte description[(int)VkConst.MAX_DESCRIPTION_SIZE];
+        public fixed byte description[(int)VkConst.MAX_DESCRIPTION_SIZE];
     }
 
     internal unsafe struct VkSubmitInfo
@@ -2095,7 +2095,7 @@ namespace Foster.Vulkan
         public VkLogicOp logicOp;
         public UInt32 attachmentCount;
         public VkPipelineColorBlendAttachmentState* pAttachments;
-        fixed float blendConstants[4];
+        public fixed float blendConstants[4];
     }
 
     internal unsafe struct VkPipelineDynamicStateCreateInfo
@@ -4075,7 +4075,7 @@ namespace Foster.Vulkan
         public VkStructureType sType;
         public void* pNext;
         public byte* pMarkerName;
-        fixed float color[4];
+        public fixed float color[4];
     }
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]

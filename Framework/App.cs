@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Foster.Framework
@@ -73,6 +74,8 @@ namespace Foster.Framework
                 throw new Exception("App requires a System Module to be registered before it can Start");
 
             Console.WriteLine($"FOSTER {Version}");
+            Console.WriteLine($" - Platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+            Console.WriteLine($" - Framework: {RuntimeInformation.FrameworkDescription}");
 
             Modules.Startup();
             Running = true;

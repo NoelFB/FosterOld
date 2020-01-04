@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
+
 namespace Foster.Vulkan
 {
     internal unsafe class VK
@@ -201,6 +202,21 @@ namespace Foster.Vulkan
             vkCreateInstance call = null;
             CreateDelegate(system, IntPtr.Zero, ref call, "vkCreateInstance");
             return call(pCreateInfo, pAllocator, out pInstance);
+        }
+
+        public static uint MAKE_VERSION(int major, int minor, int patch)
+        {
+            return (uint)(((major) << 22) | ((minor) << 12) | (patch));
+        }
+
+        public static uint MAKE_VERSION(Version version)
+        {
+            return MAKE_VERSION(version.Major, version.Minor, version.Revision);
+        }
+
+        public static Version UNMAKE_VERSION(uint version)
+        {
+            return new Version((int)(version >> 22), (int)((version >> 22) & 0x3ff), (int)(version & 0xfff));
         }
 
         public vkDestroyInstance DestroyInstance;

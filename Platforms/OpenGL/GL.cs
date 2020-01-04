@@ -89,6 +89,10 @@ namespace Foster.OpenGL
 
         private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, IntPtr message, IntPtr userParam);
 
+        public static unsafe string GetString(GLEnum name)
+        {
+            return Marshal.PtrToStringAnsi(bindings.glGetString(name)) ?? "";
+        }
 
         public static void DebugMessageCallback(IntPtr callback, IntPtr userdata) => bindings.glDebugMessageCallback(callback, userdata);
 
