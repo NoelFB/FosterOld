@@ -6,7 +6,7 @@ namespace Foster.GLFW
     public class GLFW_Window : Window
     {
         private readonly GLFW_System system;
-        internal readonly GLFW.Window window;
+        internal readonly IntPtr window;
 
         private readonly GLFW.WindowSizeFunc windowSizeCallbackRef;
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
@@ -129,9 +129,9 @@ namespace Foster.GLFW
             }
         }
 
-        public override IntPtr Pointer => GLFW.GetWindowUserPointer(window.Ptr);
+        public override IntPtr Pointer => GLFW.GetWindowUserPointer(window);
 
-        internal GLFW_Window(GLFW_System system, GLFW.Window window, string title, bool visible)
+        internal GLFW_Window(GLFW_System system, IntPtr window, string title, bool visible)
         {
             this.system = system;
             this.window = window;
@@ -150,19 +150,19 @@ namespace Foster.GLFW
             GLFW.SetCursorEnterCallback(this.window, windowCursorEnterCallbackRef = OnCursorEnter);
         }
 
-        private void OnWindowResize(GLFW.Window window, int width, int height)
+        private void OnWindowResize(IntPtr window, int width, int height)
         {
             OnResize?.Invoke(this);
         }
 
-        private void OnWindowFocus(GLFW.Window window, int focused)
+        private void OnWindowFocus(IntPtr window, int focused)
         {
             this.focused = (focused != 0);
             if (this.focused)
                 OnFocus?.Invoke(this);
         }
 
-        private void OnCursorEnter(GLFW.Window window, int entered)
+        private void OnCursorEnter(IntPtr window, int entered)
         {
             mouseOver = (entered != 0);
         }

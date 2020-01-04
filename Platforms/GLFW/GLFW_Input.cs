@@ -28,19 +28,26 @@ namespace Foster.GLFW
             }
         }
 
-        internal void StartListening(GLFW.Window window)
+        internal void Dispose()
         {
-            GLFW.SetKeyCallback(window.Ptr, TrackDelegate<GLFW.KeyFunc>(window.Ptr, OnKeyCallback));
-            GLFW.SetCharCallback(window.Ptr, TrackDelegate<GLFW.CharFunc>(window.Ptr, OnCharCallback));
-            GLFW.SetMouseButtonCallback(window.Ptr, TrackDelegate<GLFW.MouseButtonFunc>(window.Ptr, OnMouseCallback));
+            foreach (var kv in delegateTracker)
+                StopListening(kv.Key);
+            delegateTracker.Clear();
         }
 
-        internal void StopListening(GLFW.Window window)
+        internal void StartListening(IntPtr window)
         {
-            GLFW.SetKeyCallback(window.Ptr, null);
-            GLFW.SetCharCallback(window.Ptr, null);
-            GLFW.SetMouseButtonCallback(window.Ptr, null);
-            delegateTracker.Remove(window.Ptr);
+            GLFW.SetKeyCallback(window, TrackDelegate<GLFW.KeyFunc>(window, OnKeyCallback));
+            GLFW.SetCharCallback(window, TrackDelegate<GLFW.CharFunc>(window, OnCharCallback));
+            GLFW.SetMouseButtonCallback(window, TrackDelegate<GLFW.MouseButtonFunc>(window, OnMouseCallback));
+        }
+
+        internal void StopListening(IntPtr window)
+        {
+            GLFW.SetKeyCallback(window, null);
+            GLFW.SetCharCallback(window, null);
+            GLFW.SetMouseButtonCallback(window, null);
+            delegateTracker.Remove(window);
         }
 
         private T TrackDelegate<T>(IntPtr windowPtr, T method) where T : Delegate
@@ -116,7 +123,7 @@ namespace Foster.GLFW
             }
         }
 
-        private void OnMouseCallback(GLFW.Window window, int button, int action, int mods)
+        private void OnMouseCallback(IntPtr window, int button, int action, int mods)
         {
             MouseButtons mb = MouseButtons.Unknown;
             if (button == 0)
@@ -136,12 +143,12 @@ namespace Foster.GLFW
             }
         }
 
-        private void OnCharCallback(GLFW.Window window, uint codepoint)
+        private void OnCharCallback(IntPtr window, uint codepoint)
         {
             OnText((char)codepoint);
         }
 
-        private void OnKeyCallback(GLFW.Window window, int key, int scancode, int action, int mods)
+        private void OnKeyCallback(IntPtr window, int key, int scancode, int action, int mods)
         {
             if (action == 1)
             {

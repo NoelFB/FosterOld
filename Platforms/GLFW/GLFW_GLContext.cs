@@ -5,10 +5,10 @@ namespace Foster.GLFW
 {
     public class GLFW_GLContext : ISystemOpenGL.Context
     {
-        internal readonly GLFW.Window window;
+        internal readonly IntPtr window;
         internal bool disposed;
 
-        internal GLFW_GLContext(GLFW.Window window)
+        internal GLFW_GLContext(IntPtr window)
         {
             this.window = window;
         }

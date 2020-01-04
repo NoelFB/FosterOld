@@ -9,8 +9,9 @@ namespace Foster.Vulkan
     public unsafe class VK_Graphics : Graphics, IGraphicsVulkan
     {
 
-        private ISystemVulkan System => App.System as ISystemVulkan ?? throw new Exception("System does not implement ISystemVulkan");
-        private IntPtr vkInstance;
+        internal ISystemVulkan System => App.System as ISystemVulkan ?? throw new Exception("System does not implement ISystemVulkan");
+        internal IntPtr VkInsance;
+        internal VK VK;
 
         protected override void Initialized()
         {
@@ -19,38 +20,49 @@ namespace Foster.Vulkan
 
         protected override void Startup()
         {
-            VK.Init(System);
-
-            NativeString name = App.Name;
-            NativeString engine = "Foster.Framework";
-
-            // create the App Info
-            VkApplicationInfo appInfo = new VkApplicationInfo
+            // Crate the Vulkan Instance
             {
-                sType = VkStructureType.APPLICATION_INFO,
-                pApplicationName = name,
-                applicationVersion = VK_Utils.Version(1, 0, 0),
-                pEngineName = engine,
-                engineVersion = VK_Utils.Version(App.Version.Major, App.Version.Minor, App.Version.Revision),
-                apiVersion = VK_Utils.Version(1, 0, 0),
-            };
+                NativeString name = App.Name;
+                NativeString engine = "Foster.Framework";
 
-            // get the required Vulkan Extensions
-            var extensions = System.GetVKExtensions();
-            var e = new NativeArray<NativeString>(extensions.Count);
-            for (int i = 0; i < extensions.Count; i++)
-                e[i] = new NativeString(extensions[i]);
+                // create the App Info
+                VkApplicationInfo appInfo = new VkApplicationInfo
+                {
+                    sType = VkStructureType.APPLICATION_INFO,
+                    pApplicationName = name,
+                    applicationVersion = VK_Utils.Version(1, 0, 0),
+                    pEngineName = engine,
+                    engineVersion = VK_Utils.Version(App.Version.Major, App.Version.Minor, App.Version.Revision),
+                    apiVersion = VK_Utils.Version(1, 0, 0),
+                };
 
-            VkInstanceCreateInfo createInfo = new VkInstanceCreateInfo
-            {
-                sType = VkStructureType.INSTANCE_CREATE_INFO,
-                pApplicationInfo = &appInfo,
-                enabledExtensionCount = e.Length,
-                ppEnabledExtensionNames = e
-            };
+                // get the required Vulkan Extensions
+                var extensions = System.GetVKExtensions();
+                var e = new NativeArray<NativeString>(extensions.Count);
+                for (int i = 0; i < extensions.Count; i++)
+                    e[i] = new NativeString(extensions[i]);
 
-            // create the Vulkan Instance
-            VK.CreateInstance(&createInfo, null, out vkInstance);
+                VkInstanceCreateInfo createInfo = new VkInstanceCreateInfo
+                {
+                    sType = VkStructureType.INSTANCE_CREATE_INFO,
+                    pApplicationInfo = &appInfo,
+                    enabledExtensionCount = e.Length,
+                    ppEnabledExtensionNames = e
+                };
+
+                // create instance
+                VK.CreateInstance(System, &createInfo, null, out VkInsance);
+            }
+
+            // bind all VK calls now that we have the instance
+            VK = new VK(this);
+
+            base.Startup();
+        }
+
+        protected override void Disposed()
+        {
+            VK.DestroyInstance(VkInsance, null);
         }
 
         public override Mesh CreateMesh()
@@ -85,7 +97,7 @@ namespace Foster.Vulkan
 
         public IntPtr GetVulkanInstancePointer()
         {
-            return vkInstance;
+            return VkInsance;
         }
     }
 }

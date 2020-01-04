@@ -78,6 +78,7 @@ namespace Foster.Framework
                 throw new Exception("Module is not already registered");
 
             module.Shutdown();
+            module.Disposed();
 
             var index = modules.IndexOf(module);
             modules[index] = null;
@@ -133,18 +134,17 @@ namespace Foster.Framework
 
         internal void Startup()
         {
-            Console.WriteLine("Begin Modules Startup");
-
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.Startup();
         }
 
         internal void Shutdown()
         {
-            Console.WriteLine("Begin Modules Shutdown");
-
             for (int i = modules.Count - 1; i >= 0; i--)
                 modules[i]?.Shutdown();
+
+            for (int i = modules.Count - 1; i >= 0; i--)
+                modules[i]?.Disposed();
 
             modules.Clear();
             modulesByType.Clear();

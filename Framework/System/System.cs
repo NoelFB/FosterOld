@@ -78,10 +78,5 @@ namespace Foster.Framework
             Input.BeforeUpdate();
         }
 
-        protected internal override void Shutdown()
-        {
-            Console.WriteLine($" - System {ApiName} {ApiVersion} : Shutdown");
-        }
-
     }
 }

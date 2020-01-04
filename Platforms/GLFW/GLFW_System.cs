@@ -10,9 +10,9 @@ namespace Foster.GLFW
     {
 
         private readonly GLFW_Input input;
-        internal List<GLFW.Window> windowPointers = new List<GLFW.Window>();
-        private readonly List<GLFW_GLContext> glContexts = new List<GLFW_GLContext>();
-        private readonly List<IntPtr> vkSurfaces = new List<IntPtr>();
+        private readonly List<IntPtr> windowPointers = new List<IntPtr>();
+        private readonly Dictionary<IntPtr, GLFW_GLContext> glContexts = new Dictionary<IntPtr, GLFW_GLContext>();
+        private readonly Dictionary<IntPtr, IntPtr> vkSurfaces = new Dictionary<IntPtr, IntPtr>();
 
         public GLFW_System()
         {
@@ -86,14 +86,16 @@ namespace Foster.GLFW
 
         protected override void Shutdown()
         {
-            base.Shutdown();
+            input.Dispose();
 
-            // destroy all windows
             foreach (var window in windowPointers)
-                GLFW.SetWindowShouldClose(window.Ptr, true);
-            Poll();
+                GLFW.SetWindowShouldClose(window, true);
 
-            // terminate GLFW
+            Poll(); // this will actually close the Windows
+        }
+
+        protected override void Disposed()
+        {
             GLFW.Terminate();
         }
 
@@ -121,7 +123,7 @@ namespace Foster.GLFW
                     // see if we have a GLFW_Window associated
                     for (int j = 0; j < windows.Count; j++)
                     {
-                        if (windows[j] is GLFW_Window window && window.window.Ptr == windowPointers[i].Ptr)
+                        if (windows[j] is GLFW_Window window && window.window == windowPointers[i])
                         {
                             input.StopListening(window.window);
 
@@ -133,18 +135,25 @@ namespace Foster.GLFW
                         }
                     }
 
+                    // remove OpenGL context
                     if (App.Graphics is IGraphicsOpenGL)
                     {
-                        for (int j = 0; j < glContexts.Count; j ++)
-                            if (glContexts[j].window.Ptr == windowPointers[i].Ptr)
-                            {
-                                glContexts.RemoveAt(j);
-                                break;
-                            }
+                        glContexts.Remove(windowPointers[i]);
                     }
-                    else if (App.Graphics is IGraphicsVulkan)
+                    // remove Vulkan Surface
+                    else if (App.Graphics is IGraphicsVulkan vulkan)
                     {
+                        var vkInstance = vulkan.GetVulkanInstancePointer();
 
+                        if (vkDestroySurfaceKHR == null)
+                        {
+                            var ptr = GetVKProcAddress(vkInstance, "vkDestroySurfaceKHR");
+                            if (ptr != null)
+                                vkDestroySurfaceKHR = (VkDestroySurfaceKHR)Marshal.GetDelegateForFunctionPointer(ptr, typeof(VkDestroySurfaceKHR));
+                        }
+
+                        vkDestroySurfaceKHR?.Invoke(vkInstance, vkSurfaces[windowPointers[i]], IntPtr.Zero);
+                        vkSurfaces.Remove(windowPointers[i]);
                     }
 
                     GLFW.DestroyWindow(windowPointers[i]);
@@ -167,7 +176,7 @@ namespace Foster.GLFW
             // Add the GL Context
             if (App.Graphics is IGraphicsOpenGL)
             {
-                glContexts.Add(new GLFW_GLContext(ptr));
+                glContexts.Add(ptr, new GLFW_GLContext(ptr));
             }
 
             // create the actual Window object
@@ -176,7 +185,7 @@ namespace Foster.GLFW
             return window;
         }
 
-        internal GLFW.Window CreateGlfwWindow(string title, int width, int height, WindowFlags flags)
+        internal IntPtr CreateGlfwWindow(string title, int width, int height, WindowFlags flags)
         {
             GLFW.WindowHint(GLFW_Enum.VISIBLE, !flags.HasFlag(WindowFlags.Hidden));
             GLFW.WindowHint(GLFW_Enum.FOCUS_ON_SHOW, false);
@@ -198,10 +207,10 @@ namespace Foster.GLFW
             if (App.Graphics is IGraphicsVulkan vulkan)
             {
                 var result = GLFW.CreateWindowSurface(vulkan.GetVulkanInstancePointer(), ptr, IntPtr.Zero, out var surface);
-                if (result != 0)
-                    throw new Exception("Unable to create a Vulkan Surface");
+                if (result != GLFW_VkResult.SUCCESS)
+                    throw new Exception($"Unable to create a Vulkan Surface, {result}");
 
-                vkSurfaces.Add(surface);
+                vkSurfaces.Add(ptr, surface);
             }
 
             return ptr;
@@ -221,31 +230,21 @@ namespace Foster.GLFW
 
             var ptr = CreateGlfwWindow("hidden-context", 128, 128, WindowFlags.Hidden);
             var context = new GLFW_GLContext(ptr);
-            glContexts.Add(context);
+            glContexts.Add(ptr, context);
             return context;
         }
 
         public ISystemOpenGL.Context GetWindowGLContext(Window window)
         {
-            if (window is GLFW_Window glfwWindow)
-            {
-                for (int i = 0; i < glContexts.Count; i++)
-                    if (glContexts[i].window.Ptr == glfwWindow.window.Ptr)
-                        return glContexts[i];
-            }
-
-            throw new Exception("Window does not have a valid Context");
+            return glContexts[((GLFW_Window)window).window];
         }
 
         public ISystemOpenGL.Context? GetCurrentGLContext()
         {
             var ptr = GLFW.GetCurrentContext();
+
             if (ptr != IntPtr.Zero)
-            {
-                for (int i = 0; i < glContexts.Count; i++)
-                    if (glContexts[i].window.Ptr == ptr)
-                        return glContexts[i];
-            }
+                return glContexts[ptr];
 
             return null;
         }
@@ -258,18 +257,27 @@ namespace Foster.GLFW
                 GLFW.MakeContextCurrent(IntPtr.Zero);
         }
 
-        internal void SetCurrentGLContext(GLFW.Window window)
+        internal void SetCurrentGLContext(IntPtr window)
         {
-            GLFW.MakeContextCurrent(window.Ptr);
+            GLFW.MakeContextCurrent(window);
         }
 
         #endregion
 
         #region ISystemVulkan Method Calls
 
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int VkDestroySurfaceKHR(IntPtr instance, IntPtr surface, IntPtr allocator);
+        private VkDestroySurfaceKHR? vkDestroySurfaceKHR;
+
         public IntPtr GetVKProcAddress(IntPtr instance, string name)
         {
             return GLFW.GetInstanceProcAddress(instance, name);
+        }
+
+        public IntPtr GetVKSurface(Window window)
+        {
+            return vkSurfaces[((GLFW_Window)window).window];
         }
 
         public List<string> GetVKExtensions()
@@ -289,8 +297,6 @@ namespace Foster.GLFW
                 return new List<string>(list);
             }
         }
-
-
 
         #endregion
     }

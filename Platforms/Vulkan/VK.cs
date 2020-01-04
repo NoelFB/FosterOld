@@ -1,23 +1,50 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Foster.Vulkan
 {
-    internal static class VK
+    internal unsafe class VK
     {
 
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-        private static VK_Bindings bindings;
-#pragma warning restore CS8618
+        private readonly VK_Graphics graphics;
 
-        public static void Init(ISystemVulkan system)
+        public VK(VK_Graphics graphics)
         {
-            bindings = new VK_Bindings(system);
+            this.graphics = graphics;
+
+            CreateDelegate(ref DestroyInstance, "vkDestroyInstance");
         }
 
-        public static unsafe int CreateInstance(VkInstanceCreateInfo* pCreateInfo, VkAllocationCallbacks* pAllocator, out IntPtr pInstance) => bindings.vkCreateInstance(pCreateInfo, pAllocator, out pInstance);
+        private void CreateDelegate<T>(ref T def, string name) where T : class
+        {
+            CreateDelegate(graphics.System, graphics.VkInsance, ref def, name);
+        }
+
+        private static void CreateDelegate<T>(ISystemVulkan system, IntPtr vkInstance, ref T def, string name) where T : class
+        {
+            var addr = system.GetVKProcAddress(vkInstance, name);
+            if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
+                def = del;
+        }
+
+        public static int CreateInstance(ISystemVulkan system, VkInstanceCreateInfo* pCreateInfo, VkAllocationCallbacks* pAllocator, out IntPtr pInstance)
+        {
+            pInstance = IntPtr.Zero;
+
+            VkCreateInstance call = null;
+            CreateDelegate<VkCreateInstance>(system, IntPtr.Zero, ref call, "vkCreateInstance");
+            return call(pCreateInfo, pAllocator, out pInstance);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public unsafe delegate int VkCreateInstance(VkInstanceCreateInfo* pCreateInfo, VkAllocationCallbacks* pAllocator, out IntPtr pInstance);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public unsafe delegate void VkDestroyInstance(IntPtr instance, VkAllocationCallbacks* pAllocator);
+        public VkDestroyInstance DestroyInstance;
 
     }
 }

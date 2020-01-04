@@ -47,6 +47,11 @@ namespace Foster.Framework
         protected internal virtual void Shutdown() { }
 
         /// <summary>
+        /// Called after the Shutdown Event when the Module should be fully disposed
+        /// </summary>
+        protected internal virtual void Disposed() { }
+
+        /// <summary>
         /// Called every frame before the Update function
         /// </summary>
         protected internal virtual void BeforeUpdate() { }
