@@ -10,7 +10,7 @@ namespace Foster.Vulkan
     using VkDeviceSize = UInt64;
     using VkSampleMask = UInt32;
 
-    #region VK
+    #region VK Core
 
     internal struct VkInstance
     {
@@ -316,6 +316,7 @@ namespace Foster.Vulkan
         ExportMemoryWin32HandleInfoNv = 1000057001,
         Win32KeyedMutexAcquireReleaseInfoNv = 1000058000,
         ValidationFlagsExt = 1000061000,
+        VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT = 1000128004
     }
 
     internal enum VkSystemAllocationScope
@@ -805,6 +806,51 @@ namespace Foster.Vulkan
     {
         Inline = 0,
         SecondaryCommandBuffers = 1,
+    }
+
+    internal enum VkObjectType
+    {
+        Unknown = 0,
+        Instance = 1,
+        PhysicalDevice = 2,
+        Device = 3,
+        Queue = 4,
+        Semaphore = 5,
+        CommandBuffer = 6,
+        Fence = 7,
+        DeviceMemory = 8,
+        Buffer = 9,
+        Image = 10,
+        Event = 11,
+        QueryPool = 12,
+        BufferView = 13,
+        ImageView = 14,
+        ShaderModule = 15,
+        PipelineCache = 16,
+        PipelineLayout = 17,
+        RenderPass = 18,
+        Pipeline = 19,
+        DescriptorSetLayout = 20,
+        Sampler = 21,
+        DescriptorPool = 22,
+        DescriptorSet = 23,
+        Framebuffer = 24,
+        CommandPool = 25,
+        SamplerYCBCRConversion = 1000156000,
+        DescriptorUpdateTemplate = 1000085000,
+        SurfaceKHR = 1000000000,
+        SwapchainKHR = 1000001000,
+        DisplayKHR = 1000002000,
+        DisplayModeKHR = 1000002001,
+        DebugReportCallbackEXT = 1000011000,
+        ObjectTableNVX = 1000086000,
+        IndirectCommandsLayoutNVX = 1000086001,
+        DebugUtilsMessengerEXT = 1000128000,
+        ValidationCacheEXT = 1000160000,
+        AccelerationStructureNV = 1000165000,
+        PerformanceConfigurationNV = 1000210000,
+        DescriptorUpdateTEmplateKHR = DescriptorUpdateTemplate,
+        SamplerYCBCRConversionKHR = SamplerYCBCRConversion,
     }
 
     internal unsafe struct VkInstanceCreateFlags
@@ -4320,6 +4366,161 @@ namespace Foster.Vulkan
         public UInt32 disabledValidationCheckCount;
         public VkValidationCheckEXT* pDisabledValidationChecks;
     }
+
+    #endregion
+
+    #region VK_EXT_debug_utils
+
+    internal partial class VkConst
+    {
+        public const uint EXT_debug_utils = 1;
+        public const uint EXT_DEBUG_UTILS_SPEC_VERSION = 1;
+        public const string EXT_DEBUG_UTILS_EXTENSION_NAME = "VK_EXT_debug_utils";
+    }
+
+    internal struct VkDebugUtilsMessengerEXT
+    {
+        public IntPtr Ptr;
+        public static implicit operator IntPtr(VkDebugUtilsMessengerEXT value) => value.Ptr;
+        public static implicit operator VkDebugUtilsMessengerEXT(IntPtr value) => new VkDebugUtilsMessengerEXT { Ptr = value };
+    }
+
+    internal unsafe struct VkDebugUtilsMessengerCallbackDataFlagsEXT
+    {
+        public VkFlags Flag;
+        public static implicit operator VkFlags(VkDebugUtilsMessengerCallbackDataFlagsEXT value) => value.Flag;
+        public static implicit operator VkDebugUtilsMessengerCallbackDataFlagsEXT(VkFlags flag) => new VkDebugUtilsMessengerCallbackDataFlagsEXT { Flag = flag };
+    }
+
+    internal unsafe struct VkDebugUtilsMessengerCreateFlagsEXT
+    {
+        public VkFlags Flag;
+        public static implicit operator VkFlags(VkDebugUtilsMessengerCreateFlagsEXT value) => value.Flag;
+        public static implicit operator VkDebugUtilsMessengerCreateFlagsEXT(VkFlags flag) => new VkDebugUtilsMessengerCreateFlagsEXT { Flag = flag };
+    }
+
+    [Flags]
+    internal enum VkDebugUtilsMessageSeverityFlagsEXT
+    {
+        Verbose = 0x00000001,
+        Info = 0x00000010,
+        Warning = 0x00000100,
+        Error = 0x00001000,
+    }
+    
+    [Flags]
+    internal enum VkDebugUtilsMessageTypeFlagsEXT
+    {
+        General = 0x00000001,
+        Validation = 0x00000002,
+        Performance = 0x00000004,
+    }
+
+    internal unsafe struct VkDebugUtilsObjectNameInfoEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkObjectType objectType;
+        public UInt64 objectHandle;
+        public byte* pObjectName;
+    }
+
+    internal unsafe struct VkDebugUtilsObjectTagInfoEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkObjectType objectType;
+        public UInt64 objectHandle;
+        public UInt64 tagName;
+        public UIntPtr tagSize;
+        public void* pTag;
+    }
+
+    internal unsafe struct VkDebugUtilsLabelEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public byte* pLabelName;
+        public fixed float color[4];
+    }
+
+    internal unsafe struct VkDebugUtilsMessengerCallbackDataEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkDebugUtilsMessengerCallbackDataFlagsEXT flags;
+        public byte* pMessageIdName;
+        public Int32 messageIdNumber;
+        public byte* pMessage;
+        public UInt32 queueLabelCount;
+        public VkDebugUtilsLabelEXT* pQueueLabels;
+        public UInt32 cmdBufLabelCount;
+        public VkDebugUtilsLabelEXT* pCmdBufLabels;
+        public UInt32 objectCount;
+        public VkDebugUtilsObjectNameInfoEXT* pObjects;
+    }
+
+    internal unsafe delegate VkBool32 PFN_vkDebugUtilsMessengerCallbackEXT(
+        VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+        VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData);
+
+    internal unsafe struct VkDebugUtilsMessengerCreateInfoEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkDebugUtilsMessengerCreateFlagsEXT flags;
+        public VkDebugUtilsMessageSeverityFlagsEXT messageSeverity;
+        public VkDebugUtilsMessageTypeFlagsEXT messageType;
+        public IntPtr pfnUserCallback;
+        public void* pUserData;
+    }
+
+    internal unsafe delegate VkResult vkSetDebugUtilsObjectNameEXT(VkDevice device, VkDebugUtilsObjectNameInfoEXT* pNameInfo);
+
+    internal unsafe delegate VkResult vkSetDebugUtilsObjectTagEXT(
+        VkDevice device,
+        VkDebugUtilsObjectTagInfoEXT* pTagInfo);
+
+    internal unsafe delegate void vkQueueBeginDebugUtilsLabelEXT(
+        VkQueue queue,
+        VkDebugUtilsLabelEXT* pLabelInfo);
+
+    internal unsafe delegate void vkQueueEndDebugUtilsLabelEXT(
+        VkQueue queue);
+
+    internal unsafe delegate void vkQueueInsertDebugUtilsLabelEXT(
+        VkQueue queue,
+        VkDebugUtilsLabelEXT* pLabelInfo);
+
+    internal unsafe delegate void vkCmdBeginDebugUtilsLabelEXT(
+        VkCommandBuffer commandBuffer,
+        VkDebugUtilsLabelEXT* pLabelInfo);
+
+    internal unsafe delegate void vkCmdEndDebugUtilsLabelEXT(
+        VkCommandBuffer commandBuffer);
+
+    internal unsafe delegate void vkCmdInsertDebugUtilsLabelEXT(
+        VkCommandBuffer commandBuffer,
+        VkDebugUtilsLabelEXT* pLabelInfo);
+
+    internal unsafe delegate VkResult vkCreateDebugUtilsMessengerEXT(
+        VkInstance instance,
+        VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+        VkAllocationCallbacks* pAllocator,
+        out VkDebugUtilsMessengerEXT pMessenger);
+
+    internal unsafe delegate void vkDestroyDebugUtilsMessengerEXT(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT messenger,
+        VkAllocationCallbacks* pAllocator);
+
+    internal unsafe delegate void vkSubmitDebugUtilsMessageEXT(
+        VkInstance instance,
+        VkDebugUtilsMessageSeverityFlagsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+        VkDebugUtilsMessengerCallbackDataEXT* pCallbackData);
 
     #endregion
 }

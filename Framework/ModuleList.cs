@@ -63,7 +63,10 @@ namespace Foster.Framework
             module.Initialized();
 
             if (App.Running)
+            {
                 module.Startup();
+                Log.Message(module.Name, "Started");
+            }
 
             return module;
         }
@@ -78,7 +81,10 @@ namespace Foster.Framework
                 throw new Exception("Module is not already registered");
 
             module.Shutdown();
+            Log.Message(module.Name, "Shutdown");
+
             module.Disposed();
+            Log.Message(module.Name, "Disposed");
 
             var index = modules.IndexOf(module);
             modules[index] = null;
@@ -134,17 +140,38 @@ namespace Foster.Framework
 
         internal void Startup()
         {
-            for (int i = 0; i < modules.Count; i++)
-                modules[i]?.Startup();
+            for (int i = 0; i < modules.Count; i ++)
+            {
+                var module = modules[i];
+                if (module == null)
+                    continue;
+
+                module.Startup();
+                Log.Message(module.Name, "Started");
+            }
         }
 
         internal void Shutdown()
         {
             for (int i = modules.Count - 1; i >= 0; i--)
-                modules[i]?.Shutdown();
+            {
+                var module = modules[i];
+                if (module == null)
+                    continue;
+
+                module.Shutdown();
+                Log.Message(module.Name, "Shutdown");
+            }
 
             for (int i = modules.Count - 1; i >= 0; i--)
-                modules[i]?.Disposed();
+            {
+                var module = modules[i];
+                if (module == null)
+                    continue;
+
+                module.Disposed();
+                Log.Message(module.Name, "Disposed");
+            }
 
             modules.Clear();
             modulesByType.Clear();

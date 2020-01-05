@@ -7,6 +7,8 @@ namespace Foster.Framework
     public abstract class Module
     {
 
+        public string Name;
+
         /// <summary>
         /// A lower priority is run first
         /// </summary>
@@ -27,6 +29,7 @@ namespace Foster.Framework
         /// </summary>
         protected Module(int priority = 10000)
         {
+            Name = GetType().Name;
             Priority = priority;
         }
 

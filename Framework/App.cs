@@ -11,7 +11,7 @@ namespace Foster.Framework
         /// <summary>
         /// The Application Name
         /// </summary>
-        public static string Name = "Foster Application";
+        public static string Name = "Application";
 
         /// <summary>
         /// Foster.Framework Version Number
@@ -73,18 +73,32 @@ namespace Foster.Framework
             if (!Modules.Has<System>())
                 throw new Exception("App requires a System Module to be registered before it can Start");
 
-            Console.WriteLine($"FOSTER {Version}");
-            Console.WriteLine($" - Platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
-            Console.WriteLine($" - Framework: {RuntimeInformation.FrameworkDescription}");
+            Log.Message(Name, $"Version: {Version}");
+            Log.Message(Name, $"Platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+            Log.Message(Name, $"Framework: {RuntimeInformation.FrameworkDescription}");
 
+#if DEBUG
+            Run(callback);
+#else
+            try
+            {
+                Run(callback);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                Log.WriteTo("ErrorLog.txt");
+                throw e;
+            }
+#endif
+        }
+
+        private static void Run(Action? callback = null)
+        {
             Modules.Startup();
             Running = true;
             callback?.Invoke();
-            Run();
-        }
 
-        private static void Run()
-        {
             // timer
             var framecount = 0;
             var frameticks = 0L;
@@ -180,6 +194,7 @@ namespace Foster.Framework
             // finalize
             Modules.Shutdown();
             Exiting = false;
+            Log.Message(Name, "Exited");
         }
 
         private static void Update()

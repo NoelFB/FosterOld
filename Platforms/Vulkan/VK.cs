@@ -39,6 +39,15 @@ namespace Foster.Vulkan
             return new Version((int)(version >> 22), (int)((version >> 22) & 0x3ff), (int)(version & 0xfff));
         }
 
+        public static string STRING(byte* ptr)
+        {
+            int length = 0;
+            while (length < 1000 && ptr[length] != 0)
+                length++;
+
+            return Encoding.UTF8.GetString(ptr, length);
+        }
+
         public VK(VK_Graphics graphics)
         {
             this.graphics = graphics;
@@ -55,9 +64,7 @@ namespace Foster.Vulkan
             CreateDelegate(ref GetDeviceProcAddr, "vkGetDeviceProcAddr");
             CreateDelegate(ref CreateDevice, "vkCreateDevice");
             CreateDelegate(ref DestroyDevice, "vkDestroyDevice");
-            CreateDelegate(ref EnumerateInstanceExtensionProperties, "vkEnumerateInstanceExtensionProperties");
             CreateDelegate(ref EnumerateDeviceExtensionProperties, "vkEnumerateDeviceExtensionProperties");
-            CreateDelegate(ref EnumerateInstanceLayerProperties, "vkEnumerateInstanceLayerProperties");
             CreateDelegate(ref EnumerateDeviceLayerProperties, "vkEnumerateDeviceLayerProperties");
             CreateDelegate(ref GetDeviceQueue, "vkGetDeviceQueue");
             CreateDelegate(ref QueueSubmit, "vkQueueSubmit");
@@ -208,12 +215,25 @@ namespace Foster.Vulkan
             CreateDelegate(ref CmdDrawIndirectCountAMD, "vkCmdDrawIndirectCountAMD");
             CreateDelegate(ref CmdDrawIndexedIndirectCountAMD, "vkCmdDrawIndexedIndirectCountAMD");
             CreateDelegate(ref GetPhysicalDeviceExternalImageFormatPropertiesNV, "vkGetPhysicalDeviceExternalImageFormatPropertiesNV");
+
+            CreateDelegate(ref SetDebugUtilsObjectNameEXT, "vkSetDebugUtilsObjectNameEXT");
+            CreateDelegate(ref SetDebugUtilsObjectTagEXT, "vkSetDebugUtilsObjectTagEXT");
+            CreateDelegate(ref QueueBeginDebugUtilsLabelEXT, "vkQueueBeginDebugUtilsLabelEXT");
+            CreateDelegate(ref QueueEndDebugUtilsLabelEXT, "vkQueueEndDebugUtilsLabelEXT");
+            CreateDelegate(ref QueueInsertDebugUtilsLabelEXT, "vkQueueInsertDebugUtilsLabelEXT");
+            CreateDelegate(ref CmdBeginDebugUtilsLabelEXT, "vkCmdBeginDebugUtilsLabelEXT");
+            CreateDelegate(ref CmdEndDebugUtilsLabelEXT, "vkCmdEndDebugUtilsLabelEXT");
+            CreateDelegate(ref CmdInsertDebugUtilsLabelEXT, "vkCmdInsertDebugUtilsLabelEXT");
+            CreateDelegate(ref CreateDebugUtilsMessengerEXT, "vkCreateDebugUtilsMessengerEXT");
+            CreateDelegate(ref DestroyDebugUtilsMessengerEXT, "vkDestroyDebugUtilsMessengerEXT");
+            CreateDelegate(ref SubmitDebugUtilsMessageEXT, "vkSubmitDebugUtilsMessageEXT");
         }
 
         public static void InitStaticDelegates(ISystemVulkan system)
         {
             CreateDelegate(system, IntPtr.Zero, ref CreateInstance, "vkCreateInstance");
             CreateDelegate(system, IntPtr.Zero, ref EnumerateInstanceExtensionProperties, "vkEnumerateInstanceExtensionProperties");
+            CreateDelegate(system, IntPtr.Zero, ref EnumerateInstanceLayerProperties, "vkEnumerateInstanceLayerProperties");
         }
 
         public static vkCreateInstance CreateInstance;
@@ -231,7 +251,7 @@ namespace Foster.Vulkan
         public vkDestroyDevice DestroyDevice;
         public static vkEnumerateInstanceExtensionProperties EnumerateInstanceExtensionProperties;
         public vkEnumerateDeviceExtensionProperties EnumerateDeviceExtensionProperties;
-        public vkEnumerateInstanceLayerProperties EnumerateInstanceLayerProperties;
+        public static vkEnumerateInstanceLayerProperties EnumerateInstanceLayerProperties;
         public vkEnumerateDeviceLayerProperties EnumerateDeviceLayerProperties;
         public vkGetDeviceQueue GetDeviceQueue;
         public vkQueueSubmit QueueSubmit;
@@ -382,6 +402,18 @@ namespace Foster.Vulkan
         public vkCmdDrawIndirectCountAMD CmdDrawIndirectCountAMD;
         public vkCmdDrawIndexedIndirectCountAMD CmdDrawIndexedIndirectCountAMD;
         public vkGetPhysicalDeviceExternalImageFormatPropertiesNV GetPhysicalDeviceExternalImageFormatPropertiesNV;
+
+        public vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT;
+        public vkSetDebugUtilsObjectTagEXT SetDebugUtilsObjectTagEXT;
+        public vkQueueBeginDebugUtilsLabelEXT QueueBeginDebugUtilsLabelEXT;
+        public vkQueueEndDebugUtilsLabelEXT QueueEndDebugUtilsLabelEXT;
+        public vkQueueInsertDebugUtilsLabelEXT QueueInsertDebugUtilsLabelEXT;
+        public vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT;
+        public vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT;
+        public vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT;
+        public vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT;
+        public vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT;
+        public vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT;
 
     }
 }

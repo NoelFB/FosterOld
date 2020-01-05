@@ -33,7 +33,7 @@ namespace Foster.Framework
 
         protected internal override void Startup()
         {
-            Console.WriteLine($" - Graphics: {ApiName} {ApiVersion} ({DeviceName})");
+            Log.Message(Name, $"{ApiName} {ApiVersion} ({DeviceName})");
         }
 
         /// <summary>
