@@ -21,6 +21,9 @@ namespace Foster.Vulkan
 
         protected override void Startup()
         {
+            // Init Static delegates
+            VK.InitStaticDelegates(System);
+
             // Crate the Vulkan Instance
             {
                 NativeString name = App.Name;
@@ -52,10 +55,9 @@ namespace Foster.Vulkan
                 };
 
                 // create instance
-                var result = VK.CreateInstance(System, &createInfo, null, out Instance);
+                var result = VK.CreateInstance(&createInfo, null, out Instance);
                 if (result != VkResult.Success)
                     throw new Exception($"Failed to create Vulkan Instance, {result}");
-
             }
 
             // bind all VK calls now that we have the instance

@@ -12,6 +12,33 @@ namespace Foster.Vulkan
 
         private readonly VK_Graphics graphics;
 
+        private void CreateDelegate<T>(ref T def, string name) where T : class
+        {
+            CreateDelegate(graphics.System, graphics.Instance, ref def, name);
+        }
+
+        private static void CreateDelegate<T>(ISystemVulkan system, IntPtr vkInstance, ref T def, string name) where T : class
+        {
+            var addr = system.GetVKProcAddress(vkInstance, name);
+            if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
+                def = del;
+        }
+
+        public static uint MAKE_VERSION(int major, int minor, int patch)
+        {
+            return (uint)(((major) << 22) | ((minor) << 12) | (patch));
+        }
+
+        public static uint MAKE_VERSION(Version version)
+        {
+            return MAKE_VERSION(version.Major, version.Minor, version.Revision);
+        }
+
+        public static Version UNMAKE_VERSION(uint version)
+        {
+            return new Version((int)(version >> 22), (int)((version >> 22) & 0x3ff), (int)(version & 0xfff));
+        }
+
         public VK(VK_Graphics graphics)
         {
             this.graphics = graphics;
@@ -183,42 +210,13 @@ namespace Foster.Vulkan
             CreateDelegate(ref GetPhysicalDeviceExternalImageFormatPropertiesNV, "vkGetPhysicalDeviceExternalImageFormatPropertiesNV");
         }
 
-        private void CreateDelegate<T>(ref T def, string name) where T : class
+        public static void InitStaticDelegates(ISystemVulkan system)
         {
-            CreateDelegate(graphics.System, graphics.Instance, ref def, name);
+            CreateDelegate(system, IntPtr.Zero, ref CreateInstance, "vkCreateInstance");
+            CreateDelegate(system, IntPtr.Zero, ref EnumerateInstanceExtensionProperties, "vkEnumerateInstanceExtensionProperties");
         }
 
-        private static void CreateDelegate<T>(ISystemVulkan system, IntPtr vkInstance, ref T def, string name) where T : class
-        {
-            var addr = system.GetVKProcAddress(vkInstance, name);
-            if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
-                def = del;
-        }
-
-        public static VkResult CreateInstance(ISystemVulkan system, VkInstanceCreateInfo* pCreateInfo, VkAllocationCallbacks* pAllocator, out VkInstance pInstance)
-        {
-            pInstance = IntPtr.Zero;
-
-            vkCreateInstance call = null;
-            CreateDelegate(system, IntPtr.Zero, ref call, "vkCreateInstance");
-            return call(pCreateInfo, pAllocator, out pInstance);
-        }
-
-        public static uint MAKE_VERSION(int major, int minor, int patch)
-        {
-            return (uint)(((major) << 22) | ((minor) << 12) | (patch));
-        }
-
-        public static uint MAKE_VERSION(Version version)
-        {
-            return MAKE_VERSION(version.Major, version.Minor, version.Revision);
-        }
-
-        public static Version UNMAKE_VERSION(uint version)
-        {
-            return new Version((int)(version >> 22), (int)((version >> 22) & 0x3ff), (int)(version & 0xfff));
-        }
-
+        public static vkCreateInstance CreateInstance;
         public vkDestroyInstance DestroyInstance;
         public vkEnumeratePhysicalDevices EnumeratePhysicalDevices;
         public vkGetPhysicalDeviceFeatures GetPhysicalDeviceFeatures;
@@ -231,7 +229,7 @@ namespace Foster.Vulkan
         public vkGetDeviceProcAddr GetDeviceProcAddr;
         public vkCreateDevice CreateDevice;
         public vkDestroyDevice DestroyDevice;
-        public vkEnumerateInstanceExtensionProperties EnumerateInstanceExtensionProperties;
+        public static vkEnumerateInstanceExtensionProperties EnumerateInstanceExtensionProperties;
         public vkEnumerateDeviceExtensionProperties EnumerateDeviceExtensionProperties;
         public vkEnumerateInstanceLayerProperties EnumerateInstanceLayerProperties;
         public vkEnumerateDeviceLayerProperties EnumerateDeviceLayerProperties;

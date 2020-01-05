@@ -53,14 +53,9 @@ namespace Foster.GLFW
                     GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
                 }
 
-                // create the GL Device
+                // create a default background GL context
                 CreateGLContext();
                 SetCurrentGLContext(windowPointers[0]);
-            }
-            // Vulkan Setup
-            else if (App.Graphics is IGraphicsVulkan)
-            {
-                GLFW.WindowHint(GLFW_Enum.CLIENT_API, (int)GLFW_Enum.NO_API);
             }
             else
             {
@@ -104,8 +99,8 @@ namespace Foster.GLFW
             Poll();
 
             // Update Monitors
-            foreach (var monitor in monitors)
-                ((GLFW_Monitor)monitor).FetchProperties();
+            foreach (GLFW_Monitor monitor in monitors)
+                monitor.FetchProperties();
 
             // update input
             input.AfterUpdate();
@@ -141,9 +136,9 @@ namespace Foster.GLFW
                         glContexts.Remove(windowPointers[i]);
                     }
                     // remove Vulkan Surface
-                    else if (App.Graphics is IGraphicsVulkan vulkan)
+                    else if (App.Graphics is IGraphicsVulkan vkGraphics)
                     {
-                        var vkInstance = vulkan.GetVulkanInstancePointer();
+                        var vkInstance = vkGraphics.GetVulkanInstancePointer();
 
                         if (vkDestroySurfaceKHR == null)
                         {
@@ -204,10 +199,12 @@ namespace Foster.GLFW
             windowPointers.Add(ptr);
 
             // create the Vulkan surface
-            if (App.Graphics is IGraphicsVulkan vulkan)
+            if (App.Graphics is IGraphicsVulkan vkGraphics)
             {
-                var result = GLFW.CreateWindowSurface(vulkan.GetVulkanInstancePointer(), ptr, IntPtr.Zero, out var surface);
-                if (result != GLFW_VkResult.SUCCESS)
+                var vkInstance = vkGraphics.GetVulkanInstancePointer();
+                var result = GLFW.CreateWindowSurface(vkInstance, ptr, IntPtr.Zero, out var surface);
+
+                if (result != GLFW_VkResult.Success)
                     throw new Exception($"Unable to create a Vulkan Surface, {result}");
 
                 vkSurfaces.Add(ptr, surface);

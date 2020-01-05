@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
+#pragma warning disable CS0649
+
 namespace Foster.Vulkan
 {
     using VkFlags = UInt32;
@@ -10,175 +12,175 @@ namespace Foster.Vulkan
 
     #region VK
 
-    internal unsafe struct VkInstance
+    internal struct VkInstance
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkInstance value) => value.Ptr;
         public static implicit operator VkInstance(IntPtr value) => new VkInstance { Ptr = value };
     }
 
-    internal unsafe struct VkPhysicalDevice
+    internal struct VkPhysicalDevice
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkPhysicalDevice value) => value.Ptr;
         public static implicit operator VkPhysicalDevice(IntPtr value) => new VkPhysicalDevice { Ptr = value };
     }
 
-    internal unsafe struct VkDevice
+    internal struct VkDevice
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkDevice value) => value.Ptr;
         public static implicit operator VkDevice(IntPtr value) => new VkDevice { Ptr = value };
     }
 
-    internal unsafe struct VkQueue
+    internal struct VkQueue
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkQueue value) => value.Ptr;
         public static implicit operator VkQueue(IntPtr value) => new VkQueue { Ptr = value };
     }
 
-    internal unsafe struct VkSemaphore
+    internal struct VkSemaphore
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkSemaphore value) => value.Ptr;
         public static implicit operator VkSemaphore(IntPtr value) => new VkSemaphore { Ptr = value };
     }
 
-    internal unsafe struct VkCommandBuffer
+    internal struct VkCommandBuffer
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkCommandBuffer value) => value.Ptr;
         public static implicit operator VkCommandBuffer(IntPtr value) => new VkCommandBuffer { Ptr = value };
     }
 
-    internal unsafe struct VkFence
+    internal struct VkFence
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkFence value) => value.Ptr;
         public static implicit operator VkFence(IntPtr value) => new VkFence { Ptr = value };
     }
 
-    internal unsafe struct VkDeviceMemory
+    internal struct VkDeviceMemory
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkDeviceMemory value) => value.Ptr;
         public static implicit operator VkDeviceMemory(IntPtr value) => new VkDeviceMemory { Ptr = value };
     }
 
-    internal unsafe struct VkBuffer
+    internal struct VkBuffer
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkBuffer value) => value.Ptr;
         public static implicit operator VkBuffer(IntPtr value) => new VkBuffer { Ptr = value };
     }
 
-    internal unsafe struct VkImage
+    internal struct VkImage
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkImage value) => value.Ptr;
         public static implicit operator VkImage(IntPtr value) => new VkImage { Ptr = value };
     }
 
-    internal unsafe struct VkEvent
+    internal struct VkEvent
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkEvent value) => value.Ptr;
         public static implicit operator VkEvent(IntPtr value) => new VkEvent { Ptr = value };
     }
 
-    internal unsafe struct VkQueryPool
+    internal struct VkQueryPool
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkQueryPool value) => value.Ptr;
         public static implicit operator VkQueryPool(IntPtr value) => new VkQueryPool { Ptr = value };
     }
 
-    internal unsafe struct VkBufferView
+    internal struct VkBufferView
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkBufferView value) => value.Ptr;
         public static implicit operator VkBufferView(IntPtr value) => new VkBufferView { Ptr = value };
     }
 
-    internal unsafe struct VkImageView
+    internal struct VkImageView
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkImageView value) => value.Ptr;
         public static implicit operator VkImageView(IntPtr value) => new VkImageView { Ptr = value };
     }
 
-    internal unsafe struct VkShaderModule
+    internal struct VkShaderModule
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkShaderModule value) => value.Ptr;
         public static implicit operator VkShaderModule(IntPtr value) => new VkShaderModule { Ptr = value };
     }
 
-    internal unsafe struct VkPipelineCache
+    internal struct VkPipelineCache
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkPipelineCache value) => value.Ptr;
         public static implicit operator VkPipelineCache(IntPtr value) => new VkPipelineCache { Ptr = value };
     }
 
-    internal unsafe struct VkPipelineLayout
+    internal struct VkPipelineLayout
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkPipelineLayout value) => value.Ptr;
         public static implicit operator VkPipelineLayout(IntPtr value) => new VkPipelineLayout { Ptr = value };
     }
 
-    internal unsafe struct VkRenderPass
+    internal struct VkRenderPass
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkRenderPass value) => value.Ptr;
         public static implicit operator VkRenderPass(IntPtr value) => new VkRenderPass { Ptr = value };
     }
 
-    internal unsafe struct VkPipeline
+    internal struct VkPipeline
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkPipeline value) => value.Ptr;
         public static implicit operator VkPipeline(IntPtr value) => new VkPipeline { Ptr = value };
     }
 
-    internal unsafe struct VkDescriptorSetLayout
+    internal struct VkDescriptorSetLayout
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkDescriptorSetLayout value) => value.Ptr;
         public static implicit operator VkDescriptorSetLayout(IntPtr value) => new VkDescriptorSetLayout { Ptr = value };
     }
 
-    internal unsafe struct VkSampler
+    internal struct VkSampler
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkSampler value) => value.Ptr;
         public static implicit operator VkSampler(IntPtr value) => new VkSampler { Ptr = value };
     }
 
-    internal unsafe struct VkDescriptorPool
+    internal struct VkDescriptorPool
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkDescriptorPool value) => value.Ptr;
         public static implicit operator VkDescriptorPool(IntPtr value) => new VkDescriptorPool { Ptr = value };
     }
 
-    internal unsafe struct VkDescriptorSet
+    internal struct VkDescriptorSet
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkDescriptorSet value) => value.Ptr;
         public static implicit operator VkDescriptorSet(IntPtr value) => new VkDescriptorSet { Ptr = value };
     }
 
-    internal unsafe struct VkFramebuffer
+    internal struct VkFramebuffer
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkFramebuffer value) => value.Ptr;
         public static implicit operator VkFramebuffer(IntPtr value) => new VkFramebuffer { Ptr = value };
     }
 
-    internal unsafe struct VkCommandPool
+    internal struct VkCommandPool
     {
         public IntPtr Ptr;
         public static implicit operator IntPtr(VkCommandPool value) => value.Ptr;
@@ -4322,3 +4324,4 @@ namespace Foster.Vulkan
     #endregion
 }
 
+#pragma warning restore CS0649

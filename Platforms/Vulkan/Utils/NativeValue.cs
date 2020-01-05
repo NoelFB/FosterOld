@@ -29,7 +29,7 @@ namespace Foster.Vulkan
                 handle.Free();
         }
 
-        public static implicit operator byte*(NativeValue utf8String) => utf8String.Pointer;
-        public static implicit operator IntPtr(NativeValue utf8String) => new IntPtr(utf8String.Pointer);
+        public static implicit operator byte*(NativeValue value) => value.Pointer;
+        public static implicit operator IntPtr(NativeValue value) => new IntPtr(value.Pointer);
     }
 }

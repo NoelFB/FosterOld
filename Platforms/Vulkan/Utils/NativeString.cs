@@ -18,7 +18,7 @@ namespace Foster.Vulkan
             return Encoding.UTF8.GetString(Pointer, (int)Size);
         }
 
-        public static implicit operator NativeString(string s) => new NativeString(s);
-        public static implicit operator string(NativeString utf8String) => utf8String.GetString();
+        public static implicit operator NativeString(string str) => new NativeString(str);
+        public static implicit operator string(NativeString str) => str.GetString();
     }
 }
