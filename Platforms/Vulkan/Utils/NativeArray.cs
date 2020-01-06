@@ -5,6 +5,22 @@ using System.Text;
 
 namespace Foster.Vulkan
 {
+
+    internal class NativeStringArray : NativeArray<NativeString>
+    {
+        public NativeStringArray(string[] array) : base(array.Length)
+        {
+            for (int i = 0; i < array.Length; i++)
+                this[i] = array[i];
+        }
+
+        public NativeStringArray(List<string> array) : base(array.Count)
+        {
+            for (int i = 0; i < array.Count; i++)
+                this[i] = array[i];
+        }
+    }
+
     internal unsafe class NativeArray<T> : IDisposable where T : NativeValue
     {
         public readonly uint Length;

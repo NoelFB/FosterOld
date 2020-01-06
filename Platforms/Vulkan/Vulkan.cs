@@ -2670,7 +2670,7 @@ namespace Foster.Vulkan
         VkPhysicalDevice physicalDevice,
         VkDeviceCreateInfo* pCreateInfo,
         VkAllocationCallbacks* pAllocator,
-        VkDevice* pDevice);
+        out VkDevice pDevice);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     internal unsafe delegate void vkDestroyDevice(
@@ -2706,7 +2706,7 @@ namespace Foster.Vulkan
         VkDevice device,
         UInt32 queueFamilyIndex,
         UInt32 queueIndex,
-        VkQueue* pQueue);
+        out VkQueue pQueue);
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     internal unsafe delegate VkResult vkQueueSubmit(
