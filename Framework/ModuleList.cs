@@ -8,39 +8,51 @@ namespace Foster.Framework
     public class ModuleList : IEnumerable<Module>
     {
 
+        private readonly List<Type> registered = new List<Type>();
         private readonly List<Module?> modules = new List<Module?>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
 
         /// <summary>
         /// Registers a Module
         /// </summary>
-        public T Register<T>() where T : Module
+        public void Register<T>() where T : Module
         {
-            return Register(Activator.CreateInstance<T>());
+            Register(typeof(T));
         }
 
         /// <summary>
         /// Registers a Module
         /// </summary>
-        public Module Register(Type type)
+        public void Register(Type type)
+        {
+            if (App.Running)
+            {
+                var module = Instantiate(type);
+
+                if (module is AppModule appModule)
+                {
+                    appModule.ApplicationStarted();
+                    appModule.FirstWindowCreated();
+                }
+
+                module.Startup();
+            }
+            else
+            {
+                registered.Add(type);
+            }
+        }
+
+        /// <summary>
+        /// Registers a Module
+        /// </summary>
+        private Module Instantiate(Type type)
         {
             if (!(Activator.CreateInstance(type) is Module module))
                 throw new Exception("Type must inheirt from Module");
 
-            return Register(module);
-        }
-
-        /// <summary>
-        /// Registers a Module
-        /// </summary>
-        public T Register<T>(T module) where T : Module
-        {
-            if (module.IsRegistered)
-                throw new Exception("Module is already registered");
-
             // add Module to lookup
-            var type = module.GetType();
-            while (type != typeof(Module))
+            while (type != typeof(Module) && type != typeof(AppModule))
             {
                 if (!modulesByType.ContainsKey(type))
                     modulesByType[type] = module;
@@ -60,13 +72,6 @@ namespace Foster.Framework
             // registered
             module.IsRegistered = true;
             module.MainThreadId = Thread.CurrentThread.ManagedThreadId;
-
-            if (App.Running)
-            {
-                module.Created();
-                module.Startup();
-            }
-
             return module;
         }
 
@@ -134,14 +139,44 @@ namespace Foster.Framework
             return modulesByType.ContainsKey(typeof(T));
         }
 
-        internal void Created()
+        internal void ApplicationStarted()
+        {
+            // create Application Modules
+            for (int i = 0; i < registered.Count; i++)
+            {
+                if (typeof(AppModule).IsAssignableFrom(registered[i]))
+                {
+                    Instantiate(registered[i]);
+                    registered.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            for (int i = 0; i < modules.Count; i++)
+            {
+                if (modules[i] != null && modules[i] is AppModule module)
+                    module.ApplicationStarted();
+            }
+        }
+
+        internal void FirstWindowCreated()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.Created();
+            {
+                if (modules[i] != null && modules[i] is AppModule module)
+                    module.FirstWindowCreated();
+            }
         }
 
         internal void Startup()
         {
+            // create non-core Modules
+            while (registered.Count > 0)
+            {
+                Instantiate(registered[0]);
+                registered.RemoveAt(0);
+            }
+
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.Startup();
         }
@@ -154,6 +189,7 @@ namespace Foster.Framework
             for (int i = modules.Count - 1; i >= 0; i--)
                 modules[i]?.Disposed();
 
+            registered.Clear();
             modules.Clear();
             modulesByType.Clear();
         }

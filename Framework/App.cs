@@ -57,7 +57,7 @@ namespace Foster.Framework
         /// <summary>
         /// Gets the Primary Window
         /// </summary>
-        public static Window Window => primaryWindow ?? throw new Exception("Application is not running");
+        public static Window Window => primaryWindow ?? throw new Exception("Application has not yet created a Primary Window");
 
         /// <summary>
         /// Reference to the Primary Window
@@ -75,9 +75,6 @@ namespace Foster.Framework
 
             if (Exiting)
                 throw new Exception("App is still exiting");
-
-            if (!Modules.Has<System>())
-                throw new Exception("App requires a System Module to be registered before it can Start");
 
             Name = title;
 
@@ -102,10 +99,14 @@ namespace Foster.Framework
             void Launch()
             {
                 // init modules
-                Modules.Created();
+                Modules.ApplicationStarted();
+
+                if (!Modules.Has<System>())
+                    throw new Exception("App requires a System Module to be registered before it can Start");
 
                 // our primary Window
                 primaryWindow = System.CreateWindow(title, width, height, flags);
+                Modules.FirstWindowCreated();
 
                 // startup application
                 Running = true;
@@ -223,6 +224,8 @@ namespace Foster.Framework
 
         private static void Update()
         {
+            System.Input.BeforeUpdate();
+
             Modules.BeforeUpdate();
             Modules.Update();
             Modules.AfterUpdate();

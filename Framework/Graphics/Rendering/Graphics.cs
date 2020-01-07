@@ -3,7 +3,7 @@
 namespace Foster.Framework
 {
 
-    public abstract class Graphics : Module
+    public abstract class Graphics : AppModule
     {
 
         /// <summary>

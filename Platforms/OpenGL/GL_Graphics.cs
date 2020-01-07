@@ -42,12 +42,12 @@ namespace Foster.OpenGL
         private readonly DeleteResource deleteTexture = GL.DeleteTexture;
         private readonly DeleteResource deleteProgram = GL.DeleteProgram;
 
-        protected override void Created()
+        protected override void ApplicationStarted()
         {
             ApiName = "OpenGL";
         }
 
-        protected override void Startup()
+        protected override void FirstWindowCreated()
         {
             GL.Init(this, System);
             GL.DepthMask(true);

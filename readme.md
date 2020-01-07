@@ -31,33 +31,32 @@ using Foster.Framework;
 
 internal class Program
 {
-
     private static void Main(string[] args)
     {
-        // register core modules (system, input, graphics)
+        // register core modules (system, graphics)
         App.Modules.Register<GLFW.GLFW_System>();
-        App.Modules.Register<GLFW.GLFW_Input>();
         App.Modules.Register<OpenGL.GL_Graphics>();
 
         // register our custom game module
         App.Modules.Register<Game>();
 
         // start the application
-        App.Start();
+        App.Start("Game", 1280, 720, WindowFlags.ScaleToMonitor);
     }
 
     private class Game : Module
     {
         private Batch2D batch;
-        private Window window;
 
-        protected override void Startup()
+        public Game()
         {
-            window = App.System.CreateWindow("my app", 1280, 720);
-            window.OnRender += Render;
-            window.OnClose += App.Exit;
-
+            App.Window.OnRender += Render;
             batch = new Batch2D();
+        }
+
+        protected override void Shutdown()
+        {
+            App.Window.OnRender -= Render;
         }
 
         protected override void Update()

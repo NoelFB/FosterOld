@@ -34,12 +34,6 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Called when the Module is created, before the Primary Window is created.
-        /// If the Application has already started when the module is Registered, this will be called immediately.
-        /// </summary>
-        protected internal virtual void Created() { }
-
-        /// <summary>
         /// Called when the Application begins, after the Primary Window is created.
         /// If the Application has already started when the module is Registered, this will be called immediately.
         /// </summary>
@@ -51,12 +45,12 @@ namespace Foster.Framework
         protected internal virtual void Shutdown() { }
 
         /// <summary>
-        /// Called after the Shutdown Event when the Module should be fully disposed
+        /// Called after the Shutdown method when the Module should be fully Disposed
         /// </summary>
         protected internal virtual void Disposed() { }
 
         /// <summary>
-        /// Called every frame before the Update function
+        /// Called every frame before the Update method
         /// </summary>
         protected internal virtual void BeforeUpdate() { }
 
@@ -66,7 +60,7 @@ namespace Foster.Framework
         protected internal virtual void Update() { }
 
         /// <summary>
-        /// Called every frame after the Update function
+        /// Called every frame after the Update method
         /// </summary>
         protected internal virtual void AfterUpdate() { }
 

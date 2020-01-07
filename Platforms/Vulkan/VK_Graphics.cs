@@ -34,20 +34,20 @@ namespace Foster.Vulkan
         private readonly string[] deviceExtensions = new[] { VkConst.VK_KHR_SWAPCHAIN_EXTENSION_NAME };
         private readonly List<Delegate> trackedDelegates = new List<Delegate>();
 
-        protected override void Created()
+        protected override void ApplicationStarted()
         {
             ApiName = "Vulkan";
-        }
 
-        protected override void Startup()
-        {
             VK.InitStaticDelegates(System);
 
             if (requestedValidationLayers.Length > 0)
                 FindValidationLayers(validationLayers);
 
             Instance = CreateVulkanInstance();
+        }
 
+        protected override void FirstWindowCreated()
+        {
             VK = new VK(this);
 
             // Debug Callback
@@ -67,7 +67,7 @@ namespace Foster.Vulkan
                     return VkConst.FALSE;
                 });
             }
-            
+
             // Pick a Physical Device
             PhysicalDevice = PickPhysicalDevice();
 
@@ -120,8 +120,6 @@ namespace Foster.Vulkan
                 // Get the Graphics Queue
                 VK.GetDeviceQueue(Device, graphicsFamilyIndex, 0, out GraphicsQueue);
             }
-
-            base.Startup();
         }
 
         private void FindValidationLayers(List<string> appendTo)
@@ -335,7 +333,7 @@ namespace Foster.Vulkan
             throw new NotImplementedException();
         }
 
-        protected override void ClearInternal(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
+        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil)
         {
             throw new NotImplementedException();
         }

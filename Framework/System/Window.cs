@@ -140,6 +140,12 @@ namespace Foster.Framework
         public Action<Window>? OnFocus;
 
         /// <summary>
+        /// A callback when the Window has been requested to be closed (ex. by pressing the Close menu button).
+        /// By default this calls Window.Close()
+        /// </summary>
+        public Action<Window>? OnCloseRequested;
+
+        /// <summary>
         /// Gets or Sets the Title of this Window
         /// </summary>
         public abstract string Title { get; set; }
@@ -198,6 +204,11 @@ namespace Foster.Framework
         /// Whether the mouse is currently over this Window
         /// </summary>
         public abstract bool MouseOver { get; }
+
+        protected Window()
+        {
+            OnCloseRequested = (window) => window.Close();
+        }
 
         /// <summary>
         /// Renders the Window. Call Present afterwards to display the rendered contents

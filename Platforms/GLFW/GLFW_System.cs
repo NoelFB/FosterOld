@@ -27,7 +27,7 @@ namespace Foster.GLFW
             ApiVersion = new Version(major, minor, rev);
         }
 
-        protected override void Created()
+        protected override void ApplicationStarted()
         {
             if (GLFW.Init() == 0)
             {
@@ -179,13 +179,16 @@ namespace Foster.GLFW
             GLFW.WindowHint(GLFW_Enum.SAMPLES, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
 
             IntPtr shared = IntPtr.Zero;
-            if (windowPointers.Count > 0)
+            if (App.Graphics is IGraphicsOpenGL && windowPointers.Count > 0)
                 shared = windowPointers[0];
 
             // create the GLFW Window and return thr pointer
             var ptr = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared);
             if (ptr == IntPtr.Zero)
-                throw new Exception("Unable to create a new Window");
+            {
+                GLFW.GetError(out string error);
+                throw new Exception($"Unable to create a new Window: {error}");
+            }
             windowPointers.Add(ptr);
 
             // create the Vulkan surface

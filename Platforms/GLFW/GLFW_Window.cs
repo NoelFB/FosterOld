@@ -8,6 +8,7 @@ namespace Foster.GLFW
         private readonly GLFW_System system;
         internal readonly IntPtr window;
 
+        private readonly GLFW.WindowCloseFunc windowCloseCallbackRef;
         private readonly GLFW.WindowSizeFunc windowSizeCallbackRef;
         private readonly GLFW.WindowFocusFunc windowFocusCallbackRef;
         private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
@@ -145,9 +146,16 @@ namespace Foster.GLFW
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
 
+            GLFW.SetWindowCloseCallback(this.window, windowCloseCallbackRef = OnWindowClose);
             GLFW.SetWindowSizeCallback(this.window, windowSizeCallbackRef = OnWindowResize);
             GLFW.SetWindowFocusCallback(this.window, windowFocusCallbackRef = OnWindowFocus);
             GLFW.SetCursorEnterCallback(this.window, windowCursorEnterCallbackRef = OnCursorEnter);
+        }
+
+        private void OnWindowClose(IntPtr window)
+        {
+            GLFW.SetWindowShouldClose(window, false);
+            OnCloseRequested?.Invoke(this);
         }
 
         private void OnWindowResize(IntPtr window, int width, int height)

@@ -6,7 +6,7 @@ using System.Threading;
 namespace Foster.Framework
 {
 
-    public abstract class System : Module
+    public abstract class System : AppModule
     {
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Foster.Framework
         /// Creates a new Window. This must be called from the Main Thread.
         /// 
         /// Not every Platform supports multiple Windows, in which case
-        /// creating more than one will throw an exception. You can check whether multiple
+        /// creating more will throw an exception. You can check whether multiple
         /// Windows is supported with System.SupportsMultipleWindows.
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
@@ -72,11 +72,5 @@ namespace Foster.Framework
         {
             Log.Message(Name, $"{ApiName} {ApiVersion}");
         }
-
-        protected internal override void BeforeUpdate()
-        {
-            Input.BeforeUpdate();
-        }
-
     }
 }
