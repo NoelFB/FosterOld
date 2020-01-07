@@ -34,7 +34,7 @@ namespace Foster.Vulkan
         private readonly string[] deviceExtensions = new[] { VkConst.VK_KHR_SWAPCHAIN_EXTENSION_NAME };
         private readonly List<Delegate> trackedDelegates = new List<Delegate>();
 
-        protected override void Initialized()
+        protected override void Created()
         {
             ApiName = "Vulkan";
         }
@@ -325,7 +325,7 @@ namespace Foster.Vulkan
             throw new NotImplementedException();
         }
 
-        public override Shader CreateShader(string vertexSource, string fragmentSource)
+        public override Shader CreateShader(ShaderSource source)
         {
             throw new NotImplementedException();
         }

@@ -160,7 +160,7 @@ void main(void)
         public Batch2D(Graphics graphics)
         {
             Graphics = graphics;
-            DefaultShader = Shader.Create(graphics, VertexSource, FragmentSource);
+            DefaultShader = Shader.Create(graphics, new ShaderSource(VertexSource, FragmentSource));
             DefaultMaterial = new Material(DefaultShader);
             Mesh = Mesh.Create(graphics);
 
@@ -244,8 +244,8 @@ void main(void)
                 pass.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
             }
 
-            pass.MeshStartElement = batch.Offset;
-            pass.MeshElementCount = batch.Elements;
+            pass.MeshIndexStart = batch.Offset;
+            pass.MeshIndexCount = batch.Elements;
             pass.MeshInstanceCount = 0;
 
             Graphics.Render(target, ref pass);

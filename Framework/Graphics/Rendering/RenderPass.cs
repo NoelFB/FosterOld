@@ -20,17 +20,17 @@ namespace Foster.Framework
         public Mesh Mesh;
 
         /// <summary>
-        /// The Element to begin rendering from the Mesh
+        /// The Index to begin rendering from the Mesh
         /// </summary>
-        public int MeshStartElement;
+        public int MeshIndexStart;
 
         /// <summary>
-        /// The total number of Elements to draw from the Mesh
+        /// The total number of Indices to draw from the Mesh
         /// </summary>
-        public int MeshElementCount;
+        public int MeshIndexCount;
 
         /// <summary>
-        /// The total number of instances to draw from the Mesh
+        /// The total number of Instances to draw from the Mesh
         /// </summary>
         public int MeshInstanceCount;
 
@@ -61,8 +61,8 @@ namespace Foster.Framework
         {
             Mesh = mesh;
             Material = material;
-            MeshStartElement = 0;
-            MeshElementCount = mesh.IndicesCount;
+            MeshIndexStart = 0;
+            MeshIndexCount = mesh.IndexCount;
             MeshInstanceCount = mesh.InstanceCount;
             Scissor = null;
             BlendMode = BlendMode.Normal;

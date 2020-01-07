@@ -14,26 +14,22 @@ namespace Foster.GLFW
         private readonly Dictionary<IntPtr, GLFW_GLContext> glContexts = new Dictionary<IntPtr, GLFW_GLContext>();
         private readonly Dictionary<IntPtr, IntPtr> vkSurfaces = new Dictionary<IntPtr, IntPtr>();
 
+        public override bool SupportsMultipleWindows => true;
+        public override Input Input => input;
+
         public GLFW_System()
         {
             input = new GLFW_Input();
-        }
 
-        protected override void Initialized()
-        {
             GLFW.GetVersion(out int major, out int minor, out int rev);
 
             ApiName = "GLFW";
             ApiVersion = new Version(major, minor, rev);
         }
 
-        public override bool SupportsMultipleWindows => true;
-
-        public override Input Input => input;
-
-        protected override void Startup()
+        protected override void Created()
         {
-            base.Startup();
+            base.Created();
 
             if (GLFW.Init() == 0)
             {
@@ -52,10 +48,6 @@ namespace Foster.GLFW
                     GLFW.WindowHint(GLFW_Enum.OPENGL_PROFILE, 0x00032001);
                     GLFW.WindowHint(GLFW_Enum.OPENGL_FORWARD_COMPAT, true);
                 }
-
-                // create a default background GL context
-                CreateGLContext();
-                SetCurrentGLContext(windowPointers[0]);
             }
             else
             {

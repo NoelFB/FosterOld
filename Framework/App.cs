@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -54,15 +55,20 @@ namespace Foster.Framework
         public static Input Input => System.Input;
 
         /// <summary>
-        /// Gets the First Window from the System, or null if there are none
+        /// Gets the Primary Window
         /// </summary>
-        public static Window? Window => System.Windows.Count > 0 ? System.Windows[0] : null;
+        public static Window Window => primaryWindow ?? throw new Exception("Application is not running");
+
+        /// <summary>
+        /// Reference to the Primary Window
+        /// </summary>
+        private static Window? primaryWindow;
 
         /// <summary>
         /// Starts running the Application
         /// You must register the System Module before calling this
         /// </summary>
-        public static void Start(Action? callback = null)
+        public static void Start(string title, int width, int height, WindowFlags flags, Action? callback = null)
         {
             if (Running)
                 throw new Exception("App is already running");
@@ -73,16 +79,18 @@ namespace Foster.Framework
             if (!Modules.Has<System>())
                 throw new Exception("App requires a System Module to be registered before it can Start");
 
+            Name = title;
+
             Log.Message(Name, $"Version: {Version}");
             Log.Message(Name, $"Platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
             Log.Message(Name, $"Framework: {RuntimeInformation.FrameworkDescription}");
 
 #if DEBUG
-            Run(callback);
+            Launch();
 #else
             try
             {
-                Run(callback);
+                Launch();
             }
             catch (Exception e)
             {
@@ -91,14 +99,24 @@ namespace Foster.Framework
                 throw e;
             }
 #endif
+            void Launch()
+            {
+                // init modules
+                Modules.Created();
+
+                // our primary Window
+                primaryWindow = System.CreateWindow(title, width, height, flags);
+
+                // startup application
+                Running = true;
+                Modules.Startup();
+                callback?.Invoke();
+                Run();
+            }
         }
 
-        private static void Run(Action? callback = null)
+        private static void Run()
         {
-            Modules.Startup();
-            Running = true;
-            callback?.Invoke();
-
             // timer
             var framecount = 0;
             var frameticks = 0L;
@@ -156,6 +174,10 @@ namespace Foster.Framework
                     }
                 }
 
+                // Check if the Primary Window has been closed
+                if (primaryWindow == null || !primaryWindow.Opened)
+                    Exit();
+
                 // render
                 if (!Exiting)
                 {
@@ -193,7 +215,9 @@ namespace Foster.Framework
 
             // finalize
             Modules.Shutdown();
+            primaryWindow = null;
             Exiting = false;
+
             Log.Message(Name, "Exited");
         }
 

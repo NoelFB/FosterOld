@@ -35,7 +35,7 @@ namespace Foster.Framework
         /// </summary>
         public T Register<T>(T module) where T : Module
         {
-            if (module.Registered)
+            if (module.IsRegistered)
                 throw new Exception("Module is already registered");
 
             // add Module to lookup
@@ -58,14 +58,13 @@ namespace Foster.Framework
             modules.Insert(insert, module);
 
             // registered
-            module.Registered = true;
+            module.IsRegistered = true;
             module.MainThreadId = Thread.CurrentThread.ManagedThreadId;
-            module.Initialized();
 
             if (App.Running)
             {
+                module.Created();
                 module.Startup();
-                Log.Message(module.Name, "Started");
             }
 
             return module;
@@ -77,14 +76,11 @@ namespace Foster.Framework
         /// </summary>
         public void Remove(Module module)
         {
-            if (!module.Registered)
+            if (!module.IsRegistered)
                 throw new Exception("Module is not already registered");
 
             module.Shutdown();
-            Log.Message(module.Name, "Shutdown");
-
             module.Disposed();
-            Log.Message(module.Name, "Disposed");
 
             var index = modules.IndexOf(module);
             modules[index] = null;
@@ -101,7 +97,7 @@ namespace Foster.Framework
                 type = type.BaseType;
             }
 
-            module.Registered = false;
+            module.IsRegistered = false;
         }
 
         /// <summary>
@@ -138,40 +134,25 @@ namespace Foster.Framework
             return modulesByType.ContainsKey(typeof(T));
         }
 
+        internal void Created()
+        {
+            for (int i = 0; i < modules.Count; i++)
+                modules[i]?.Created();
+        }
+
         internal void Startup()
         {
-            for (int i = 0; i < modules.Count; i ++)
-            {
-                var module = modules[i];
-                if (module == null)
-                    continue;
-
-                module.Startup();
-                Log.Message(module.Name, "Started");
-            }
+            for (int i = 0; i < modules.Count; i++)
+                modules[i]?.Startup();
         }
 
         internal void Shutdown()
         {
             for (int i = modules.Count - 1; i >= 0; i--)
-            {
-                var module = modules[i];
-                if (module == null)
-                    continue;
-
-                module.Shutdown();
-                Log.Message(module.Name, "Shutdown");
-            }
+                modules[i]?.Shutdown();
 
             for (int i = modules.Count - 1; i >= 0; i--)
-            {
-                var module = modules[i];
-                if (module == null)
-                    continue;
-
-                module.Disposed();
-                Log.Message(module.Name, "Disposed");
-            }
+                modules[i]?.Disposed();
 
             modules.Clear();
             modulesByType.Clear();

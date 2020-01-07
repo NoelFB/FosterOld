@@ -1,6 +1,7 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Specialized;
+using System.Text;
 using System.Threading;
 
 namespace Foster.OpenGL
@@ -12,7 +13,7 @@ namespace Foster.OpenGL
 
         public uint ID { get; private set; }
 
-        internal GL_Shader(GL_Graphics graphics, string vertexSource, string fragmentSource)
+        internal GL_Shader(GL_Graphics graphics, ShaderSource source)
         {
             this.graphics = graphics;
 
@@ -35,39 +36,40 @@ namespace Foster.OpenGL
 
             void Create()
             {
-                // create vertex shader
-                uint vertex = GL.CreateShader(GLEnum.VERTEX_SHADER);
-                {
-                    GL.ShaderSource(vertex, 1, new[] { vertexSource }, new int[] { vertexSource.Length });
-                    GL.CompileShader(vertex);
-
-                    string? vertexError = GL.GetShaderInfoLog(vertex);
-                    if (!string.IsNullOrEmpty(vertexError))
-                        throw new Exception(vertexError);
-                }
-
-                // create fragment shader
-                uint fragment = GL.CreateShader(GLEnum.FRAGMENT_SHADER);
-                {
-                    GL.ShaderSource(fragment, 1, new[] { fragmentSource }, new int[] { fragmentSource.Length });
-                    GL.CompileShader(fragment);
-
-                    string? fragmentError = GL.GetShaderInfoLog(fragment);
-                    if (!string.IsNullOrEmpty(fragmentError))
-                        throw new Exception(fragmentError);
-                }
-
-                // create program
                 ID = GL.CreateProgram();
-                {
-                    GL.AttachShader(ID, vertex);
-                    GL.AttachShader(ID, fragment);
-                    GL.LinkProgram(ID);
 
-                    string? programError = GL.GetProgramInfoLog(ID);
-                    if (!string.IsNullOrEmpty(programError))
-                        throw new Exception(programError);
+                Span<uint> shaders = stackalloc uint[source.Programs.Count];
+
+                for (int i = 0; i < source.Programs.Count; i ++)
+                {
+                    GLEnum type = source.Programs[i].Type switch
+                    {
+                        ShaderProgram.Vertex => GLEnum.VERTEX_SHADER,
+                        ShaderProgram.Fragment => GLEnum.FRAGMENT_SHADER,
+                        _ => throw new Exception()
+                    };
+
+                    // create vertex shader
+                    uint shaderId = GL.CreateShader(type);
+                    shaders[i] = shaderId;
+
+                    string glsl = Encoding.UTF8.GetString(source.Programs[i].Source);
+
+                    GL.ShaderSource(shaderId, 1, new[] { glsl }, new int[] { glsl.Length });
+                    GL.CompileShader(shaderId);
+
+                    string? errorMessage = GL.GetShaderInfoLog(shaderId);
+                    if (!string.IsNullOrEmpty(errorMessage))
+                        throw new Exception(errorMessage);
+
+                    GL.AttachShader(ID, shaderId);
                 }
+
+                GL.LinkProgram(ID);
+
+                string? programError = GL.GetProgramInfoLog(ID);
+                if (!string.IsNullOrEmpty(programError))
+                    throw new Exception(programError);
 
                 // get attributes
                 GL.GetProgramiv(ID, GLEnum.ACTIVE_ATTRIBUTES, out int attributeCount);
@@ -89,11 +91,12 @@ namespace Foster.OpenGL
                         uniforms.Add(name, new GL_Uniform(this, name, size, location, type));
                 }
 
-                // dispose fragment and vertex shaders
-                GL.DetachShader(ID, vertex);
-                GL.DetachShader(ID, fragment);
-                GL.DeleteShader(vertex);
-                GL.DeleteShader(fragment);
+                // dispose shaders
+                for (int i = 0; i < source.Programs.Count; i ++)
+                {
+                    GL.DetachShader(ID, shaders[i]);
+                    GL.DeleteShader(shaders[i]);
+                }
             }
         }
 

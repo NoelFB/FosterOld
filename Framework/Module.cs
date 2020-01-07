@@ -22,7 +22,7 @@ namespace Foster.Framework
         /// <summary>
         /// Whether the Module has been Registered by the Application
         /// </summary>
-        public bool Registered { get; internal set; }
+        public bool IsRegistered { get; internal set; }
 
         /// <summary>
         /// Creates the Module with the given Priority
@@ -34,12 +34,12 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Called immediately when the Module has been registered
+        /// Called when the Module is created
         /// </summary>
-        protected internal virtual void Initialized() { }
+        protected internal virtual void Created() { }
 
         /// <summary>
-        /// Called when the Application begins
+        /// Called when the Application begins, after Init
         /// If the Application has already started when the module is registered, this will be called immediately
         /// </summary>
         protected internal virtual void Startup() { }

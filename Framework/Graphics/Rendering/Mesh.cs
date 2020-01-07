@@ -8,18 +8,47 @@ namespace Foster.Framework
 {
     public abstract class Mesh : IDisposable
     {
+        /// <summary>
+        /// Number of Vertices in the Mesh
+        /// </summary>
         public int VertexCount { get; private set; }
-        public int IndicesCount { get; private set; }
+
+        /// <summary>
+        /// Number of Indices in the Mesh
+        /// </summary>
+        public int IndexCount { get; private set; }
+
+        /// <summary>
+        /// Number of Instances in the Mesh
+        /// </summary>
         public int InstanceCount { get; private set; }
-        public int ElementCount => IndicesCount / 3;
+
+        /// <summary>
+        /// The Number of Triangle Elements in the Mesh (IndicesCount / 3)
+        /// </summary>
+        public int ElementCount => IndexCount / 3;
+
+        /// <summary>
+        /// Gets the Vertex Format, or null if never set
+        /// </summary>
         public VertexFormat? VertexFormat { get; private set; } = null;
+
+        /// <summary>
+        /// Gets the Instance Format, or null if never set
+        /// </summary>
         public VertexFormat? InstanceFormat { get; private set; } = null;
 
+        /// <summary>
+        /// Creates a new Mesh
+        /// </summary>
         public static Mesh Create()
         {
             return App.Graphics.CreateMesh();
         }
 
+        /// <summary>
+        /// Creates a new Mesh
+        /// </summary>
         public static Mesh Create(Graphics graphics)
         {
             return graphics.CreateMesh();
@@ -65,7 +94,7 @@ namespace Foster.Framework
 
         public void SetIndices(ReadOnlySequence<int> indices)
         {
-            IndicesCount = (int)indices.Length;
+            IndexCount = (int)indices.Length;
             UploadIndices(indices);
         }
 

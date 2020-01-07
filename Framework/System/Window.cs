@@ -206,15 +206,17 @@ namespace Foster.Framework
         {
             // The Window Target is only allowed to be rendered to during this call
             // it greatly simplifies the various states for the Graphics Module
+            lock (this)
+            {
+                Drawable = true;
+                Viewport = new RectInt(0, 0, DrawableWidth, DrawableHeight);
 
-            Drawable = true;
-            Viewport = new RectInt(0, 0, DrawableWidth, DrawableHeight);
+                App.Modules.BeforeRender(this);
+                OnRender?.Invoke(this);
+                App.Modules.AfterRender(this);
 
-            App.Modules.BeforeRender(this);
-            OnRender?.Invoke(this);
-            App.Modules.AfterRender(this);
-
-            Drawable = false;
+                Drawable = false;
+            }
         }
 
         /// <summary>

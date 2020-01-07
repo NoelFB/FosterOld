@@ -42,10 +42,9 @@ namespace Foster.OpenGL
         private readonly DeleteResource deleteTexture = GL.DeleteTexture;
         private readonly DeleteResource deleteProgram = GL.DeleteProgram;
 
-        protected override void Initialized()
+        protected override void Created()
         {
             ApiName = "OpenGL";
-            base.Initialized();
         }
 
         protected override void Startup()
@@ -143,9 +142,9 @@ namespace Foster.OpenGL
             return new GL_RenderTexture(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
-        public override Shader CreateShader(string vertexSource, string fragmentSource)
+        public override Shader CreateShader(ShaderSource source)
         {
-            return new GL_Shader(this, vertexSource, fragmentSource);
+            return new GL_Shader(this, source);
         }
 
         public override Mesh CreateMesh()
@@ -411,11 +410,11 @@ namespace Foster.OpenGL
                 {
                     if (pass.MeshInstanceCount > 0)
                     {
-                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, pass.MeshElementCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshStartElement * 3), pass.MeshInstanceCount);
+                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, pass.MeshIndexCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3), pass.MeshInstanceCount);
                     }
                     else
                     {
-                        GL.DrawElements(GLEnum.TRIANGLES, pass.MeshElementCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshStartElement * 3));
+                        GL.DrawElements(GLEnum.TRIANGLES, pass.MeshIndexCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3));
                     }
 
                     GL.BindVertexArray(0);
