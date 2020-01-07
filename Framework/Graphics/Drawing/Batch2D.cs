@@ -46,7 +46,11 @@ namespace Foster.Framework
             }
         }
 
+        private static Shader? defaultBatchShader;
+
         #region Shader Source
+
+        // TODO: this should not be here ...
 
         private const string VertexSource = @"
 #version 330
@@ -160,8 +164,13 @@ void main(void)
         public Batch2D(Graphics graphics)
         {
             Graphics = graphics;
-            DefaultShader = Shader.Create(graphics, new ShaderSource(VertexSource, FragmentSource));
+
+            if (defaultBatchShader == null)
+                defaultBatchShader = Shader.Create(graphics, new ShaderSource(VertexSource, FragmentSource));
+
+            DefaultShader = defaultBatchShader;
             DefaultMaterial = new Material(DefaultShader);
+
             Mesh = Mesh.Create(graphics);
 
             vertices = new Vertex[64];

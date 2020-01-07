@@ -34,13 +34,14 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Called when the Module is created
+        /// Called when the Module is created, before the Primary Window is created.
+        /// If the Application has already started when the module is Registered, this will be called immediately.
         /// </summary>
         protected internal virtual void Created() { }
 
         /// <summary>
-        /// Called when the Application begins, after Init
-        /// If the Application has already started when the module is registered, this will be called immediately
+        /// Called when the Application begins, after the Primary Window is created.
+        /// If the Application has already started when the module is Registered, this will be called immediately.
         /// </summary>
         protected internal virtual void Startup() { }
 

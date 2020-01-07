@@ -2,7 +2,7 @@
 namespace Foster.Framework
 {
     [Flags]
-    public enum ClearFlags
+    public enum Clear
     {
         None = 0,
         Color = 1,

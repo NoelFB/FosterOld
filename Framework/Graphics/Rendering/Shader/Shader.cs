@@ -17,8 +17,14 @@ namespace Foster.Framework
         /// </summary>
         public readonly ReadOnlyDictionary<string, ShaderUniform> Uniforms;
 
-
+        /// <summary>
+        /// Internal list of Attributes, which should be managed by the Shader implementation
+        /// </summary>
         protected readonly Dictionary<string, ShaderAttribute> attributes = new Dictionary<string, ShaderAttribute>();
+
+        /// <summary>
+        /// Internal list of Uniforms, which should be managed by the Shader implementation
+        /// </summary>
         protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
 
         public static Shader Create(ShaderSource source)

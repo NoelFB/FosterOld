@@ -24,7 +24,7 @@ namespace Foster.Framework
             /// <summary>
             /// The Shader Uniform Type of the Parameter
             /// </summary>
-            public ShaderUniform.Types Type => Uniform.Type;
+            public UniformType Type => Uniform.Type;
 
             /// <summary>
             /// The Value of the Parameter
@@ -39,7 +39,7 @@ namespace Foster.Framework
 
             public void SetTexture(Texture? value)
             {
-                if (Type == ShaderUniform.Types.Texture2D)
+                if (Type == UniformType.Texture2D)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Sampler2D");
@@ -47,7 +47,7 @@ namespace Foster.Framework
 
             public void SetFloat(float value)
             {
-                if (Type == ShaderUniform.Types.Float)
+                if (Type == UniformType.Float)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Float");
@@ -55,7 +55,7 @@ namespace Foster.Framework
 
             public void SetInt(int value)
             {
-                if (Type == ShaderUniform.Types.Int)
+                if (Type == UniformType.Int)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Int");
@@ -63,7 +63,7 @@ namespace Foster.Framework
 
             public void SetMatrix(Matrix2D value)
             {
-                if (Type == ShaderUniform.Types.Matrix2D || Type == ShaderUniform.Types.Matrix)
+                if (Type == UniformType.Matrix2D || Type == UniformType.Matrix)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a 2D Matrix");
@@ -71,7 +71,7 @@ namespace Foster.Framework
 
             public void SetMatrix(Matrix value)
             {
-                if (Type == ShaderUniform.Types.Matrix)
+                if (Type == UniformType.Matrix)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Matrix");
@@ -79,7 +79,7 @@ namespace Foster.Framework
 
             public void SetVector2(Vector2 value)
             {
-                if (Type == ShaderUniform.Types.Float2)
+                if (Type == UniformType.Float2)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Vector2");
@@ -87,7 +87,7 @@ namespace Foster.Framework
 
             public void SetVector3(Vector3 value)
             {
-                if (Type == ShaderUniform.Types.Float3)
+                if (Type == UniformType.Float3)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Vector3");
@@ -95,7 +95,7 @@ namespace Foster.Framework
 
             public void SetVector4(Vector4 value)
             {
-                if (Type == ShaderUniform.Types.Float4)
+                if (Type == UniformType.Float4)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Vector4");
@@ -103,7 +103,7 @@ namespace Foster.Framework
 
             public void SetColor(Color value)
             {
-                if (Type == ShaderUniform.Types.Float4)
+                if (Type == UniformType.Float4)
                     Value = value.ToVector4();
                 else
                     throw new Exception($"Parameter {Name} isn't a Vector4");

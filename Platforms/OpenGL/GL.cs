@@ -23,7 +23,7 @@ namespace Foster.OpenGL
         private static GL_Bindings bindings;
 #pragma warning restore CS8618
 
-        public static void Init(ISystemOpenGL system)
+        public static void Init(GL_Graphics graphics, ISystemOpenGL system)
         {
             bindings = new GL_Bindings(system);
 
@@ -69,7 +69,11 @@ namespace Foster.OpenGL
                         case GLEnum.DEBUG_SEVERITY_HIGH: severityName = "HIGH"; break;
                         case GLEnum.DEBUG_SEVERITY_MEDIUM: severityName = "MEDIUM"; break;
                         case GLEnum.DEBUG_SEVERITY_LOW: severityName = "LOW"; break;
-                        default: case GLEnum.DEBUG_SEVERITY_NOTIFICATION: severityName = "NOTIFICATION"; break;
+
+                        // skip notifications
+                        default:
+                        case GLEnum.DEBUG_SEVERITY_NOTIFICATION:
+                            return;
                     }
 
                     if (type == GLEnum.DEBUG_TYPE_ERROR)
@@ -77,9 +81,7 @@ namespace Foster.OpenGL
                         throw new Exception(output);
                     }
 
-                    Console.WriteLine($"GL {typeName} ({severityName})");
-                    Console.WriteLine("\t" + output);
-                    Console.WriteLine();
+                    Log.Warning(graphics.Name, $"{typeName}, {severityName}: {output}");
 
                 })), IntPtr.Zero);
             }

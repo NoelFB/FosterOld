@@ -42,12 +42,12 @@ namespace Foster.Framework
         /// <summary>
         /// The Render State Culling Mode
         /// </summary>
-        public Cull CullMode;
+        public CullMode CullMode;
 
         /// <summary>
         /// The Render State Depth comparison Function
         /// </summary>
-        public DepthFunctions DepthFunction;
+        public Compare DepthFunction;
 
         /// <summary>
         /// The Render State Scissor Rectangle
@@ -66,8 +66,8 @@ namespace Foster.Framework
             MeshInstanceCount = mesh.InstanceCount;
             Scissor = null;
             BlendMode = BlendMode.Normal;
-            DepthFunction = DepthFunctions.None;
-            CullMode = Cull.None;
+            DepthFunction = Compare.None;
+            CullMode = CullMode.None;
         }
     }
 }

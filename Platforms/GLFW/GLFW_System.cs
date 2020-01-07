@@ -29,8 +29,6 @@ namespace Foster.GLFW
 
         protected override void Created()
         {
-            base.Created();
-
             if (GLFW.Init() == 0)
             {
                 GLFW.GetError(out string error);

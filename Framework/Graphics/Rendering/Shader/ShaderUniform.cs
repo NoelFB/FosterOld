@@ -2,23 +2,6 @@
 {
     public class ShaderUniform
     {
-        public enum Types
-        {
-            Unknown,
-
-            Int,
-
-            Float,
-            Float2,
-            Float3,
-            Float4,
-
-            Matrix2D,
-            Matrix,
-
-            Texture2D
-        }
-
         /// <summary>
         /// The Name of the Uniform
         /// </summary>
@@ -37,9 +20,9 @@
         /// <summary>
         /// The Type of Uniform
         /// </summary>
-        public readonly Types Type;
+        public readonly UniformType Type;
 
-        public ShaderUniform(string name, int location, int size, Types type)
+        public ShaderUniform(string name, int location, int size, UniformType type)
         {
             Name = name;
             Location = location;

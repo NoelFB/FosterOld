@@ -68,7 +68,7 @@ namespace Foster.Framework
         /// </summary>
         public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
-        protected internal override void Created()
+        protected internal override void Startup()
         {
             Log.Message(Name, $"{ApiName} {ApiVersion}");
         }

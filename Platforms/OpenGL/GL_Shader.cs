@@ -120,7 +120,7 @@ namespace Foster.OpenGL
                 // get the uniform value
                 object? value;
                 {
-                    if (uniform.Type == ShaderUniform.Types.Texture2D)
+                    if (uniform.Type == UniformType.Texture2D)
                     {
                         var texture = (parameter.Value as GL_Texture);
                         var id = texture?.ID ?? 0;
@@ -145,25 +145,25 @@ namespace Foster.OpenGL
                 // upload it
                 switch (uniform.Type)
                 {
-                    case ShaderUniform.Types.Int:
+                    case UniformType.Int:
                         GL.Uniform1i(uniform.Location, (int)(value ?? 0));
                         break;
-                    case ShaderUniform.Types.Float:
+                    case UniformType.Float:
                         GL.Uniform1f(uniform.Location, (float)(value ?? 0));
                         break;
-                    case ShaderUniform.Types.Float2:
+                    case UniformType.Float2:
                         Vector2 vec2 = (Vector2)(value ?? Vector2.Zero);
                         GL.Uniform2f(uniform.Location, vec2.X, vec2.Y);
                         break;
-                    case ShaderUniform.Types.Float3:
+                    case UniformType.Float3:
                         Vector3 vec3 = (Vector3)(value ?? Vector3.Zero);
                         GL.Uniform3f(uniform.Location, vec3.X, vec3.Y, vec3.Z);
                         break;
-                    case ShaderUniform.Types.Float4:
+                    case UniformType.Float4:
                         Vector4 vec4 = (Vector4)(value ?? Vector4.Zero);
                         GL.Uniform4f(uniform.Location, vec4.X, vec4.Y, vec4.Z, vec4.W);
                         break;
-                    case ShaderUniform.Types.Matrix2D:
+                    case UniformType.Matrix2D:
                         {
                             Matrix2D m3x2 = (Matrix2D)(value ?? Matrix2D.Identity);
                             float* matrix = stackalloc float[6];
@@ -178,7 +178,7 @@ namespace Foster.OpenGL
                             GL.UniformMatrix3x2fv(uniform.Location, 1, false, new IntPtr(matrix));
                         }
                         break;
-                    case ShaderUniform.Types.Matrix:
+                    case UniformType.Matrix:
                         {
                             float* matrix = stackalloc float[16];
 
@@ -227,7 +227,7 @@ namespace Foster.OpenGL
                             GL.UniformMatrix4fv(uniform.Location, 1, false, new IntPtr(matrix));
                         }
                         break;
-                    case ShaderUniform.Types.Texture2D:
+                    case UniformType.Texture2D:
                         GL.Uniform1i(uniform.Location, (int)(value ?? 0));
                         break;
                 }

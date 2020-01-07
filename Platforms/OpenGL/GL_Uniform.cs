@@ -14,18 +14,18 @@ namespace Foster.OpenGL
             Shader = shader;
         }
 
-        private static Types ToFosterType(GLEnum type)
+        private static UniformType ToFosterType(GLEnum type)
         {
             return type switch
             {
-                GLEnum.INT => Types.Int,
-                GLEnum.FLOAT => Types.Float,
-                GLEnum.FLOAT_VEC2 => Types.Float2,
-                GLEnum.FLOAT_VEC3 => Types.Float3,
-                GLEnum.FLOAT_VEC4 => Types.Float4,
-                GLEnum.FLOAT_MAT3x2 => Types.Matrix2D,
-                GLEnum.FLOAT_MAT4 => Types.Matrix,
-                GLEnum.SAMPLER_2D => Types.Texture2D,
+                GLEnum.INT => UniformType.Int,
+                GLEnum.FLOAT => UniformType.Float,
+                GLEnum.FLOAT_VEC2 => UniformType.Float2,
+                GLEnum.FLOAT_VEC3 => UniformType.Float3,
+                GLEnum.FLOAT_VEC4 => UniformType.Float4,
+                GLEnum.FLOAT_MAT3x2 => UniformType.Matrix2D,
+                GLEnum.FLOAT_MAT4 => UniformType.Matrix,
+                GLEnum.SAMPLER_2D => UniformType.Texture2D,
 
                 _ => throw new InvalidOperationException("Unknown Enum Type"),
             };

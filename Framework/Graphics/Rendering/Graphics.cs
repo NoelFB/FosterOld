@@ -31,7 +31,7 @@ namespace Foster.Framework
 
         }
 
-        protected internal override void Created()
+        protected internal override void Startup()
         {
             Log.Message(Name, $"{ApiName} {ApiVersion} ({DeviceName})");
         }
@@ -39,17 +39,17 @@ namespace Foster.Framework
         /// <summary>
         /// Clears the Color of the Target
         /// </summary>
-        public void Clear(RenderTarget target, Color color) => Clear(target, ClearFlags.Color, color, 0, 0);
+        public void Clear(RenderTarget target, Color color) => Clear(target, Framework.Clear.Color, color, 0, 0);
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        public void Clear(RenderTarget target, Color color, float depth, int stencil) => Clear(target, ClearFlags.All, color, depth, stencil);
+        public void Clear(RenderTarget target, Color color, float depth, int stencil) => Clear(target, Framework.Clear.All, color, depth, stencil);
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        public void Clear(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
+        public void Clear(RenderTarget target, Clear flags, Color color, float depth, int stencil)
         {
             if (!target.Drawable)
                 throw new Exception("Render Target cannot currently be drawn to");
@@ -60,7 +60,7 @@ namespace Foster.Framework
         /// <summary>
         /// Clears the Target
         /// </summary>
-        protected abstract void ClearInternal(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil);
+        protected abstract void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil);
 
         /// <summary>
         /// Draws the data from the Render pass to the Render Target.

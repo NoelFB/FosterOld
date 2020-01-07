@@ -49,14 +49,14 @@ namespace Foster.OpenGL
 
         protected override void Startup()
         {
-            BackgroundContext = System.CreateGLContext();
-
-            GL.Init(System);
+            GL.Init(this, System);
             GL.DepthMask(true);
 
             MaxTextureSize = GL.MaxTextureSize;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
             DeviceName = GL.GetString(GLEnum.RENDERER);
+
+            BackgroundContext = System.CreateGLContext();
 
             base.Startup();
         }
@@ -64,8 +64,6 @@ namespace Foster.OpenGL
         protected override void Shutdown()
         {
             BackgroundContext.Dispose();
-
-            base.Shutdown();
         }
 
         protected override void Tick()
@@ -152,7 +150,7 @@ namespace Foster.OpenGL
             return new GL_Mesh(this);
         }
 
-        protected override void ClearInternal(RenderTarget target, ClearFlags flags, Color color, float depth, int stencil)
+        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil)
         {
             if (target is Window window)
             {
@@ -211,19 +209,19 @@ namespace Foster.OpenGL
                 // clear
                 var mask = GLEnum.ZERO;
 
-                if (flags.HasFlag(ClearFlags.Color))
+                if (flags.HasFlag(Framework.Clear.Color))
                 {
                     GL.ClearColor(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
                     mask |= GLEnum.COLOR_BUFFER_BIT;
                 }
 
-                if (flags.HasFlag(ClearFlags.Depth))
+                if (flags.HasFlag(Framework.Clear.Depth))
                 {
                     GL.ClearDepth(depth);
                     mask |= GLEnum.DEPTH_BUFFER_BIT;
                 }
 
-                if (flags.HasFlag(ClearFlags.Stencil))
+                if (flags.HasFlag(Framework.Clear.Stencil))
                 {
                     GL.ClearStencil(stencil);
                     mask |= GLEnum.STENCIL_BUFFER_BIT;
@@ -322,7 +320,7 @@ namespace Foster.OpenGL
                 // Depth Function
                 if (updateAll || lastPass.DepthFunction != pass.DepthFunction)
                 {
-                    if (pass.DepthFunction == DepthFunctions.None)
+                    if (pass.DepthFunction == Compare.None)
                     {
                         GL.Disable(GLEnum.DEPTH_TEST);
                     }
@@ -332,28 +330,28 @@ namespace Foster.OpenGL
 
                         switch (pass.DepthFunction)
                         {
-                            case DepthFunctions.Always:
+                            case Compare.Always:
                                 GL.DepthFunc(GLEnum.ALWAYS);
                                 break;
-                            case DepthFunctions.Equal:
+                            case Compare.Equal:
                                 GL.DepthFunc(GLEnum.EQUAL);
                                 break;
-                            case DepthFunctions.Greater:
+                            case Compare.Greater:
                                 GL.DepthFunc(GLEnum.GREATER);
                                 break;
-                            case DepthFunctions.GreaterOrEqual:
+                            case Compare.GreaterOrEqual:
                                 GL.DepthFunc(GLEnum.GEQUAL);
                                 break;
-                            case DepthFunctions.Less:
+                            case Compare.Less:
                                 GL.DepthFunc(GLEnum.LESS);
                                 break;
-                            case DepthFunctions.LessOrEqual:
+                            case Compare.LessOrEqual:
                                 GL.DepthFunc(GLEnum.LEQUAL);
                                 break;
-                            case DepthFunctions.Never:
+                            case Compare.Never:
                                 GL.DepthFunc(GLEnum.NEVER);
                                 break;
-                            case DepthFunctions.NotEqual:
+                            case Compare.NotEqual:
                                 GL.DepthFunc(GLEnum.NOTEQUAL);
                                 break;
 
@@ -366,7 +364,7 @@ namespace Foster.OpenGL
                 // Cull Mode
                 if (updateAll || lastPass.CullMode != pass.CullMode)
                 {
-                    if (pass.CullMode == Cull.None)
+                    if (pass.CullMode == CullMode.None)
                     {
                         GL.Disable(GLEnum.CULL_FACE);
                     }
@@ -374,9 +372,9 @@ namespace Foster.OpenGL
                     {
                         GL.Enable(GLEnum.CULL_FACE);
 
-                        if (pass.CullMode == Cull.Back)
+                        if (pass.CullMode == CullMode.Back)
                             GL.CullFace(GLEnum.BACK);
-                        else if (pass.CullMode == Cull.Front)
+                        else if (pass.CullMode == CullMode.Front)
                             GL.CullFace(GLEnum.FRONT);
                         else
                             GL.CullFace(GLEnum.FRONT_AND_BACK);

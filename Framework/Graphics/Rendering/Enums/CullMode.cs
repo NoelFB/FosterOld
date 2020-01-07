@@ -1,6 +1,6 @@
 ﻿namespace Foster.Framework
 {
-    public enum Cull
+    public enum CullMode
     {
         None = 0,
         Front = 1,
