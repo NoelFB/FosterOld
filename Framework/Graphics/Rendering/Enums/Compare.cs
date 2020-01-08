@@ -1,6 +1,9 @@
 ﻿using System;
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Compare Methods used during Rendering
+    /// </summary>
     public enum Compare
     {
         /// <summary>

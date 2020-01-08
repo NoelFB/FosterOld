@@ -6,6 +6,9 @@ using System.Text;
 namespace Foster.Framework.Json
 {
 
+    /// <summary>
+    /// Encapsulates a Json Value
+    /// </summary>
     public abstract class JsonValue
     {
         public readonly JsonType Type;
@@ -65,6 +68,9 @@ namespace Foster.Framework.Json
 
     }
 
+    /// <summary>
+    /// A Null Json Value
+    /// </summary>
     public class JsonNull : JsonValue
     {
         public JsonNull() : base(JsonType.Null)
@@ -88,6 +94,9 @@ namespace Foster.Framework.Json
         public override JsonArray? Array => null;
     }
 
+    /// <summary>
+    /// A Json Value with a given C# data type
+    /// </summary>
     public class JsonValue<T> : JsonValue
     {
 

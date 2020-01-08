@@ -7,6 +7,9 @@ using System.Text;
 
 namespace Foster.Framework.Json
 {
+    /// <summary>
+    /// A data structure encapsulating a Json Object
+    /// </summary>
     public class JsonObject : JsonValue<Dictionary<string, JsonValue>>, IDictionary<string, JsonValue>
     {
         public JsonObject()

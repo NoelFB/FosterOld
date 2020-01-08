@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Ease Delegates
+    /// </summary>
     public static class Ease
     {
         public delegate float Easer(float t);

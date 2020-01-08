@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// A 4D Vector
+    /// </summary>
     public struct Vector4
     {
         public static readonly Vector4 Zero = new Vector4(0);

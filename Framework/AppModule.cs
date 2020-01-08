@@ -9,7 +9,8 @@ namespace Foster.Framework
     /// </summary>
     public abstract class AppModule : Module
     {
-        public AppModule(int priority = 10000) : base(priority)
+
+        protected AppModule(int priority = 10000) : base(priority)
         {
 
         }

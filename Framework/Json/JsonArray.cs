@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Foster.Framework.Json
 {
+    /// <summary>
+    /// A data structure encapsulating a Json Array
+    /// </summary>
     public class JsonArray : JsonValue<List<JsonValue>>, IList<JsonValue>
     {
         public JsonArray() : base(JsonType.Array, new List<JsonValue>())

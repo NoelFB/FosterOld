@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// Gamepad Axes
+    /// </summary>
     public enum Axes
     {
         None = -1,

@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 3D Quad
+    /// </summary>
     public struct Quad : IProjectable
     {
 

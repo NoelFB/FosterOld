@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 
 namespace Foster.Framework
 {
-
+    /// <summary>
+    /// The Input Manager that stores the current Input State
+    /// </summary>
     public abstract class Input
     {
         /// <summary>

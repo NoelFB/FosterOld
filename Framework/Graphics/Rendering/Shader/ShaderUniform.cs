@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// A Shader Uniform Value
+    /// </summary>
     public class ShaderUniform
     {
         /// <summary>

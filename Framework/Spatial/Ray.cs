@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 3D Ray
+    /// </summary>
     public struct Ray
     {
         /// <summary>

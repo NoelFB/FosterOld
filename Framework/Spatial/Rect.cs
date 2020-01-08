@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Rectangle
+    /// </summary>
     public struct Rect : IConvexShape2D
     {
 

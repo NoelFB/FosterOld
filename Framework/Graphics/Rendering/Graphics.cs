@@ -2,7 +2,9 @@
 
 namespace Foster.Framework
 {
-
+    /// <summary>
+    /// The Core Graphics Module, used for Rendering
+    /// </summary>
     public abstract class Graphics : AppModule
     {
 

@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Stores a Mouse State
+    /// </summary>
     public class Mouse
     {
         public const int MaxButtons = 5;

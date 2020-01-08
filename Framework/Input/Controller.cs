@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Represents a Gamepad or Joystick
+    /// </summary>
     public class Controller
     {
         public const int MaxButtons = 64;

@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 3D Box
+    /// </summary>
     public struct Box : IProjectable
     {
 

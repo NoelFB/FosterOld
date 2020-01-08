@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Integer Point
+    /// </summary>
     public struct Point2
     {
         public static readonly Point2 Zero = new Point2(0, 0);

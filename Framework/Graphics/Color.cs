@@ -3,7 +3,10 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 
 namespace Foster.Framework
-{
+{    
+    /// <summary>
+    /// Color Data
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 4)]
     public struct Color
     {

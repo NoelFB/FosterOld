@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// Gamepad Buttons
+    /// </summary>
     public enum Buttons
     {
         None = -1,

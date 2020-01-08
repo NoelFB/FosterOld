@@ -2,9 +2,15 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Window Creation Flags
+    /// </summary>
     [Flags]
     public enum WindowFlags
     {
+        /// <summary>
+        /// No Flags
+        /// </summary>
         None = 0,
 
         /// <summary>

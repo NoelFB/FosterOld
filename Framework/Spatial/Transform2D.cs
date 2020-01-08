@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// An interface that implements a 2D Transform
+    /// </summary>
     public interface ITransform2D
     {
         Vector2 Position { get; set; }
@@ -10,6 +13,9 @@ namespace Foster.Framework
         float Rotation { get; set; }
     }
 
+    /// <summary>
+    /// A 2D Transform
+    /// </summary>
     public class Transform2D : ITransform2D
     {
         public event Action? OnChanged;

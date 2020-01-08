@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Struct for managing Tags
+    /// </summary>
     public struct Tag
     {
 

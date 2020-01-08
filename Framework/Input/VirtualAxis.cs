@@ -4,6 +4,9 @@ using System.Collections.Generic;
 namespace Foster.Framework
 {
 
+    /// <summary>
+    /// A Virtual Input Axis that can be mapped to different keyboards and gamepads
+    /// </summary>
     public class VirtualAxis
     {
         public enum Overlaps

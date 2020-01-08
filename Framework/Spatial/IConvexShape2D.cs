@@ -2,12 +2,18 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Convex Shape
+    /// </summary>
     public interface IConvexShape2D : IProjectable2D
     {
         public int Sides { get; }
         public Vector2 GetPoint(int index);
     }
 
+    /// <summary>
+    /// 2D Convex Shape Extension methods
+    /// </summary>
     public static class IConvexShape2DExt
     {
         public static bool Overlaps(this IConvexShape2D a, Circle b, out Vector2 pushout)

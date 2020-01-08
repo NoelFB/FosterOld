@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// A Virtual Input Stick that can be mapped to different keyboards and gamepads
+    /// </summary>
     public class VirtualStick
     {
 

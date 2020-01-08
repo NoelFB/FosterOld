@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Mesh used for Rendering
+    /// </summary>
     public abstract class Mesh : IDisposable
     {
         /// <summary>

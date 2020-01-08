@@ -3,6 +3,9 @@ using System.IO;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Stores a 2D Image
+    /// </summary>
     public class Bitmap
     {
         /// <summary>

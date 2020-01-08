@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// A Wrapper around a specific Monitor
+    /// </summary>
     public abstract class Monitor
     {
 

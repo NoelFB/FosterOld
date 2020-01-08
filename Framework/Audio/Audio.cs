@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// The Core Audio Module, used for playing sounds
+    /// </summary>
     public abstract class Audio : Module
     {
         public string ApiName { get; protected set; } = "Unknown";

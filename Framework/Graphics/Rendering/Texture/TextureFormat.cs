@@ -1,6 +1,9 @@
 ﻿using System;
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Texture Format
+    /// </summary>
     public enum TextureFormat
     {
         /// <summary>

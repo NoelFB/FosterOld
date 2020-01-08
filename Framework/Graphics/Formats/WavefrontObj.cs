@@ -4,6 +4,9 @@ using System.IO;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// An Obj parser
+    /// </summary>
     public class WavefrontObj
     {
 

@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A structure encapsulating a 3x2 matrix.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Matrix2D
     {

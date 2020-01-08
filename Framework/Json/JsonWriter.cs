@@ -3,6 +3,9 @@ using System.IO;
 
 namespace Foster.Framework.Json
 {
+    /// <summary>
+    /// Writes Json to a string format
+    /// </summary>
     public class JsonWriter : IDisposable
     {
 

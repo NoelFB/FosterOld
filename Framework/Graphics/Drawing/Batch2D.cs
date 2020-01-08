@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Sprite Batcher used for drawing images, text, and shapes
+    /// </summary>
     public class Batch2D
     {
 

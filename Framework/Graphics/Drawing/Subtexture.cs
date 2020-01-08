@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Subtexture, representing a rectangular segment of a Texture
+    /// </summary>
     public class Subtexture
     {
 

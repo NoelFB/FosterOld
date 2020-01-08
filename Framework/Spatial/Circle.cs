@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Circle
+    /// </summary>
     public struct Circle : IProjectable2D
     {
 

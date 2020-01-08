@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// A Shader Attribute
+    /// </summary>
     public class ShaderAttribute
     {
         /// <summary>

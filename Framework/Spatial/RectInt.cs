@@ -1,6 +1,8 @@
 ﻿namespace Foster.Framework
 {
-
+    /// <summary>
+    /// A 2D Integer Rectangle
+    /// </summary>
     public struct RectInt
     {
 

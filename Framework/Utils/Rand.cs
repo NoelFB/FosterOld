@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Random Utilities
+    /// </summary>
     public static class Rand
     {
         public static Random Instance = new Random();

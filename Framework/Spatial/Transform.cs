@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// An interface that implements a 3D Transform
+    /// </summary>
     public interface ITransform
     {
         Vector3 Position { get; set; }
@@ -9,6 +12,9 @@ namespace Foster.Framework
         Quaternion Rotation { get; set; }
     }
 
+    /// <summary>
+    /// A 3D Transform
+    /// </summary>
     public class Transform : ITransform
     {
         public event Action? OnChanged;

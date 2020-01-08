@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Virtual Input Button that can be mapped to different keyboards and gamepads
+    /// </summary>
     public class VirtualButton
     {
         private interface INode

@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Blend Operations
+    /// </summary>
     public enum BlendOperations
     {
         Add,
@@ -11,6 +14,9 @@ namespace Foster.Framework
         Max
     }
 
+    /// <summary>
+    /// Blend Factors
+    /// </summary>
     public enum BlendFactors
     {
         Zero,
@@ -34,6 +40,9 @@ namespace Foster.Framework
         OneMinusSrc1Alpha
     }
 
+    /// <summary>
+    /// Blend Mode
+    /// </summary>
     public struct BlendMode
     {
         public BlendOperations Operation;

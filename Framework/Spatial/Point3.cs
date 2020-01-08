@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 3D Integer Point
+    /// </summary>
     public struct Point3
     {
 

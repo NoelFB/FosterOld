@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Shader used for Rendering
+    /// </summary>
     public abstract class Shader : IDisposable
     {
         /// <summary>

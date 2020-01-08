@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// Mouse Buttons
+    /// </summary>
     public enum MouseButtons
     {
         None = 0,

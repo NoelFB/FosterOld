@@ -3,6 +3,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Stores a Keyboard State
+    /// </summary>
     public class Keyboard
     {
         

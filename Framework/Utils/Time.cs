@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Time values
+    /// </summary>
     public static class Time
     {
 

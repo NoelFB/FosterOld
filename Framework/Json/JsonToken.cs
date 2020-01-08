@@ -2,6 +2,9 @@
 
 namespace Foster.Framework.Json
 {
+    /// <summary>
+    /// A Json Token
+    /// </summary>
     public enum JsonToken
     {
         ObjectStart,

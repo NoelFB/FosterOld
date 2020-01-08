@@ -1,6 +1,9 @@
 ﻿using System;
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Clear Flags
+    /// </summary>
     [Flags]
     public enum Clear
     {

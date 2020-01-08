@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Texture Atlas
+    /// </summary>
     public class Atlas
     {
         /// <summary>

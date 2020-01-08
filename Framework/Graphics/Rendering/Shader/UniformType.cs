@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A Shader Uniform Type
+    /// </summary>
     public enum UniformType
     {
         Unknown,

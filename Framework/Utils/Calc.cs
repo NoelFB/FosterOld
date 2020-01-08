@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Utility Functions
+    /// </summary>
     public static class Calc
     {
 

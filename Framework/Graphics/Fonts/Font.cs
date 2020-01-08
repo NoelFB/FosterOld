@@ -7,7 +7,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
-
+    /// <summary>
+    /// Static preconstructed Charsets
+    /// </summary>
     public static class Charsets
     {
         public static readonly string ASCII = Make((char)32, (char)126);

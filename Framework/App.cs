@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Foster Application
+    /// </summary>
     public static class App
     {
 

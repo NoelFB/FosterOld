@@ -3,6 +3,9 @@ using System.IO;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// An Abstract Image Format
+    /// </summary>
     public abstract class ImageFormat
     {
 

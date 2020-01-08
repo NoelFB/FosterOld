@@ -1,6 +1,9 @@
 ﻿namespace Foster.Framework
 {
-    // Taken from GLFW Keys Enums
+    /// <summary>
+    /// List of Keys
+    /// (currently copied from GLFW)
+    /// </summary>
     public enum Keys
     {
         Unknown = 0,

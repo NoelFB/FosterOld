@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Foster.Framework.Json
 {
+    /// <summary>
+    /// Reads JSON from a Stream or Path
+    /// </summary>
     public class JsonReader : IDisposable
     {
 

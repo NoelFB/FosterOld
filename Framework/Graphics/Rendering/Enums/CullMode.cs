@@ -1,5 +1,8 @@
 ﻿namespace Foster.Framework
 {
+    /// <summary>
+    /// Cull Modes
+    /// </summary>
     public enum CullMode
     {
         None = 0,

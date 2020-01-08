@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 3D Vector
+    /// </summary>
     public struct Vector3
     {
 

@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D shape that can be projected onto an Axis
+    /// </summary>
     public interface IProjectable2D
     {
         void Project(Vector2 axis, out float min, out float max);

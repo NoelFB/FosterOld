@@ -1,7 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 
 namespace Foster.Framework
-{
+{    
+    /// <summary>
+    /// Stores an Input State
+    /// </summary>
     public class InputState
     {
         /// <summary>

@@ -4,9 +4,14 @@ using System.Collections.Generic;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Foster Module, used to get callbacks during Application Events
+    /// </summary>
     public abstract class Module
     {
-
+        /// <summary>
+        /// The Name of the Module
+        /// </summary>
         public string Name;
 
         /// <summary>

@@ -5,7 +5,9 @@ using System.Threading;
 
 namespace Foster.Framework
 {
-
+    /// <summary>
+    /// Core System Module, used for managing Windows and Input
+    /// </summary>
     public abstract class System : AppModule
     {
 

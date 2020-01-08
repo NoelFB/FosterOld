@@ -5,7 +5,9 @@ using System.Reflection.Metadata.Ecma335;
 
 namespace Foster.Framework
 {
-
+    /// <summary>
+    /// A Material is used to store the state of a Shader
+    /// </summary>
     public class Material
     {
 

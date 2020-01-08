@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A List of Modules
+    /// </summary>
     public class ModuleList : IEnumerable<Module>
     {
 

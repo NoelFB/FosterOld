@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Texture used for Rendering
+    /// </summary>
     public abstract class Texture : IDisposable
     {
 

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// Foster Log system
+    /// </summary>
     public static class Log
     {
 

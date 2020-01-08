@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// The Type of a Shader Program
+    /// </summary>
     public enum ShaderProgram
     {
         Vertex,

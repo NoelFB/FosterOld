@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Foster.Framework.Json
 {
+    /// <summary>
+    /// A Json Value Type
+    /// </summary>
     public enum JsonType
     {
         Null,

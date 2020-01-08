@@ -2,6 +2,9 @@
 
 namespace Foster.Framework
 {
+    /// <summary>
+    /// A 2D Quad
+    /// </summary>
     public struct Quad2D : IConvexShape2D
     {
 
