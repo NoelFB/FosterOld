@@ -6,7 +6,8 @@ namespace Foster.GuiSystem
     public class Gui : Module
     {
 
-        public readonly Window Window;
+        public Window Window { get; private set; }
+
         public readonly Batch2D Batcher;
         public readonly Imgui Imgui;
 
@@ -16,6 +17,7 @@ namespace Foster.GuiSystem
         internal readonly DockNode Root;
         internal readonly List<DockNode> Floating = new List<DockNode>();
         internal readonly List<DockNode> Standalone = new List<DockNode>();
+        internal readonly List<Panel> Panels = new List<Panel>();
 
         internal DockNode? Dragging;
         internal DockNode? LastDockable;
@@ -32,23 +34,47 @@ namespace Foster.GuiSystem
         private Vector2 screenMouseRemainder;
         internal Point2 ScreenMouseDrag;
 
-        public Gui(SpriteFont font, Window window)
+        public Gui()
         {
-            Font = font;
-            Imgui = new Imgui(font);
+            using var fontStream = Calc.EmbeddedResource(System.Reflection.Assembly.GetExecutingAssembly(), "Resources/InputMono-Medium.ttf");
 
+            // Create default font & Sprite Batcher
+            Font = new SpriteFont(new Font(fontStream), 64, Charsets.ASCII);
             Batcher = new Batch2D();
 
-            Window = window;
-            Window.OnRender += Render;
+            // ImGui
+            Imgui = new Imgui(Font);
 
+            // Primary Window
+            SetPrimaryWindow(App.Window);
+
+            // Root Node
             Root = new DockNode(this, DockNode.Modes.Root);
         }
 
-        public Gui(SpriteFont font, string title, int width, int height) :
-            this(font, App.System.CreateWindow(title, width, height, WindowFlags.ScaleToMonitor))
+        public void SetPrimaryWindow(Window window)
         {
+            if (Window != window)
+            {
+                if (Window != null)
+                {
+                    Window.OnRender -= Render;
+                    Window.OnClose -= Close;
+                }
 
+                Window = window;
+                Window.OnRender += Render;
+                Window.OnClose += Close;
+            }
+        }
+
+        protected override void Shutdown()
+        {
+            while (Panels.Count > 0)
+                Panels[Panels.Count - 1].Close();
+
+            Window.OnRender -= Render;
+            Window.OnClose -= Close;
         }
 
         protected override void Update()
@@ -115,6 +141,11 @@ namespace Foster.GuiSystem
             }
 
             Imgui.EndViewport();
+        }
+
+        private void Close(Window window)
+        {
+            App.Modules.Remove(this);
         }
 
         private void Render(Window window)

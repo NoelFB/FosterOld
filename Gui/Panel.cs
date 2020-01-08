@@ -33,24 +33,36 @@ namespace Foster.GuiSystem
 
         internal DockNode? Node;
 
+        public Panel(string title, Rect position) : this(App.Modules.Get<Gui>(), title, position)
+        {
+
+        }
+
         public Panel(Gui gui, string title, Rect position)
         {
             Gui = gui;
+            Gui.Panels.Add(this);
             Title = title;
 
             var node = new DockNode(gui, DockNode.Modes.Floating, position.Int());
             node.InsertPanel(DockNode.Placings.Center, this);
         }
 
-        public Panel(Gui gui, string title, Panel? dockWidth = null)
+        public Panel(string title, Panel? dockWith = null) : this(App.Modules.Get<Gui>(), title, dockWith)
+        {
+
+        }
+
+        public Panel(Gui gui, string title, Panel? dockWith = null)
         {
             Gui = gui;
+            Gui.Panels.Add(this);
             Title = title;
 
-            if (dockWidth == null)
+            if (dockWith == null)
                 gui.Root.InsertPanel(DockNode.Placings.Center, this);
-            else if (dockWidth.Node != null)
-                dockWidth.Node.InsertPanel(DockNode.Placings.Center, this);
+            else if (dockWith.Node != null)
+                dockWith.Node.InsertPanel(DockNode.Placings.Center, this);
         }
 
         /// <summary>
@@ -69,7 +81,11 @@ namespace Foster.GuiSystem
         /// <summary>
         /// Closes the Panel
         /// </summary>
-        public void Close() => Node?.RemovePanel(this);
+        public void Close()
+        {
+            Node?.RemovePanel(this);
+            Gui.Panels.Remove(this);
+        }
 
         /// <summary>
         /// Docks this Panel with another existing panel

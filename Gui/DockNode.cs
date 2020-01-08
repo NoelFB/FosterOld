@@ -35,12 +35,26 @@ namespace Foster.GuiSystem
         }
 
         public int ID { get; private set; } = Guid.NewGuid().GetHashCode();
+
         public readonly Gui Gui;
         public readonly Imgui Imgui;
         public readonly Modes Mode;
-        public readonly Window Window;
         public readonly Batch2D Batcher;
 
+        public Window Window
+        {
+            get
+            {
+                if (standaloneWindow != null)
+                    return standaloneWindow;
+                else if (parent != null)
+                    return parent.Window;
+                else
+                    return Gui.Window;
+            }
+        }
+
+        private Window? standaloneWindow;
         private DockNode? parent;
         private DockNode? leftChild;
         private DockNode? rightChild;
@@ -64,7 +78,6 @@ namespace Foster.GuiSystem
             Gui = parent.Gui;
             Imgui = parent.Imgui;
             Mode = Modes.Docked;
-            Window = parent.Window;
             Batcher = parent.Batcher;
         }
 
@@ -88,19 +101,18 @@ namespace Foster.GuiSystem
                 Batcher = new Batch2D();
 
                 // create the standalone window
-                Window = App.System.CreateWindow("Gui Dock", width, height, flags);
-                Window.Position = rounded.TopLeft;
-                Window.VSync = false;
-                Window.Bordered = false;
-                Window.OnRender = (window) => Batcher.Render(window);
-                Window.OnClose = (window) => Discard();
-                Window.Visible = true;
+                standaloneWindow = App.System.CreateWindow("Gui Dock", width, height, flags);
+                standaloneWindow.Position = rounded.TopLeft;
+                standaloneWindow.VSync = false;
+                standaloneWindow.Bordered = false;
+                standaloneWindow.OnRender = (window) => Batcher.Render(window);
+                standaloneWindow.OnClose = (window) => Discard();
+                standaloneWindow.Visible = true;
 
                 Gui.Standalone.Add(this);
             }
             else
             {
-                Window = Gui.Window;
                 Batcher = Gui.Batcher;
 
                 if (mode == Modes.Floating)
