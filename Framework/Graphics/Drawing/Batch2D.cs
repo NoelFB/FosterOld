@@ -445,7 +445,7 @@ void main(void)
 
         public void Line(Vector2 from, Vector2 to, float thickness, Color color)
         {
-            var perp = Vector2.Perpendicular((to - from).Normalized) * thickness * .5f;
+            var perp = (to - from).TurnRight.Normalized * thickness * .5f;
             Quad(from + perp, from - perp, to - perp, to + perp, color);
         }
 

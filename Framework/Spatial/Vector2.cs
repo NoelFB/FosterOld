@@ -119,11 +119,6 @@ namespace Foster.Framework
                 return start + (end - start) * t;
         }
 
-        public static Vector2 Perpendicular(Vector2 vec)
-        {
-            return new Vector2(-vec.Y, vec.X);
-        }
-
         public static implicit operator Vector2(Point2 point) => new Vector2(point.X, point.Y);
         public static implicit operator Vector2(Point3 point) => new Vector2(point.X, point.Y);
         public static implicit operator Vector2(Vector3 vec) => new Vector2(vec.X, vec.Y);
