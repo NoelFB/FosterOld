@@ -54,7 +54,7 @@ namespace Foster.GuiSystem
             }
         }
 
-        private Window? standaloneWindow;
+        private readonly Window? standaloneWindow;
         private DockNode? parent;
         private DockNode? leftChild;
         private DockNode? rightChild;

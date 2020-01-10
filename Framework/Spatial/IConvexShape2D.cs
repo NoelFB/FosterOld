@@ -7,7 +7,14 @@ namespace Foster.Framework
     /// </summary>
     public interface IConvexShape2D : IProjectable2D
     {
+        /// <summary>
+        /// The number of sides of the Convex shape
+        /// </summary>
         public int Sides { get; }
+
+        /// <summary>
+        /// Gets a point of the Convex Shape at the given index
+        /// </summary>
         public Vector2 GetPoint(int index);
     }
 
