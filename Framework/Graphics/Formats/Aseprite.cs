@@ -514,8 +514,8 @@ namespace Foster.Framework
             }
             else if (mode == Modes.Indexed)
             {
-                for (int p = 0, b = 0; p < len; p++, b += 1)
-                    pixels[p] = palette[b];
+                for (int p = 0;  p < len; p++)
+                    pixels[p] = palette[bytes[p]];
             }
         }
 
@@ -534,7 +534,10 @@ namespace Foster.Framework
                 int dy = cel.Y * frame.Sprite.Width;
 
                 for (int sy = Math.Max(0, -cel.Y), bottom = Math.Min(cel.Height, frame.Sprite.Height - cel.Y); sy < bottom; sy++, dy += frame.Sprite.Width)
-                    blend(ref frame.Pixels[dx + dy], cel.Pixels[sx + sy * cel.Width], opacity);
+                {
+                    if (dx + dy >= 0 && dx + dy < pxLen)
+                        blend(ref frame.Pixels[dx + dy], cel.Pixels[sx + sy * cel.Width], opacity);
+                }
             }
         }
 
