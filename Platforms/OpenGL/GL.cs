@@ -21,6 +21,7 @@ namespace Foster.OpenGL
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         private static GL_Bindings bindings;
+        private static OnError onErrorRef;
 #pragma warning restore CS8618
 
         public static void Init(GL_Graphics graphics, ISystemOpenGL system)
@@ -45,7 +46,7 @@ namespace Foster.OpenGL
                 Enable(GLEnum.DEBUG_OUTPUT);
                 Enable(GLEnum.DEBUG_OUTPUT_SYNCHRONOUS);
 
-                DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(new OnError((source, type, id, severity, length, message, userParam) =>
+                DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(onErrorRef = new OnError((source, type, id, severity, length, message, userParam) =>
                 {
                     string typeName;
                     string severityName;
