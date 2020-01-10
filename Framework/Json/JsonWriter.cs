@@ -198,7 +198,7 @@ namespace Foster.Framework.Json
             EscapedString(value);
         }
 
-        public void JsonValue(JsonValue value)
+        public void Json(JsonValue value)
         {
             if (value != null)
             {
@@ -211,7 +211,7 @@ namespace Foster.Framework.Json
                             foreach (var pair in value.Object)
                             {
                                 Key(pair.Key);
-                                JsonValue(pair.Value);
+                                Json(pair.Value);
                             }
                             ObjectEnd();
                             return;
@@ -223,7 +223,7 @@ namespace Foster.Framework.Json
                         {
                             ArrayBegin();
                             foreach (var item in value.Array)
-                                JsonValue(item);
+                                Json(item);
                             ArrayEnd();
                             return;
                         }
