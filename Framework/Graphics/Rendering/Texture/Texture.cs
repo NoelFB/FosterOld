@@ -142,6 +142,74 @@ namespace Foster.Framework
             GetDataInternal(buffer);
         }
 
+        public void SavePng(string path)
+        {
+            using var stream = File.OpenWrite(path);
+            SavePng(stream);
+        }
+
+        public void SavePng(Stream stream)
+        {
+            var color = new Color[Width * Height];
+
+            if (Format == TextureFormat.Color || Format == TextureFormat.DepthStencil)
+            {
+                GetData<Color>(color);
+            }
+            else
+            {
+                // TODO:
+                // do this inline with a single buffer
+
+                var buffer = new byte[Size];
+                GetData<byte>(buffer);
+
+                if (Format == TextureFormat.Red)
+                {
+                    for (int i = 0; i < buffer.Length; i++)
+                    {
+                        color[i].R = buffer[i];
+                        color[i].A = 255;
+                    }
+                }
+                else if (Format == TextureFormat.RG)
+                {
+                    for (int i = 0; i < buffer.Length; i += 2)
+                    {
+                        color[i].R = buffer[i + 0];
+                        color[i].G = buffer[i + 1];
+                        color[i].A = 255;
+                    }
+                }
+                else if (Format == TextureFormat.RGB)
+                {
+                    for (int i = 0; i < buffer.Length; i += 3)
+                    {
+                        color[i].R = buffer[i + 0];
+                        color[i].G = buffer[i + 1];
+                        color[i].B = buffer[i + 2];
+                        color[i].A = 255;
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            ImageFormat.Png.Write(stream, Width, Height, color);
+        }
+
+        public void SaveJpg(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SaveJpg(Stream stream)
+        {
+            throw new NotImplementedException();
+        }
+
         protected abstract void SetFilter(TextureFilter filter);
         protected abstract void SetWrap(TextureWrap x, TextureWrap y);
         protected abstract void SetDataInternal<T>(ReadOnlyMemory<T> buffer);

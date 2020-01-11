@@ -62,6 +62,32 @@ namespace Foster.Framework
             throw new NotSupportedException("Stream is either an invalid or not supported image format");
         }
 
+        public Bitmap(string path, ImageFormat format)
+        {
+            using var stream = File.OpenRead(path);
+
+            if (format.IsValid(stream))
+            {
+                if (format.Read(stream, out Width, out Height, out Pixels))
+                    return;
+            }
+
+            throw new Exception($"Stream is not a valid {format.Name} image format");
+        }
+
+        public Bitmap(string path)
+        {
+            using var stream = File.OpenRead(path);
+
+            foreach (var format in ImageFormat.Formats)
+            {
+                if (format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels))
+                    return;
+            }
+
+            throw new NotSupportedException("Stream is either an invalid or not supported image format");
+        }
+
         /// <summary>
         /// Premultiplies the Color data of the Bitmap
         /// </summary>
@@ -96,6 +122,27 @@ namespace Foster.Framework
 
                 from.CopyTo(to);
             }
+        }
+
+        public void SavePng(string path)
+        {
+            using var stream = File.OpenWrite(path);
+            ImageFormat.Png.Write(stream, Width, Height, Pixels);
+        }
+
+        public void SavePng(Stream stream)
+        {
+            ImageFormat.Png.Write(stream, Width, Height, Pixels);
+        }
+
+        public void SaveJpg(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SaveJpg(Stream stream)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
