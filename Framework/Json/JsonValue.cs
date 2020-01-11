@@ -52,6 +52,8 @@ namespace Foster.Framework.Json
         public static implicit operator JsonValue(long value) => new JsonValue<long>(JsonType.Number, value);
         public static implicit operator JsonValue(ulong value) => new JsonValue<ulong>(JsonType.Number, value);
         public static implicit operator JsonValue(string value) => new JsonValue<string>(JsonType.String, value);
+        public static implicit operator JsonValue(List<string> value) => new JsonArray(value);
+        public static implicit operator JsonValue(string[] value) => new JsonArray(value);
 
         public static implicit operator bool(JsonValue value) => value.Bool;
         public static implicit operator float(JsonValue value) => value.Float;

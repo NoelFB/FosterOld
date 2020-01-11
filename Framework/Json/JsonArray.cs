@@ -49,5 +49,6 @@ namespace Foster.Framework.Json
         public void RemoveAt(int index) => Value.RemoveAt(index);
 
         IEnumerator IEnumerable.GetEnumerator() => Value.GetEnumerator();
+
     }
 }

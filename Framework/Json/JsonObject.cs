@@ -37,7 +37,12 @@ namespace Foster.Framework.Json
 
         public JsonValue this[string key]
         {
-            get => Value[key];
+            get
+            {
+                if (Value.TryGetValue(key, out var value))
+                    return value;
+                return new JsonNull();
+            }
             set => Value[key] = value;
         }
 
@@ -82,6 +87,34 @@ namespace Foster.Framework.Json
 #nullable disable
             return Value.TryGetValue(key, out value);
 #nullable enable
+        }
+
+        public bool TryGetArray(string key, [MaybeNullWhen(false)] out JsonArray array)
+        {
+            if (Value.TryGetValue(key, out var value) && value.Array != null)
+            {
+                array = value.Array;
+                return true;
+            }
+
+#nullable disable
+            array = null;
+#nullable enable
+            return false;
+        }
+
+        public bool TryGetObject(string key, [MaybeNullWhen(false)] out JsonObject obj)
+        {
+            if (Value.TryGetValue(key, out var value) && value.Object != null)
+            {
+                obj = value.Object;
+                return true;
+            }
+
+#nullable disable
+            obj = null;
+#nullable enable
+            return false;
         }
 
         IEnumerator IEnumerable.GetEnumerator() => Value.GetEnumerator();
