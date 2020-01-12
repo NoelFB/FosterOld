@@ -57,8 +57,6 @@ namespace Foster.OpenGL
             DeviceName = GL.GetString(GLEnum.RENDERER);
 
             BackgroundContext = System.CreateGLContext();
-
-            base.Startup();
         }
 
         protected override void Shutdown()

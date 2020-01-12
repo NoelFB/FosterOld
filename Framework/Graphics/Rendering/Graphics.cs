@@ -104,11 +104,7 @@ namespace Foster.Framework
         public abstract RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
 
         /// <summary>
-        /// Creates a new Shader
-        /// 
-        /// TODO: this isn't api-agnostic and is not how the true implementation should work
-        /// see Shader.cs for more thoughts
-        /// 
+        /// Creates a new Shader from the Shader Source
         /// </summary>
         public abstract Shader CreateShader(ShaderSource source);
 
