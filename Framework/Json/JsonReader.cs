@@ -25,6 +25,13 @@ namespace Foster.Framework.Json
         private int line = 1;
         private int index;
 
+        // in the case where the value of a previous key is completely empty, we want to
+        // return null, and then store the current value for the next Read call
+        // this only matters for non-strict JSON
+        private bool storedNext;
+        private string? storedString;
+        private JsonToken storedToken;
+
         public JsonReader(string path) : this(File.OpenRead(path))
         {
 
@@ -133,13 +140,21 @@ namespace Foster.Framework.Json
                     return ReadArray();
 
                 case JsonToken.ObjectKey:
-                    throw new Exception($"Unexpected Object Key at line {line}, index {index}");
-
                 case JsonToken.ObjectEnd:
-                    throw new Exception($"Unexpected Object End at line {line}, index {index}");
-
                 case JsonToken.ArrayEnd:
-                    throw new Exception($"Unexpected Array End at line {line}, index {index}");
+                    {
+                        if (storedNext)
+                        {
+                            throw new Exception($"Unexpected {Token} at line {line} index {index}");
+                        }
+                        else
+                        {
+                            storedNext = true;
+                            storedString = Value as string;
+                            storedToken = JsonToken.ObjectKey;
+                            return new JsonNull();
+                        }
+                    }
             }
 
             return new JsonNull();
@@ -148,6 +163,14 @@ namespace Foster.Framework.Json
         public bool Read()
         {
             Value = null;
+
+            if (storedNext)
+            {
+                Value = storedString;
+                Token = storedToken;
+                storedNext = false;
+                return true;
+            }
 
             while (Step(out var next))
             {

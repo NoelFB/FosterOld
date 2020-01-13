@@ -29,9 +29,10 @@ namespace Foster.Framework.Json
             return reader.ReadObject();
         }
 
-        public void ToFile(string path)
+        public void ToFile(string path, bool strict = true)
         {
-            using var writer = new JsonWriter(File.OpenWrite(path));
+            using var writer = new JsonWriter(File.Create(path));
+            writer.Strict = strict;
             writer.Json(this);
         }
 

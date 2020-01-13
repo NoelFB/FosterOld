@@ -312,7 +312,7 @@ namespace Foster.Framework.Json
 
         private void EscapedString(string value)
         {
-            bool encapsulate = Strict || StringContainsAny(value, ":#{}[],\"\n\r") || (value.Length > 0 && value[0] == ' ');
+            bool encapsulate = Strict || StringContainsAny(value, ":#{}[],\"\n\r") || (value.Length > 0 && char.IsWhiteSpace(value[0])) || value.Length <= 0;
 
             if (encapsulate)
             {
