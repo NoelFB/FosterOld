@@ -43,10 +43,19 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Subtexture this[string name]
+        public Subtexture? this[string name]
         {
-            get => Subtextures[name];
-            set => Subtextures[name] = value;
+            get
+            {
+                if (Subtextures.TryGetValue(name, out var subtex))
+                    return subtex;
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                    Subtextures[name] = value;
+            }
         }
 
     }

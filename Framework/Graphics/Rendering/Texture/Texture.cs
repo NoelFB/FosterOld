@@ -90,6 +90,22 @@ namespace Foster.Framework
             return texture;
         }
 
+        public static Texture Create(string path)
+        {
+            var bitmap = new Bitmap(path);
+            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height, TextureFormat.Color);
+            texture.SetData<Color>(bitmap.Pixels);
+            return texture;
+        }
+
+        public static Texture Create(Stream stream)
+        {
+            var bitmap = new Bitmap(stream);
+            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height, TextureFormat.Color);
+            texture.SetData<Color>(bitmap.Pixels);
+            return texture;
+        }
+
         protected Texture(int width, int height, TextureFormat format)
         {
             if (format == TextureFormat.None)

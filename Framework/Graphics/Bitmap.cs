@@ -126,7 +126,7 @@ namespace Foster.Framework
 
         public void SavePng(string path)
         {
-            using var stream = File.OpenWrite(path);
+            using var stream = File.Create(path);
             ImageFormat.Png.Write(stream, Width, Height, Pixels);
         }
 

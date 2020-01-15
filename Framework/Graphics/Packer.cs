@@ -58,7 +58,7 @@ namespace Foster.Framework
         /// The Packed Output
         /// This is null if the Packer has not yet been packed
         /// </summary>
-        public Output? Packed { get; private set; }
+        public Output Packed { get; private set; } = new Output();
 
         /// <summary>
         /// Whether the Packer has unpacked source data
@@ -198,7 +198,7 @@ namespace Foster.Framework
             public unsafe PackingNode* Down;
         };
 
-        public unsafe Output? Pack()
+        public unsafe Output Pack()
         {
             // Already been packed
             if (!HasUnpackedData)
@@ -227,6 +227,8 @@ namespace Foster.Framework
                 stackalloc PackingNode[nodeCount] :
                 new PackingNode[nodeCount]);
 
+            var padding = Math.Max(0, Padding);
+
             // using pointer operations here was faster
             fixed (PackingNode* nodes = buffer)
             {
@@ -241,7 +243,7 @@ namespace Foster.Framework
 
                     var from = packed;
                     var nodePtr = nodes;
-                    var rootPtr = ResetNode(nodePtr++, 0, 0, sources[from].Packed.Width + Padding, sources[from].Packed.Height + Padding);
+                    var rootPtr = ResetNode(nodePtr++, 0, 0, sources[from].Packed.Width + padding, sources[from].Packed.Height + padding);
 
                     while (packed < sources.Count)
                     {
@@ -251,8 +253,8 @@ namespace Foster.Framework
                             continue;
                         }
 
-                        int w = sources[packed].Packed.Width + Padding;
-                        int h = sources[packed].Packed.Height + Padding;
+                        int w = sources[packed].Packed.Width + padding;
+                        int h = sources[packed].Packed.Height + padding;
                         var node = FindNode(rootPtr, w, h);
 
                         // try to expand
@@ -374,7 +376,7 @@ namespace Foster.Framework
         public void Clear()
         {
             sources.Clear();
-            Packed = null;
+            Packed = new Output();
             HasUnpackedData = false;
         }
 
