@@ -147,7 +147,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        protected override Window CreateWindowInternal(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");

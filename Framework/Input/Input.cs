@@ -49,6 +49,8 @@ namespace Foster.Framework
         /// </summary>
         public float RepeatInterval = 0.03f;
 
+        public bool Enabled = true;
+
         internal List<WeakReference<VirtualButton>> virtualButtons = new List<WeakReference<VirtualButton>>();
 
         protected Input()
@@ -60,9 +62,12 @@ namespace Foster.Framework
 
         internal void BeforeUpdate()
         {
-            LastState.Copy(State);
-            State.Copy(nextState);
-            nextState.Step();
+            if (Enabled)
+            {
+                LastState.Copy(State);
+                State.Copy(nextState);
+                nextState.Step();
+            }
 
             for (int i = virtualButtons.Count - 1; i >= 0; i--)
             {

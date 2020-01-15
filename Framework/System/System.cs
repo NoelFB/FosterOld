@@ -46,6 +46,11 @@ namespace Foster.Framework
         public virtual string Directory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
 
         /// <summary>
+        /// Called when a Window is Created
+        /// </summary>
+        public Action<Window>? OnWindowCreated;
+
+        /// <summary>
         /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
         /// </summary>
         protected readonly List<Window> windows = new List<Window>();
@@ -68,7 +73,14 @@ namespace Foster.Framework
         /// creating more will throw an exception. You can check whether multiple
         /// Windows is supported with System.SupportsMultipleWindows.
         /// </summary>
-        public abstract Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
+        public Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        {
+            var window = CreateWindowInternal(title, width, height, flags);
+            OnWindowCreated?.Invoke(window);
+            return window;
+        }
+
+        protected abstract Window CreateWindowInternal(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         protected internal override void Startup()
         {

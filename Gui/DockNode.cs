@@ -475,7 +475,7 @@ namespace Foster.GuiSystem
                                 // something stopped us from being able to create a window ...
                                 // I've noticed this happen before due to some kind of OS issue
                                 // (ex. if you create/destroy windows over and over again very fast)
-                                Console.WriteLine("Failed to create Standalone Window");
+                                Log.Warning("GUI", "Failed to create Standalone Window");
                             }
                         }
                     }
