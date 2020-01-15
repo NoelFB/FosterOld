@@ -40,6 +40,11 @@ namespace Foster.Framework.Json
         public abstract JsonObject? Object { get; }
         public abstract JsonArray? Array { get; }
 
+        public abstract JsonValue this[string key] { get; set; }
+        public abstract JsonValue this[int index] { get; set; }
+
+        public abstract object? UnderlyingValue { get; }
+
         public static implicit operator JsonValue(bool value) => new JsonValue<bool>(JsonType.Bool, value);
         public static implicit operator JsonValue(float value) => new JsonValue<float>(JsonType.Number, value);
         public static implicit operator JsonValue(double value) => new JsonValue<double>(JsonType.Number, value);
@@ -94,6 +99,19 @@ namespace Foster.Framework.Json
         public override string String => string.Empty;
         public override JsonObject? Object => null;
         public override JsonArray? Array => null;
+        public override object? UnderlyingValue => null;
+
+        public override JsonValue this[string key]
+        {
+            get => throw new InvalidOperationException();
+            set => throw new InvalidOperationException();
+        }
+
+        public override JsonValue this[int index]
+        {
+            get => throw new InvalidOperationException();
+            set => throw new InvalidOperationException();
+        }
     }
 
     /// <summary>
@@ -121,6 +139,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToSingle(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && float.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -136,6 +156,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToDouble(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && double.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -151,6 +173,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToInt16(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && short.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -166,6 +190,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToByte(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && byte.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -181,6 +207,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToChar(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && char.TryParse(value, out var n))
+                    return n;
 
                 return (char)0;
             }
@@ -196,6 +224,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToUInt16(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && ushort.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -211,6 +241,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToInt32(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && int.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -226,6 +258,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToUInt32(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && uint.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -241,6 +275,8 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToInt64(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && long.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
@@ -256,16 +292,42 @@ namespace Foster.Framework.Json
                         return value;
                     return Convert.ToUInt64(Value, NumberFormatInfo.InvariantInfo);
                 }
+                else if (IsString && Value is string value && ulong.TryParse(value, out var n))
+                    return n;
 
                 return 0;
             }
         }
 
-        public override string String => (IsString ? ((Value as string) ?? "") : "");
+        public override string String
+        {
+            get
+            {
+                if (IsString && Value is string str)
+                    return str;
+                else if (Value != null)
+                    return Value.ToString() ?? "";
+                return "";
+            }
+        }
 
         public override JsonObject? Object => (IsObject ? (this as JsonObject) : null);
 
         public override JsonArray? Array => (IsArray ? (this as JsonArray) : null);
+
+        public override object? UnderlyingValue => Value;
+
+        public override JsonValue this[string key]
+        {
+            get => throw new InvalidOperationException();
+            set => throw new InvalidOperationException();
+        }
+
+        public override JsonValue this[int index]
+        {
+            get => throw new InvalidOperationException();
+            set => throw new InvalidOperationException();
+        }
 
     }
 }

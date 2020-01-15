@@ -36,7 +36,7 @@ namespace Foster.Framework.Json
             writer.Json(this);
         }
 
-        public JsonValue this[string key]
+        public override JsonValue this[string key]
         {
             get
             {

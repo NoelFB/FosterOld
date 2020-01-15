@@ -20,7 +20,7 @@ namespace Foster.Framework.Json
                 Value.Add(value);
         }
 
-        public JsonValue this[int index]
+        public override JsonValue this[int index]
         {
             get => Value[index];
             set => Value[index] = value;
