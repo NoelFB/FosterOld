@@ -6,20 +6,20 @@ namespace Foster.GuiSystem
     {
         public static void Label(this Imgui imgui, string label)
         {
-            Label(imgui, label, Sizing.Preferred(), imgui.Style.Label);
+            Label(imgui, label, Size.Preferred(), Size.Preferred(), imgui.Style.Label);
         }
 
-        public static void Label(this Imgui imgui, string label, Sizing sizing)
+        public static void Label(this Imgui imgui, string label, Size width, Size height)
         {
-            Label(imgui, label, sizing, imgui.Style.Label);
+            Label(imgui, label, width, height, imgui.Style.Label);
         }
 
-        public static void Label(this Imgui imgui, string label, Sizing sizing, StyleState style)
+        public static void Label(this Imgui imgui, string label, Size width, Size height, StyleState style)
         {
             var content = new Text(label);
-            var size = sizing.SizeOf(imgui, content, style.Padding);
+            var position = imgui.Cell(width, height, content, style.Padding);
 
-            Label(imgui, content, imgui.Cell(size), style);
+            Label(imgui, content, position, style);
         }
 
         public static void Label(this Imgui imgui, IContent label, Rect position, StyleState style)

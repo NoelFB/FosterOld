@@ -563,7 +563,7 @@ namespace Foster.GuiSystem
                                 {
                                     var tabStyle = (panel == activePanel ? Imgui.Style.Window.CurrentTab : Imgui.Style.Window.Tab);
 
-                                    if (Imgui.Button(panel.Title, new Text(panel.Title), Sizing.Preferred(), tabStyle))
+                                    if (Imgui.Button(panel.Title, new Text(panel.Title), Size.Preferred(), Size.Preferred(), tabStyle))
                                         activePanel = panel;
 
                                     if (Imgui.ActiveId == Imgui.CurrentId)

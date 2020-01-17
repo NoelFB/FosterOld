@@ -14,7 +14,7 @@ namespace Foster.GuiSystem
             var style = imgui.Style;
             var height = imgui.FontSize * style.TitleScale + style.Generic.Idle.Padding.Y * 2f;
 
-            imgui.Title(identifier, label, imgui.Cell(0, height));
+            imgui.Title(identifier, label, imgui.Cell(Size.Fill(), Size.Explicit(height)));
         }
 
         public static void Title(this Imgui imgui, Imgui.Name identifier, string label, Rect position)

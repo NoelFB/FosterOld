@@ -11,7 +11,7 @@
             imgui.PushSpacing(0);
 
             // do button behavour first
-            var position = imgui.Cell(float.MaxValue, imgui.FontSize + style.Idle.Padding.Y * 2);
+            var position = imgui.Cell(Size.Fill(), Size.Explicit(imgui.FontSize + style.Idle.Padding.Y * 2));
             if (imgui.ButtonBehaviour(id, position))
                 enabled = !enabled;
 

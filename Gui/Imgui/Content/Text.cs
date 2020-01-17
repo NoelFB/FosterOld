@@ -22,12 +22,14 @@ namespace Foster.GuiSystem
             batcher.PopMatrix();
         }
 
-        public Vector2 PreferredSize(Imgui imgui)
+        public float Width(Imgui imgui)
         {
-            var width = imgui.Font.WidthOf(Value) * imgui.FontScale;
-            var height = imgui.FontSize;
-
-            return new Vector2(width, height);
+            return imgui.Font.WidthOf(Value) * imgui.FontScale;
+        }
+        
+        public float Height(Imgui imgui)
+        {
+            return imgui.FontSize;
         }
 
         public Imgui.Name UniqueInfo()

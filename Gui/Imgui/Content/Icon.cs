@@ -25,9 +25,14 @@ namespace Foster.GuiSystem
             batcher.Image(Image, pos, scale, origin, 0f, color);
         }
 
-        public Vector2 PreferredSize(Imgui imgui)
+        public float Width(Imgui imgui)
         {
-            return new Vector2(imgui.FontSize, imgui.FontSize);
+            return imgui.FontSize;
+        }
+
+        public float Height(Imgui imgui)
+        {
+            return imgui.FontSize;
         }
 
         public Imgui.Name UniqueInfo()

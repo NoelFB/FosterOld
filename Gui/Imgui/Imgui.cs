@@ -86,7 +86,7 @@ namespace Foster.GuiSystem
                 Columns = columns;
             }
 
-            public Rect NextCell(float width, float height, float indent, float spacing)
+            public Rect NextCell(Size width, Size height, float preferredWidth, float preferredHeight, float indent, float spacing)
             {
                 if (Column >= Columns)
                     NextRow(1, indent, spacing);
@@ -97,22 +97,30 @@ namespace Foster.GuiSystem
                 // determine cell width
                 float cellWidth;
                 {
-                    if (width < 0)
+                    if (width.Mode == Size.Modes.Preferred)
                     {
-                        // fill to the right (negative width)
-                        cellWidth = InnerWidth - ColumnOffset + width;
+                        cellWidth = preferredWidth;
                     }
-                    else if (width == float.MaxValue)
+                    else if (width.Mode == Size.Modes.Explicit)
                     {
-                        // fill based on our remaining space, divided by remaining elements
-                        var remaining = (Columns - Column);
-                        cellWidth = (InnerWidth - (remaining - 1) * spacing - ColumnOffset) / remaining;
+                        cellWidth = width.Min;
                     }
                     else
                     {
-                        // explicit width
-                        cellWidth = width;
+                        if (width.UpTo > 0)
+                        {
+                            cellWidth = InnerWidth - ColumnOffset - width.UpTo;
+                        }
+                        else
+                        {
+                            var remaining = (Columns - Column);
+                            cellWidth = (InnerWidth - (remaining - 1) * spacing - ColumnOffset) / remaining;
+                        }
+
                     }
+
+                    // clamp
+                    cellWidth = Math.Max(width.Min, Math.Min(width.Max, cellWidth));
 
                     // can't overflow, clamp cell width
                     if (!Overflow)
@@ -128,12 +136,31 @@ namespace Foster.GuiSystem
 
                 // determine cell height
                 float cellHeight;
-                if (height < 0)
-                    cellHeight = Bounds.Height - RowOffset - Padding.Height + height;
-                else if (height == float.MaxValue)
-                    cellHeight = Bounds.Height - RowOffset - Padding.Height;
-                else
-                    cellHeight = height;
+                {
+                    if (height.Mode == Size.Modes.Preferred)
+                    {
+                        cellHeight = preferredHeight;
+                    }
+                    else if (height.Mode == Size.Modes.Explicit)
+                    {
+                        cellHeight = height.Min;
+                    }
+                    else
+                    {
+                        if (height.UpTo > 0)
+                        {
+                            cellHeight = Bounds.Height - RowOffset - Padding.Height - height.UpTo;
+                        }
+                        else
+                        {
+                            cellHeight = Bounds.Height - RowOffset - Padding.Height;
+                        }
+
+                    }
+
+                    // clamp
+                    cellHeight = Math.Max(height.Min, Math.Min(height.Max, cellHeight));
+                }
 
                 // position
                 var position = new Rect(Bounds.X + Padding.Left + ColumnOffset - Scroll.X, Bounds.Y + Padding.Top + RowOffset - Scroll.Y, cellWidth, cellHeight);
@@ -334,12 +361,7 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(float.MaxValue, float.MaxValue, Indent, Spacing);
-        }
-
-        public Rect Cell(Vector2 size)
-        {
-            return Cell(size.X, size.Y);
+            return frame.NextCell(Size.Fill(), Size.Fill(), 0f, 0f, Indent, Spacing);
         }
 
         public Rect Cell(float width, float height)
@@ -347,12 +369,28 @@ namespace Foster.GuiSystem
             if (frame.ID == ID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
-            return frame.NextCell(width, height, Indent, Spacing);
+            return frame.NextCell(Size.Explicit(width), Size.Explicit(height), 0, 0, Indent, Spacing);
         }
 
-        public void Separator() => Cell(float.MaxValue, Spacing);
-        public void Separator(float height) => Cell(float.MaxValue, height);
-        public void Separator(float width, float height) => Cell(width, height);
+        public Rect Cell(Size width, Size height, float preferredWidth = 0, float preferredHeight = 0)
+        {
+            if (frame.ID == ID.None)
+                throw new Exception("You must begin a Frame before creating a Cell");
+
+            return frame.NextCell(width, height, preferredWidth, preferredHeight, Indent, Spacing);
+        }
+
+        public Rect Cell(Size width, Size height, IContent content, Vector2 padding)
+        {
+            if (frame.ID == ID.None)
+                throw new Exception("You must begin a Frame before creating a Cell");
+
+            return frame.NextCell(width, height, content.Width(this) + padding.X * 2, content.Height(this) + padding.Y * 2, Indent, Spacing);
+        }
+
+        public void Separator() => Cell(Size.Fill(), Size.Explicit(Spacing));
+        public void Separator(float height) => Cell(Size.Fill(), Size.Explicit(height));
+        public void Separator(float width, float height) => Cell(Size.Explicit(width), Size.Explicit(height));
 
         public void Step()
         {

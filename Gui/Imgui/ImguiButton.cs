@@ -9,30 +9,28 @@ namespace Foster.GuiSystem
         public static bool Button(this Imgui imgui, string label)
         {
             var content = new Text(label);
-            return Button(imgui, content.UniqueInfo(), content, Sizing.FillX(), imgui.Style.Generic);
+            return Button(imgui, content.UniqueInfo(), content, Size.Fill(), Size.Preferred(), imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, string label, Sizing sizing)
+        public static bool Button(this Imgui imgui, string label, Size width, Size height)
         {
             var content = new Text(label);
-            return Button(imgui, content.UniqueInfo(), content, sizing, imgui.Style.Generic);
+            return Button(imgui, content.UniqueInfo(), content, width, height, imgui.Style.Generic);
         }
 
         public static bool Button(this Imgui imgui, IContent content)
         {
-            return Button(imgui, content.UniqueInfo(), content, Sizing.FillX(), imgui.Style.Generic);
+            return Button(imgui, content.UniqueInfo(), content, Size.Fill(), Size.Preferred(), imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, IContent content, Sizing sizing)
+        public static bool Button(this Imgui imgui, IContent content, Size width, Size height)
         {
-            return Button(imgui, content.UniqueInfo(), content, sizing, imgui.Style.Generic);
+            return Button(imgui, content.UniqueInfo(), content, width, height, imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, Imgui.Name info, IContent content, Sizing sizing, StyleElement style)
+        public static bool Button(this Imgui imgui, Imgui.Name info, IContent content, Size width, Size height, StyleElement style)
         {
-            var size = sizing.SizeOf(imgui, content, style.Idle.Padding);
-            var position = imgui.Cell(size);
-
+            var position = imgui.Cell(width, height, content, style.Idle.Padding);
             return Button(imgui, info, content, position, style);
         }
 
