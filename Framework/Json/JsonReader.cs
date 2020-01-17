@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,39 +14,11 @@ namespace Foster.Framework.Json
     /// <summary>
     /// Reads JSON from a Stream or Path
     /// </summary>
-    public class JsonReader : IDisposable
+    public abstract class JsonReader
     {
 
-        public JsonToken Token { get; private set; }
-        public object? Value { get; private set; }
-
-        private readonly TextReader reader;
-        private readonly StringBuilder builder = new StringBuilder();
-
-        private int line = 1;
-        private int index;
-
-        // in the case where the value of a previous key is completely empty, we want to
-        // return null, and then store the current value for the next Read call
-        // this only matters for non-strict JSON
-        private bool storedNext;
-        private string? storedString;
-        private JsonToken storedToken;
-
-        public JsonReader(string path) : this(File.OpenRead(path))
-        {
-
-        }
-
-        public JsonReader(Stream stream) : this(new StreamReader(stream, Encoding.UTF8, true, 4096))
-        {
-
-        }
-
-        public JsonReader(TextReader reader)
-        {
-            this.reader = reader;
-        }
+        public JsonToken Token { get; protected set; }
+        public object? Value { get; protected set; }
 
         public JsonObject ReadObject()
         {
@@ -61,11 +34,11 @@ namespace Foster.Framework.Json
                 }
 
                 if (Token != JsonToken.ObjectKey)
-                    throw new Exception($"Expected Object Key at line {line}, index {index}");
+                    throw new Exception($"Expected Object Key");
 
                 var key = Value as string;
                 if (string.IsNullOrEmpty(key))
-                    throw new Exception($"Invalid Object Key {line}, index {index}");
+                    throw new Exception($"Invalid Object Key");
 
                 obj[key] = ReadValue();
             }
@@ -113,24 +86,38 @@ namespace Foster.Framework.Json
                     return new JsonNull();
 
                 case JsonToken.Boolean:
-                    if (Value is bool b)
-                        return b;
+                    if (Value is bool Bool)
+                        return Bool;
                     break;
 
                 case JsonToken.Number:
-                    if (Value is float f) 
-                        return f;
-                    if (Value is double d) 
-                        return d;
-                    if (Value is int i)
-                        return i;
-                    if (Value is long l)
-                        return l;
+                    if (Value is byte Byte)
+                        return Byte;
+                    if (Value is char Char)
+                        return Char;
+                    if (Value is short Short)
+                        return Short;
+                    if (Value is ushort UShort)
+                        return UShort;
+                    if (Value is int Int)
+                        return Int;
+                    if (Value is uint UInt)
+                        return UInt;
+                    if (Value is long Long)
+                        return Long;
+                    if (Value is ulong ULong)
+                        return ULong;
+                    if (Value is decimal Decimal)
+                        return Decimal;
+                    if (Value is float Float)
+                        return Float;
+                    if (Value is double Double)
+                        return Double;
                     break;
 
                 case JsonToken.String:
-                    if (Value is string s)
-                        return s;
+                    if (Value is string String)
+                        return String;
                     break;
 
                 case JsonToken.ObjectStart:
@@ -142,217 +129,12 @@ namespace Foster.Framework.Json
                 case JsonToken.ObjectKey:
                 case JsonToken.ObjectEnd:
                 case JsonToken.ArrayEnd:
-                    {
-                        if (storedNext)
-                        {
-                            throw new Exception($"Unexpected {Token} at line {line} index {index}");
-                        }
-                        else
-                        {
-                            storedNext = true;
-                            storedString = Value as string;
-                            storedToken = JsonToken.ObjectKey;
-                            return new JsonNull();
-                        }
-                    }
+                    throw new Exception($"Unexpected {Token}");
             }
 
             return new JsonNull();
         }
 
-        public bool Read()
-        {
-            Value = null;
-
-            if (storedNext)
-            {
-                Value = storedString;
-                Token = storedToken;
-                storedNext = false;
-                return true;
-            }
-
-            while (Step(out var next))
-            {
-                // skip whitespace and characters we don't care about
-                if (char.IsWhiteSpace(next) || next == ':' || next == ',')
-                    continue;
-
-                var isEncapsulated = false;
-
-                switch (next)
-                {
-                    // object
-                    case '{':
-                        Token = JsonToken.ObjectStart;
-                        return true;
-                    case '}':
-                        Token = JsonToken.ObjectEnd;
-                        return true;
-
-                    // array
-                    case '[':
-                        Token = JsonToken.ArrayStart;
-                        return true;
-                    case ']':
-                        Token = JsonToken.ArrayEnd;
-                        return true;
-
-                    // an encapsulated string
-                    case '"':
-                        {
-                            builder.Clear();
-
-                            char last = next;
-                            while (Step(out next) && (next != '"' || last == '\\'))
-                                builder.Append(last = next);
-
-                            isEncapsulated = true;
-                            break;
-                        }
-
-                    // other value
-                    default:
-                        {
-                            builder.Clear();
-                            builder.Append(next);
-
-                            while (Peek(out next) && !("\r\n,:{}[]#").Contains(next))
-                            {
-                                builder.Append(next);
-                                Skip();
-                            }
-
-                            break;
-                        }
-                }
-
-                // check if this entry is a KEY
-                bool isKey = false;
-                {
-                    if (char.IsWhiteSpace(next))
-                    {
-                        while (Peek(out next) && char.IsWhiteSpace(next))
-                            Skip();
-                    }
-
-                    if (Peek(out next) && next == ':')
-                        isKey = true;
-                }
-
-                // is a key
-                if (isKey)
-                {
-                    Token = JsonToken.ObjectKey;
-                    Value = builder.ToString();
-                    return true;
-                }
-                // is an ecnapsulated string
-                else if (isEncapsulated)
-                {
-                    Token = JsonToken.String;
-                    Value = builder.ToString();
-                    return true;
-                }
-                else
-                {
-                    var str = builder.ToString();
-
-                    // null value
-                    if (str.Length <= 0 || str.Equals("null", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Token = JsonToken.Null;
-                        return true;
-                    }
-                    // true value
-                    else if (str.Equals("true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Token = JsonToken.Boolean;
-                        Value = true;
-                        return true;
-                    }
-                    // false value
-                    else if (str.Equals("false", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Token = JsonToken.Boolean;
-                        Value = false;
-                        return true;
-                    }
-                    // could be a number value ...
-                    // this is kinda ugly ... but we just try to fit it into the smallest number type it can be
-                    else if ((str[0] >= '0' && str[0] <= '9') || str[0] == '-' || str[0] == '+' || str[0] == '.')
-                    {
-                        Token = JsonToken.Number;
-
-                        // float or double
-                        if (str.Contains('.'))
-                        {
-                            if (float.TryParse(str, out float floatValue))
-                            {
-                                Value = floatValue;
-                                return true;
-                            }
-                            else if (double.TryParse(str, out double doubleValue))
-                            {
-                                Value = doubleValue;
-                                return true;
-                            }
-                        }
-                        else if (int.TryParse(str, out int intValue))
-                        {
-                            Value = intValue;
-                            return true;
-                        }
-                        else if (long.TryParse(str, out long longValue))
-                        {
-                            Value = longValue;
-                            return true;
-                        }
-                    }
-
-                    // fallback to string
-                    Token = JsonToken.String;
-                    Value = str;
-                    return true;
-                }
-
-            }
-
-            return false;
-
-            bool Skip()
-            {
-                return Step(out _);
-            }
-
-            bool Step(out char next)
-            {
-                int read = reader.Read();
-                next = (char)read;
-
-                // keep track of line
-                if (next == '\n')
-                {
-                    line++;
-                    index = 0;
-                }
-                else
-                    index++;
-
-                return read >= 0;
-            }
-
-            bool Peek(out char next)
-            {
-                int read = reader.Peek();
-                next = (char)read;
-                return read >= 0;
-            }
-        }
-
-        public void Dispose()
-        {
-            reader.Dispose();
-        }
+        public abstract bool Read();
     }
 }

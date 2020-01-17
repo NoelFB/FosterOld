@@ -26,8 +26,6 @@ namespace Foster.Framework.Json
         public bool IsArray => Type == JsonType.Array;
 
         public abstract bool Bool { get; }
-        public abstract float Float { get; }
-        public abstract double Double { get; }
         public abstract byte Byte { get; }
         public abstract char Char { get; }
         public abstract short Short { get; }
@@ -36,6 +34,9 @@ namespace Foster.Framework.Json
         public abstract uint UInt { get; }
         public abstract long Long { get; }
         public abstract ulong ULong { get; }
+        public abstract decimal Decimal { get; }
+        public abstract float Float { get; }
+        public abstract double Double { get; }
         public abstract string String { get; }
         public abstract JsonObject? Object { get; }
         public abstract JsonArray? Array { get; }
@@ -46,6 +47,7 @@ namespace Foster.Framework.Json
         public abstract object? UnderlyingValue { get; }
 
         public static implicit operator JsonValue(bool value) => new JsonValue<bool>(JsonType.Bool, value);
+        public static implicit operator JsonValue(decimal value) => new JsonValue<decimal>(JsonType.Number, value);
         public static implicit operator JsonValue(float value) => new JsonValue<float>(JsonType.Number, value);
         public static implicit operator JsonValue(double value) => new JsonValue<double>(JsonType.Number, value);
         public static implicit operator JsonValue(byte value) => new JsonValue<byte>(JsonType.Number, value);
@@ -86,6 +88,7 @@ namespace Foster.Framework.Json
         }
 
         public override bool Bool => false;
+        public override decimal Decimal => 0;
         public override float Float => 0;
         public override double Double => 0;
         public override byte Byte => 0;
@@ -128,6 +131,23 @@ namespace Foster.Framework.Json
         }
 
         public override bool Bool => (Value is bool value ? value : false);
+
+        public override decimal Decimal
+        {
+            get
+            {
+                if (IsNumber)
+                {
+                    if (Value is decimal value)
+                        return value;
+                    return Convert.ToDecimal(Value, NumberFormatInfo.InvariantInfo);
+                }
+                else if (IsString && Value is string value && decimal.TryParse(value, out var n))
+                    return n;
+
+                return 0;
+            }
+        }
 
         public override float Float
         {

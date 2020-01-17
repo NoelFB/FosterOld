@@ -19,20 +19,19 @@ namespace Foster.Framework.Json
 
         public static JsonObject FromFile(string path)
         {
-            using var reader = new JsonReader(File.OpenRead(path));
+            using var reader = new JsonTextReader(File.OpenRead(path));
             return reader.ReadObject();
         }
 
         public static JsonObject FromString(string jsonString)
         {
-            using var reader = new JsonReader(new StringReader(jsonString));
+            using var reader = new JsonTextReader(new StringReader(jsonString));
             return reader.ReadObject();
         }
 
         public void ToFile(string path, bool strict = true)
         {
-            using var writer = new JsonWriter(File.Create(path));
-            writer.Strict = strict;
+            using var writer = new JsonTextWriter(File.Create(path), strict);
             writer.Json(this);
         }
 

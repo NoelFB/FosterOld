@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Foster.Framework.Json;
+using System.Collections.Generic;
 
 namespace Foster.Framework
 {
@@ -34,6 +35,37 @@ namespace Foster.Framework
                     var subtexture = new Subtexture(texture, entry.Source, entry.Frame);
 
                     Subtextures.Add(entry.Name, subtexture);
+                }
+            }
+        }
+
+        public Atlas(JsonReader reader, List<Texture> pages)
+        {
+            Pages.AddRange(pages);
+
+            if (reader.TryReadObject(out var data))
+            {
+                foreach (var (page, value) in data)
+                {
+                    var texture = Pages[int.Parse(page)];
+
+                    if (value.Object != null)
+                        foreach (var (name, subtex) in value.Object)
+                        {
+                            var source = new Rect(
+                                subtex["source"]["x"].Float,
+                                subtex["source"]["y"].Float,
+                                subtex["source"]["w"].Float,
+                                subtex["source"]["h"].Float);
+
+                            var frame = new Rect(
+                                subtex["frame"]["x"].Float,
+                                subtex["frame"]["y"].Float,
+                                subtex["frame"]["w"].Float,
+                                subtex["frame"]["h"].Float);
+
+                            Subtextures.Add(name, new Subtexture(texture, source, frame));
+                        }
                 }
             }
         }

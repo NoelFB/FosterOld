@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Foster.Framework.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -52,6 +53,52 @@ namespace Foster.Framework
         {
             public readonly List<Bitmap> Pages = new List<Bitmap>();
             public readonly Dictionary<string, Entry> Entries = new Dictionary<string, Entry>();
+
+            public void Serialize(JsonWriter writer)
+            {
+                writer.ObjectBegin();
+                {
+                    for (int i = 0; i < Pages.Count; i ++)
+                    {
+                        writer.Key(i.ToString());
+                        writer.ArrayBegin();
+                        foreach (var entry in Entries.Values)
+                        {
+                            writer.ObjectBegin();
+                            writer.Key("source");
+                            {
+                                writer.ObjectBegin();
+                                writer.Key("x");
+                                writer.Value(entry.Source.X);
+                                writer.Key("y");
+                                writer.Value(entry.Source.Y);
+                                writer.Key("w");
+                                writer.Value(entry.Source.Width);
+                                writer.Key("h");
+                                writer.Value(entry.Source.Height);
+                                writer.ObjectEnd();
+                            }
+
+                            writer.Key("frame");
+                            {
+                                writer.ObjectBegin();
+                                writer.Key("x");
+                                writer.Value(entry.Frame.X);
+                                writer.Key("y");
+                                writer.Value(entry.Frame.Y);
+                                writer.Key("w");
+                                writer.Value(entry.Frame.Width);
+                                writer.Key("h");
+                                writer.Value(entry.Frame.Height);
+                                writer.ObjectEnd();
+                            }
+                            writer.ObjectEnd();
+                        }
+                        writer.ArrayEnd();
+                    }
+                }
+                writer.ObjectEnd();
+            }
         }
 
         /// <summary>

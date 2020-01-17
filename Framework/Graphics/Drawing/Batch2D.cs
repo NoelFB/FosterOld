@@ -1003,6 +1003,26 @@ void main(void)
 
         #endregion
 
+        public void CheckeredPattern(Rect bounds, float cellWidth, float cellHeight, Color a, Color b)
+        {
+            var odd = false;
+
+            for (float y = bounds.Top; y < bounds.Bottom; y += cellHeight)
+            {
+                var cells = 0;
+                for (float x = bounds.Left; x < bounds.Right; x += cellWidth)
+                {
+                    Rect(x, y, Math.Min(bounds.Right - x, cellWidth), Math.Min(bounds.Bottom - y, cellHeight), (odd ? a : b));
+
+                    odd = !odd;
+                    cells++;
+                }
+
+                if (cells % 2 == 0)
+                    odd = !odd;
+            }
+        }
+
         #region Internal Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

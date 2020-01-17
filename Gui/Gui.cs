@@ -46,6 +46,7 @@ namespace Foster.GuiSystem
             Imgui = new Imgui(Font);
 
             // Primary Window
+            Window = null!;
             SetPrimaryWindow(App.Window);
 
             // Root Node

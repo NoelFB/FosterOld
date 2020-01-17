@@ -7,14 +7,14 @@ namespace Foster.Framework.Json
     /// </summary>
     public enum JsonToken
     {
-        ObjectStart,
-        ObjectKey,
-        ObjectEnd,
-        ArrayStart,
-        ArrayEnd,
-        String,
-        Number,
-        Boolean,
-        Null
+        Null = 0,
+        ObjectStart = 1,
+        ObjectEnd = 2,
+        ObjectKey = 3,
+        ArrayStart = 4,
+        ArrayEnd = 5,
+        Boolean = 6,
+        String = 7,
+        Number = 8,
     }
 }
