@@ -101,7 +101,7 @@ namespace Foster.GuiSystem
                 Batcher = new Batch2D();
 
                 // create the standalone window
-                standaloneWindow = App.System.CreateWindow("Gui Dock", width, height, flags);
+                standaloneWindow = App.System.CreateWindow($"Gui Dock {ID}", width, height, flags);
                 standaloneWindow.Position = rounded.TopLeft;
                 standaloneWindow.VSync = false;
                 standaloneWindow.Bordered = false;
@@ -436,9 +436,10 @@ namespace Foster.GuiSystem
                         if (Gui.Window.Bounds.Contains(Window.Bounds))
                         {
                             var rect = ScreenToBounds(Gui.Window, Window.Bounds);
-                            var dock = new DockNode(Gui, Modes.Floating, new Rect(rect.X, rect.Y, rect.Width, rect.Height));
-
-                            dock.ID = ID;
+                            var dock = new DockNode(Gui, Modes.Floating, new Rect(rect.X, rect.Y, rect.Width, rect.Height))
+                            {
+                                ID = ID
+                            };
                             dock.TakeContent(this);
                         }
                     }
@@ -465,9 +466,10 @@ namespace Foster.GuiSystem
                             try
                             {
                                 var rect = BoundsToScreen(floatingBounds);
-                                var dock = new DockNode(Gui, Modes.Standalone, rect);
-
-                                dock.ID = ID;
+                                var dock = new DockNode(Gui, Modes.Standalone, rect)
+                                {
+                                    ID = ID
+                                };
                                 dock.TakeContent(this);
                             }
                             catch
@@ -588,7 +590,7 @@ namespace Foster.GuiSystem
 
                                 // we push a fresh ID here so that it doesn't car what its parent ID is
                                 // we also push a storage so that if this panel is destroyed, its storage will also be disposed
-                                Imgui.PushId(new Imgui.ID(activePanel.ID));
+                                Imgui.PushId(new ImguiID(activePanel.ID));
                                 Imgui.BeginStorage(0);
                                 if (Imgui.BeginFrame(0, remainder, style, true))
                                 {

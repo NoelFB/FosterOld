@@ -129,8 +129,8 @@ namespace Foster.Framework.Json
             if (!Strict && Verbose && text.Length > 0)
             {
                 ReadOnlySpan<char> span = text;
-
-                int last = 0, next = 0;
+                int last = 0;
+                int next;
                 while ((next = text.IndexOf('\n', last)) >= 0)
                 {
                     writer.Write("# ");

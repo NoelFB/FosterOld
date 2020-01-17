@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\InputMono-Medium.ttf" />
+    <None Remove="Content\InputMono-Medium.ttf" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\InputMono-Medium.ttf" />
+    <EmbeddedResource Include="Content\InputMono-Medium.ttf" />
   </ItemGroup>
 
   <ItemGroup>

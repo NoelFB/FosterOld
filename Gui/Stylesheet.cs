@@ -18,7 +18,7 @@ namespace Foster.GuiSystem
         public StyleState Hot;
         public StyleState Active;
 
-        public StyleState Current(Imgui.ID active, Imgui.ID hot, Imgui.ID id)
+        public StyleState Current(ImguiID active, ImguiID hot, ImguiID id)
         {
             if (id == active)
                 return Active;

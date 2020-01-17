@@ -28,13 +28,13 @@ namespace Foster.GuiSystem
             return Button(imgui, content.UniqueInfo(), content, width, height, imgui.Style.Generic);
         }
 
-        public static bool Button(this Imgui imgui, Imgui.Name info, IContent content, Size width, Size height, StyleElement style)
+        public static bool Button(this Imgui imgui, ImguiName info, IContent content, Size width, Size height, StyleElement style)
         {
             var position = imgui.Cell(width, height, content, style.Idle.Padding);
             return Button(imgui, info, content, position, style);
         }
 
-        public static bool Button(this Imgui imgui, Imgui.Name info, IContent content, Rect position, StyleElement style)
+        public static bool Button(this Imgui imgui, ImguiName info, IContent content, Rect position, StyleElement style)
         {
             var result = false;
             var id = imgui.Id(info);

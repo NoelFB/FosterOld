@@ -9,7 +9,7 @@ namespace Foster.GuiSystem
             imgui.Title(label, label);
         }
 
-        public static void Title(this Imgui imgui, Imgui.Name identifier, string label)
+        public static void Title(this Imgui imgui, ImguiName identifier, string label)
         {
             var style = imgui.Style;
             var height = imgui.FontSize * style.TitleScale + style.Generic.Idle.Padding.Y * 2f;
@@ -17,7 +17,7 @@ namespace Foster.GuiSystem
             imgui.Title(identifier, label, imgui.Cell(Size.Fill(), Size.Explicit(height)));
         }
 
-        public static void Title(this Imgui imgui, Imgui.Name identifier, string label, Rect position)
+        public static void Title(this Imgui imgui, ImguiName identifier, string label, Rect position)
         {
             var scale = Vector2.One * imgui.FontScale * imgui.Style.TitleScale;
 

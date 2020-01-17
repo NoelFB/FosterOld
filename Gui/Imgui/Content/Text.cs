@@ -32,7 +32,7 @@ namespace Foster.GuiSystem
             return imgui.FontSize;
         }
 
-        public Imgui.Name UniqueInfo()
+        public ImguiName UniqueInfo()
         {
             return Value;
         }

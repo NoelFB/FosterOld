@@ -11,7 +11,7 @@ namespace Foster.GuiSystem
         float Width(Imgui imgui);
         float Height(Imgui imgui);
 
-        Imgui.Name UniqueInfo();
+        ImguiName UniqueInfo();
 
     }
 }

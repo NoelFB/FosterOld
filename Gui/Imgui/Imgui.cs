@@ -4,198 +4,8 @@ using System.Collections.Generic;
 
 namespace Foster.GuiSystem
 {
-
     public class Imgui
     {
-
-        #region Structs
-
-        public struct ID
-        {
-            public readonly int Value;
-            public ID(int value) => Value = value;
-            public ID(Name name, ID parent) => Value = HashCode.Combine(name.Value, parent.Value);
-
-            public override bool Equals(object? obj) => obj != null && (obj is ID id) && (this == id);
-            public override int GetHashCode() => Value;
-            public override string ToString() => Value.ToString();
-
-            public static bool operator ==(ID a, ID b) => a.Value == b.Value;
-            public static bool operator !=(ID a, ID b) => a.Value != b.Value;
-
-            public static readonly ID None = new ID(0);
-        }
-
-        public struct Name
-        {
-            public int Value;
-            public Name(int value) => Value = value;
-
-            public static implicit operator Name(int id) => new Name(id);
-            public static implicit operator Name(float id) => new Name(id.GetHashCode());
-            public static implicit operator Name(string text) => new Name(text.GetHashCode());
-        }
-
-        public struct ViewportState
-        {
-            public ID ID;
-            public Batch2D Batcher;
-            public Vector2 Scale;
-            public Rect Bounds;
-            public Vector2 Mouse;
-            public Vector2 MouseDelta;
-            public bool MouseObstructed;
-            public ID LastHotFrame;
-            public ID NextHotFrame;
-            public int NextHotFrameLayer;
-        }
-
-        public struct FrameState
-        {
-            public ID ID;
-            public int Layer;
-            public Rect Bounds;
-            public Rect Clip;
-            public Rect LastCell;
-            public Vector2 Scroll;
-
-            public bool Scrollable;
-            public bool Overflow;
-            public BorderWeight Padding;
-
-            public int Columns;
-            public int Column;
-            public float ColumnOffset;
-
-            public int Row;
-            public float RowHeight;
-            public float RowOffset;
-
-            public float InnerWidth => Bounds.Width - Padding.Width;
-            public float InnerHeight => RowOffset + RowHeight + Padding.Height;
-
-            public void NextRow(int columns, float indent, float spacing)
-            {
-                if (Row > 0)
-                    RowOffset += RowHeight + spacing;
-
-                RowHeight = 0;
-                Row++;
-                Column = 0;
-                ColumnOffset = indent;
-                Columns = columns;
-            }
-
-            public Rect NextCell(Size width, Size height, float preferredWidth, float preferredHeight, float indent, float spacing)
-            {
-                if (Column >= Columns)
-                    NextRow(1, indent, spacing);
-
-                if (Column != 0)
-                    ColumnOffset += spacing;
-
-                // determine cell width
-                float cellWidth;
-                {
-                    if (width.Mode == Size.Modes.Preferred)
-                    {
-                        cellWidth = preferredWidth;
-                    }
-                    else if (width.Mode == Size.Modes.Explicit)
-                    {
-                        cellWidth = width.Min;
-                    }
-                    else
-                    {
-                        if (width.UpTo > 0)
-                        {
-                            cellWidth = InnerWidth - ColumnOffset - width.UpTo;
-                        }
-                        else
-                        {
-                            var remaining = (Columns - Column);
-                            cellWidth = (InnerWidth - (remaining - 1) * spacing - ColumnOffset) / remaining;
-                        }
-
-                    }
-
-                    // clamp
-                    cellWidth = Math.Max(width.Min, Math.Min(width.Max, cellWidth));
-
-                    // can't overflow, clamp cell width
-                    if (!Overflow)
-                    {
-                        var max = InnerWidth - ColumnOffset;
-                        cellWidth = Math.Min(max, cellWidth);
-                    }
-
-                    // smaller than zero width
-                    if (cellWidth < 0)
-                        cellWidth = 0;
-                }
-
-                // determine cell height
-                float cellHeight;
-                {
-                    if (height.Mode == Size.Modes.Preferred)
-                    {
-                        cellHeight = preferredHeight;
-                    }
-                    else if (height.Mode == Size.Modes.Explicit)
-                    {
-                        cellHeight = height.Min;
-                    }
-                    else
-                    {
-                        if (height.UpTo > 0)
-                        {
-                            cellHeight = Bounds.Height - RowOffset - Padding.Height - height.UpTo;
-                        }
-                        else
-                        {
-                            cellHeight = Bounds.Height - RowOffset - Padding.Height;
-                        }
-
-                    }
-
-                    // clamp
-                    cellHeight = Math.Max(height.Min, Math.Min(height.Max, cellHeight));
-                }
-
-                // position
-                var position = new Rect(Bounds.X + Padding.Left + ColumnOffset - Scroll.X, Bounds.Y + Padding.Top + RowOffset - Scroll.Y, cellWidth, cellHeight);
-
-                // setup for next cell
-                ColumnOffset += cellWidth;
-                RowHeight = Math.Max(RowHeight, cellHeight);
-                Column++;
-
-                LastCell = position;
-
-                return position;
-            }
-        }
-
-        public class StorageData
-        {
-            private readonly Dictionary<ID, float> numbers = new Dictionary<ID, float>();
-            private readonly Dictionary<ID, bool> bools = new Dictionary<ID, bool>();
-            private readonly Dictionary<ID, ID> ids = new Dictionary<ID, ID>();
-
-            public bool Used;
-
-            public void SetBool(ID id, Name name, bool value) => bools[new ID(name, id)] = value;
-            public bool GetBool(ID id, Name name, bool defaultValue) => bools.TryGetValue(new ID(name, id), out var v) ? v : defaultValue;
-
-            public void SetNumber(ID id, Name name, float value) => numbers[new ID(name, id)] = value;
-            public float GetNumber(ID id, Name name, float defaultValue) => numbers.TryGetValue(new ID(name, id), out var v) ? v : defaultValue;
-
-            public void SetId(ID id, Name name, ID value) => ids[new ID(name, id)] = value;
-            public ID GetId(ID id, Name name, ID defaultValue) => ids.TryGetValue(new ID(name, id), out var v) ? v : defaultValue;
-        }
-
-        #endregion
-
         #region Public Variables
 
         public Stylesheet Style;
@@ -210,20 +20,20 @@ namespace Foster.GuiSystem
         public float Indent => (indentStack.Count > 0 ? indentStack.Peek() : 0f);
         public int Layer => (layerStack.Count > 0 ? layerStack.Peek() : 0);
 
-        public ViewportState Viewport => viewport;
-        public FrameState Frame => frame;
+        public ImguiViewport Viewport => viewport;
+        public ImguiFrame Frame => frame;
         public Rect Clip => clipStack.Count > 0 ? clipStack.Peek() : new Rect();
         public Batch2D Batcher => viewport.Batcher;
         public Rect LastCell => frame.LastCell;
-        public StorageData Storage => storageStack.Peek();
+        public ImguiStorage Storage => storageStack.Peek();
 
-        public ID HotId = ID.None;
-        public ID LastHotId = ID.None;
-        public ID ActiveId = ID.None;
-        public ID LastActiveId = ID.None;
-        public ID ParentId => (idStack.Count > 0 ? idStack.Peek() : ID.None);
+        public ImguiID HotId = ImguiID.None;
+        public ImguiID LastHotId = ImguiID.None;
+        public ImguiID ActiveId = ImguiID.None;
+        public ImguiID LastActiveId = ImguiID.None;
+        public ImguiID ParentId => (idStack.Count > 0 ? idStack.Peek() : ImguiID.None);
 
-        public ID CurrentId
+        public ImguiID CurrentId
         {
             get => currentId;
             set
@@ -238,22 +48,22 @@ namespace Foster.GuiSystem
 
         #region Private Variables
 
-        private ID currentId;
+        private ImguiID currentId;
         private bool lastActiveIdExists;
 
-        private ViewportState viewport;
-        private FrameState frame;
+        private ImguiViewport viewport;
+        private ImguiFrame frame;
 
-        private readonly Stack<FrameState> frameStack = new Stack<FrameState>();
-        private readonly Stack<ID> idStack = new Stack<ID>();
+        private readonly Stack<ImguiFrame> frameStack = new Stack<ImguiFrame>();
+        private readonly Stack<ImguiID> idStack = new Stack<ImguiID>();
         private readonly Stack<int> layerStack = new Stack<int>();
         private readonly Stack<Rect> clipStack = new Stack<Rect>();
         private readonly Stack<float> indentStack = new Stack<float>();
         private readonly Stack<SpriteFont> fontStack = new Stack<SpriteFont>();
         private readonly Stack<float> fontSizeStack = new Stack<float>();
         private readonly Stack<float> spacingStack = new Stack<float>();
-        private readonly Stack<StorageData> storageStack = new Stack<StorageData>();
-        private readonly Dictionary<ID, StorageData> storages = new Dictionary<ID, StorageData>();
+        private readonly Stack<ImguiStorage> storageStack = new Stack<ImguiStorage>();
+        private readonly Dictionary<ImguiID, ImguiStorage> storages = new Dictionary<ImguiID, ImguiStorage>();
 
         #endregion
 
@@ -271,18 +81,18 @@ namespace Foster.GuiSystem
 
         #region State Changing
 
-        public ID Id(Name name)
+        public ImguiID Id(ImguiName name)
         {
-            return CurrentId = new ID(name, idStack.Count > 0 ? idStack.Peek() : ID.None);
+            return CurrentId = new ImguiID(name, idStack.Count > 0 ? idStack.Peek() : ImguiID.None);
         }
 
-        public ID PushId(ID id)
+        public ImguiID PushId(ImguiID id)
         {
             idStack.Push(id);
             return id;
         }
 
-        public ID PushId(Name name)
+        public ImguiID PushId(ImguiName name)
         {
             return PushId(Id(name));
         }
@@ -296,11 +106,11 @@ namespace Foster.GuiSystem
         /// Begins a new Storage Group
         /// If this Storage Group doesn't exist next frame, its data will be discarded
         /// </summary>
-        public void BeginStorage(Name name)
+        public void BeginStorage(ImguiName name)
         {
-            var id = new ID(name, ParentId);
+            var id = new ImguiID(name, ParentId);
             if (!storages.TryGetValue(id, out var storage))
-                storage = storages[id] = new StorageData();
+                storage = storages[id] = new ImguiStorage();
             storage.Used = true;
             storageStack.Push(storage);
         }
@@ -342,7 +152,7 @@ namespace Foster.GuiSystem
 
         public void Row()
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
             frame.NextRow(1, Indent, Spacing);
@@ -350,7 +160,7 @@ namespace Foster.GuiSystem
 
         public void Row(int columns)
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must begin a Frame before creating a Row");
 
             frame.NextRow(columns, Indent, Spacing);
@@ -358,7 +168,7 @@ namespace Foster.GuiSystem
 
         public Rect Remainder()
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
             return frame.NextCell(Size.Fill(), Size.Fill(), 0f, 0f, Indent, Spacing);
@@ -366,7 +176,7 @@ namespace Foster.GuiSystem
 
         public Rect Cell(float width, float height)
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
             return frame.NextCell(Size.Explicit(width), Size.Explicit(height), 0, 0, Indent, Spacing);
@@ -374,7 +184,7 @@ namespace Foster.GuiSystem
 
         public Rect Cell(Size width, Size height, float preferredWidth = 0, float preferredHeight = 0)
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
             return frame.NextCell(width, height, preferredWidth, preferredHeight, Indent, Spacing);
@@ -382,7 +192,7 @@ namespace Foster.GuiSystem
 
         public Rect Cell(Size width, Size height, IContent content, Vector2 padding)
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must begin a Frame before creating a Cell");
 
             return frame.NextCell(width, height, content.Width(this) + padding.X * 2, content.Height(this) + padding.Y * 2, Indent, Spacing);
@@ -394,10 +204,10 @@ namespace Foster.GuiSystem
 
         public void Step()
         {
-            viewport = new ViewportState();
-            frame = new FrameState();
+            viewport = new ImguiViewport();
+            frame = new ImguiFrame();
             LastHotId = HotId;
-            HotId = ID.None;
+            HotId = ImguiID.None;
 
             // These should have been all cleared by the end of last frame
             // but we do this for safety
@@ -412,12 +222,12 @@ namespace Foster.GuiSystem
 
             // destroy storage that was not used
             {
-                List<ID>? removing = null;
+                List<ImguiID>? removing = null;
                 foreach (var kv in storages)
                     if (!kv.Value.Used)
                     {
                         if (removing == null)
-                            removing = new List<ID>();
+                            removing = new List<ImguiID>();
                         removing.Add(kv.Key);
                     }
 
@@ -431,13 +241,13 @@ namespace Foster.GuiSystem
             // track active ID
             // if the active ID no longer exists, unset it
             {
-                if (LastActiveId == ID.None && ActiveId != ID.None)
+                if (LastActiveId == ImguiID.None && ActiveId != ImguiID.None)
                     lastActiveIdExists = true;
 
                 LastActiveId = ActiveId;
 
                 if (!lastActiveIdExists)
-                    ActiveId = ID.None;
+                    ActiveId = ImguiID.None;
 
                 lastActiveIdExists = false;
             }
@@ -455,14 +265,14 @@ namespace Foster.GuiSystem
             BeginViewport(window.Title, batcher, bounds, window.DrawableMouse, scale, !window.MouseOver);
         }
 
-        public void BeginViewport(Name name, Batch2D batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
+        public void BeginViewport(ImguiName name, Batch2D batcher, Rect bounds, Vector2 mouse, Vector2 scale, bool mouseObstructed = false)
         {
             mouse /= scale;
 
-            if (viewport.ID != ID.None)
+            if (viewport.ID != ImguiID.None)
                 throw new Exception("The previous Viewport must be ended before beginning a new one");
 
-            viewport = new ViewportState
+            viewport = new ImguiViewport
             {
                 ID = Id(name),
                 Bounds = bounds,
@@ -476,7 +286,7 @@ namespace Foster.GuiSystem
 
             viewport.MouseDelta.X = mouse.X - Storage.GetNumber(viewport.ID, 0, mouse.X);
             viewport.MouseDelta.Y = mouse.Y - Storage.GetNumber(viewport.ID, 1, mouse.Y);
-            viewport.LastHotFrame = Storage.GetId(viewport.ID, 2, ID.None);
+            viewport.LastHotFrame = Storage.GetId(viewport.ID, 2, ImguiID.None);
 
             PushClip(viewport.Bounds);
             viewport.Batcher.PushMatrix(Matrix2D.CreateScale(scale));
@@ -484,9 +294,9 @@ namespace Foster.GuiSystem
 
         public void EndViewport()
         {
-            if (viewport.ID == ID.None)
+            if (viewport.ID == ImguiID.None)
                 throw new Exception("You must Begin a Viewport before ending it");
-            if (frame.ID != ID.None)
+            if (frame.ID != ImguiID.None)
                 throw new Exception("The previous Group must be closed before closing the Viewport");
 
             Storage.SetNumber(viewport.ID, 0, viewport.Mouse.X);
@@ -497,12 +307,12 @@ namespace Foster.GuiSystem
             EndStorage();
 
             viewport.Batcher.PopMatrix();
-            viewport = new ViewportState();
+            viewport = new ImguiViewport();
         }
 
         public void BeginLayer(int layer)
         {
-            if (viewport.ID == ID.None)
+            if (viewport.ID == ImguiID.None)
                 throw new Exception("You must open a Viewport before beginning a Layer");
 
             Batcher.SetLayer(layer);
@@ -517,23 +327,23 @@ namespace Foster.GuiSystem
             Batcher.SetLayer(Layer);
         }
 
-        public bool BeginFrame(Name name, bool scrollable = true)
+        public bool BeginFrame(ImguiName name, bool scrollable = true)
         {
             var bounds = viewport.Bounds;
-            if (frame.ID != ID.None)
+            if (frame.ID != ImguiID.None)
                 bounds = Remainder();
 
             return BeginFrame(name, bounds, scrollable);
         }
 
-        public bool BeginFrame(Name name, Rect bounds, bool scrollable = true)
+        public bool BeginFrame(ImguiName name, Rect bounds, bool scrollable = true)
         {
             return BeginFrame(name, bounds, Style.Frame, scrollable);
         }
 
-        public bool BeginFrame(Name name, Rect bounds, StyleState style, bool scrollable = true)
+        public bool BeginFrame(ImguiName name, Rect bounds, StyleState style, bool scrollable = true)
         {
-            if (viewport.ID == ID.None)
+            if (viewport.ID == ImguiID.None)
                 throw new Exception("You must open a Viewport before beginning a Frame");
 
             var edge = style.BorderWeight;
@@ -548,7 +358,7 @@ namespace Foster.GuiSystem
             if (clip.Area > 0)
             {
                 frameStack.Push(frame);
-                frame = new FrameState
+                frame = new ImguiFrame
                 {
                     ID = PushId(name),
                     Layer = Layer,
@@ -565,7 +375,7 @@ namespace Foster.GuiSystem
 
                 if (frame.Clip.Contains(viewport.Mouse))
                 {
-                    if (viewport.NextHotFrame == ID.None || viewport.NextHotFrameLayer >= Layer)
+                    if (viewport.NextHotFrame == ImguiID.None || viewport.NextHotFrameLayer >= Layer)
                     {
                         viewport.NextHotFrame = frame.ID;
                         viewport.NextHotFrameLayer = frame.Layer;
@@ -630,7 +440,7 @@ namespace Foster.GuiSystem
 
         public void EndFrame()
         {
-            if (frame.ID == ID.None)
+            if (frame.ID == ImguiID.None)
                 throw new Exception("You must Begin a Frame before ending it");
 
             Storage.SetNumber(frame.ID, 0, frame.InnerWidth);
@@ -650,7 +460,7 @@ namespace Foster.GuiSystem
             }
             else
             {
-                frame = new FrameState();
+                frame = new ImguiFrame();
                 Batcher.SetLayer(0);
             }
         }
@@ -667,7 +477,7 @@ namespace Foster.GuiSystem
 
         #region Button Behaviours
 
-        public bool GrabbingBehaviour(ID id, Rect position)
+        public bool GrabbingBehaviour(ImguiID id, Rect position)
         {
             if (HoverBehaviour(id, position))
                 HotId = id;
@@ -676,12 +486,12 @@ namespace Foster.GuiSystem
                 ActiveId = id;
 
             if (ActiveId == id && App.Input.Mouse.LeftReleased)
-                ActiveId = Imgui.ID.None;
+                ActiveId = ImguiID.None;
 
             return ActiveId == id;
         }
 
-        public bool ButtonBehaviour(ID id, Rect position)
+        public bool ButtonBehaviour(ImguiID id, Rect position)
         {
             var performPress = false;
 
@@ -695,21 +505,21 @@ namespace Foster.GuiSystem
             {
                 if (HotId == id)
                     performPress = true;
-                ActiveId = Imgui.ID.None;
+                ActiveId = ImguiID.None;
             }
 
             return performPress;
         }
 
-        public bool HoverBehaviour(ID id, Rect position)
+        public bool HoverBehaviour(ImguiID id, Rect position)
         {
             if (viewport.MouseObstructed)
                 return false;
 
-            if (ActiveId != ID.None && ActiveId != id)
+            if (ActiveId != ImguiID.None && ActiveId != id)
                 return false;
 
-            if (frame.ID != ID.None && viewport.LastHotFrame != ID.None && viewport.LastHotFrame != frame.ID)
+            if (frame.ID != ImguiID.None && viewport.LastHotFrame != ImguiID.None && viewport.LastHotFrame != frame.ID)
                 return false;
 
             if (App.Input.Mouse.LeftDown && !App.Input.Mouse.LeftPressed)
@@ -721,7 +531,7 @@ namespace Foster.GuiSystem
             return true;
         }
 
-        public bool HoveringOrDragging(ID id)
+        public bool HoveringOrDragging(ImguiID id)
         {
             return LastHotId == id || LastActiveId == id;
         }
@@ -730,7 +540,7 @@ namespace Foster.GuiSystem
 
         #region Drawing
 
-        public Rect Box(Rect rect, StyleElement style, ID id)
+        public Rect Box(Rect rect, StyleElement style, ImguiID id)
         {
             if (id == ActiveId)
                 return Box(rect, style.Active);
