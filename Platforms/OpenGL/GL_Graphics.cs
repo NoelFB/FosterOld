@@ -396,7 +396,12 @@ namespace Foster.OpenGL
                     else
                     {
                         GL.Enable(GLEnum.SCISSOR_TEST);
-                        GL.Scissor(pass.Scissor.Value.X, target.Viewport.Height - pass.Scissor.Value.Bottom, pass.Scissor.Value.Width, pass.Scissor.Value.Height);
+
+                        var scissor = pass.Scissor.Value;
+                        scissor.Width = Math.Max(0, scissor.Width);
+                        scissor.Height = Math.Max(0, scissor.Height);
+
+                        GL.Scissor(pass.Scissor.Value.X, target.Viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);
                     }
 
                     contextMeta.ForceScissorUpdate = false;
