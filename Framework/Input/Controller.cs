@@ -64,28 +64,28 @@ namespace Foster.Framework
             Buttons = other.Buttons;
             Axes = other.Axes;
 
-            Array.Copy(other.pressed, 0, pressed, 0, Buttons);
-            Array.Copy(other.down, 0, down, 0, Buttons);
-            Array.Copy(other.released, 0, released, 0, Buttons);
-            Array.Copy(other.timestamp, 0, timestamp, 0, Buttons);
-            Array.Copy(other.axis, 0, axis, 0, Axes);
-            Array.Copy(other.axisTimestamp, 0, axisTimestamp, 0, Axes);
+            Array.Copy(other.pressed, 0, pressed, 0, pressed.Length);
+            Array.Copy(other.down, 0, down, 0, pressed.Length);
+            Array.Copy(other.released, 0, released, 0, pressed.Length);
+            Array.Copy(other.timestamp, 0, timestamp, 0, pressed.Length);
+            Array.Copy(other.axis, 0, axis, 0, axis.Length);
+            Array.Copy(other.axisTimestamp, 0, axisTimestamp, 0, axis.Length);
         }
 
-        public bool Pressed(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons && pressed[buttonIndex];
+        public bool Pressed(int buttonIndex) => buttonIndex >= 0 && buttonIndex < MaxButtons && pressed[buttonIndex];
         public bool Pressed(Buttons button) => Pressed((int)button);
 
-        public long Timestamp(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons ? timestamp[buttonIndex] : 0;
+        public long Timestamp(int buttonIndex) => buttonIndex >= 0 && buttonIndex < MaxButtons ? timestamp[buttonIndex] : 0;
         public long Timestamp(Buttons button) => Timestamp((int)button);
         public long Timestamp(Axes axis) => axisTimestamp[(int)axis];
 
-        public bool Down(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons && down[buttonIndex];
+        public bool Down(int buttonIndex) => buttonIndex >= 0 && buttonIndex < MaxButtons && down[buttonIndex];
         public bool Down(Buttons button) => Down((int)button);
 
-        public bool Released(int buttonIndex) => buttonIndex >= 0 && buttonIndex < Buttons && released[buttonIndex];
+        public bool Released(int buttonIndex) => buttonIndex >= 0 && buttonIndex < MaxButtons && released[buttonIndex];
         public bool Released(Buttons button) => Released((int)button);
 
-        public float Axis(int axisIndex) => (axisIndex >= 0 && axisIndex < Axes) ? axis[axisIndex] : 0f;
+        public float Axis(int axisIndex) => (axisIndex >= 0 && axisIndex < MaxAxis) ? axis[axisIndex] : 0f;
         public float Axis(Axes axis) => Axis((int)axis);
 
         public Vector2 Axis(int axisX, int axisY) => new Vector2(Axis(axisX), Axis(axisY));
