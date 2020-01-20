@@ -31,8 +31,7 @@ namespace Foster.Framework
             if (reader.BaseStream.Position < reader.BaseStream.Length)
             {
                 var token = (JsonBinaryWriter.BinaryTokens)reader.ReadByte();
-                Console.WriteLine(token);
-
+                
                 switch (token)
                 {
                     case JsonBinaryWriter.BinaryTokens.Null:

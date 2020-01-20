@@ -61,7 +61,7 @@ namespace Foster.GuiSystem
         private float splitPoint = 0.5f;
         private bool splitHorizontally = true;
         private readonly List<Panel> panels = new List<Panel>();
-        private Panel? activePanel;
+        public Panel? ActivePanel;
         private Rect floatingBounds;
         private Dragging dragging = Dragging.None;
         private bool modifyingContent = false;
@@ -165,7 +165,11 @@ namespace Foster.GuiSystem
         public void InsertPanel(Placings placing, Panel panel)
         {
             if (placing == Placings.Center && (leftChild != null || rightChild != null))
-                throw new Exception("Cannot insert into the center of a Docking Node that is split");
+            {
+                // TODO: solve this better?
+                placing = Placings.Left;
+                //throw new Exception("Cannot insert into the center of a Docking Node that is split");
+            }
 
             if (panel.Node != null)
                 throw new Exception("Panel is already docked to a Node");
@@ -174,7 +178,7 @@ namespace Foster.GuiSystem
             {
                 panels.Add(panel);
                 panel.Node = this;
-                activePanel = panel;
+                ActivePanel = panel;
             }
             else
             {
@@ -224,12 +228,12 @@ namespace Foster.GuiSystem
         {
             if (panel.Node == this)
             {
-                if (activePanel == panel)
+                if (ActivePanel == panel)
                 {
                     if (panels.Count <= 1)
-                        activePanel = null;
+                        ActivePanel = null;
                     else
-                        activePanel = panels[Math.Max(0, panels.IndexOf(activePanel) - 1)];
+                        ActivePanel = panels[Math.Max(0, panels.IndexOf(ActivePanel) - 1)];
                 }
 
                 panels.Remove(panel);
@@ -254,7 +258,7 @@ namespace Foster.GuiSystem
             splitHorizontally = absorbing.splitHorizontally;
             splitPoint = absorbing.splitPoint;
 
-            activePanel = absorbing.activePanel;
+            ActivePanel = absorbing.ActivePanel;
 
             while (absorbing.panels.Count > 0)
             {
@@ -524,8 +528,7 @@ namespace Foster.GuiSystem
                         var split = new Rect(bounds.X + 1, bounds.Y + bounds.Height * splitPoint - splitGrabSize / 2, bounds.Width - 2, splitGrabSize);
                         if (Imgui.GrabbingBehaviour(Imgui.Id(ID + 6), split))
                         {
-
-                            var world = Math.Clamp(bounds.Height * splitPoint + Imgui.Viewport.MouseDelta.Y, 64, bounds.Height - 64);
+                            var world = Math.Clamp(bounds.Height * splitPoint + Imgui.Viewport.MouseDelta.Y, 24, bounds.Height - 24);
                             splitPoint = world / bounds.Height;
                         }
 
@@ -542,8 +545,8 @@ namespace Foster.GuiSystem
 
                     if (panels.Count > 0)
                     {
-                        if (activePanel == null || !panels.Contains(activePanel))
-                            activePanel = panels[0];
+                        if (ActivePanel == null || !panels.Contains(ActivePanel))
+                            ActivePanel = panels[0];
 
                         // The Window
                         if (Imgui.BeginFrame(ID, bounds, Imgui.Style.Window.Window, false))
@@ -563,10 +566,10 @@ namespace Foster.GuiSystem
 
                                 foreach (var panel in panels)
                                 {
-                                    var tabStyle = (panel == activePanel ? Imgui.Style.Window.CurrentTab : Imgui.Style.Window.Tab);
+                                    var tabStyle = (panel == ActivePanel ? Imgui.Style.Window.CurrentTab : Imgui.Style.Window.Tab);
 
                                     if (Imgui.Button(panel.Title, new Text(panel.Title), Size.Preferred(), Size.Preferred(), tabStyle))
-                                        activePanel = panel;
+                                        ActivePanel = panel;
 
                                     if (Imgui.ActiveId == Imgui.CurrentId)
                                     {
@@ -579,23 +582,23 @@ namespace Foster.GuiSystem
                             }
 
                             // The Content
-                            if (activePanel != null)
+                            if (ActivePanel != null)
                             {
                                 Imgui.PushSpacing(0);
                                 var remainder = Imgui.Remainder();
                                 Imgui.PopSpacing();
 
                                 var style = Imgui.Style.Window.Frame;
-                                style.Padding = activePanel.Padding;
+                                style.Padding = ActivePanel.Padding;
 
                                 // we push a fresh ID here so that it doesn't car what its parent ID is
                                 // we also push a storage so that if this panel is destroyed, its storage will also be disposed
-                                Imgui.PushId(new ImguiID(activePanel.ID));
+                                Imgui.PushId(new ImguiID(ActivePanel.ID));
                                 Imgui.BeginStorage(0);
                                 if (Imgui.BeginFrame(0, remainder, style, true))
                                 {
                                     frameId = Imgui.CurrentId;
-                                    activePanel.Refresh(Imgui);
+                                    ActivePanel.Refresh(Imgui);
                                     Imgui.EndFrame();
                                 }
                                 Imgui.EndStorage();

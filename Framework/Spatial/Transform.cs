@@ -234,7 +234,7 @@ namespace Foster.Framework
             down = -up;
 
             if (parent != null)
-                matrix = matrix * parent.Matrix;
+                matrix *= parent.Matrix;
 
             Matrix.Invert(matrix, out inverse);
 

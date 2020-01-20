@@ -36,7 +36,7 @@ namespace Foster.GuiSystem
 
         public Gui()
         {
-            using var fontStream = Calc.EmbeddedResource(System.Reflection.Assembly.GetExecutingAssembly(), "Content/InputMono-Medium.ttf");
+            using var fontStream = Calc.EmbeddedResource(System.Reflection.Assembly.GetExecutingAssembly(), "Content/InputMono-Regular.ttf");
 
             // Create default font & Sprite Batcher
             Font = new SpriteFont(new Font(fontStream), 64, Charsets.ASCII);

@@ -2,10 +2,10 @@
 {
     public static class ImguiHeader
     {
-        public static bool BeginHeader(this Imgui imgui, string label, bool startOpen = false)
+        public static bool BeginHeader(this Imgui imgui, IContent content, bool startOpen = false)
         {
             var style = imgui.Style.Header;
-            var id = imgui.Id(label);
+            var id = imgui.Id(content.UniqueInfo());
             var enabled = imgui.Storage.GetBool(id, 0, startOpen);
 
             imgui.PushSpacing(0);
@@ -22,7 +22,6 @@
             {
                 var inner = imgui.Box(position, style, id);
                 var state = style.Current(imgui.ActiveId, imgui.HotId, id);
-                var content = new Text((enabled ? "v " : "> ") + label);
                 content.Draw(imgui, imgui.Batcher, state, inner);
             }
 

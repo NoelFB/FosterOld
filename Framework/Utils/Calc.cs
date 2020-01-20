@@ -240,33 +240,15 @@ namespace Foster.Framework
             return (int)Math.Round(a, MidpointRounding.AwayFromZero);
         }
 
-        /// <summary>
-        /// Adler32 checksum algorithm taken from zlib format specification: https://tools.ietf.org/html/rfc1950#section-9
-        /// </summary>
-        private static uint Adler32_Naive(uint value, Span<byte> buf)
-        {
-            uint s1 = value & 0xffff;
-            uint s2 = (value >> 16) & 0xffff;
+        #endregion
 
-            for (int n = 0; n < buf.Length; n++)
-            {
-                s1 += buf[n];
-                while (s1 > 65520)
-                    s1 -= 65521;
-
-                s2 += s1;
-                while (s2 > 65520)
-                    s2 -= 65521;
-            }
-
-            return ((s2 << 16) + s1);
-        }
+        #region Adler32
 
         /// <summary>
         /// Adler32 checksum algorithm from the zlib library, converted to C# code
         /// https://github.com/madler/zlib
         /// </summary>
-        public static unsafe uint Adler32_Z(uint adler, Span<byte> buffer)
+        public static unsafe uint Adler32(uint adler, Span<byte> buffer)
         {
             const int BASE = 65521;
             const int NMAX = 5552;
@@ -312,37 +294,37 @@ namespace Foster.Framework
                     n = NMAX / 16;
                     do
                     {
-                        adler += (buf)[0];
+                        adler += buf[0];
                         sum2 += adler;
-                        adler += (buf)[0 + 1];
+                        adler += buf[0 + 1];
                         sum2 += adler;
-                        adler += (buf)[0 + 2];
+                        adler += buf[0 + 2];
                         sum2 += adler;
-                        adler += (buf)[0 + 2 + 1];
+                        adler += buf[0 + 2 + 1];
                         sum2 += adler;
-                        adler += (buf)[0 + 4];
+                        adler += buf[0 + 4];
                         sum2 += adler;
-                        adler += (buf)[0 + 4 + 1];
+                        adler += buf[0 + 4 + 1];
                         sum2 += adler;
-                        adler += (buf)[0 + 4 + 2];
+                        adler += buf[0 + 4 + 2];
                         sum2 += adler;
-                        adler += (buf)[0 + 4 + 2 + 1];
+                        adler += buf[0 + 4 + 2 + 1];
                         sum2 += adler;
-                        adler += (buf)[8];
+                        adler += buf[8];
                         sum2 += adler;
-                        adler += (buf)[8 + 1];
+                        adler += buf[8 + 1];
                         sum2 += adler;
-                        adler += (buf)[8 + 2];
+                        adler += buf[8 + 2];
                         sum2 += adler;
-                        adler += (buf)[8 + 2 + 1];
+                        adler += buf[8 + 2 + 1];
                         sum2 += adler;
-                        adler += (buf)[8 + 4];
+                        adler += buf[8 + 4];
                         sum2 += adler;
-                        adler += (buf)[8 + 4 + 1];
+                        adler += buf[8 + 4 + 1];
                         sum2 += adler;
-                        adler += (buf)[8 + 4 + 2];
+                        adler += buf[8 + 4 + 2];
                         sum2 += adler;
-                        adler += (buf)[8 + 4 + 2 + 1];
+                        adler += buf[8 + 4 + 2 + 1];
                         sum2 += adler;
                         buf += 16;
                     } while (--n > 0);
@@ -355,37 +337,37 @@ namespace Foster.Framework
                     while (len >= 16)
                     {
                         len -= 16;
-                        adler += (buf)[0];
+                        adler += buf[0];
                         sum2 += adler;
-                        adler += (buf)[0 + 1];
+                        adler += buf[0 + 1];
                         sum2 += adler;
-                        adler += (buf)[0 + 2];
+                        adler += buf[0 + 2];
                         sum2 += adler;
-                        adler += (buf)[0 + 2 + 1];
+                        adler += buf[0 + 2 + 1];
                         sum2 += adler;
-                        adler += (buf)[0 + 4];
+                        adler += buf[0 + 4];
                         sum2 += adler;
-                        adler += (buf)[0 + 4 + 1];
+                        adler += buf[0 + 4 + 1];
                         sum2 += adler;
-                        adler += (buf)[0 + 4 + 2];
+                        adler += buf[0 + 4 + 2];
                         sum2 += adler;
-                        adler += (buf)[0 + 4 + 2 + 1];
+                        adler += buf[0 + 4 + 2 + 1];
                         sum2 += adler;
-                        adler += (buf)[8];
+                        adler += buf[8];
                         sum2 += adler;
-                        adler += (buf)[8 + 1];
+                        adler += buf[8 + 1];
                         sum2 += adler;
-                        adler += (buf)[8 + 2];
+                        adler += buf[8 + 2];
                         sum2 += adler;
-                        adler += (buf)[8 + 2 + 1];
+                        adler += buf[8 + 2 + 1];
                         sum2 += adler;
-                        adler += (buf)[8 + 4];
+                        adler += buf[8 + 4];
                         sum2 += adler;
-                        adler += (buf)[8 + 4 + 1];
+                        adler += buf[8 + 4 + 1];
                         sum2 += adler;
-                        adler += (buf)[8 + 4 + 2];
+                        adler += buf[8 + 4 + 2];
                         sum2 += adler;
-                        adler += (buf)[8 + 4 + 2 + 1];
+                        adler += buf[8 + 4 + 2 + 1];
                         sum2 += adler;
                         buf += 16;
                     }
@@ -401,6 +383,29 @@ namespace Foster.Framework
             }
 
             return adler | (sum2 << 16);
+        }
+
+        public static uint Adler32(Stream stream)
+        {
+            var next = 0;
+            var adler = 1U;
+
+            Span<byte> buffer = stackalloc byte[1024];
+            while ((next = stream.Read(buffer)) > 0)
+                adler = Adler32(adler, buffer.Slice(0, next));
+
+            return adler;
+        }
+
+        public static uint Adler32(string path)
+        {
+            if (File.Exists(path))
+            {
+                using var stream = File.OpenRead(path);
+                return Adler32(stream);
+            }
+
+            return 0;
         }
 
         #endregion

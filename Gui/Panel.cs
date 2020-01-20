@@ -65,6 +65,12 @@ namespace Foster.GuiSystem
                 dockWith.Node.InsertPanel(DockNode.Placings.Center, this);
         }
 
+        public void MakeVisible()
+        {
+            if (Node != null)
+                Node.ActivePanel = this;
+        }
+
         /// <summary>
         /// Called when the Panel contents are refreshed
         /// </summary>

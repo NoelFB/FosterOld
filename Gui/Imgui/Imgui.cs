@@ -74,7 +74,7 @@ namespace Foster.GuiSystem
             Style = Stylesheets.Default;
             DefaultFont = font;
             DefaultFontSize = 14;
-            DefaultSpacing = 4;
+            DefaultSpacing = 1;
         }
 
         #endregion
@@ -295,7 +295,7 @@ namespace Foster.GuiSystem
         public void EndViewport()
         {
             if (viewport.ID == ImguiID.None)
-                throw new Exception("You must Begin a Viewport before ending it");
+                throw new Exception("You must begin a Viewport before ending it");
             if (frame.ID != ImguiID.None)
                 throw new Exception("The previous Group must be closed before closing the Viewport");
 
@@ -313,7 +313,7 @@ namespace Foster.GuiSystem
         public void BeginLayer(int layer)
         {
             if (viewport.ID == ImguiID.None)
-                throw new Exception("You must open a Viewport before beginning a Layer");
+                throw new Exception("You must begin a Viewport before beginning a Layer");
 
             Batcher.SetLayer(layer);
             PushClip(Viewport.Bounds);
@@ -368,10 +368,9 @@ namespace Foster.GuiSystem
                     Scrollable = scrollable
                 };
 
-                // using constant numbers since it's fast (I presume)
                 // see EndFrame for lookups
-                var lastInnerHeight = Storage.GetNumber(frame.ID, 1, 0f);
-                var lastScrollY = Storage.GetNumber(frame.ID, 3, 0f);
+                var innerHeight = Storage.GetNumber(frame.ID, 1, 0f);
+                var scrollY = Storage.GetNumber(frame.ID, 3, 0f);
 
                 if (frame.Clip.Contains(viewport.Mouse))
                 {
@@ -387,29 +386,33 @@ namespace Foster.GuiSystem
                 // handle vertical scrolling
                 if (frame.Scrollable)
                 {
-                    frame.Scroll = Vector2.Zero;
-                    frame.Scroll = new Vector2(0, lastScrollY);
+                    var verticalScroll = false;
 
-                    if (lastInnerHeight > frame.Bounds.Height)
+                    frame.Scroll = Vector2.Zero;
+                    frame.Scroll = new Vector2(0, scrollY);
+
+                    if (innerHeight > frame.Bounds.Height)
                     {
+                        verticalScroll = true;
+
                         var height = frame.Bounds.Height - frame.Padding.Height;
 
                         frame.Bounds.Width -= 16;
-                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, lastInnerHeight - height);
+                        frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y, 0, innerHeight - height);
 
-                        var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
+                        var scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, innerHeight);
                         var buttonRect = scrollRect.OverlapRect(frame.Clip);
 
-                        if (buttonRect.Area > 0)
+                        if (buttonRect.Height > 8)
                         {
                             var scrollId = Id("Scroll-Y");
                             ButtonBehaviour(scrollId, buttonRect);
 
                             if (ActiveId == scrollId)
                             {
-                                var delta = viewport.MouseDelta.Y * (lastInnerHeight / height);
-                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + delta, 0, lastInnerHeight - bounds.Height);
-                                scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, lastInnerHeight);
+                                var delta = viewport.MouseDelta.Y * (innerHeight / height);
+                                frame.Scroll.Y = Calc.Clamp(frame.Scroll.Y + delta, 0, innerHeight - bounds.Height);
+                                scrollRect = VerticalScrollBar(frame.Bounds, frame.Scroll, innerHeight);
                             }
 
                             Box(scrollRect.Inflate(-4), Style.Scrollbar, scrollId);
@@ -417,10 +420,9 @@ namespace Foster.GuiSystem
 
                         frame.Clip.Width -= 16;
                     }
-                    else
-                    {
+
+                    if (!verticalScroll)
                         frame.Scroll = Vector2.Zero;
-                    }
 
                     PushClip(frame.Clip);
                 }
@@ -468,8 +470,10 @@ namespace Foster.GuiSystem
         private Rect VerticalScrollBar(Rect bounds, Vector2 scroll, float innerHeight)
         {
             var barH = Math.Max(32, bounds.Height * (bounds.Height / innerHeight));
-            var barY = (bounds.Height - barH) * (scroll.Y / (innerHeight - bounds.Height));
+            if (barH > bounds.Height)
+                barH = bounds.Height;
 
+            var barY = Calc.Clamp((bounds.Height - barH) * (scroll.Y / (innerHeight - bounds.Height)), 0, Math.Max(0, bounds.Height - barH));
             return new Rect(bounds.Right, bounds.Y + barY, 16f, barH);
         }
 

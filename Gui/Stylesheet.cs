@@ -181,7 +181,7 @@ namespace Foster.GuiSystem
                     BorderColor = 0x383838,
                     BackgroundColor = 0x757a78,
                     ContentColor = 0xf0f0f0,
-                    Padding = new Vector2(6, 4)
+                    Padding = new Vector2(4, 2)
                 },
                 Hot = new StyleState
                 {
@@ -190,7 +190,7 @@ namespace Foster.GuiSystem
                     BorderColor = 0x383838,
                     BackgroundColor = 0x858a88,
                     ContentColor = 0xffffff,
-                    Padding = new Vector2(6, 4)
+                    Padding = new Vector2(4, 2)
                 },
                 Active = new StyleState
                 {
@@ -199,7 +199,7 @@ namespace Foster.GuiSystem
                     BorderColor = 0x383838,
                     BackgroundColor = 0x4cd4b6,
                     ContentColor = 0x000000,
-                    Padding = new Vector2(6, 4)
+                    Padding = new Vector2(4, 2)
                 },
             },
 

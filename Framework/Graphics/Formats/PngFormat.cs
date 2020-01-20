@@ -483,7 +483,7 @@ namespace Foster.Framework
                             deflate.Write(filter);
 
                             // update adler checksum
-                            adler = Calc.Adler32_Z(adler, filter);
+                            adler = Calc.Adler32(adler, filter);
 
                             // append the row of pixels (in steps, potentially)
                             const int MaxHorizontalStep = 1024;
@@ -495,7 +495,7 @@ namespace Foster.Framework
                                 deflate.Write(segment);
 
                                 // update adler checksum
-                                adler = Calc.Adler32_Z(adler, segment);
+                                adler = Calc.Adler32(adler, segment);
 
                                 // write out chunks if we've hit out max IDAT chunk length
                                 if (zlibMemory.Position >= MaxIDATChunkLength)

@@ -4,8 +4,6 @@ namespace Foster.GuiSystem
 {
     public static class ImguiButton
     {
-
-
         public static bool Button(this Imgui imgui, string label)
         {
             var content = new Text(label);

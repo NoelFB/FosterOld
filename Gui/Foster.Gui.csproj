@@ -10,10 +10,11 @@
 
   <ItemGroup>
     <None Remove="Content\InputMono-Medium.ttf" />
+    <None Remove="Content\InputMono-Regular.ttf" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Content\InputMono-Medium.ttf" />
+    <EmbeddedResource Include="Content\InputMono-Regular.ttf" />
   </ItemGroup>
 
   <ItemGroup>
