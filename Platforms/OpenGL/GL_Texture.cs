@@ -10,7 +10,9 @@ namespace Foster.OpenGL
         public uint ID { get; private set; }
 
         private readonly GL_Graphics graphics;
+        private readonly GLEnum glInternalFormat;
         private readonly GLEnum glFormat;
+        private readonly GLEnum glType;
         private readonly bool flipVertically;
         
         public override bool FlipVertically => flipVertically;
@@ -20,13 +22,33 @@ namespace Foster.OpenGL
             this.graphics = graphics;
             this.flipVertically = flipVertically;
 
-            glFormat = format switch
+            glInternalFormat = format switch
             {
                 TextureFormat.Red => GLEnum.RED,
                 TextureFormat.RG => GLEnum.RG,
                 TextureFormat.RGB => GLEnum.RGB,
                 TextureFormat.Color => GLEnum.RGBA,
                 TextureFormat.DepthStencil => GLEnum.DEPTH24_STENCIL8,
+                _ => throw new Exception("Invalid Texture Format"),
+            };
+
+            glFormat = format switch
+            {
+                TextureFormat.Red => GLEnum.RED,
+                TextureFormat.RG => GLEnum.RG,
+                TextureFormat.RGB => GLEnum.RGB,
+                TextureFormat.Color => GLEnum.RGBA,
+                TextureFormat.DepthStencil => GLEnum.DEPTH_STENCIL,
+                _ => throw new Exception("Invalid Texture Format"),
+            };
+
+            glType = format switch
+            {
+                TextureFormat.Red => GLEnum.UNSIGNED_BYTE,
+                TextureFormat.RG => GLEnum.UNSIGNED_BYTE,
+                TextureFormat.RGB => GLEnum.UNSIGNED_BYTE,
+                TextureFormat.Color => GLEnum.UNSIGNED_BYTE,
+                TextureFormat.DepthStencil => GLEnum.UNSIGNED_INT_24_8,
                 _ => throw new Exception("Invalid Texture Format"),
             };
 
@@ -53,7 +75,7 @@ namespace Foster.OpenGL
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
 
-                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glFormat, width, height, 0, glFormat, GLEnum.UNSIGNED_BYTE, new IntPtr(0));
+                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glInternalFormat, width, height, 0, glFormat, glType, new IntPtr(0));
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MIN_FILTER, (int)(Filter == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR));
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MAG_FILTER, (int)(Filter == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR));
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_S, (int)(WrapX == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
@@ -152,7 +174,7 @@ namespace Foster.OpenGL
             {
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
-                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glFormat, Width, Height, 0, glFormat, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
+                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glInternalFormat, Width, Height, 0, glFormat, glType, new IntPtr(handle.Pointer));
             }
         }
 
@@ -181,7 +203,7 @@ namespace Foster.OpenGL
             {
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
-                GL.GetTexImage(GLEnum.TEXTURE_2D, 0, glFormat, GLEnum.UNSIGNED_BYTE, new IntPtr(handle.Pointer));
+                GL.GetTexImage(GLEnum.TEXTURE_2D, 0, glInternalFormat, glType, new IntPtr(handle.Pointer));
             }
         }
 

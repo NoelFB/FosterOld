@@ -11,7 +11,7 @@ namespace Foster.OpenGL
         private readonly GL_Graphics graphics;
         private readonly Dictionary<ISystemOpenGL.Context, uint> framebuffers = new Dictionary<ISystemOpenGL.Context, uint>();
 
-        internal GL_RenderTexture(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(width, height)
+        internal GL_RenderTexture(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) : base(graphics, width, height)
         {
             this.graphics = graphics;
 
@@ -49,7 +49,7 @@ namespace Foster.OpenGL
                 // depth stencil attachment
                 if (Depth != null && Depth is GL_Texture depthTexture)
                 {
-                    GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID, 0);
+                    GL.FramebufferRenderbuffer(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.RENDERBUFFER, depthTexture.ID);
                 }
 
                 framebuffers.Add(context, id);

@@ -34,6 +34,11 @@ namespace Foster.Framework
         /// Whether the Window BackBuffer should use Multi Sampling. The exact value
         /// of multisampling depends on the platform
         /// </summary>
-        MultiSampling = 8
+        MultiSampling = 8,
+
+        /// <summary>
+        /// Whether the Window should start fullscreen
+        /// </summary>
+        Fullscreen = 16
     }
 }

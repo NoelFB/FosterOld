@@ -99,25 +99,25 @@ namespace Foster.Framework
             StyleName = styleName ?? "Unknown";
         }
 
-        public SpriteFont(string fontFile, int size, string charset)
-            : this(new FontSize(new Font(fontFile), size, charset))
+        public SpriteFont(string fontFile, int size, string charset, TextureFilter filter = TextureFilter.Linear)
+            : this(new FontSize(new Font(fontFile), size, charset), filter)
         {
 
         }
 
-        public SpriteFont(Stream stream, int size, string charset)
-            : this(new FontSize(new Font(stream), size, charset))
+        public SpriteFont(Stream stream, int size, string charset, TextureFilter filter = TextureFilter.Linear)
+            : this(new FontSize(new Font(stream), size, charset), filter)
         {
 
         }
 
-        public SpriteFont(Font font, int size, string charset)
-            : this(new FontSize(font, size, charset))
+        public SpriteFont(Font font, int size, string charset, TextureFilter filter = TextureFilter.Linear)
+            : this(new FontSize(font, size, charset), filter)
         {
 
         }
 
-        public SpriteFont(FontSize fontSize)
+        public SpriteFont(FontSize fontSize, TextureFilter filter = TextureFilter.Linear)
         {
             FamilyName = fontSize.Font.FamilyName;
             StyleName = fontSize.Font.StyleName;
@@ -164,6 +164,8 @@ namespace Foster.Framework
                 for (int i = 0; i < output.Pages.Count; i ++)
                 {
                     var texture = Texture.Create(output.Pages[i]);
+                    texture.Filter = filter;
+
                     foreach (var entry in output.Entries.Values)
                     {
                         if (entry.Page != i)

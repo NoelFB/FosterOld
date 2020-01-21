@@ -21,13 +21,18 @@ namespace Foster.Framework
 
         public Atlas() { }
 
-        public Atlas(Packer packer)
+        public Atlas(Packer packer, bool premultiply = false)
         {
             var output = packer.Pack();
             if (output != null)
             {
                 foreach (var page in output.Pages)
+                {
+                    if (premultiply)
+                        page.Premultiply();
+
                     Pages.Add(Texture.Create(page));
+                }
 
                 foreach (var entry in output.Entries.Values)
                 {

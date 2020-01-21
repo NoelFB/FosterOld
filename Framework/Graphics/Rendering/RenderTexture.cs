@@ -11,6 +11,8 @@ namespace Foster.Framework
     public abstract class RenderTexture : RenderTarget, IDisposable
     {
         protected readonly List<Texture> attachments = new List<Texture>();
+
+        private readonly Graphics graphics;
         private readonly int width;
         private readonly int height;
 
@@ -54,8 +56,9 @@ namespace Foster.Framework
             return graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
         }
 
-        protected RenderTexture(int width, int height)
+        protected RenderTexture(Graphics graphics, int width, int height)
         {
+            this.graphics = graphics;
             this.width = width;
             this.height = height;
 

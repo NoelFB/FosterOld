@@ -42,50 +42,70 @@ namespace Foster.Framework
 
         public Bitmap(Stream stream, ImageFormat format)
         {
-            if (format.IsValid(stream))
-            {
-                if (format.Read(stream, out Width, out Height, out Pixels))
-                    return;
-            }
+            Width = 0;
+            Height = 0;
+            Pixels = null!;
 
-            throw new Exception($"Stream is not a valid {format.Name} image format");
+            var isValid = format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels);
+            if (!isValid)
+                throw new Exception($"Stream is not a valid {format.Name} image format");
         }
 
         public Bitmap(Stream stream)
         {
+            Width = 0;
+            Height = 0;
+            Pixels = null!;
+
+            var isValid = false;
             foreach (var format in ImageFormat.Formats)
             {
                 if (format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels))
-                    return;
+                {
+                    isValid = true;
+                    break;
+                }
             }
 
-            throw new NotSupportedException("Stream is either an invalid or not supported image format");
+            if (!isValid)
+                throw new NotSupportedException("Stream is either an invalid or not supported image format");
         }
 
         public Bitmap(string path, ImageFormat format)
         {
+            Width = 0;
+            Height = 0;
+            Pixels = null!;
+
             using var stream = File.OpenRead(path);
+            var isValid = format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels);
+            stream.Close();
 
-            if (format.IsValid(stream))
-            {
-                if (format.Read(stream, out Width, out Height, out Pixels))
-                    return;
-            }
-
-            throw new Exception($"Stream is not a valid {format.Name} image format");
+            if (!isValid)
+                throw new Exception($"Stream is not a valid {format.Name} image format");
         }
 
         public Bitmap(string path)
         {
-            using var stream = File.OpenRead(path);
+            Width = 0;
+            Height = 0;
+            Pixels = null!;
 
+            using var stream = File.OpenRead(path);
+            var isValid = false;
             foreach (var format in ImageFormat.Formats)
             {
                 if (format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels))
-                    return;
+                {
+                    isValid = true;
+                    break;
+                }
             }
 
-            throw new NotSupportedException("Stream is either an invalid or not supported image format");
+            stream.Close();
+
+            if (!isValid)
+                throw new NotSupportedException("Stream is either an invalid or not supported image format");
         }
 
         /// <summary>

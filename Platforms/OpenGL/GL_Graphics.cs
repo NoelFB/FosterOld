@@ -156,6 +156,7 @@ namespace Foster.OpenGL
                 lock (context)
                 {
                     System.SetCurrentGLContext(context);
+                    GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     Clear(context);
                 }
             }
@@ -226,6 +227,7 @@ namespace Foster.OpenGL
                 }
 
                 GL.Clear(mask);
+                GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
             }
         }
 
@@ -380,10 +382,12 @@ namespace Foster.OpenGL
                 }
 
                 // Viewport
-                if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != target.Viewport)
                 {
-                    GL.Viewport(target.Viewport.X, target.Viewport.Y, target.Viewport.Width, target.Viewport.Height);
-                    contextMeta.LastViewport = target.Viewport;
+                    if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != target.Viewport)
+                    {
+                        GL.Viewport(target.Viewport.X, target.DrawableHeight - target.Viewport.Bottom, target.Viewport.Width, target.Viewport.Height);
+                        contextMeta.LastViewport = target.Viewport;
+                    }
                 }
 
                 // Scissor
