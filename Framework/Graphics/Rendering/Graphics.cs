@@ -96,22 +96,22 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new Color Texture of the given size
         /// </summary>
-        public abstract Texture CreateTexture(int width, int height, TextureFormat format);
+        protected internal abstract Texture.Platform CreateTexture(int width, int height, TextureFormat format);
 
         /// <summary>
         /// Creates a new render texture of the given size, with the given amount of color and depth buffers
         /// </summary>
-        public abstract RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
+        protected internal abstract RenderTexture.Platform CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
 
         /// <summary>
         /// Creates a new Shader from the Shader Source
         /// </summary>
-        public abstract Shader CreateShader(ShaderSource source);
+        protected internal abstract Shader.Platform CreateShader(ShaderSource source);
 
         /// <summary>
         /// Creates a new Mesh
         /// </summary>
-        public abstract Mesh CreateMesh();
+        protected internal abstract Mesh.Platform CreateMesh();
 
 
 

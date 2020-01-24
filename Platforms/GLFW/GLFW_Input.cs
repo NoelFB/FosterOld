@@ -66,8 +66,8 @@ namespace Foster.GLFW
 
             for (int i = 0; i < App.System.Windows.Count; i ++)
             {
-                if (App.System.Windows[i] is GLFW_Window window)
-                    GLFW.SetCursor(window.window, cursor);
+                if (App.System.Windows[i].Implementation is GLFW_Window window)
+                    GLFW.SetCursor(window.pointer, cursor);
             }
         }
 

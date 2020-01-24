@@ -9,8 +9,32 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Texture used for Rendering
     /// </summary>
-    public abstract class Texture : IDisposable
+    public class Texture : IDisposable, IAsset
     {
+
+        /// <summary>
+        /// Internal Implementation of the Texture
+        /// </summary>
+        public abstract class Platform
+        {
+            protected internal abstract void Init(Texture texture);
+            protected internal abstract void SetFilter(TextureFilter filter);
+            protected internal abstract void SetWrap(TextureWrap x, TextureWrap y);
+            protected internal abstract void SetData<T>(ReadOnlyMemory<T> buffer);
+            protected internal abstract void GetData<T>(Memory<T> buffer);
+            protected internal abstract bool FlipVertically();
+            protected internal abstract void Dispose();
+        }
+
+        /// <summary>
+        /// Asset Guid
+        /// </summary>
+        public Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        /// A reference to the internal platform implementation of the Texture
+        /// </summary>
+        public readonly Platform Internal;
 
         /// <summary>
         /// Gets the Width of the Texture
@@ -26,6 +50,11 @@ namespace Foster.Framework
         /// The Texture Data Format
         /// </summary>
         public readonly TextureFormat Format;
+
+        /// <summary>
+        /// If the Texture should be flipped Vertically when drawn
+        /// </summary>
+        public bool FlipVertically => Internal.FlipVertically();
 
         /// <summary>
         /// The Size of the Texture, in bytes
@@ -46,7 +75,7 @@ namespace Foster.Framework
         public TextureFilter Filter
         {
             get => filter;
-            set => SetFilter(filter = value);
+            set => Internal.SetFilter(filter = value);
         }
 
         /// <summary>
@@ -55,7 +84,7 @@ namespace Foster.Framework
         public TextureWrap WrapX
         {
             get => wrapX;
-            set => SetWrap(wrapX = value, wrapY);
+            set => Internal.SetWrap(wrapX = value, wrapY);
         }
 
         /// <summary>
@@ -64,49 +93,14 @@ namespace Foster.Framework
         public TextureWrap WrapY
         {
             get => wrapY;
-            set => SetWrap(wrapX, wrapY = value);
+            set => Internal.SetWrap(wrapX, wrapY = value);
         }
-
-
-        /// <summary>
-        /// If the Texture should be flipped vertically when drawing
-        /// For example, OpenGL Render Targets usually require this
-        /// </summary>
-        public abstract bool FlipVertically { get; }
 
         private TextureFilter filter = TextureFilter.Linear;
         private TextureWrap wrapX = TextureWrap.Clamp;
         private TextureWrap wrapY = TextureWrap.Clamp;
 
-        public static Texture Create(int width, int height, TextureFormat format = TextureFormat.Color)
-        {
-            return App.Graphics.CreateTexture(width, height, format);
-        }
-
-        public static Texture Create(Bitmap bitmap)
-        {
-            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height, TextureFormat.Color);
-            texture.SetData<Color>(bitmap.Pixels);
-            return texture;
-        }
-
-        public static Texture Create(string path)
-        {
-            var bitmap = new Bitmap(path);
-            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height, TextureFormat.Color);
-            texture.SetData<Color>(bitmap.Pixels);
-            return texture;
-        }
-
-        public static Texture Create(Stream stream)
-        {
-            var bitmap = new Bitmap(stream);
-            var texture = App.Graphics.CreateTexture(bitmap.Width, bitmap.Height, TextureFormat.Color);
-            texture.SetData<Color>(bitmap.Pixels);
-            return texture;
-        }
-
-        protected Texture(int width, int height, TextureFormat format)
+        public Texture(Graphics graphics, int width, int height, TextureFormat format = TextureFormat.Color)
         {
             if (format == TextureFormat.None)
                 throw new Exception("Invalid Texture Format");
@@ -114,6 +108,33 @@ namespace Foster.Framework
             Width = width;
             Height = height;
             Format = format;
+
+            Internal = graphics.CreateTexture(Width, Height, Format);
+            Internal.Init(this);
+        }
+
+        public Texture(int width, int height, TextureFormat format = TextureFormat.Color) 
+            : this(App.Graphics, width, height, format)
+        {
+
+        }
+
+        public Texture(Bitmap bitmap) 
+            : this(App.Graphics, bitmap.Width, bitmap.Height, TextureFormat.Color)
+        {
+            Internal.SetData<Color>(bitmap.Pixels);
+        }
+
+        public Texture(string path) 
+            : this(new Bitmap(path))
+        {
+
+        }
+
+        public Texture(Stream stream) 
+            : this(new Bitmap(stream))
+        {
+
         }
 
         /// <summary>
@@ -144,7 +165,7 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            SetDataInternal(buffer);
+            Internal.SetData(buffer);
         }
 
         /// <summary>
@@ -155,7 +176,7 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            GetDataInternal(buffer);
+            Internal.GetData(buffer);
         }
 
         public void SavePng(string path)
@@ -226,11 +247,9 @@ namespace Foster.Framework
             throw new NotImplementedException();
         }
 
-        protected abstract void SetFilter(TextureFilter filter);
-        protected abstract void SetWrap(TextureWrap x, TextureWrap y);
-        protected abstract void SetDataInternal<T>(ReadOnlyMemory<T> buffer);
-        protected abstract void GetDataInternal<T>(Memory<T> buffer);
-
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Internal.Dispose();
+        }
     }
 }

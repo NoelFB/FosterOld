@@ -53,7 +53,7 @@ namespace Foster.Framework
         /// <summary>
         /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
         /// </summary>
-        protected readonly List<Window> windows = new List<Window>();
+        internal readonly List<Window> windows = new List<Window>();
 
         /// <summary>
         /// Internal list of all Monitors owned by the System. The Platform implementation should maintain this.
@@ -66,21 +66,7 @@ namespace Foster.Framework
             Monitors = new ReadOnlyCollection<Monitor>(monitors);
         }
 
-        /// <summary>
-        /// Creates a new Window. This must be called from the Main Thread.
-        /// 
-        /// Not every Platform supports multiple Windows, in which case
-        /// creating more will throw an exception. You can check whether multiple
-        /// Windows is supported with System.SupportsMultipleWindows.
-        /// </summary>
-        public Window CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
-        {
-            var window = CreateWindowInternal(title, width, height, flags);
-            OnWindowCreated?.Invoke(window);
-            return window;
-        }
-
-        protected abstract Window CreateWindowInternal(string title, int width, int height, WindowFlags flags = WindowFlags.None);
+        protected internal abstract Window.Platform CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None);
 
         protected internal override void Startup()
         {

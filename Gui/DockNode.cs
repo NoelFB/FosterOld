@@ -101,7 +101,7 @@ namespace Foster.GuiSystem
                 Batcher = new Batch2D();
 
                 // create the standalone window
-                standaloneWindow = App.System.CreateWindow($"Gui Dock {ID}", width, height, flags);
+                standaloneWindow = new Window($"Gui Dock {ID}", width, height, flags);
                 standaloneWindow.Position = rounded.TopLeft;
                 standaloneWindow.VSync = false;
                 standaloneWindow.Bordered = false;

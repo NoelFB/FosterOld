@@ -6,15 +6,27 @@ using System.Text;
 namespace Foster.Framework
 {
     /// <summary>
-    /// A 2D Render Target
+    /// A 2D Render Texture that can be drawn to
     /// </summary>
-    public abstract class RenderTexture : RenderTarget, IDisposable
+    public class RenderTexture : RenderTarget, IDisposable
     {
-        protected readonly List<Texture> attachments = new List<Texture>();
 
-        private readonly Graphics graphics;
+        public abstract class Platform
+        {
+            protected internal readonly List<Texture> Attachments = new List<Texture>();
+            protected internal Texture? Depth;
+
+            protected internal abstract void Dispose();
+        }
+
+
         private readonly int width;
         private readonly int height;
+
+        /// <summary>
+        /// A reference to the internal platform implementation of the RenderTexture
+        /// </summary>
+        public readonly Platform Implementation;
 
         /// <summary>
         /// Color Attachments
@@ -24,7 +36,7 @@ namespace Foster.Framework
         /// <summary>
         /// Depth Attachment
         /// </summary>
-        public Texture? Depth { get; protected set; }
+        public Texture? Depth => Implementation.Depth;
 
         /// <summary>
         /// Render Target Width
@@ -36,38 +48,39 @@ namespace Foster.Framework
         /// </summary>
         public override int DrawableHeight => height;
 
-        public static RenderTexture Create(int width, int height)
+        public RenderTexture(int width, int height)
+            : this(App.Graphics, width, height)
         {
-            return App.Graphics.CreateRenderTexture(width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil);
+
         }
 
-        public static RenderTexture Create(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public RenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) 
+            : this(App.Graphics, width, height, colorAttachmentFormats, depthFormat)
         {
-            return App.Graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
+
         }
 
-        public static RenderTexture Create(Graphics graphics, int width, int height)
+        public RenderTexture(Graphics graphics, int width, int height) 
+            : this(graphics, width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil)
         {
-            return graphics.CreateRenderTexture(width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil);
+
         }
 
-        public static RenderTexture Create(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public RenderTexture(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
-        }
-
-        protected RenderTexture(Graphics graphics, int width, int height)
-        {
-            this.graphics = graphics;
             this.width = width;
             this.height = height;
 
-            Attachments = new ReadOnlyCollection<Texture>(attachments);
+            Implementation = graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
+            Attachments = new ReadOnlyCollection<Texture>(Implementation.Attachments);
             Viewport = new RectInt(0, 0, width, height);
             Drawable = true;
         }
 
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Implementation.Dispose();
+        }
 
         public static implicit operator Texture(RenderTexture target) => target.Attachments[0];
     }

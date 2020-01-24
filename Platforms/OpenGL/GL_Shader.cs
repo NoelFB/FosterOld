@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Shader : Shader
+    internal class GL_Shader : Shader.Platform
     {
 
         private readonly GL_Graphics graphics;
@@ -78,7 +78,7 @@ namespace Foster.OpenGL
                     GL.GetActiveAttrib(ID, (uint)i, out _, out _, out string name);
                     int location = GL.GetAttribLocation(ID, name);
                     if (location >= 0)
-                        attributes.Add(name, new ShaderAttribute(name, (uint)location));
+                        Attributes.Add(name, new ShaderAttribute(name, (uint)location));
                 }
 
                 // get uniforms
@@ -88,7 +88,7 @@ namespace Foster.OpenGL
                     GL.GetActiveUniform(ID, (uint)i, out int size, out GLEnum type, out string name);
                     int location = GL.GetUniformLocation(ID, name);
                     if (location >= 0)
-                        uniforms.Add(name, new GL_Uniform(this, name, size, location, type));
+                        Uniforms.Add(name, new GL_Uniform(this, name, size, location, type));
                 }
 
                 // dispose shaders
@@ -122,7 +122,7 @@ namespace Foster.OpenGL
                 {
                     if (uniform.Type == UniformType.Texture2D)
                     {
-                        var texture = (parameter.Value as GL_Texture);
+                        var texture = ((parameter.Value as Texture)?.Internal as GL_Texture);
                         var id = texture?.ID ?? 0;
 
                         GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));
@@ -234,7 +234,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
             if (ID != 0)
             {

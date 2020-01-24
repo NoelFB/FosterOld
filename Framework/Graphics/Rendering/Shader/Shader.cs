@@ -8,8 +8,26 @@ namespace Foster.Framework
     /// <summary>
     /// A Shader used for Rendering
     /// </summary>
-    public abstract class Shader : IDisposable
+    public class Shader : IDisposable, IAsset
     {
+
+        public abstract class Platform
+        {
+            protected internal readonly Dictionary<string, ShaderAttribute> Attributes = new Dictionary<string, ShaderAttribute>();
+            protected internal readonly Dictionary<string, ShaderUniform> Uniforms = new Dictionary<string, ShaderUniform>();
+            protected internal abstract void Dispose();
+        }
+
+        /// <summary>
+        /// Asset Guid
+        /// </summary>
+        public Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        /// A reference to the internal platform implementation of the Shader
+        /// </summary>
+        public readonly Platform Implementation;
+
         /// <summary>
         /// List of all Vertex Attributes, by Name
         /// </summary>
@@ -20,33 +38,21 @@ namespace Foster.Framework
         /// </summary>
         public readonly ReadOnlyDictionary<string, ShaderUniform> Uniforms;
 
-        /// <summary>
-        /// Internal list of Attributes, which should be managed by the Shader implementation
-        /// </summary>
-        protected readonly Dictionary<string, ShaderAttribute> attributes = new Dictionary<string, ShaderAttribute>();
-
-        /// <summary>
-        /// Internal list of Uniforms, which should be managed by the Shader implementation
-        /// </summary>
-        protected readonly Dictionary<string, ShaderUniform> uniforms = new Dictionary<string, ShaderUniform>();
-
-        public static Shader Create(ShaderSource source)
+        public Shader(Graphics graphics, ShaderSource source)
         {
-            return App.Graphics.CreateShader(source);
+            Implementation = graphics.CreateShader(source);
+            Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(Implementation.Uniforms);
+            Attributes = new ReadOnlyDictionary<string, ShaderAttribute>(Implementation.Attributes);
         }
 
-        public static Shader Create(Graphics graphics, ShaderSource source)
+        public Shader(ShaderSource source) : this(App.Graphics, source)
         {
-            return graphics.CreateShader(source);
         }
 
-        protected Shader()
+        public void Dispose()
         {
-            Uniforms = new ReadOnlyDictionary<string, ShaderUniform>(uniforms);
-            Attributes = new ReadOnlyDictionary<string, ShaderAttribute>(attributes);
+            Implementation.Dispose();
         }
-
-        public abstract void Dispose();
 
     }
 }

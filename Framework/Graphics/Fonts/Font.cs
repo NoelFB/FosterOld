@@ -28,7 +28,7 @@ namespace Foster.Framework
     /// <summary>
     /// Parses and contains the Data to a single Font
     /// </summary>
-    public class Font : IDisposable
+    public class Font : IDisposable, IAsset
     {
 
         internal readonly StbTrueType.stbtt_fontinfo fontInfo;
@@ -36,6 +36,8 @@ namespace Foster.Framework
         private readonly byte[] fontBuffer;
         private readonly GCHandle fontHandle;
         private readonly Dictionary<char, int> glyphs = new Dictionary<char, int>();
+
+        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The Font Family Name
@@ -162,8 +164,6 @@ namespace Foster.Framework
                 glyph = StbTrueType.stbtt_FindGlyphIndex(fontInfo, unicode);
                 glyphs[unicode] = glyph;
             }
-            else
-                return 0;
 
             return glyph;
         }

@@ -8,9 +8,10 @@ namespace Foster.OpenGL
 {
     public class GL_Graphics : Graphics, IGraphicsOpenGL
     {
-        // The GL Device & Background Context can be null up until Startup, at which point they never are again
-#pragma warning disable CS8618
         internal ISystemOpenGL System => App.System as ISystemOpenGL ?? throw new Exception("System does not implement IGLSystem");
+
+        // Background Context can be null up until Startup, at which point they never are again
+#pragma warning disable CS8618
         internal ISystemOpenGL.Context BackgroundContext;
 #pragma warning restore CS8618
 
@@ -128,22 +129,22 @@ namespace Foster.OpenGL
             return meta;
         }
 
-        public override Texture CreateTexture(int width, int height, TextureFormat format)
+        protected override Texture.Platform CreateTexture(int width, int height, TextureFormat format)
         {
-            return new GL_Texture(this, width, height, format, false);
+            return new GL_Texture(this);
         }
 
-        public override RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        protected override RenderTexture.Platform CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
             return new GL_RenderTexture(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
-        public override Shader CreateShader(ShaderSource source)
+        protected override Shader.Platform CreateShader(ShaderSource source)
         {
             return new GL_Shader(this, source);
         }
 
-        public override Mesh CreateMesh()
+        protected override Mesh.Platform CreateMesh()
         {
             return new GL_Mesh(this);
         }
@@ -160,7 +161,7 @@ namespace Foster.OpenGL
                     Clear(context);
                 }
             }
-            else if (target is GL_RenderTexture renderTexture)
+            else if (target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
             {
                 // if we're off the main thread, draw using the Background Context
                 if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -289,20 +290,20 @@ namespace Foster.OpenGL
                     {
                         GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     }
-                    else if (target is GL_RenderTexture glRenderTexture)
+                    else if (target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
                     {
-                        glRenderTexture.Bind(context);
+                        renderTexture.Bind(context);
                     }
 
                     contextMeta.LastRenderTarget = target;
                 }
 
                 // Use the Shader
-                if (pass.Material.Shader is GL_Shader glShader)
+                if (pass.Material.Shader.Implementation is GL_Shader glShader)
                     glShader.Use(pass.Material);
 
                 // Bind the Mesh
-                if (pass.Mesh is GL_Mesh glMesh)
+                if (pass.Mesh.Implementation is GL_Mesh glMesh)
                     glMesh.Bind(context, pass.Material);
 
                 // Blend Mode

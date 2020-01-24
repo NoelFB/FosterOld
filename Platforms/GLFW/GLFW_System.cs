@@ -10,7 +10,9 @@ namespace Foster.GLFW
     {
 
         private readonly GLFW_Input input;
+
         private readonly List<IntPtr> windowPointers = new List<IntPtr>();
+        private readonly Dictionary<IntPtr, GLFW_Window> glfwWindows = new Dictionary<IntPtr, GLFW_Window>();
         private readonly Dictionary<IntPtr, GLFW_GLContext> glContexts = new Dictionary<IntPtr, GLFW_GLContext>();
         private readonly Dictionary<IntPtr, IntPtr> vkSurfaces = new Dictionary<IntPtr, IntPtr>();
 
@@ -106,18 +108,12 @@ namespace Foster.GLFW
                 if (GLFW.WindowShouldClose(windowPointers[i]))
                 {
                     // see if we have a GLFW_Window associated
-                    for (int j = 0; j < windows.Count; j++)
+                    if (glfwWindows.TryGetValue(windowPointers[i], out var window))
                     {
-                        if (windows[j] is GLFW_Window window && window.window == windowPointers[i])
-                        {
-                            input.StopListening(window.window);
+                        input.StopListening(window.pointer);
+                        glfwWindows.Remove(window.pointer);
 
-                            windows[j].OnClose?.Invoke(windows[j]);
-                            windows[j].Close();
-                            windows.RemoveAt(j);
-
-                            break;
-                        }
+                        window.OnClose?.Invoke();
                     }
 
                     // remove OpenGL context
@@ -147,7 +143,7 @@ namespace Foster.GLFW
             }
         }
 
-        protected override Window CreateWindowInternal(string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        protected override Window.Platform CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
         {
             if (Thread.CurrentThread.ManagedThreadId != MainThreadId)
                 throw new Exception("Creating a Window must be called from the Main Thread");
@@ -166,7 +162,7 @@ namespace Foster.GLFW
 
             // create the actual Window object
             var window = new GLFW_Window(this, ptr, title, !flags.HasFlag(WindowFlags.Hidden));
-            windows.Add(window);
+            glfwWindows.Add(ptr, window);
             return window;
         }
 
@@ -226,7 +222,7 @@ namespace Foster.GLFW
 
         public ISystemOpenGL.Context GetWindowGLContext(Window window)
         {
-            return glContexts[((GLFW_Window)window).window];
+            return glContexts[((GLFW_Window)window.Implementation).pointer];
         }
 
         public ISystemOpenGL.Context? GetCurrentGLContext()
@@ -267,7 +263,7 @@ namespace Foster.GLFW
 
         public IntPtr GetVKSurface(Window window)
         {
-            return vkSurfaces[((GLFW_Window)window).window];
+            return vkSurfaces[((GLFW_Window)window.Implementation).pointer];
         }
 
         public List<string> GetVKExtensions()

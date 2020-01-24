@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Mesh : Mesh
+    internal class GL_Mesh : Mesh.Platform
     {
 
         private readonly Dictionary<ISystemOpenGL.Context, uint> vertexArrays = new Dictionary<ISystemOpenGL.Context, uint>();
@@ -199,7 +199,7 @@ namespace Foster.OpenGL
             };
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
             if (vertexBuffer > 0)
                 graphics.BuffersToDelete.Add(vertexBuffer);

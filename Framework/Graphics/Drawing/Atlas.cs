@@ -1,4 +1,5 @@
 ﻿using Foster.Framework.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Foster.Framework
@@ -6,8 +7,10 @@ namespace Foster.Framework
     /// <summary>
     /// A Texture Atlas
     /// </summary>
-    public class Atlas
+    public class Atlas : IAsset
     {
+        public Guid Guid { get; set; } = Guid.NewGuid();
+
         /// <summary>
         /// List of all the Texture Pages of the Atlas
         /// Generally speaking it's ideal to have a single Page per atlas, but that's not always possible.
@@ -31,7 +34,7 @@ namespace Foster.Framework
                     if (premultiply)
                         page.Premultiply();
 
-                    Pages.Add(Texture.Create(page));
+                    Pages.Add(new Texture(page));
                 }
 
                 foreach (var entry in output.Entries.Values)
@@ -55,6 +58,7 @@ namespace Foster.Framework
                     var texture = Pages[int.Parse(page)];
 
                     if (value.Object != null)
+                    {
                         foreach (var (name, subtex) in value.Object)
                         {
                             var source = new Rect(
@@ -71,6 +75,7 @@ namespace Foster.Framework
 
                             Subtextures.Add(name, new Subtexture(texture, source, frame));
                         }
+                    }
                 }
             }
         }

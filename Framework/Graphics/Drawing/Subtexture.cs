@@ -5,7 +5,7 @@ namespace Foster.Framework
     /// <summary>
     /// A Subtexture, representing a rectangular segment of a Texture
     /// </summary>
-    public class Subtexture
+    public class Subtexture : IAsset
     {
 
         private Texture? texture;
@@ -23,6 +23,8 @@ namespace Foster.Framework
                 }
             }
         }
+
+        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The Texture coordinates. These are set automatically based on the Source rectangle

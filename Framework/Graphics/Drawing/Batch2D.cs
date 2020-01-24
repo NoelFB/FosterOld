@@ -169,12 +169,12 @@ void main(void)
             Graphics = graphics;
 
             if (defaultBatchShader == null)
-                defaultBatchShader = Shader.Create(graphics, new ShaderSource(VertexSource, FragmentSource));
+                defaultBatchShader = new Shader(graphics, new ShaderSource(VertexSource, FragmentSource));
 
             DefaultShader = defaultBatchShader;
             DefaultMaterial = new Material(DefaultShader);
 
-            Mesh = Mesh.Create(graphics);
+            Mesh = new Mesh(graphics);
 
             vertices = new Vertex[64];
             indices = new int[64];

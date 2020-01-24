@@ -4,25 +4,35 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_Texture : Texture
+    internal class GL_Texture : Texture.Platform
     {
 
         public uint ID { get; private set; }
+        public bool Flip;
 
         private readonly GL_Graphics graphics;
-        private readonly GLEnum glInternalFormat;
-        private readonly GLEnum glFormat;
-        private readonly GLEnum glType;
-        private readonly bool flipVertically;
-        
-        public override bool FlipVertically => flipVertically;
 
-        internal GL_Texture(GL_Graphics graphics, int width, int height, TextureFormat format, bool flipVertically) : base(width, height, format)
+        private Texture texture;
+        private GLEnum glInternalFormat;
+        private GLEnum glFormat;
+        private GLEnum glType;
+
+        internal GL_Texture(GL_Graphics graphics)
         {
             this.graphics = graphics;
-            this.flipVertically = flipVertically;
+            texture = null!;
+        }
 
-            glInternalFormat = format switch
+        ~GL_Texture()
+        {
+            Dispose();
+        }
+
+        protected override void Init(Texture texture)
+        {
+            this.texture = texture;
+
+            glInternalFormat = texture.Format switch
             {
                 TextureFormat.Red => GLEnum.RED,
                 TextureFormat.RG => GLEnum.RG,
@@ -32,7 +42,7 @@ namespace Foster.OpenGL
                 _ => throw new Exception("Invalid Texture Format"),
             };
 
-            glFormat = format switch
+            glFormat = texture.Format switch
             {
                 TextureFormat.Red => GLEnum.RED,
                 TextureFormat.RG => GLEnum.RG,
@@ -42,7 +52,7 @@ namespace Foster.OpenGL
                 _ => throw new Exception("Invalid Texture Format"),
             };
 
-            glType = format switch
+            glType = texture.Format switch
             {
                 TextureFormat.Red => GLEnum.UNSIGNED_BYTE,
                 TextureFormat.RG => GLEnum.UNSIGNED_BYTE,
@@ -54,7 +64,7 @@ namespace Foster.OpenGL
 
             if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
-                lock(graphics.BackgroundContext)
+                lock (graphics.BackgroundContext)
                 {
                     graphics.System.SetCurrentGLContext(graphics.BackgroundContext);
 
@@ -75,17 +85,17 @@ namespace Foster.OpenGL
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
 
-                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glInternalFormat, width, height, 0, glFormat, glType, new IntPtr(0));
-                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MIN_FILTER, (int)(Filter == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR));
-                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MAG_FILTER, (int)(Filter == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR));
-                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_S, (int)(WrapX == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
-                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)(WrapY == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
+                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glInternalFormat, texture.Width, texture.Height, 0, glFormat, glType, new IntPtr(0));
+                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MIN_FILTER, (int)(texture.Filter == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR));
+                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_MAG_FILTER, (int)(texture.Filter == TextureFilter.Nearest ? GLEnum.NEAREST : GLEnum.LINEAR));
+                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_S, (int)(texture.WrapX == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
+                GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)(texture.WrapY == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
             }
         }
 
-        ~GL_Texture()
+        protected override bool FlipVertically()
         {
-            Dispose();
+            return Flip;
         }
 
         protected override void SetFilter(TextureFilter filter)
@@ -149,7 +159,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override unsafe void SetDataInternal<T>(ReadOnlyMemory<T> buffer)
+        protected override unsafe void SetData<T>(ReadOnlyMemory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -174,11 +184,11 @@ namespace Foster.OpenGL
             {
                 GL.ActiveTexture((uint)GLEnum.TEXTURE0);
                 GL.BindTexture(GLEnum.TEXTURE_2D, ID);
-                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glInternalFormat, Width, Height, 0, glFormat, glType, new IntPtr(handle.Pointer));
+                GL.TexImage2D(GLEnum.TEXTURE_2D, 0, glInternalFormat, texture.Width, texture.Height, 0, glFormat, glType, new IntPtr(handle.Pointer));
             }
         }
 
-        protected override unsafe void GetDataInternal<T>(Memory<T> buffer)
+        protected override unsafe void GetData<T>(Memory<T> buffer)
         {
             using System.Buffers.MemoryHandle handle = buffer.Pin();
 
@@ -207,7 +217,7 @@ namespace Foster.OpenGL
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
             if (ID != 0)
             {

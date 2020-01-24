@@ -9,8 +9,27 @@ namespace Foster.Framework
     /// <summary>
     /// A Mesh used for Rendering
     /// </summary>
-    public abstract class Mesh : IDisposable
+    public class Mesh : IDisposable, IAsset
     {
+
+        public abstract class Platform
+        {
+            protected internal abstract void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format);
+            protected internal abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
+            protected internal abstract void UploadIndices(ReadOnlySequence<int> indices);
+            protected internal abstract void Dispose();
+        }
+
+        /// <summary>
+        /// Asset Guid
+        /// </summary>
+        public Guid Guid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        /// A reference to the internal platform implementation of the Mesh
+        /// </summary>
+        public readonly Platform Implementation;
+
         /// <summary>
         /// Number of Vertices in the Mesh
         /// </summary>
@@ -41,20 +60,14 @@ namespace Foster.Framework
         /// </summary>
         public VertexFormat? InstanceFormat { get; private set; } = null;
 
-        /// <summary>
-        /// Creates a new Mesh
-        /// </summary>
-        public static Mesh Create()
+        public Mesh()
         {
-            return App.Graphics.CreateMesh();
+            Implementation = App.Graphics.CreateMesh();
         }
 
-        /// <summary>
-        /// Creates a new Mesh
-        /// </summary>
-        public static Mesh Create(Graphics graphics)
+        public Mesh(Graphics graphics)
         {
-            return graphics.CreateMesh();
+            Implementation = graphics.CreateMesh();
         }
 
         public void SetVertices<T>(T[] vertices) where T : struct, IVertex
@@ -82,7 +95,7 @@ namespace Foster.Framework
             VertexCount = (int)vertices.Length;
             VertexFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
-            UploadVertices(vertices, VertexFormat);
+            Implementation.UploadVertices(vertices, VertexFormat);
         }
 
         public void SetIndices(int[] indices)
@@ -98,7 +111,7 @@ namespace Foster.Framework
         public void SetIndices(ReadOnlySequence<int> indices)
         {
             IndexCount = (int)indices.Length;
-            UploadIndices(indices);
+            Implementation.UploadIndices(indices);
         }
 
         public void SetInstances<T>(T[] vertices) where T : struct, IVertex
@@ -126,13 +139,12 @@ namespace Foster.Framework
             InstanceCount = (int)vertices.Length;
             InstanceFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
-            UploadInstances(vertices, InstanceFormat);
+            Implementation.UploadInstances(vertices, InstanceFormat);
         }
 
-        protected abstract void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format);
-        protected abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
-        protected abstract void UploadIndices(ReadOnlySequence<int> indices);
-
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Implementation.Dispose();
+        }
     }
 }

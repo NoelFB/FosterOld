@@ -61,40 +61,43 @@ namespace Foster.Framework
                     for (int i = 0; i < Pages.Count; i ++)
                     {
                         writer.Key(i.ToString());
-                        writer.ArrayBegin();
+                        writer.ObjectBegin();
                         foreach (var entry in Entries.Values)
                         {
+                            writer.Key(entry.Name);
                             writer.ObjectBegin();
-                            writer.Key("source");
                             {
-                                writer.ObjectBegin();
-                                writer.Key("x");
-                                writer.Value(entry.Source.X);
-                                writer.Key("y");
-                                writer.Value(entry.Source.Y);
-                                writer.Key("w");
-                                writer.Value(entry.Source.Width);
-                                writer.Key("h");
-                                writer.Value(entry.Source.Height);
-                                writer.ObjectEnd();
-                            }
+                                writer.Key("source");
+                                {
+                                    writer.ObjectBegin();
+                                    writer.Key("x");
+                                    writer.Value(entry.Source.X);
+                                    writer.Key("y");
+                                    writer.Value(entry.Source.Y);
+                                    writer.Key("w");
+                                    writer.Value(entry.Source.Width);
+                                    writer.Key("h");
+                                    writer.Value(entry.Source.Height);
+                                    writer.ObjectEnd();
+                                }
 
-                            writer.Key("frame");
-                            {
-                                writer.ObjectBegin();
-                                writer.Key("x");
-                                writer.Value(entry.Frame.X);
-                                writer.Key("y");
-                                writer.Value(entry.Frame.Y);
-                                writer.Key("w");
-                                writer.Value(entry.Frame.Width);
-                                writer.Key("h");
-                                writer.Value(entry.Frame.Height);
-                                writer.ObjectEnd();
+                                writer.Key("frame");
+                                {
+                                    writer.ObjectBegin();
+                                    writer.Key("x");
+                                    writer.Value(entry.Frame.X);
+                                    writer.Key("y");
+                                    writer.Value(entry.Frame.Y);
+                                    writer.Key("w");
+                                    writer.Value(entry.Frame.Width);
+                                    writer.Key("h");
+                                    writer.Value(entry.Frame.Height);
+                                    writer.ObjectEnd();
+                                }
                             }
                             writer.ObjectEnd();
                         }
-                        writer.ArrayEnd();
+                        writer.ObjectEnd();
                     }
                 }
                 writer.ObjectEnd();

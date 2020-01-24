@@ -108,7 +108,7 @@ namespace Foster.Framework
                     throw new Exception("App requires a System Module to be registered before it can Start");
 
                 // our primary Window
-                primaryWindow = System.CreateWindow(title, width, height, flags);
+                primaryWindow = new Window(System, title, width, height, flags);
                 Modules.FirstWindowCreated();
 
                 // startup application

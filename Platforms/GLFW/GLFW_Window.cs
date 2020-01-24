@@ -3,10 +3,10 @@ using System;
 
 namespace Foster.GLFW
 {
-    public class GLFW_Window : Window
+    public class GLFW_Window : Window.Platform
     {
         private readonly GLFW_System system;
-        internal readonly IntPtr window;
+        internal readonly IntPtr pointer;
 
         private readonly GLFW.WindowCloseFunc windowCloseCallbackRef;
         private readonly GLFW.WindowSizeFunc windowSizeCallbackRef;
@@ -24,13 +24,13 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowPos(window, out int x, out int y);
+                GLFW.GetWindowPos(pointer, out int x, out int y);
                 return new Point2(x, y);
             }
 
             set
             {
-                GLFW.SetWindowPos(window, value.X, value.Y);
+                GLFW.SetWindowPos(pointer, value.X, value.Y);
             }
         }
 
@@ -38,13 +38,13 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowSize(window, out int w, out int h);
+                GLFW.GetWindowSize(pointer, out int w, out int h);
                 return new Point2(w, h);
             }
 
             set
             {
-                GLFW.SetWindowSize(window, value.X, value.Y);
+                GLFW.SetWindowSize(pointer, value.X, value.Y);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetFramebufferSize(window, out int width, out int height);
+                GLFW.GetFramebufferSize(pointer, out int width, out int height);
                 return new Point2(width, height);
             }
         }
@@ -61,7 +61,7 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetCursorPos(window, out var xpos, out var ypos);
+                GLFW.GetCursorPos(pointer, out var xpos, out var ypos);
                 return new Vector2((float)xpos, (float)ypos);
             }
         }
@@ -70,8 +70,8 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetCursorPos(window, out var curX, out var curY);
-                GLFW.GetWindowPos(window, out var winX, out var winY);
+                GLFW.GetCursorPos(pointer, out var curX, out var curY);
+                GLFW.GetWindowPos(pointer, out var winX, out var winY);
                 return new Vector2((float)curX + winX, (float)curY + winY);
             }
         }
@@ -80,7 +80,7 @@ namespace Foster.GLFW
         {
             get
             {
-                GLFW.GetWindowContentScale(window, out float x, out float y);
+                GLFW.GetWindowContentScale(pointer, out float x, out float y);
                 return new Vector2(x, y);
             }
         }
@@ -94,21 +94,21 @@ namespace Foster.GLFW
         public override string Title
         {
             get => title;
-            set => GLFW.SetWindowTitle(window, title = value);
+            set => GLFW.SetWindowTitle(pointer, title = value);
         }
 
         public override bool VSync { get; set; } = true;
 
         public override bool Bordered
         {
-            get => GLFW.GetWindowAttrib(window, GLFW.WindowAttributes.Decorated);
-            set => GLFW.SetWindowAttrib(window, GLFW.WindowAttributes.Decorated, value);
+            get => GLFW.GetWindowAttrib(pointer, GLFW.WindowAttributes.Decorated);
+            set => GLFW.SetWindowAttrib(pointer, GLFW.WindowAttributes.Decorated, value);
         }
 
         public override bool Resizable
         {
-            get => GLFW.GetWindowAttrib(window, GLFW.WindowAttributes.Resizable);
-            set => GLFW.SetWindowAttrib(window, GLFW.WindowAttributes.Resizable, value);
+            get => GLFW.GetWindowAttrib(pointer, GLFW.WindowAttributes.Resizable);
+            set => GLFW.SetWindowAttrib(pointer, GLFW.WindowAttributes.Resizable, value);
         }
 
         public override bool Fullscreen
@@ -124,50 +124,50 @@ namespace Foster.GLFW
             {
                 visible = value;
                 if (visible)
-                    GLFW.ShowWindow(window);
+                    GLFW.ShowWindow(pointer);
                 else
-                    GLFW.HideWindow(window);
+                    GLFW.HideWindow(pointer);
             }
         }
 
-        public override IntPtr Pointer => GLFW.GetWindowUserPointer(window);
+        public override IntPtr Pointer => GLFW.GetWindowUserPointer(pointer);
 
-        internal GLFW_Window(GLFW_System system, IntPtr window, string title, bool visible)
+        internal GLFW_Window(GLFW_System system, IntPtr pointer, string title, bool visible)
         {
             this.system = system;
-            this.window = window;
+            this.pointer = pointer;
             this.title = title;
             this.visible = visible;
 
             // opengl swap interval
             if (App.Graphics is IGraphicsOpenGL)
             {
-                system.SetCurrentGLContext(window);
+                system.SetCurrentGLContext(pointer);
                 GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
             }
 
-            GLFW.SetWindowCloseCallback(this.window, windowCloseCallbackRef = OnWindowClose);
-            GLFW.SetWindowSizeCallback(this.window, windowSizeCallbackRef = OnWindowResize);
-            GLFW.SetWindowFocusCallback(this.window, windowFocusCallbackRef = OnWindowFocus);
-            GLFW.SetCursorEnterCallback(this.window, windowCursorEnterCallbackRef = OnCursorEnter);
+            GLFW.SetWindowCloseCallback(this.pointer, windowCloseCallbackRef = OnWindowClose);
+            GLFW.SetWindowSizeCallback(this.pointer, windowSizeCallbackRef = OnWindowResize);
+            GLFW.SetWindowFocusCallback(this.pointer, windowFocusCallbackRef = OnWindowFocus);
+            GLFW.SetCursorEnterCallback(this.pointer, windowCursorEnterCallbackRef = OnCursorEnter);
         }
 
         private void OnWindowClose(IntPtr window)
         {
             GLFW.SetWindowShouldClose(window, false);
-            OnCloseRequested?.Invoke(this);
+            OnCloseRequested?.Invoke();
         }
 
         private void OnWindowResize(IntPtr window, int width, int height)
         {
-            OnResize?.Invoke(this);
+            OnResize?.Invoke();
         }
 
         private void OnWindowFocus(IntPtr window, int focused)
         {
             this.focused = (focused != 0);
             if (this.focused)
-                OnFocus?.Invoke(this);
+                OnFocus?.Invoke();
         }
 
         private void OnCursorEnter(IntPtr window, int entered)
@@ -175,18 +175,18 @@ namespace Foster.GLFW
             mouseOver = (entered != 0);
         }
 
-        protected override void Present()
+        public override void Present()
         {
             if (lastVsync != VSync)
             {
                 if (App.Graphics is IGraphicsOpenGL)
                 {
-                    system.SetCurrentGLContext(window);
+                    system.SetCurrentGLContext(pointer);
                     GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
                 }
             }
 
-            GLFW.SwapBuffers(window);
+            GLFW.SwapBuffers(pointer);
         }
 
         public override void Close()
@@ -194,7 +194,7 @@ namespace Foster.GLFW
             if (!disposed)
             {
                 disposed = true;
-                GLFW.SetWindowShouldClose(window, true);
+                GLFW.SetWindowShouldClose(pointer, true);
             }
         }
     }
