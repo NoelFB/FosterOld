@@ -15,6 +15,7 @@ namespace Foster.Framework
             public readonly Guid Guid;
             public readonly string Name;
             public readonly Type Type;
+            public object? UserData;
 
             private WeakReference<IAsset>? instance;
 
