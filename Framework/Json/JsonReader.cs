@@ -120,6 +120,11 @@ namespace Foster.Framework.Json
                         return String;
                     break;
 
+                case JsonToken.Binary:
+                    if (Value is byte[] Bytes)
+                        return Bytes;
+                    break;
+
                 case JsonToken.ObjectStart:
                     return ReadObject();
 

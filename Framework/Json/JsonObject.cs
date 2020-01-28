@@ -10,7 +10,7 @@ namespace Foster.Framework.Json
     /// <summary>
     /// A data structure encapsulating a Json Object
     /// </summary>
-    public class JsonObject : JsonValue<Dictionary<string, JsonValue>>, IDictionary<string, JsonValue>
+    public class JsonObject : JsonValue<Dictionary<string, JsonValue>>
     {
         public JsonObject()
             : base(JsonType.Object, new Dictionary<string, JsonValue>())
@@ -46,78 +46,23 @@ namespace Foster.Framework.Json
             set => Value[key] = value;
         }
 
-        public ICollection<string> Keys => Value.Keys;
+        public override IEnumerable<string> Keys => Value.Keys;
+        public override IEnumerable<JsonValue> Values => Value.Values;
+        public override IEnumerable<KeyValuePair<string, JsonValue>> Object => Value;
 
-        public ICollection<JsonValue> Values => Value.Values;
-
-        public int Count => Value.Count;
-
-        public bool IsReadOnly => false;
-
-        public void Add(string key, JsonValue value) => Value.Add(key, value);
-
-        public void Add(KeyValuePair<string, JsonValue> item) => Value.Add(item.Key, item.Value);
-
-        public void Clear() => Value.Clear();
-
-        public bool Contains(KeyValuePair<string, JsonValue> item)
+        public override int GetHashedValue()
         {
-            return (Value.TryGetValue(item.Key, out var value) && value == item.Value);
-        }
-
-        public bool ContainsKey(string key) => Value.ContainsKey(key);
-
-        public void CopyTo(KeyValuePair<string, JsonValue>[] array, int arrayIndex)
-        {
-            foreach (var pair in Value)
-                array[arrayIndex++] = pair;
-        }
-
-        public IEnumerator<KeyValuePair<string, JsonValue>> GetEnumerator() => Value.GetEnumerator();
-
-        public bool Remove(string key) => Value.Remove(key);
-
-        public bool Remove(KeyValuePair<string, JsonValue> item) => Value.Remove(item.Key);
-
-        public bool TryGetValue(string key, [MaybeNullWhen(false)] out JsonValue value)
-        {
-            // FIXME: This seems like a C# 8 compiler bug?
-            // we should never need to disable the nullable check
-
-#nullable disable
-            return Value.TryGetValue(key, out value);
-#nullable enable
-        }
-
-        public bool TryGetArray(string key, [MaybeNullWhen(false)] out JsonArray array)
-        {
-            if (Value.TryGetValue(key, out var value) && value.Array != null)
+            unchecked
             {
-                array = value.Array;
-                return true;
+                int hash = 17;
+                foreach (var (key, value) in Value)
+                {
+                    hash = hash * 23 + Calc.StaticStringHash(key);
+                    hash = hash * 23 + value.GetHashedValue();
+                }
+                return hash;
             }
-
-#nullable disable
-            array = null;
-#nullable enable
-            return false;
         }
-
-        public bool TryGetObject(string key, [MaybeNullWhen(false)] out JsonObject obj)
-        {
-            if (Value.TryGetValue(key, out var value) && value.Object != null)
-            {
-                obj = value.Object;
-                return true;
-            }
-
-#nullable disable
-            obj = null;
-#nullable enable
-            return false;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => Value.GetEnumerator();
 
     }
 }

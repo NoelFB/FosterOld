@@ -41,7 +41,7 @@ namespace Foster.Framework
         public Modes Mode { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public int FrameCount { get; private set; }
+        private int frameCount;
 
         public readonly List<Layer> Layers = new List<Layer>();
         public readonly List<Frame> Frames = new List<Frame>();
@@ -194,7 +194,7 @@ namespace Foster.Framework
                     throw new Exception("File is not in .ase format");
 
                 // Frames / Width / Height / Color Mode
-                FrameCount = WORD();
+                frameCount = WORD();
                 Width = WORD();
                 Height = WORD();
                 Mode = (Modes)(WORD() / 8);
@@ -218,7 +218,7 @@ namespace Foster.Framework
             IUserData? last = null;
 
             // Frames
-            for (int i = 0; i < FrameCount; i++)
+            for (int i = 0; i < frameCount; i++)
             {
                 var frame = new Frame(this);
                 Frames.Add(frame);
@@ -525,8 +525,11 @@ namespace Foster.Framework
         private void CelToFrame(Frame frame, Cel cel)
         {
             var opacity = (byte)((cel.Alpha * cel.Layer.Alpha) * 255);
-            var blend = BlendModes[cel.Layer.BlendMode];
             var pxLen = frame.Pixels.Length;
+
+            var blend = BlendModes[0];
+            if (cel.Layer.BlendMode < BlendModes.Length)
+                blend = BlendModes[cel.Layer.BlendMode];
 
             for (int sx = Math.Max(0, -cel.X), right = Math.Min(cel.Width, frame.Sprite.Width - cel.X); sx < right; sx++)
             {

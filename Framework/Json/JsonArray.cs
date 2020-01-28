@@ -8,7 +8,7 @@ namespace Foster.Framework.Json
     /// <summary>
     /// A data structure encapsulating a Json Array
     /// </summary>
-    public class JsonArray : JsonValue<List<JsonValue>>, IList<JsonValue>
+    public class JsonArray : JsonValue<List<JsonValue>>
     {
         public JsonArray() : base(JsonType.Array, new List<JsonValue>())
         {
@@ -26,29 +26,34 @@ namespace Foster.Framework.Json
             set => Value[index] = value;
         }
 
-        public int Count => Value.Count;
+        public void Add(JsonValue value)
+        {
+            Value.Add(value);
+        }
 
-        public bool IsReadOnly => false;
+        public void Remove(JsonValue value)
+        {
+            Value.Remove(value);
+        }
 
-        public void Add(JsonValue item) => Value.Add(item);
+        public bool Contains(JsonValue value)
+        {
+            return Value.Contains(value);
+        }
 
-        public void Clear() => Value.Clear();
+        public override int Count => Value.Count;
+        public override IEnumerable<JsonValue> Array => Value;
 
-        public bool Contains(JsonValue item) => Value.Contains(item);
-
-        public void CopyTo(JsonValue[] array, int arrayIndex) => Value.CopyTo(array, arrayIndex);
-
-        public IEnumerator<JsonValue> GetEnumerator() => Value.GetEnumerator();
-
-        public int IndexOf(JsonValue item) => Value.IndexOf(item);
-
-        public void Insert(int index, JsonValue item) => Value.Insert(index, item);
-
-        public bool Remove(JsonValue item) => Value.Remove(item);
-
-        public void RemoveAt(int index) => Value.RemoveAt(index);
-
-        IEnumerator IEnumerable.GetEnumerator() => Value.GetEnumerator();
+        public override int GetHashedValue()
+        {
+            unchecked
+            {
+                int hash = 17;
+                foreach (var value in Value)
+                    hash = hash * 23 + value.GetHashedValue();
+                return hash;
+            }
+        }
 
     }
 }

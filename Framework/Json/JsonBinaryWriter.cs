@@ -31,7 +31,10 @@ namespace Foster.Framework
             ULong,
             Decimal,
             Float,
-            Double
+            Double,
+
+            Binary = 32,
+            Comment = 64
         }
 
         private readonly BinaryWriter writer;
@@ -88,7 +91,8 @@ namespace Foster.Framework
 
         public override void Comment(string text)
         {
-            throw new NotImplementedException();
+            writer.Write((byte)BinaryTokens.Comment);
+            writer.Write(text);
         }
 
         public override void Key(string name)
@@ -181,6 +185,13 @@ namespace Foster.Framework
         {
             writer.Write((byte)BinaryTokens.String);
             writer.Write(value ?? "");
+        }
+
+        public override void Value(ReadOnlySpan<byte> value)
+        {
+            writer.Write((byte)BinaryTokens.Binary);
+            writer.Write(value.Length);
+            writer.Write(value);
         }
 
         public void Dispose()

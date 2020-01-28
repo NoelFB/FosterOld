@@ -124,6 +124,8 @@ namespace Foster.Framework
         public static implicit operator Vector2(Vector3 vec) => new Vector2(vec.X, vec.Y);
         public static implicit operator Vector2(Vector4 vec) => new Vector2(vec.X, vec.Y);
 
+        public static implicit operator Vector2((float X, float Y) tuple) => new Vector2(tuple.X, tuple.Y);
+
         public static Vector2 operator -(Vector2 a) => new Vector2(-a.X, -a.Y);
         public static Vector2 operator /(Vector2 vec, float scaler) => new Vector2(vec.X / scaler, vec.Y / scaler);
         public static Vector2 operator /(float scaler, Vector2 vec) => new Vector2(scaler / vec.X, scaler / vec.Y);

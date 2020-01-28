@@ -30,6 +30,10 @@ namespace Foster.Framework.Json
         public abstract void Value(double value);
         public abstract void Value(string value);
 
+
+        public void Value(byte[] value) => Value(value.AsSpan());
+        public abstract void Value(ReadOnlySpan<byte> value);
+
         public void Json(JsonValue value)
         {
             if (value != null)
@@ -131,6 +135,13 @@ namespace Foster.Framework.Json
                                 Value(ULong.ULong);
                                 return;
                             }
+                        }
+                        break;
+                    case JsonType.Binary:
+                        if (value is JsonValue<byte[]> Bytes)
+                        {
+                            Value(Bytes.Bytes);
+                            return;
                         }
                         break;
                 }

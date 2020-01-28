@@ -75,6 +75,8 @@
         public static implicit operator Vector4(Point2 point) => new Vector4(point.X, point.Y, 0, 0);
         public static implicit operator Vector4(Point3 point) => new Vector4(point.X, point.Y, point.Z, 0);
 
+        public static implicit operator Vector4((float X, float Y, float Z, float W) tuple) => new Vector4(tuple.X, tuple.Y, tuple.Z, tuple.W);
+
         public static bool operator ==(Vector4 a, Vector4 b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z && a.W == b.W;
         public static bool operator !=(Vector4 a, Vector4 b) => a.X != b.X || a.Y != b.Y || a.Z != b.Z || a.W != b.W;
 

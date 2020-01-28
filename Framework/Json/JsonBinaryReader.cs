@@ -39,6 +39,7 @@ namespace Foster.Framework
                         Token = JsonToken.Null;
                         break;
                     case JsonBinaryWriter.BinaryTokens.ObjectStart:
+                        reader.ReadUInt32(); // skip byte size
                         Value = null;
                         Token = JsonToken.ObjectStart;
                         break;
@@ -51,6 +52,7 @@ namespace Foster.Framework
                         Token = JsonToken.ObjectKey;
                         break;
                     case JsonBinaryWriter.BinaryTokens.ArrayStart:
+                        reader.ReadUInt32(); // skip byte size
                         Value = null;
                         Token = JsonToken.ArrayStart;
                         break;
@@ -110,6 +112,13 @@ namespace Foster.Framework
                         Value = reader.ReadDouble();
                         Token = JsonToken.Number;
                         break;
+                    case JsonBinaryWriter.BinaryTokens.Binary:
+                        {
+                            var len = reader.ReadInt32();
+                            Value = reader.ReadBytes(len);
+                            Token = JsonToken.Binary;
+                            break;
+                        }
                 }
 
                 return true;
@@ -120,7 +129,7 @@ namespace Foster.Framework
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            reader.Dispose();
         }
     }
 }

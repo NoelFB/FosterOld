@@ -16,5 +16,6 @@ namespace Foster.Framework.Json
         Boolean = 6,
         String = 7,
         Number = 8,
+        Binary = 9,
     }
 }

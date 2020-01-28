@@ -54,53 +54,31 @@ namespace Foster.Framework
             public readonly List<Bitmap> Pages = new List<Bitmap>();
             public readonly Dictionary<string, Entry> Entries = new Dictionary<string, Entry>();
 
-            public void Serialize(JsonWriter writer)
+            public JsonObject Serialize()
             {
-                writer.ObjectBegin();
+                var obj = new JsonObject();
+                foreach (var entry in Entries.Values)
                 {
-                    for (int i = 0; i < Pages.Count; i ++)
+                    obj[entry.Name] = new JsonObject
                     {
-                        writer.Key(i.ToString());
-                        writer.ObjectBegin();
-                        foreach (var entry in Entries.Values)
+                        ["page"] = entry.Page,
+                        ["source"] = new JsonObject
                         {
-                            writer.Key(entry.Name);
-                            writer.ObjectBegin();
-                            {
-                                writer.Key("source");
-                                {
-                                    writer.ObjectBegin();
-                                    writer.Key("x");
-                                    writer.Value(entry.Source.X);
-                                    writer.Key("y");
-                                    writer.Value(entry.Source.Y);
-                                    writer.Key("w");
-                                    writer.Value(entry.Source.Width);
-                                    writer.Key("h");
-                                    writer.Value(entry.Source.Height);
-                                    writer.ObjectEnd();
-                                }
-
-                                writer.Key("frame");
-                                {
-                                    writer.ObjectBegin();
-                                    writer.Key("x");
-                                    writer.Value(entry.Frame.X);
-                                    writer.Key("y");
-                                    writer.Value(entry.Frame.Y);
-                                    writer.Key("w");
-                                    writer.Value(entry.Frame.Width);
-                                    writer.Key("h");
-                                    writer.Value(entry.Frame.Height);
-                                    writer.ObjectEnd();
-                                }
-                            }
-                            writer.ObjectEnd();
+                            ["x"] = entry.Source.X,
+                            ["y"] = entry.Source.Y,
+                            ["w"] = entry.Source.Width,
+                            ["h"] = entry.Source.Height,
+                        },
+                        ["frame"] = new JsonObject
+                        {
+                            ["x"] = entry.Frame.X,
+                            ["y"] = entry.Frame.Y,
+                            ["w"] = entry.Frame.Width,
+                            ["h"] = entry.Frame.Height,
                         }
-                        writer.ObjectEnd();
-                    }
+                    };
                 }
-                writer.ObjectEnd();
+                return obj;
             }
         }
 

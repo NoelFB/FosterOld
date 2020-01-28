@@ -60,6 +60,14 @@ namespace Foster.Framework.Json
                 if (char.IsWhiteSpace(next) || next == ':' || next == ',')
                     continue;
 
+                // a comment
+                if (next == '#' || (next == '/' && (Peek(out var p) && p == '/')))
+                {
+                    while (Step(out next) && next != '\n' && next != '\r')
+                        continue;
+                    continue;
+                }
+
                 var isEncapsulated = false;
 
                 switch (next)
@@ -117,7 +125,14 @@ namespace Foster.Framework.Json
 
                             char last = next;
                             while (Step(out next) && (next != '"' || last == '\\'))
+                            {
+                                if (next == '\\' && Peek(out p) && p == '"')
+                                {
+                                    last = next;
+                                    continue;
+                                }
                                 builder.Append(last = next);
+                            }
 
                             isEncapsulated = true;
                             break;
@@ -175,9 +190,20 @@ namespace Foster.Framework.Json
                 // is an ecnapsulated string
                 else if (isEncapsulated)
                 {
-                    Token = JsonToken.String;
-                    Value = builder.ToString();
-                    return true;
+                    var str = builder.ToString();
+
+                    if (str.StartsWith("bin::"))
+                    {
+                        Token = JsonToken.Binary;
+                        Value = Convert.FromBase64String(str.Substring(5));
+                        return true;
+                    }
+                    else
+                    {
+                        Token = JsonToken.String;
+                        Value = str;
+                        return true;
+                    }
                 }
                 else
                 {

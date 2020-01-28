@@ -56,6 +56,8 @@ namespace Foster.Framework
 
         public override bool IsValid(Stream stream)
         {
+            var pos = stream.Position;
+
             // check PNG header
             bool isPng =
                 stream.ReadByte() == header[0] && // 8-bit format
@@ -67,7 +69,7 @@ namespace Foster.Framework
                 stream.ReadByte() == header[6] && // Ctrl-Z
                 stream.ReadByte() == header[7];   // Line Feed
 
-            stream.Seek(-8, SeekOrigin.Current);
+            stream.Seek(pos, SeekOrigin.Begin);
 
             return isPng;
         }

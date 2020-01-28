@@ -53,7 +53,7 @@ namespace Foster.Framework
 
             if (reader.TryReadObject(out var data))
             {
-                foreach (var (page, value) in data)
+                foreach (var (page, value) in data.Object)
                 {
                     var texture = Pages[int.Parse(page)];
 

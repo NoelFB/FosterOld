@@ -105,7 +105,7 @@ namespace Foster.Framework
             stream.Close();
 
             if (!isValid)
-                throw new NotSupportedException("Stream is either an invalid or not supported image format");
+                throw new NotSupportedException($"Stream is either an invalid or not supported image format from path {path}");
         }
 
         /// <summary>

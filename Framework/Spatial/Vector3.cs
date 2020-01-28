@@ -167,6 +167,8 @@ namespace Foster.Framework
         public static implicit operator Vector3(Vector2 vec) => new Vector3(vec.X, vec.Y, 0);
         public static implicit operator Vector3(Vector4 vec) => new Vector3(vec.X, vec.Y, vec.Z);
 
+        public static implicit operator Vector3((float X, float Y, float Z) tuple) => new Vector3(tuple.X, tuple.Y, tuple.Z);
+
         public static Vector3 operator -(Vector3 a) => new Vector3(-a.X, -a.Y, -a.Z);
         public static Vector3 operator /(Vector3 vec, float scaler) => new Vector3(vec.X / scaler, vec.Y / scaler, vec.Z / scaler);
         public static Vector3 operator *(float scaler, Vector3 vec) => new Vector3(vec.X * scaler, vec.Y * scaler, vec.Z * scaler);

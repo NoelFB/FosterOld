@@ -116,6 +116,20 @@ namespace Foster.Framework
                     byName.Remove(entry.Name);
             }
         }
+        
+        /// <summary>
+        /// Removes an Asset Entry
+        /// </summary>
+        public void Remove(Entry entry)
+        {
+            if (entries.ContainsKey(entry.Guid))
+            {
+                entries.Remove(entry.Guid);
+
+                if (entriesByName.TryGetValue(entry.Type, out var byName))
+                    byName.Remove(entry.Name);
+            }
+        }
 
         /// <summary>
         /// Removes All Asset Entries
@@ -145,7 +159,7 @@ namespace Foster.Framework
         /// <summary>
         /// Gets an Asset with the given Name
         /// </summary>
-        public T? Get<T>(string name) where T : class, IAsset
+        public T? Get<T>(string? name) where T : class, IAsset
         {
             return GetEntry(typeof(T), name)?.Asset as T;
         }
@@ -153,9 +167,41 @@ namespace Foster.Framework
         /// <summary>
         /// Gets an Asset with the given Name of the given Type
         /// </summary>
-        public IAsset? Get(Type type, string name)
+        public IAsset? Get(Type type, string? name)
         {
             return GetEntry(type, name)?.Asset;
+        }
+
+        /// <summary>
+        /// Gets an Asset with the given Guid
+        /// </summary>
+        public bool Has<T>(Guid guid) where T : class, IAsset
+        {
+            return GetEntry(guid) != null;
+        }
+
+        /// <summary>
+        /// Gets an Asset with the given Guid
+        /// </summary>
+        public bool Has(Guid guid)
+        {
+            return GetEntry(guid) != null;
+        }
+
+        /// <summary>
+        /// Gets an Asset with the given Name
+        /// </summary>
+        public bool Has<T>(string? name) where T : class, IAsset
+        {
+            return !string.IsNullOrEmpty(name) && GetEntry(typeof(T), name) != null;
+        }
+
+        /// <summary>
+        /// Gets an Asset with the given Name of the given Type
+        /// </summary>
+        public bool Has(Type type, string? name)
+        {
+            return !string.IsNullOrEmpty(name) && GetEntry(type, name) != null;
         }
 
         /// <summary>
@@ -205,9 +251,9 @@ namespace Foster.Framework
         /// <summary>
         /// Gets an Asset Entry with the given Name
         /// </summary>
-        public Entry? GetEntry<T>(string name)
+        public Entry? GetEntry<T>(string? name)
         {
-            if (entriesByName.TryGetValue(typeof(T), out var byName) && byName.TryGetValue(name, out var entry))
+            if (!string.IsNullOrEmpty(name) && entriesByName.TryGetValue(typeof(T), out var byName) && byName.TryGetValue(name, out var entry))
                 return entry;
 
             return null;
@@ -216,9 +262,9 @@ namespace Foster.Framework
         /// <summary>
         /// Gets an Asset Entry with the given Name
         /// </summary>
-        public Entry? GetEntry(Type type, string name)
+        public Entry? GetEntry(Type type, string? name)
         {
-            if (entriesByName.TryGetValue(type, out var byName) && byName.TryGetValue(name, out var entry))
+            if (!string.IsNullOrEmpty(name) && entriesByName.TryGetValue(type, out var byName) && byName.TryGetValue(name, out var entry))
                 return entry;
 
             return null;

@@ -580,56 +580,32 @@ void main(void)
 
         public void Rect(Rect rect, Color color)
         {
-            Quad(
-                new Vector2(rect.X, rect.Y),
-                new Vector2(rect.X + rect.Width, rect.Y),
-                new Vector2(rect.X + rect.Width, rect.Y + rect.Height),
-                new Vector2(rect.X, rect.Y + rect.Height), color);
+            Quad((rect.X, rect.Y), (rect.X + rect.Width, rect.Y), (rect.X + rect.Width, rect.Y + rect.Height), (rect.X, rect.Y + rect.Height), color);
         }
 
         public void Rect(Vector2 position, Vector2 size, Color color)
         {
-            Quad(
-                position,
-                position + new Vector2(size.X, 0),
-                position + new Vector2(size.X, size.Y),
-                position + new Vector2(0, size.Y), color);
+            Quad(position, position + (size.X, 0), position + (size.X, size.Y), position + (0, size.Y), color);
         }
 
         public void Rect(float x, float y, float width, float height, Color color)
         {
-            Quad(
-                new Vector2(x, y),
-                new Vector2(x + width, y),
-                new Vector2(x + width, y + height),
-                new Vector2(x, y + height), color);
+            Quad((x, y), (x + width, y), (x + width, y + height), (x, y + height), color);
         }
 
         public void Rect(Rect rect, Color c0, Color c1, Color c2, Color c3)
         {
-            Quad(
-                new Vector2(rect.X, rect.Y),
-                new Vector2(rect.X + rect.Width, rect.Y),
-                new Vector2(rect.X + rect.Width, rect.Y + rect.Height),
-                new Vector2(rect.X, rect.Y + rect.Height), c0, c1, c2, c3);
+            Quad((rect.X, rect.Y), (rect.X + rect.Width, rect.Y), (rect.X + rect.Width, rect.Y + rect.Height), (rect.X, rect.Y + rect.Height), c0, c1, c2, c3);
         }
 
         public void Rect(Vector2 position, Vector2 size, Color c0, Color c1, Color c2, Color c3)
         {
-            Quad(
-                position,
-                position + new Vector2(size.X, 0),
-                position + new Vector2(size.X, size.Y),
-                position + new Vector2(0, size.Y), c0, c1, c2, c3);
+            Quad(position, position + (size.X, 0), position + (size.X, size.Y), position + (0, size.Y), c0, c1, c2, c3);
         }
 
         public void Rect(float x, float y, float width, float height, Color c0, Color c1, Color c2, Color c3)
         {
-            Quad(
-                new Vector2(x, y),
-                new Vector2(x + width, y),
-                new Vector2(x + width, y + height),
-                new Vector2(x, y + height), c0, c1, c2, c3);
+            Quad((x, y), (x + width, y), (x + width, y + height), (x, y + height), c0, c1, c2, c3);
         }
 
         #endregion
@@ -858,19 +834,16 @@ void main(void)
         public void Image(Texture texture, Color color, bool washed = false)
         {
             SetTexture(texture);
-            Quad(
-                new Vector2(0, 0), new Vector2(texture.Width, 0), new Vector2(texture.Width, texture.Height), new Vector2(0, texture.Height),
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
-                color, washed);
+            Quad((0, 0), (texture.Width, 0), (texture.Width, texture.Height), (0, texture.Height),
+                 (0, 0), (1, 0), (1, 1), (0, 1), color, washed);
         }
 
         public void Image(Texture texture, Vector2 position, Color color, bool washed = false)
         {
             SetTexture(texture);
             Quad(
-                position, position + new Vector2(texture.Width, 0), position + new Vector2(texture.Width, texture.Height), position + new Vector2(0, texture.Height),
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
-                color, washed);
+                position, position + (texture.Width, 0), position + (texture.Width, texture.Height), position + (0, texture.Height),
+                (0, 0), (1, 0), (1, 1), (0, 1), color, washed);
         }
 
         public void Image(Texture texture, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
@@ -881,9 +854,8 @@ void main(void)
 
             SetTexture(texture);
             Quad(
-                Vector2.Zero, new Vector2(texture.Width, 0), new Vector2(texture.Width, texture.Height), new Vector2(0, texture.Height),
-                new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1),
-                color, washed);
+                (0, 0), (texture.Width, 0), (texture.Width, texture.Height), (0, texture.Height),
+                (0, 0), (1, 0), (1, 1), (0, 1), color, washed);
 
             MatrixStack = was;
         }
@@ -897,9 +869,8 @@ void main(void)
 
             SetTexture(texture);
             Quad(
-                position, position + new Vector2(clip.Width, 0), position + new Vector2(clip.Width, clip.Height), position + new Vector2(0, clip.Height),
-                new Vector2(tx0, ty0), new Vector2(tx1, ty0), new Vector2(tx1, ty1), new Vector2(tx0, ty1),
-                color, washed);
+                position, position + (clip.Width, 0), position + (clip.Width, clip.Height), position + (0, clip.Height),
+                (tx0, ty0), (tx1, ty0), (tx1, ty1), (tx0, ty1), color, washed);
         }
 
         public void Image(Texture texture, Rect clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
@@ -915,9 +886,8 @@ void main(void)
 
             SetTexture(texture);
             Quad(
-                Vector2.Zero, new Vector2(clip.Width, 0), new Vector2(clip.Width, clip.Height), new Vector2(0, clip.Height),
-                new Vector2(tx0, ty0), new Vector2(tx1, ty0), new Vector2(tx1, ty1), new Vector2(tx0, ty1),
-                color, washed);
+                (0, 0), (clip.Width, 0), (clip.Width, clip.Height), (0, clip.Height),
+                (tx0, ty0), (tx1, ty0), (tx1, ty1), (tx0, ty1), color, washed);
 
             MatrixStack = was;
         }
@@ -1078,6 +1048,7 @@ void main(void)
             to.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M32;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FlipYUVs(ref Vector2 uv0, ref Vector2 uv1, ref Vector2 uv2, ref Vector2 uv3)
         {
             var temp = uv0.Y;

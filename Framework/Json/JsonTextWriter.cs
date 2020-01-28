@@ -35,7 +35,7 @@ namespace Foster.Framework.Json
         private bool wasValue;
         private bool wasBracket;
 
-        public JsonTextWriter(string path, bool strict = true) : this(File.CreateText(path), strict)
+        public JsonTextWriter(string path, bool strict = true) : this(File.Create(path), strict)
         {
         }
 
@@ -226,6 +226,15 @@ namespace Foster.Framework.Json
         {
             Next(isValue: true);
             EscapedString(value);
+        }
+
+        public override void Value(ReadOnlySpan<byte> value)
+        {
+            Next(isValue: true);
+            writer.Write('"');
+            writer.Write("bin::");
+            writer.Write(Convert.ToBase64String(value, Base64FormattingOptions.None));
+            writer.Write('"');
         }
 
         private bool StringContainsAny(string value, string chars)

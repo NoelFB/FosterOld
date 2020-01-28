@@ -14,6 +14,7 @@ namespace Foster.Framework.Json
         Number,
         String,
         Object,
-        Array
+        Array,
+        Binary
     }
 }

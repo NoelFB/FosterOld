@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Foster.Framework.Json
@@ -24,6 +26,7 @@ namespace Foster.Framework.Json
         public bool IsString => Type == JsonType.String;
         public bool IsObject => Type == JsonType.Object;
         public bool IsArray => Type == JsonType.Array;
+        public bool IsBinary => Type == JsonType.Binary;
 
         public abstract bool Bool { get; }
         public abstract byte Byte { get; }
@@ -38,13 +41,40 @@ namespace Foster.Framework.Json
         public abstract float Float { get; }
         public abstract double Double { get; }
         public abstract string String { get; }
-        public abstract JsonObject? Object { get; }
-        public abstract JsonArray? Array { get; }
+        public abstract byte[] Bytes { get; }
+
+        public T Enum<T>(T defaultValue = default(T)) where T : struct, IConvertible
+        {
+            if (global::System.Enum.TryParse<T>(String, true, out var value))
+                return value;
+            return defaultValue;
+        }
+
+        public bool BoolOrDefault(bool defaultValue) => IsBool ? Bool : defaultValue;
+        public byte ByteOrDefault(byte defaultValue) => IsNumber ? Byte : defaultValue;
+        public char CharOrDefault(char defaultValue) => IsNumber ? Char : defaultValue;
+        public short ShortOrDefault(short defaultValue) => IsNumber ? Short : defaultValue;
+        public ushort UShortOrDefault(ushort defaultValue) => IsNumber ? UShort : defaultValue;
+        public int IntOrDefault(int defaultValue) => IsNumber ? Int : defaultValue;
+        public uint UIntOrDefault(uint defaultValue) => IsNumber ? UInt : defaultValue;
+        public long LongOrDefault(long defaultValue) => IsNumber ? Long : defaultValue;
+        public ulong ULongOrDefault(ulong defaultValue) => IsNumber ? ULong : defaultValue;
+        public decimal DecimalOrDefault(decimal defaultValue) => IsNumber ? Decimal : defaultValue;
+        public float FloatOrDefault(float defaultValue) => IsNumber ? Float : defaultValue;
+        public double DoubleOrDefault(double defaultValue) => IsNumber ? Double : defaultValue;
+        public string StringOrDefault(string defaultValue) => IsString ? String : defaultValue;
 
         public abstract JsonValue this[string key] { get; set; }
         public abstract JsonValue this[int index] { get; set; }
 
+        public abstract IEnumerable<string> Keys { get; }
+        public abstract IEnumerable<JsonValue> Values { get; }
+        public abstract IEnumerable<JsonValue> Array { get; }
+        public abstract IEnumerable<KeyValuePair<string, JsonValue>> Object { get; }
+        public abstract int Count { get; }
+
         public abstract object? UnderlyingValue { get; }
+        public abstract int GetHashedValue();
 
         public static implicit operator JsonValue(bool value) => new JsonValue<bool>(JsonType.Bool, value);
         public static implicit operator JsonValue(decimal value) => new JsonValue<decimal>(JsonType.Number, value);
@@ -61,6 +91,7 @@ namespace Foster.Framework.Json
         public static implicit operator JsonValue(string value) => new JsonValue<string>(JsonType.String, value);
         public static implicit operator JsonValue(List<string> value) => new JsonArray(value);
         public static implicit operator JsonValue(string[] value) => new JsonArray(value);
+        public static implicit operator JsonValue(byte[] value) => new JsonValue<byte[]>(JsonType.Binary, value);
 
         public static implicit operator bool(JsonValue value) => value.Bool;
         public static implicit operator float(JsonValue value) => value.Float;
@@ -74,6 +105,7 @@ namespace Foster.Framework.Json
         public static implicit operator long(JsonValue value) => value.Long;
         public static implicit operator ulong(JsonValue value) => value.ULong;
         public static implicit operator string(JsonValue value) => value.String;
+        public static implicit operator byte[](JsonValue value) => value.Bytes;
 
     }
 
@@ -82,6 +114,9 @@ namespace Foster.Framework.Json
     /// </summary>
     public class JsonNull : JsonValue
     {
+        internal static readonly JsonNull nul = new JsonNull();
+        internal static readonly byte[] binary = new byte[0];
+
         public JsonNull() : base(JsonType.Null)
         {
 
@@ -100,21 +135,27 @@ namespace Foster.Framework.Json
         public override long Long => 0;
         public override ulong ULong => 0;
         public override string String => string.Empty;
-        public override JsonObject? Object => null;
-        public override JsonArray? Array => null;
+        public override byte[] Bytes => binary;
         public override object? UnderlyingValue => null;
+        public override int GetHashedValue() => 0;
 
         public override JsonValue this[string key]
         {
-            get => throw new InvalidOperationException();
+            get => nul;
             set => throw new InvalidOperationException();
         }
 
         public override JsonValue this[int index]
         {
-            get => throw new InvalidOperationException();
+            get => nul;
             set => throw new InvalidOperationException();
         }
+
+        public override int Count => 0;
+        public override IEnumerable<string> Keys => Enumerable.Empty<string>();
+        public override IEnumerable<JsonValue> Values => Enumerable.Empty<JsonValue>();
+        public override IEnumerable<JsonValue> Array => Enumerable.Empty<JsonValue>();
+        public override IEnumerable<KeyValuePair<string, JsonValue>> Object => Enumerable.Empty<KeyValuePair<string, JsonValue>>();
     }
 
     /// <summary>
@@ -331,21 +372,50 @@ namespace Foster.Framework.Json
             }
         }
 
-        public override JsonObject? Object => (IsObject ? (this as JsonObject) : null);
+        public override byte[] Bytes
+        {
+            get
+            {
+                if (IsBinary && Value is byte[] bytes)
+                    return bytes;
+                return JsonNull.binary;
+            }
+        }
 
-        public override JsonArray? Array => (IsArray ? (this as JsonArray) : null);
+        public override int Count => 0;
+        public override IEnumerable<string> Keys => Enumerable.Empty<string>();
+        public override IEnumerable<JsonValue> Values => Enumerable.Empty<JsonValue>();
+        public override IEnumerable<JsonValue> Array => Enumerable.Empty<JsonValue>();
+        public override IEnumerable<KeyValuePair<string, JsonValue>> Object => Enumerable.Empty<KeyValuePair<string, JsonValue>>();
 
         public override object? UnderlyingValue => Value;
 
+        public override int GetHashedValue()
+        {
+            if (IsString)
+                return Calc.StaticStringHash(String);
+
+            if (IsNumber)
+                return Int;
+
+            if (IsBool)
+                return (Bool ? 1 : 0);
+
+            if (IsBinary)
+                return (int)Calc.Adler32(0, Bytes);
+
+            return 0;
+        }
+
         public override JsonValue this[string key]
         {
-            get => throw new InvalidOperationException();
+            get => JsonNull.nul;
             set => throw new InvalidOperationException();
         }
 
         public override JsonValue this[int index]
         {
-            get => throw new InvalidOperationException();
+            get => JsonNull.nul;
             set => throw new InvalidOperationException();
         }
 

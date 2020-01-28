@@ -549,6 +549,22 @@ namespace Foster.Framework
 
         #region Utils
 
+
+        /// <summary>
+        /// .NET Core doesn't always hash string values the same (it can seed it based on the running instance)
+        /// So this is to get a static value for every same string
+        /// </summary>
+        public static int StaticStringHash(string value)
+        {
+            unchecked
+            {
+                int hash = 17;
+                for (int i = 0; i < value.Length; i++)
+                    hash = hash * 32 + (int)value[i];
+                return hash;
+            }
+        }
+
         public static string NormalizePath(string path)
         {
             unsafe
