@@ -234,7 +234,7 @@ namespace Foster.Framework
                 }
             }
 
-            ImageFormat.Png.Write(stream, Width, Height, color);
+            PNG.Write(stream, Width, Height, color);
         }
 
         public void SaveJpg(string path)
