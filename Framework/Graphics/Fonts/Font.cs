@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Unicode;
 
 namespace Foster.Framework
 {
@@ -12,7 +13,12 @@ namespace Foster.Framework
     /// </summary>
     public static class Charsets
     {
-        public static readonly string ASCII = Make((char)32, (char)126);
+        public static readonly string ASCII = Make(32, 126);
+
+        public static string Make(int from, int to)
+        {
+            return Make((char)from, (char)to);
+        }
 
         public static string Make(char from, char to)
         {

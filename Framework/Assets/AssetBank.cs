@@ -270,5 +270,31 @@ namespace Foster.Framework
             return null;
         }
 
+        /// <summary>
+        /// Finds each Asset Entry with a name that starts with the given prefix
+        /// </summary>
+        public IEnumerable<Entry> EachEntry<T>(string? prefix = null) where T : class, IAsset
+        {
+            if (entriesByName.TryGetValue(typeof(T), out var byName))
+            {
+                foreach (var entry in byName.Values)
+                    if (string.IsNullOrEmpty(prefix) || entry.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        yield return entry;
+            }
+        }
+
+        /// <summary>
+        /// Finds each Asset Entry with a name that starts with the given prefix
+        /// </summary>
+        public IEnumerable<Entry> EachEntry(Type type, string? prefix = null)
+        {
+            if (entriesByName.TryGetValue(type, out var byName))
+            {
+                foreach (var entry in byName.Values)
+                    if (string.IsNullOrEmpty(prefix) || entry.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        yield return entry;
+            }
+        }
+
     }
 }

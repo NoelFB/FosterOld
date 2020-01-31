@@ -53,33 +53,6 @@ namespace Foster.Framework
         {
             public readonly List<Bitmap> Pages = new List<Bitmap>();
             public readonly Dictionary<string, Entry> Entries = new Dictionary<string, Entry>();
-
-            public JsonObject Serialize()
-            {
-                var obj = new JsonObject();
-                foreach (var entry in Entries.Values)
-                {
-                    obj[entry.Name] = new JsonObject
-                    {
-                        ["page"] = entry.Page,
-                        ["source"] = new JsonObject
-                        {
-                            ["x"] = entry.Source.X,
-                            ["y"] = entry.Source.Y,
-                            ["w"] = entry.Source.Width,
-                            ["h"] = entry.Source.Height,
-                        },
-                        ["frame"] = new JsonObject
-                        {
-                            ["x"] = entry.Frame.X,
-                            ["y"] = entry.Frame.Y,
-                            ["w"] = entry.Frame.Width,
-                            ["h"] = entry.Frame.Height,
-                        }
-                    };
-                }
-                return obj;
-            }
         }
 
         /// <summary>
