@@ -40,72 +40,24 @@ namespace Foster.Framework
             Height = height;
         }
 
-        public Bitmap(Stream stream, ImageFormat format)
-        {
-            Width = 0;
-            Height = 0;
-            Pixels = null!;
-
-            var isValid = format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels);
-            if (!isValid)
-                throw new Exception($"Stream is not a valid {format.Name} image format");
-        }
-
         public Bitmap(Stream stream)
         {
-            Width = 0;
-            Height = 0;
-            Pixels = null!;
-
-            var isValid = false;
-            foreach (var format in ImageFormat.Formats)
-            {
-                if (format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels))
-                {
-                    isValid = true;
-                    break;
-                }
-            }
-
-            if (!isValid)
+            if (Image.Read(stream, out Width, out Height, out var pixels) && pixels != null)
+                Pixels = pixels;
+            else
                 throw new NotSupportedException("Stream is either an invalid or not supported image format");
-        }
-
-        public Bitmap(string path, ImageFormat format)
-        {
-            Width = 0;
-            Height = 0;
-            Pixels = null!;
-
-            using var stream = File.OpenRead(path);
-            var isValid = format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels);
-            stream.Close();
-
-            if (!isValid)
-                throw new Exception($"Stream is not a valid {format.Name} image format");
         }
 
         public Bitmap(string path)
         {
-            Width = 0;
-            Height = 0;
-            Pixels = null!;
-
             using var stream = File.OpenRead(path);
-            var isValid = false;
-            foreach (var format in ImageFormat.Formats)
-            {
-                if (format.IsValid(stream) && format.Read(stream, out Width, out Height, out Pixels))
-                {
-                    isValid = true;
-                    break;
-                }
-            }
+
+            if (Image.Read(stream, out Width, out Height, out var pixels) && pixels != null)
+                Pixels = pixels;
+            else
+                throw new NotSupportedException("Stream is either an invalid or not supported image format");
 
             stream.Close();
-
-            if (!isValid)
-                throw new NotSupportedException($"Stream is either an invalid or not supported image format from path {path}");
         }
 
         /// <summary>
@@ -147,12 +99,12 @@ namespace Foster.Framework
         public void SavePng(string path)
         {
             using var stream = File.Create(path);
-            ImageFormat.Png.Write(stream, Width, Height, Pixels);
+            PNG.Write(stream, Width, Height, Pixels);
         }
 
         public void SavePng(Stream stream)
         {
-            ImageFormat.Png.Write(stream, Width, Height, Pixels);
+            PNG.Write(stream, Width, Height, Pixels);
         }
 
         public void SaveJpg(string path)

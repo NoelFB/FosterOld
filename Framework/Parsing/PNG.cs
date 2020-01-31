@@ -10,7 +10,7 @@ namespace Foster.Framework
     /// This is not a true or full PNG format implementation, but rather handles the most common PNG formats for games
     /// It could probably be optimized more.
     /// </summary>
-    public class PngFormat : ImageFormat
+    public static class PNG
     {
         private enum Colors
         {
@@ -30,7 +30,7 @@ namespace Foster.Framework
         private static readonly byte[] header = { 137, 80, 78, 71, 13, 10, 26, 10 };
         private static readonly uint[] crcTable = new uint[256];
 
-        static PngFormat()
+        static PNG()
         {
             // create the CRC table
             // taken from libpng format specification: http://www.libpng.org/pub/png/spec/1.2/PNG-CRCAppendix.html
@@ -49,12 +49,7 @@ namespace Foster.Framework
             }
         }
 
-        public PngFormat() : base("PNG")
-        {
-
-        }
-
-        public override bool IsValid(Stream stream)
+        public static bool IsValid(Stream stream)
         {
             var pos = stream.Position;
 
@@ -74,7 +69,7 @@ namespace Foster.Framework
             return isPng;
         }
 
-        public override unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels)
+        public static unsafe bool Read(Stream stream, out int width, out int height, out Color[] pixels)
         {
 
             // This could likely be optimized a buuunch more
@@ -389,7 +384,7 @@ namespace Foster.Framework
             return true;
         }
 
-        public override unsafe bool Write(Stream stream, int width, int height, Color[] pixels)
+        public static unsafe bool Write(Stream stream, int width, int height, Color[] pixels)
         {
             const int MaxIDATChunkLength = 8192;
 
