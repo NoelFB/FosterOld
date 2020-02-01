@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// Writes Json to a string format
@@ -261,6 +261,7 @@ namespace Foster.Framework.Json
                         case '\t': writer.Write("\\t"); break;
                         case '\r': writer.Write("\\r"); break;
                         case '\"': writer.Write("\\\""); break;
+                        case '\\': writer.Write("\\\\"); break;
 
                         default:
                             writer.Write(value[i]);

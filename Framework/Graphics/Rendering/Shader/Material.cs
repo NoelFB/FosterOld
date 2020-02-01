@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// <summary>
     /// A Material is used to store the state of a Shader
     /// </summary>
-    public class Material : IAsset
+    public class Material
     {
 
         public class Parameter
@@ -111,8 +111,6 @@ namespace Foster.Framework
                     throw new Exception($"Parameter {Name} isn't a Vector4");
             }
         }
-
-        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The Shader this Material uses

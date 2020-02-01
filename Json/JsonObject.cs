@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Foster.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// A data structure encapsulating a Json Object

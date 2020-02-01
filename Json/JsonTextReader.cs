@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// Reads JSON from a Stream or Path
@@ -25,8 +25,9 @@ namespace Foster.Framework.Json
         private bool storedNext;
         private string? storedString;
         private JsonToken storedToken;
+        private long position;
 
-        public JsonTextReader(string path) : this(File.OpenRead(path))
+        public JsonTextReader(string path) : this( File.OpenRead(path))
         {
 
         }
@@ -39,7 +40,10 @@ namespace Foster.Framework.Json
         public JsonTextReader(TextReader reader)
         {
             this.reader = reader;
+            position = 0;
         }
+
+        public override long Position => position;
 
         public override bool Read()
         {
@@ -54,16 +58,16 @@ namespace Foster.Framework.Json
                 return true;
             }
 
-            while (Step(out var next))
+            while (StepChar(out var next))
             {
                 // skip whitespace and characters we don't care about
                 if (char.IsWhiteSpace(next) || next == ':' || next == ',')
                     continue;
 
                 // a comment
-                if (next == '#' || (next == '/' && (Peek(out var p) && p == '/')))
+                if (next == '#' || (next == '/' && (PeekChar(out var p) && p == '/')))
                 {
-                    while (Step(out next) && next != '\n' && next != '\r')
+                    while (StepChar(out next) && next != '\n' && next != '\r')
                         continue;
                     continue;
                 }
@@ -123,15 +127,16 @@ namespace Foster.Framework.Json
                         {
                             builder.Clear();
 
-                            char last = next;
-                            while (Step(out next) && (next != '"' || last == '\\'))
+                            while (StepChar(out next) && next != '"')
                             {
-                                if (next == '\\' && Peek(out p) && p == '"')
+                                if (next == '\\')
                                 {
-                                    last = next;
+                                    StepChar(out next);
+                                    builder.Append(next);
                                     continue;
                                 }
-                                builder.Append(last = next);
+
+                                builder.Append(next);
                             }
 
                             isEncapsulated = true;
@@ -144,10 +149,10 @@ namespace Foster.Framework.Json
                             builder.Clear();
                             builder.Append(next);
 
-                            while (Peek(out next) && !("\r\n,:{}[]#").Contains(next))
+                            while (PeekChar(out next) && !("\r\n,:{}[]#").Contains(next))
                             {
                                 builder.Append(next);
-                                Skip();
+                                SkipChar();
                             }
 
                             break;
@@ -159,11 +164,11 @@ namespace Foster.Framework.Json
                 {
                     if (char.IsWhiteSpace(next))
                     {
-                        while (Peek(out next) && char.IsWhiteSpace(next))
-                            Skip();
+                        while (PeekChar(out next) && char.IsWhiteSpace(next))
+                            SkipChar();
                     }
 
-                    if (Peek(out next) && next == ':')
+                    if (PeekChar(out next) && next == ':')
                         isKey = true;
                 }
 
@@ -276,19 +281,20 @@ namespace Foster.Framework.Json
 
             return false;
 
-            bool Skip()
+            bool SkipChar()
             {
-                return Step(out _);
+                return StepChar(out _);
             }
 
-            bool Step(out char next)
+            bool StepChar(out char next)
             {
                 int read = reader.Read();
                 next = (char)read;
+                position++;
                 return read >= 0;
             }
 
-            bool Peek(out char next)
+            bool PeekChar(out char next)
             {
                 int read = reader.Peek();
                 next = (char)read;

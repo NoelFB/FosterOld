@@ -1,5 +1,4 @@
-﻿using Foster.Framework.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -332,7 +331,7 @@ namespace Foster.Framework
                             var source = sources[i];
                             var entry = new Entry(source.Name, page, source.Packed, source.Frame);
 
-                            Packed.Entries.Add(entry.Name, entry);
+                            Packed.Entries[entry.Name] = entry;
 
                             if (!source.Empty)
                                 bmp.SetPixels(sources[i].Packed, sources[i].Buffer);

@@ -1,4 +1,4 @@
-﻿using Foster.Framework.Json;
+﻿using Foster.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,7 +65,7 @@ namespace Foster.Framework
             var offset = containerPositionStack.Pop();
 
             writer.BaseStream.Seek(offset, SeekOrigin.Begin);
-            writer.Write((uint)(current - offset)); // byte size
+            writer.Write((uint)(current - offset - 4)); // byte size (minus 4 since we want to skip the actual byte size value)
             writer.BaseStream.Seek(current, SeekOrigin.Begin);
         }
 

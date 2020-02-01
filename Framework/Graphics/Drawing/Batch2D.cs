@@ -779,13 +779,25 @@ void main(void)
 
         }
 
-        public void SemiCircle(Vector2 center, float start, float end, float radius, int steps, Color color)
+        public void SemiCircle(Vector2 center, float startRadians, float endRadians, float radius, int steps, Color color)
         {
-            var last = Vector2.Angle(start, radius);
+            var last = Vector2.Angle(startRadians, radius);
 
             for (int i = 1; i <= steps; i++)
             {
-                var next = Vector2.Angle(Calc.AngleLerp(start, end, (i / (float)steps)), radius);
+                var next = Vector2.Angle(Calc.AngleLerp(startRadians, endRadians, (i / (float)steps)), radius);
+                Triangle(center + last, center + next, center, color);
+                last = next;
+            }
+        }
+
+        public void Circle(Vector2 center, float radius, int steps, Color color)
+        {
+            var last = Vector2.Angle(0, radius);
+
+            for (int i = 1; i <= steps; i++)
+            {
+                var next = Vector2.Angle((i / (float)steps) * Calc.TAU, radius);
                 Triangle(center + last, center + next, center, color);
                 last = next;
             }

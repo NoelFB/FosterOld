@@ -9,7 +9,7 @@ namespace Foster.Framework
     /// <summary>
     /// A Mesh used for Rendering
     /// </summary>
-    public class Mesh : IDisposable, IAsset
+    public class Mesh : IDisposable
     {
 
         public abstract class Platform
@@ -19,11 +19,6 @@ namespace Foster.Framework
             protected internal abstract void UploadIndices(ReadOnlySequence<int> indices);
             protected internal abstract void Dispose();
         }
-
-        /// <summary>
-        /// Asset Guid
-        /// </summary>
-        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// A reference to the internal platform implementation of the Mesh

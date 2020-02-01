@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public static class Image
+    public static class Images
     {
 
         public delegate bool IsValidDelegate(Stream stream);
@@ -30,7 +30,7 @@ namespace Foster.Framework
 
         public static readonly List<Format> Formats = new List<Format>();
 
-        static Image()
+        static Images()
         {
             Formats.Add(new Format("PNG", PNG.IsValid, PNG.Read, PNG.Write));
         }

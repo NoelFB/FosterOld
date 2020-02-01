@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// A Json Value Type

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// A data structure encapsulating a Json Array

@@ -42,7 +42,7 @@ namespace Foster.Framework
 
         public Bitmap(Stream stream)
         {
-            if (Image.Read(stream, out Width, out Height, out var pixels) && pixels != null)
+            if (Images.Read(stream, out Width, out Height, out var pixels) && pixels != null)
                 Pixels = pixels;
             else
                 throw new NotSupportedException("Stream is either an invalid or not supported image format");
@@ -52,7 +52,7 @@ namespace Foster.Framework
         {
             using var stream = File.OpenRead(path);
 
-            if (Image.Read(stream, out Width, out Height, out var pixels) && pixels != null)
+            if (Images.Read(stream, out Width, out Height, out var pixels) && pixels != null)
                 Pixels = pixels;
             else
                 throw new NotSupportedException("Stream is either an invalid or not supported image format");

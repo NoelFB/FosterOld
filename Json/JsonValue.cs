@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Foster.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
 
     /// <summary>
@@ -418,6 +419,5 @@ namespace Foster.Framework.Json
             get => JsonNull.nul;
             set => throw new InvalidOperationException();
         }
-
     }
 }

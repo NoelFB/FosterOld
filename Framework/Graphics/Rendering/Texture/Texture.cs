@@ -9,7 +9,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Texture used for Rendering
     /// </summary>
-    public class Texture : IDisposable, IAsset
+    public class Texture : IDisposable
     {
 
         /// <summary>
@@ -25,11 +25,6 @@ namespace Foster.Framework
             protected internal abstract bool FlipVertically();
             protected internal abstract void Dispose();
         }
-
-        /// <summary>
-        /// Asset Guid
-        /// </summary>
-        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// A reference to the internal platform implementation of the Texture

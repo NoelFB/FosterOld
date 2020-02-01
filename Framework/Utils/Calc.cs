@@ -22,6 +22,9 @@ namespace Foster.Framework
         public const float RadiansRight = 0;
         public const float RadiansUp = PI + PI / 2;
 
+        public const float DegToRad = (MathF.PI * 2) / 360f;
+        public const float RadToDeg = 360f / (MathF.PI * 2);
+
         #region Binary  Operations
 
         public static bool IsBitSet(byte b, int pos)

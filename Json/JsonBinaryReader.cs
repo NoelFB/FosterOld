@@ -1,4 +1,4 @@
-﻿using Foster.Framework.Json;
+﻿using Foster.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +10,7 @@ namespace Foster.Framework
     {
 
         private readonly BinaryReader reader;
+        private uint objectSize;
 
         public JsonBinaryReader(string path) : this(File.OpenRead(path))
         {
@@ -26,6 +27,8 @@ namespace Foster.Framework
             this.reader = reader;
         }
 
+        public override long Position => reader.BaseStream.Position;
+
         public override bool Read()
         {
             if (reader.BaseStream.Position < reader.BaseStream.Length)
@@ -39,7 +42,7 @@ namespace Foster.Framework
                         Token = JsonToken.Null;
                         break;
                     case JsonBinaryWriter.BinaryTokens.ObjectStart:
-                        reader.ReadUInt32(); // skip byte size
+                        objectSize = reader.ReadUInt32(); // skip byte size
                         Value = null;
                         Token = JsonToken.ObjectStart;
                         break;
@@ -52,7 +55,7 @@ namespace Foster.Framework
                         Token = JsonToken.ObjectKey;
                         break;
                     case JsonBinaryWriter.BinaryTokens.ArrayStart:
-                        reader.ReadUInt32(); // skip byte size
+                        objectSize = reader.ReadUInt32(); // skip byte size
                         Value = null;
                         Token = JsonToken.ArrayStart;
                         break;
@@ -125,6 +128,15 @@ namespace Foster.Framework
             }
 
             return false;
+        }
+
+        public override void SkipValue()
+        {
+            if (Read())
+            {
+                if (Token == JsonToken.ObjectStart || Token == JsonToken.ObjectEnd)
+                    reader.BaseStream.Seek(objectSize, SeekOrigin.Current);
+            }
         }
 
         public void Dispose()

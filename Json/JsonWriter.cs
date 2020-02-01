@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// Writes Json to a string format

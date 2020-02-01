@@ -7,7 +7,7 @@ namespace Foster.Framework
     /// <summary>
     /// Sprite Font is a Font rendered to a Texture at a given size, which is useful for drawing Text with sprite batchers
     /// </summary>
-    public class SpriteFont : IAsset
+    public class SpriteFont
     {
         /// <summary>
         /// A single Sprite Font Character
@@ -47,8 +47,6 @@ namespace Foster.Framework
                 Advance = advance;
             }
         }
-
-        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// A list of all the Characters in the Sprite Font

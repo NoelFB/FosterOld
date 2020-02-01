@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// Reads JSON from a Stream or Path
@@ -19,6 +19,7 @@ namespace Foster.Framework.Json
 
         public JsonToken Token { get; protected set; }
         public object? Value { get; protected set; }
+        public abstract long Position { get; }
 
         public JsonObject ReadObject()
         {
@@ -138,6 +139,11 @@ namespace Foster.Framework.Json
             }
 
             return new JsonNull();
+        }
+
+        public virtual void SkipValue()
+        {
+            ReadValue();
         }
 
         public abstract bool Read();

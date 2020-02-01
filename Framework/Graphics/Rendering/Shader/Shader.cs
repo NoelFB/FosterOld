@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// <summary>
     /// A Shader used for Rendering
     /// </summary>
-    public class Shader : IDisposable, IAsset
+    public class Shader : IDisposable
     {
 
         public abstract class Platform
@@ -17,11 +17,6 @@ namespace Foster.Framework
             protected internal readonly Dictionary<string, ShaderUniform> Uniforms = new Dictionary<string, ShaderUniform>();
             protected internal abstract void Dispose();
         }
-
-        /// <summary>
-        /// Asset Guid
-        /// </summary>
-        public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// A reference to the internal platform implementation of the Shader

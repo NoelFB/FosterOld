@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Foster.Framework.Json
+namespace Foster.Json
 {
     /// <summary>
     /// A Json Token
