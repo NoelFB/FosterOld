@@ -13,7 +13,7 @@ namespace Foster.Framework
     /// The Window is only able to be Rendered to during is OnRender callback. Attempting
     /// to render to the Window outside of that will throw an exception.
     /// </summary>
-    public class Window : RenderTarget
+    public sealed class Window : RenderTarget
     {
 
         public abstract class Platform
@@ -304,7 +304,6 @@ namespace Foster.Framework
             lock (this)
             {
                 Drawable = true;
-                Viewport = new RectInt(0, 0, DrawableWidth, DrawableHeight);
 
                 App.Modules.BeforeRender(this);
                 OnRender?.Invoke(this);

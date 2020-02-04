@@ -65,5 +65,12 @@ namespace Foster.Json
             }
         }
 
+        public override JsonValue Clone()
+        {
+            var clone = new JsonObject();
+            foreach (var (key, value) in Value)
+                clone[key] = value.Clone();
+            return clone;
+        }
     }
 }

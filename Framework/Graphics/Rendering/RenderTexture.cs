@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Render Texture that can be drawn to
     /// </summary>
-    public class RenderTexture : RenderTarget, IDisposable
+    public sealed class RenderTexture : RenderTarget, IDisposable
     {
 
         public abstract class Platform
@@ -73,7 +73,6 @@ namespace Foster.Framework
 
             Implementation = graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
             Attachments = new ReadOnlyCollection<Texture>(Implementation.Attachments);
-            Viewport = new RectInt(0, 0, width, height);
             Drawable = true;
         }
 

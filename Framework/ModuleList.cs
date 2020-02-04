@@ -14,6 +14,7 @@ namespace Foster.Framework
         private readonly List<Type> registered = new List<Type>();
         private readonly List<Module?> modules = new List<Module?>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
+        private bool started;
 
         /// <summary>
         /// Registers a Module
@@ -28,7 +29,7 @@ namespace Foster.Framework
         /// </summary>
         public void Register(Type type)
         {
-            if (App.Running)
+            if (started)
             {
                 var module = Instantiate(type);
 
@@ -38,6 +39,7 @@ namespace Foster.Framework
                     appModule.FirstWindowCreated();
                 }
 
+                module.IsStarted = true;
                 module.Startup();
             }
             else
@@ -124,6 +126,21 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Tries to get the First Module of the given type
+        /// </summary>
+        public bool TryGet(Type type, out Module? module)
+        {
+            if (modulesByType.TryGetValue(type, out var m))
+            {
+                module = m;
+                return true;
+            }
+
+            module = null;
+            return false;
+        }
+
+        /// <summary>
         /// Gets the First Module of the given type, if it exists, or throws an Exception
         /// </summary>
         public T Get<T>() where T : Module
@@ -135,11 +152,30 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Gets the First Module of the given type, if it exists, or throws an Exception
+        /// </summary>
+        public Module Get(Type type)
+        {
+            if (!modulesByType.TryGetValue(type, out var module))
+                throw new Exception($"App is does not have a {type.Name} Module registered");
+
+            return module;
+        }
+
+        /// <summary>
         /// Checks if a Module of the given type exists
         /// </summary>
         public bool Has<T>() where T : Module
         {
             return modulesByType.ContainsKey(typeof(T));
+        }
+
+        /// <summary>
+        /// Checks if a Module of the given type exists
+        /// </summary>
+        public bool Has(Type type)
+        {
+            return modulesByType.ContainsKey(type);
         }
 
         internal void ApplicationStarted()
@@ -173,15 +209,20 @@ namespace Foster.Framework
 
         internal void Startup()
         {
-            // create non-core Modules
-            while (registered.Count > 0)
-            {
-                Instantiate(registered[0]);
-                registered.RemoveAt(0);
-            }
+            for (int i = 0; i < registered.Count; i ++)
+                Instantiate(registered[i]);
+
+            started = true;
 
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.Startup();
+            {
+                var module = modules[i];
+                if (module != null && !module.IsStarted)
+                {
+                    module.IsStarted = true;
+                    module.Startup();
+                }
+            }
         }
 
         internal void Shutdown()

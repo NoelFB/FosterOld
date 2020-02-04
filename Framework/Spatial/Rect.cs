@@ -125,14 +125,14 @@ namespace Foster.Framework
             return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
         }
 
-        public bool Intersects(Rect against)
+        public bool Overlaps(Rect against)
         {
             return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
 
         public Rect OverlapRect(Rect against)
         {
-            if (Intersects(against))
+            if (Overlaps(against))
             {
                 var overlap = new Rect();
                 overlap.Left = Math.Max(Left, against.Left);

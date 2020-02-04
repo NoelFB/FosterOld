@@ -198,12 +198,14 @@ void main(void)
 
         public void Render(RenderTarget target)
         {
-            Render(target, target.OrthographicMatrix);
+            var matrix = Matrix.CreateOrthographicOffCenter(0, target.DrawableWidth, target.DrawableHeight, 0, 0, float.MaxValue);
+            Render(target, matrix);
         }
 
-        public void Render(RenderTarget target, Matrix matrix)
+        public void Render(RenderTarget target, Matrix matrix, RectInt? viewport = null)
         {
-            pass = new RenderPass(Mesh, DefaultMaterial);
+            pass = new RenderPass(target, Mesh, DefaultMaterial);
+            pass.Viewport = viewport;
 
             Debug.Assert(matrixStack.Count <= 0, "Batch.MatrixStack Pushes more than it Pops");
 
@@ -223,28 +225,23 @@ void main(void)
                 {
                     // remaining elements in the current batch
                     if (currentBatchInsert == i && currentBatch.Elements > 0)
-                        RenderBatch(target, currentBatch, ref shareState, ref matrix);
+                        RenderBatch(currentBatch, ref shareState, ref matrix);
 
                     // render the batch
-                    RenderBatch(target, batches[i], ref shareState, ref matrix);
+                    RenderBatch(batches[i], ref shareState, ref matrix);
                 }
 
                 // remaining elements in the current batch
                 if (currentBatchInsert == batches.Count && currentBatch.Elements > 0)
-                    RenderBatch(target, currentBatch, ref shareState, ref matrix);
+                    RenderBatch(currentBatch, ref shareState, ref matrix);
             }
         }
 
-        private void RenderBatch(RenderTarget target, Batch batch, ref bool shareState, ref Matrix matrix)
+        private void RenderBatch(Batch batch, ref bool shareState, ref Matrix matrix)
         {
             if (!shareState)
             {
-                if (batch.Scissor != null)
-                    pass.Scissor = batch.Scissor.Value;
-                else
-                    pass.Scissor = target.Viewport;
-
-                // set BlendMode
+                pass.Scissor = batch.Scissor;
                 pass.BlendMode = batch.BlendMode;
 
                 // Render the Mesh
@@ -260,7 +257,7 @@ void main(void)
             pass.MeshIndexCount = batch.Elements;
             pass.MeshInstanceCount = 0;
 
-            Graphics.Render(target, ref pass);
+            Graphics.Render(ref pass);
 
             shareState = batch.NextHasSameState;
         }

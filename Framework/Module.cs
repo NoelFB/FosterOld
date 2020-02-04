@@ -30,6 +30,11 @@ namespace Foster.Framework
         public bool IsRegistered { get; internal set; }
 
         /// <summary>
+        /// Whether the Module has been Started by the Application
+        /// </summary>
+        public bool IsStarted { get; internal set; }
+
+        /// <summary>
         /// Creates the Module with the given Priority
         /// </summary>
         protected Module(int priority = 10000)

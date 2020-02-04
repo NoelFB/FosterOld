@@ -18,7 +18,7 @@
             imgui.PopSpacing();
 
             // draw
-            if (position.Intersects(imgui.Clip))
+            if (position.Overlaps(imgui.Clip))
             {
                 var inner = imgui.Box(position, style, id);
                 var state = style.Current(imgui.ActiveId, imgui.HotId, id);

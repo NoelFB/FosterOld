@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Foster.Json
@@ -76,6 +77,8 @@ namespace Foster.Json
 
         public abstract object? UnderlyingValue { get; }
         public abstract int GetHashedValue();
+
+        public abstract JsonValue Clone();
 
         public static implicit operator JsonValue(bool value) => new JsonValue<bool>(JsonType.Bool, value);
         public static implicit operator JsonValue(decimal value) => new JsonValue<decimal>(JsonType.Number, value);
@@ -150,6 +153,11 @@ namespace Foster.Json
         {
             get => nul;
             set => throw new InvalidOperationException();
+        }
+
+        public override JsonValue Clone()
+        {
+            return nul;
         }
 
         public override int Count => 0;
@@ -406,6 +414,48 @@ namespace Foster.Json
                 return (int)Calc.Adler32(0, Bytes);
 
             return 0;
+        }
+
+        public override JsonValue Clone()
+        {
+            if (IsString)
+                return String;
+
+            if (IsNumber)
+            {
+                if (Value is float Float)
+                    return Float;
+                if (Value is double Double)
+                    return Double;
+                if (Value is byte Byte)
+                    return Byte;
+                if (Value is char Char)
+                    return Char;
+                if (Value is short Short)
+                    return Short;
+                if (Value is ushort UShort)
+                    return UShort;
+                if (Value is int Int)
+                    return Int;
+                if (Value is uint UInt)
+                    return UInt;
+                if (Value is long Long)
+                    return Long;
+                if (Value is ulong ULong)
+                    return ULong;
+            }
+
+            if (IsBool)
+                return Bool;
+
+            if (IsBinary)
+            {
+                var bytes = new byte[Bytes.Length];
+                System.Array.Copy(Bytes, 0, bytes, 0, bytes.Length);
+                return bytes;
+            }
+
+            return JsonNull.nul;
         }
 
         public override JsonValue this[string key]

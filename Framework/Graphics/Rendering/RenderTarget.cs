@@ -20,29 +20,8 @@ namespace Foster.Framework
         public abstract int DrawableHeight { get; }
 
         /// <summary>
-        /// The Render State Viewport
-        /// </summary>
-        public RectInt Viewport;
-
-        /// <summary>
         /// Whether the Render Target can be drawn to.
         /// </summary>
         public bool Drawable { get; internal protected set; }
-
-        /// <summary>
-        /// Orthographic Matrix based on the Viewport of this Render Target
-        /// </summary>
-        public Matrix OrthographicMatrix
-        {
-            get
-            {
-                if (Viewport.Width <= 0 || Viewport.Height <= 0)
-                    return Matrix.Identity;
-
-                return 
-                    Matrix.CreateScale((1.0f / Viewport.Width) * 2, -(1.0f / Viewport.Height) * 2, 1f) *
-                    Matrix.CreateTranslation(-1.0f, 1.0f, 0f);
-            }
-        }
     }
 }

@@ -9,6 +9,11 @@ namespace Foster.Framework
     /// </summary>
     public struct RenderPass
     {
+
+        public RenderTarget Target;
+
+        public RectInt? Viewport;
+
         /// <summary>
         /// Material to use
         /// </summary>
@@ -57,8 +62,10 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a Render Pass based on the given mesh and material
         /// </summary>
-        public RenderPass(Mesh mesh, Material material)
+        public RenderPass(RenderTarget target, Mesh mesh, Material material)
         {
+            Target = target;
+            Viewport = null;
             Mesh = mesh;
             Material = material;
             MeshIndexStart = 0;

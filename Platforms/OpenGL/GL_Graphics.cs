@@ -196,10 +196,11 @@ namespace Foster.OpenGL
             {
                 // update the viewport
                 var meta = GetContextMeta(context);
-                if (meta.LastViewport == null || meta.LastViewport.Value != target.Viewport)
+                var viewport = new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight);
+                if (meta.LastViewport == null || meta.LastViewport.Value != viewport)
                 {
-                    GL.Viewport(target.Viewport.X, target.Viewport.Y, target.Viewport.Width, target.Viewport.Height);
-                    meta.LastViewport = target.Viewport;
+                    GL.Viewport(0, 0, target.DrawableWidth, target.DrawableHeight);
+                    meta.LastViewport = viewport;
                 }
 
                 // we disable the scissor for clearing
@@ -232,15 +233,15 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void RenderInternal(RenderTarget target, ref RenderPass pass)
+        protected override void RenderInternal(ref RenderPass pass)
         {
-            if (target is Window window)
+            if (pass.Target is Window window)
             {
                 var context = System.GetWindowGLContext(window);
                 lock (context)
                 {
                     System.SetCurrentGLContext(context);
-                    Draw(target, ref pass, context);
+                    Draw(ref pass, context);
                 }
             }
             else if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -249,7 +250,7 @@ namespace Foster.OpenGL
                 {
                     System.SetCurrentGLContext(BackgroundContext);
 
-                    Draw(target, ref pass, BackgroundContext);
+                    Draw(ref pass, BackgroundContext);
                     GL.Flush();
 
                     System.SetCurrentGLContext(null);
@@ -263,11 +264,11 @@ namespace Foster.OpenGL
 
                 lock (context)
                 {
-                    Draw(target, ref pass, context);
+                    Draw(ref pass, context);
                 }
             }
 
-            void Draw(RenderTarget target, ref RenderPass pass, ISystemOpenGL.Context context)
+            void Draw(ref RenderPass pass, ISystemOpenGL.Context context)
             {
                 RenderPass lastPass;
 
@@ -284,18 +285,18 @@ namespace Foster.OpenGL
                 contextMeta.LastRenderState = pass;
 
                 // Bind the Target
-                if (updateAll || contextMeta.LastRenderTarget != target)
+                if (updateAll || contextMeta.LastRenderTarget != pass.Target)
                 {
-                    if (target is Window)
+                    if (pass.Target is Window)
                     {
                         GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     }
-                    else if (target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
+                    else if (pass.Target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
                     {
                         renderTexture.Bind(context);
                     }
 
-                    contextMeta.LastRenderTarget = target;
+                    contextMeta.LastRenderTarget = pass.Target;
                 }
 
                 // Use the Shader
@@ -383,11 +384,12 @@ namespace Foster.OpenGL
                 }
 
                 // Viewport
+                var viewport = pass.Viewport ?? new RectInt(0, 0, pass.Target.DrawableWidth, pass.Target.DrawableHeight);
                 {
-                    if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != target.Viewport)
+                    if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != viewport)
                     {
-                        GL.Viewport(target.Viewport.X, target.DrawableHeight - target.Viewport.Bottom, target.Viewport.Width, target.Viewport.Height);
-                        contextMeta.LastViewport = target.Viewport;
+                        GL.Viewport(viewport.X, pass.Target.DrawableHeight - viewport.Bottom, viewport.Width, viewport.Height);
+                        contextMeta.LastViewport = viewport;
                     }
                 }
 
@@ -406,7 +408,7 @@ namespace Foster.OpenGL
                         scissor.Width = Math.Max(0, scissor.Width);
                         scissor.Height = Math.Max(0, scissor.Height);
 
-                        GL.Scissor(pass.Scissor.Value.X, target.Viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);
+                        GL.Scissor(pass.Scissor.Value.X, viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);
                     }
 
                     contextMeta.ForceScissorUpdate = false;

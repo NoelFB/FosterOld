@@ -37,7 +37,7 @@ namespace Foster.GuiSystem
             var result = false;
             var id = imgui.Id(info);
 
-            if (position.Intersects(imgui.Clip))
+            if (position.Overlaps(imgui.Clip))
             {
                 result = imgui.ButtonBehaviour(id, position);
 

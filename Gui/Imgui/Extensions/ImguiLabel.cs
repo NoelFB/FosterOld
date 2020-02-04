@@ -24,7 +24,7 @@ namespace Foster.GuiSystem
 
         public static void Label(this Imgui imgui, IContent label, Rect position, StyleState style)
         {
-            if (position.Intersects(imgui.Clip))
+            if (position.Overlaps(imgui.Clip))
             {
                 var inner = position.Inflate(-style.Padding.X, -style.Padding.Y, -style.Padding.X, -style.Padding.Y);
                 label.Draw(imgui, imgui.Batcher, style, inner);

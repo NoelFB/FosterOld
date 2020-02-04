@@ -68,12 +68,12 @@ namespace Foster.Framework
         /// Draws the data from the Render pass to the Render Target.
         /// This will fail if the Target is not Drawable.
         /// </summary>
-        public void Render(RenderTarget target, ref RenderPass pass)
+        public void Render(ref RenderPass pass)
         {
-            if (!target.Drawable)
+            if (!pass.Target.Drawable)
                 throw new Exception("Render Target cannot currently be drawn to");
 
-            if (!(target is RenderTexture) && !(target is Window))
+            if (!(pass.Target is RenderTexture) && !(pass.Target is Window))
                 throw new Exception("RenderTarget must be a Render Texture or a Window");
 
             if (pass.Mesh == null)
@@ -88,10 +88,10 @@ namespace Foster.Framework
             if (pass.Mesh.ElementCount < pass.MeshIndexStart + pass.MeshIndexCount)
                 throw new Exception("Trying to draw more Elements than exist in the Mesh");
 
-            RenderInternal(target, ref pass);
+            RenderInternal(ref pass);
         }
 
-        protected abstract void RenderInternal(RenderTarget target, ref RenderPass pass);
+        protected abstract void RenderInternal(ref RenderPass pass);
 
         /// <summary>
         /// Creates a new Color Texture of the given size
