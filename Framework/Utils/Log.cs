@@ -11,34 +11,45 @@ namespace Foster.Framework
     public static class Log
     {
 
+        public enum Types
+        {
+            Message,
+            Warning,
+            Error
+        }
+
+        public struct LogLine
+        {
+            public string Caller;
+            public Types Type;
+            public string Text;
+        }
+
         private static readonly StringBuilder log = new StringBuilder();
+        public static readonly List<LogLine> Lines = new List<LogLine>();
 
         public static bool PrintToConsole = true;
 
         public static void Message(string message) => Message(null, message);
-
         public static void Message(string? caller, string message)
         {
             Line(caller, "INFO", ConsoleColor.DarkGray, ConsoleColor.White, message);
+            Lines.Add(new LogLine { Caller = caller ?? "", Type = Types.Message, Text = message });
         }
 
         public static void Warning(string warning) => Warning(null, warning);
-
         public static void Warning(string? caller, string warning)
         {
             Line(caller, "WARN", ConsoleColor.DarkYellow, ConsoleColor.White, warning);
+            Lines.Add(new LogLine { Caller = caller ?? "", Type = Types.Warning, Text = warning });
         }
 
         public static void Error(string error) => Error(null, error);
-
+        public static void Error(Exception exception) => Error(exception.ToString());
         public static void Error(string? caller, string error)
         {
             Line(caller, "FAIL", ConsoleColor.DarkRed, ConsoleColor.White, error);
-        }
-
-        public static void Error(Exception exception)
-        {
-            Error(exception.ToString());
+            Lines.Add(new LogLine { Caller = caller ?? "", Type = Types.Error, Text = error });
         }
 
         public static void WriteTo(string file)
