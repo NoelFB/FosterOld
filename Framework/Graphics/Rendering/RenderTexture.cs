@@ -61,7 +61,7 @@ namespace Foster.Framework
         }
 
         public RenderTexture(Graphics graphics, int width, int height) 
-            : this(graphics, width, height, new[] { TextureFormat.Color }, TextureFormat.DepthStencil)
+            : this(graphics, width, height, new[] { TextureFormat.Color }, TextureFormat.None)
         {
 
         }
