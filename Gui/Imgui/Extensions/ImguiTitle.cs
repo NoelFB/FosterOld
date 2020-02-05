@@ -1,6 +1,6 @@
 ﻿using Foster.Framework;
 
-namespace Foster.GuiSystem
+namespace Foster.GUI
 {
     public static class ImguiTitle
     {

@@ -1,4 +1,4 @@
-﻿namespace Foster.GuiSystem
+﻿namespace Foster.GUI
 {
     public static class ImguiHeader
     {

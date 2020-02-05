@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Foster.GuiSystem
+namespace Foster.GUI
 {
     public class Imgui
     {

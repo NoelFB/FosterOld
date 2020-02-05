@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Foster.GuiSystem
+namespace Foster.GUI
 {
     public struct Size
     {

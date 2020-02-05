@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Foster.GuiSystem</AssemblyName>
-    <RootNamespace>Foster.GuiSystem</RootNamespace>
+    <AssemblyName>Foster.GUI</AssemblyName>
+    <RootNamespace>Foster.GUI</RootNamespace>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>

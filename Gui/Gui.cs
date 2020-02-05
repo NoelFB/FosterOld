@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Foster.Framework;
 
-namespace Foster.GuiSystem
+namespace Foster.GUI
 {
     public class Gui : Module
     {

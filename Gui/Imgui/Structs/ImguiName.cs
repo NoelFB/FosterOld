@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Foster.GuiSystem
+namespace Foster.GUI
 {
     public struct ImguiName
     {

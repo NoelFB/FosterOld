@@ -1,7 +1,7 @@
 ﻿using Foster.Framework;
 using System;
 
-namespace Foster.GuiSystem
+namespace Foster.GUI
 {
     public struct Text : IContent
     {
