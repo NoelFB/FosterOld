@@ -101,7 +101,7 @@ namespace Foster.Framework
                     var next = b.GetPoint(i);
                     var axis = (next - last).Normalized;
 
-                    if (!b.AxisOverlaps(a, axis, out float amount))
+                    if (!a.AxisOverlaps(b, axis, out float amount))
                         return false;
 
                     if (Math.Abs(amount) < distance)

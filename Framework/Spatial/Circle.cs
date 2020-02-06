@@ -21,16 +21,16 @@
             Radius = radius;
         }
 
-        public bool Overlaps(Circle circle, out Vector2 pushout)
+        public bool Overlaps(Circle other, out Vector2 pushout)
         {
             pushout = Vector2.Zero;
 
-            if ((Position - circle.Position).LengthSquared < (Radius + circle.Radius) * (Radius + circle.Radius))
+            if ((Position - other.Position).LengthSquared < (Radius + other.Radius) * (Radius + other.Radius))
             {
-                var distance = (Position - circle.Position).Length;
-                var normal = (circle.Position - Position).Normalized;
+                var distance = (Position - other.Position).Length;
+                var normal = (other.Position - Position).Normalized;
 
-                pushout = normal * (Radius + circle.Radius - distance);
+                pushout = -normal * (Radius + other.Radius - distance);
 
                 return true;
             }
@@ -40,7 +40,15 @@
 
         public bool Overlaps(IConvexShape2D shape, out Vector2 pushout)
         {
-            return shape.Overlaps(this, out pushout);
+            pushout = Vector2.Zero;
+
+            if (shape.Overlaps(this, out var p))
+            {
+                pushout = -p;
+                return true;
+            }
+
+            return false;
         }
 
         public void Project(Vector2 axis, out float min, out float max)
