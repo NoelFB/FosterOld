@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -796,6 +797,18 @@ void main(void)
             {
                 var next = Vector2.Angle((i / (float)steps) * Calc.TAU, radius);
                 Triangle(center + last, center + next, center, color);
+                last = next;
+            }
+        }
+
+        public void HollowCircle(Vector2 center, float radius, float thickness, int steps, Color color)
+        {
+            var last = Vector2.Angle(0, radius);
+
+            for (int i = 1; i <= steps; i++)
+            {
+                var next = Vector2.Angle((i / (float)steps) * Calc.TAU, radius);
+                Line(center + last, center + next, thickness, color);
                 last = next;
             }
         }
