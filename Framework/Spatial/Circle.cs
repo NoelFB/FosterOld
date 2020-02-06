@@ -21,7 +21,7 @@
             Radius = radius;
         }
 
-        public bool Overlaps(Circle other, out Vector2 pushout)
+        public bool Overlaps(in Circle other, out Vector2 pushout)
         {
             pushout = Vector2.Zero;
 
@@ -38,7 +38,7 @@
             return false;
         }
 
-        public bool Overlaps(IConvexShape2D shape, out Vector2 pushout)
+        public bool Overlaps(in IConvexShape2D shape, out Vector2 pushout)
         {
             pushout = Vector2.Zero;
 
@@ -51,7 +51,7 @@
             return false;
         }
 
-        public void Project(Vector2 axis, out float min, out float max)
+        public void Project(in Vector2 axis, out float min, out float max)
         {
             min = Vector2.Dot(Position - axis * Radius, axis);
             max = Vector2.Dot(Position + axis * Radius, axis);

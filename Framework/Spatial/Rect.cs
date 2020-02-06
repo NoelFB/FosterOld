@@ -115,22 +115,22 @@ namespace Foster.Framework
             Height = Math.Max(a.Y, b.Y) - Y;
         }
 
-        public bool Contains(Vector2 point)
+        public bool Contains(in Vector2 point)
         {
             return (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);
         }
 
-        public bool Contains(Rect rect)
+        public bool Contains(in Rect rect)
         {
             return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
         }
 
-        public bool Overlaps(Rect against)
+        public bool Overlaps(in Rect against)
         {
             return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
 
-        public Rect OverlapRect(Rect against)
+        public Rect OverlapRect(in Rect against)
         {
             if (Overlaps(against))
             {
@@ -170,12 +170,12 @@ namespace Foster.Framework
             return new Rect(X * by, Y * by, Width * by, Height * by);
         }
 
-        public Rect Scale(Vector2 by)
+        public Rect Scale(in Vector2 by)
         {
             return new Rect(X * by.X, Y * by.Y, Width * by.X, Height * by.Y);
         }
 
-        public void Project(Vector2 axis, out float min, out float max)
+        public void Project(in Vector2 axis, out float min, out float max)
         {
             min = float.MaxValue;
             max = float.MinValue;
@@ -194,7 +194,7 @@ namespace Foster.Framework
             max = Math.Max(dot, max);
         }
 
-        public int Sides => 4;
+        public int Points => 4;
 
         public Vector2 GetPoint(int index)
         {
@@ -204,6 +204,18 @@ namespace Foster.Framework
                 1 => TopRight,
                 2 => BottomRight,
                 3 => BottomLeft,
+                _ => throw new IndexOutOfRangeException(),
+            };
+        }
+
+        public int Axis => 2;
+
+        public Vector2 GetAxis(int index)
+        {
+            return index switch
+            {
+                0 => Vector2.Right,
+                1 => Vector2.Down,
                 _ => throw new IndexOutOfRangeException(),
             };
         }

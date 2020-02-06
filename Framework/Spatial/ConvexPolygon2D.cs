@@ -7,15 +7,33 @@ namespace Foster.Framework
     public unsafe struct ConvexPolygon2D : IConvexShape2D
     {
         private fixed float points[64];
+        private int vertices;
 
-        public int Points;
-        public int Sides => Points;
+        public int Points
+        {
+            get => vertices;
+            set => vertices = value;
+        }
+
+        public int Axis
+        {
+            get => vertices;
+            set => vertices = value;
+        }
 
         public Vector2 GetPoint(int index)
         {
             return new Vector2(
                 points[index * 2 + 0], 
                 points[index * 2 + 1]);
+        }
+
+        public Vector2 GetAxis(int index)
+        {
+            var a = GetPoint(index);
+            var b = GetPoint(index >= vertices - 1 ? 0 : index + 1);
+
+            return (b - a).Normalized.TurnRight;
         }
 
         public void SetPoint(int index, Vector2 position)
@@ -30,7 +48,7 @@ namespace Foster.Framework
             set => SetPoint(index, value);
         }
 
-        public void Project(Vector2 axis, out float min, out float max)
+        public void Project(in Vector2 axis, out float min, out float max)
         {
             if (Points <= 0)
             {

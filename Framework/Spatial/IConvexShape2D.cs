@@ -10,12 +10,22 @@ namespace Foster.Framework
         /// <summary>
         /// The number of sides of the Convex shape
         /// </summary>
-        public int Sides { get; }
+        public int Points { get; }
 
         /// <summary>
         /// Gets a point of the Convex Shape at the given index
         /// </summary>
         public Vector2 GetPoint(int index);
+
+        /// <summary>
+        /// The number of axis of the Convex Shape
+        /// </summary>
+        public int Axis { get; }
+
+        /// <summary>
+        /// Gets a axis of the Convex Shape at the given index
+        /// </summary>
+        public Vector2 GetAxis(int index);
     }
 
     /// <summary>
@@ -23,19 +33,17 @@ namespace Foster.Framework
     /// </summary>
     public static class IConvexShape2DExt
     {
-        public static bool Overlaps(this IConvexShape2D a, Circle b, out Vector2 pushout)
+
+        public static bool Overlaps(this IConvexShape2D a, in Circle b, out Vector2 pushout)
         {
             pushout = Vector2.Zero;
 
             var distance = float.MaxValue;
 
             // check against axis
-            var last = a.GetPoint(a.Sides - 1);
-            for (int i = 0; i < a.Sides; i++)
+            for (int i = 0; i < a.Axis; i++)
             {
-                var next = a.GetPoint(i);
-                var axis = (next - last).Normalized;
-
+                var axis = a.GetAxis(i);
                 if (!a.AxisOverlaps(b, axis, out float amount))
                     return false;
 
@@ -44,15 +52,12 @@ namespace Foster.Framework
                     pushout = axis * amount;
                     distance = Math.Abs(amount);
                 }
-
-                last = next;
             }
 
-            // check against vertices
-            for (int i = 0; i < a.Sides; i++)
+            // check against points
+            for (int i = 0; i < a.Points; i++)
             {
                 var axis = (a.GetPoint(i) - b.Position).Normalized;
-
                 if (!a.AxisOverlaps(b, axis, out float amount))
                     return false;
 
@@ -66,7 +71,7 @@ namespace Foster.Framework
             return true;
         }
 
-        public static bool Overlaps(this IConvexShape2D a, IConvexShape2D b, out Vector2 pushout)
+        public static bool Overlaps(this IConvexShape2D a, in IConvexShape2D b, out Vector2 pushout)
         {
             pushout = Vector2.Zero;
 
@@ -74,12 +79,9 @@ namespace Foster.Framework
 
             // a-axis
             {
-                var last = a.GetPoint(a.Sides - 1);
-                for (int i = 0; i < a.Sides; i++)
+                for (int i = 0; i < a.Axis; i++)
                 {
-                    var next = a.GetPoint(i);
-                    var axis = (next - last).Normalized;
-
+                    var axis = a.GetAxis(i);
                     if (!a.AxisOverlaps(b, axis, out float amount))
                         return false;
 
@@ -88,19 +90,14 @@ namespace Foster.Framework
                         pushout = axis * amount;
                         distance = Math.Abs(amount);
                     }
-
-                    last = next;
                 }
             }
 
             // b-axis
             {
-                var last = b.GetPoint(b.Sides - 1);
-                for (int i = 0; i < b.Sides; i++)
+                for (int i = 0; i < b.Axis; i++)
                 {
-                    var next = b.GetPoint(i);
-                    var axis = (next - last).Normalized;
-
+                    var axis = b.GetAxis(i);
                     if (!a.AxisOverlaps(b, axis, out float amount))
                         return false;
 
@@ -109,8 +106,6 @@ namespace Foster.Framework
                         pushout = axis * amount;
                         distance = Math.Abs(amount);
                     }
-
-                    last = next;
                 }
             }
 

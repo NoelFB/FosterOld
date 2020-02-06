@@ -25,10 +25,13 @@ namespace Foster.Framework
         private Vector2 origin;
         private Vector2 scale = Vector2.One;
         private float rotation;
+        private float? rotationCos;
+        private float? rotationSin;
         private Matrix2D localMatrix;
         private Matrix2D matrix;
         private Matrix2D inverse;
-        private bool dirty = true;
+        private bool dirtyMatrix = true;
+        private bool dirtyInverseMatrix = true;
 
         public Transform2D? Parent
         {
@@ -39,6 +42,9 @@ namespace Foster.Framework
                 {
                     if (parent != null)
                         parent.OnChanged -= MakeDirty;
+
+                    if (value != null && value.Parent == this)
+                        throw new Exception("Circular Transform Heritage");
 
                     parent = value;
 
@@ -134,6 +140,8 @@ namespace Foster.Framework
                 if (rotation != value)
                 {
                     rotation = value;
+                    rotationCos = null;
+                    rotationSin = null;
                     MakeDirty();
                 }
             }
@@ -143,7 +151,7 @@ namespace Foster.Framework
         {
             get
             {
-                if (dirty)
+                if (dirtyMatrix)
                     Update();
 
                 return localMatrix;
@@ -154,7 +162,7 @@ namespace Foster.Framework
         {
             get
             {
-                if (dirty)
+                if (dirtyMatrix)
                     Update();
 
                 return matrix;
@@ -165,8 +173,14 @@ namespace Foster.Framework
         {
             get
             {
-                if (dirty)
+                if (dirtyMatrix)
                     Update();
+
+                if (dirtyInverseMatrix)
+                {
+                    inverse = matrix.Invert();
+                    dirtyInverseMatrix = false;
+                }
 
                 return inverse;
             }
@@ -191,23 +205,39 @@ namespace Foster.Framework
 
         private void Update()
         {
-            localMatrix = Matrix2D.CreateTranslation(-origin.X, -origin.Y) *
-                             Matrix2D.CreateScale(scale.X, scale.Y) *
-                             Matrix2D.CreateRotation(rotation) *
-                             Matrix2D.CreateTranslation(position.X, position.Y);
+            if (rotationCos == null || rotationSin == null)
+            {
+                rotationCos = Calc.Cos(rotation);
+                rotationSin = Calc.Sin(rotation);
+            }
+
+            var c = rotationCos.Value;
+            var s = rotationSin.Value;
+            var osx = (-origin.X * scale.X);
+            var osy = (-origin.Y * -scale.Y);
+
+            localMatrix = new Matrix2D
+            (
+                (scale.X * c),
+                (scale.X * s),
+                (-scale.Y * -s),
+                (-scale.Y * c),
+                (osx * c - osy * s) + position.X,
+                (osx * s - osy * c) + position.Y
+            );
 
             if (parent != null)
                 matrix = localMatrix * parent.Matrix;
             else
                 matrix = localMatrix;
 
-            inverse = matrix.Invert();
-            dirty = false;
+            dirtyInverseMatrix = true;
+            dirtyMatrix = false;
         }
 
         private void MakeDirty()
         {
-            dirty = true;
+            dirtyMatrix = true;
             OnChanged?.Invoke();
         }
     }

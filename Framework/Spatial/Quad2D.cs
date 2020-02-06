@@ -133,7 +133,7 @@ namespace Foster.Framework
             dirty = false;
         }
 
-        public Quad2D Translate(Vector2 amount)
+        public Quad2D Translate(in Vector2 amount)
         {
             A += amount;
             B += amount;
@@ -142,7 +142,7 @@ namespace Foster.Framework
             return this;
         }
 
-        public void Project(Vector2 axis, out float min, out float max)
+        public void Project(in Vector2 axis, out float min, out float max)
         {
             min = float.MaxValue;
             max = float.MinValue;
@@ -161,7 +161,7 @@ namespace Foster.Framework
             max = Math.Max(dot, max);
         }
 
-        public int Sides => 4;
+        public int Points => 4;
 
         public Vector2 GetPoint(int index)
         {
@@ -171,6 +171,20 @@ namespace Foster.Framework
                 1 => B,
                 2 => C,
                 3 => D,
+                _ => throw new IndexOutOfRangeException(),
+            };
+        }
+
+        public int Axis => 4;
+
+        public Vector2 GetAxis(int index)
+        {
+            return index switch
+            {
+                0 => normalAB.TurnRight,
+                1 => normalBC.TurnRight,
+                2 => normalCD.TurnRight,
+                3 => normalDA.TurnRight,
                 _ => throw new IndexOutOfRangeException(),
             };
         }

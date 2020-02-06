@@ -7,12 +7,12 @@ namespace Foster.Framework
     /// </summary>
     public interface IProjectable2D
     {
-        void Project(Vector2 axis, out float min, out float max);
+        void Project(in Vector2 axis, out float min, out float max);
     }
 
     public static class IProjectable2DExt
     {
-        public static bool AxisOverlaps(this IProjectable2D a, IProjectable2D b, Vector2 axis, out float amount)
+        public static bool AxisOverlaps(this IProjectable2D a, in IProjectable2D b, in Vector2 axis, out float amount)
         {
             a.Project(axis, out float min0, out float max0);
             b.Project(axis, out float min1, out float max1);

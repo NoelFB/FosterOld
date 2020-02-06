@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Foster.Framework
 {
@@ -93,11 +94,18 @@ namespace Foster.Framework
             return b * (Dot(a, b) / b.Length);
         }
 
-        public static Vector2 Transform(Vector2 vec, Matrix2D matrix)
+        public static Vector2 Transform(Vector2 vec, in Matrix2D matrix)
         {
             return new Vector2(
                 (vec.X * matrix.M11) + (vec.Y * matrix.M21) + matrix.M31,
                 (vec.X * matrix.M12) + (vec.Y * matrix.M22) + matrix.M32);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Transform(ref Vector2 to, in Vector2 position, in Matrix2D matrix)
+        {
+            to.X = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M31;
+            to.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M32;
         }
 
         public static Vector2 Transform(Vector2 vec, Matrix matrix)
