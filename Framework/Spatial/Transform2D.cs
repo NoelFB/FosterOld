@@ -25,6 +25,7 @@ namespace Foster.Framework
         private Vector2 origin;
         private Vector2 scale = Vector2.One;
         private float rotation;
+        private Matrix2D localMatrix;
         private Matrix2D matrix;
         private Matrix2D inverse;
         private bool dirty = true;
@@ -138,6 +139,17 @@ namespace Foster.Framework
             }
         }
 
+        public Matrix2D LocalMatrix
+        {
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return localMatrix;
+            }
+        }
+
         public Matrix2D Matrix
         {
             get
@@ -179,13 +191,16 @@ namespace Foster.Framework
 
         private void Update()
         {
-            matrix = Matrix2D.CreateTranslation(-origin.X, -origin.Y) *
+            localMatrix = Matrix2D.CreateTranslation(-origin.X, -origin.Y) *
                              Matrix2D.CreateScale(scale.X, scale.Y) *
                              Matrix2D.CreateRotation(rotation) *
                              Matrix2D.CreateTranslation(position.X, position.Y);
 
             if (parent != null)
-                matrix = matrix * parent.Matrix;
+                matrix = localMatrix * parent.Matrix;
+            else
+                matrix = localMatrix;
+
             inverse = matrix.Invert();
             dirty = false;
         }
