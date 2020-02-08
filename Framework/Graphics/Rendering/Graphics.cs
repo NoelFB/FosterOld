@@ -28,6 +28,11 @@ namespace Foster.Framework
         /// </summary>
         public int MaxTextureSize { get; protected set; } = 0;
 
+        /// <summary>
+        /// Whether the Frame Buffer origin is in the bottom left
+        /// </summary>
+        public bool OriginBottomLeft { get; protected set; } = false;
+
         protected Graphics() : base(200)
         {
 

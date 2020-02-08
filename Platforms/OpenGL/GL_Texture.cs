@@ -8,9 +8,9 @@ namespace Foster.OpenGL
     {
 
         public uint ID { get; private set; }
-        public bool VerticalFlip;
 
         private readonly GL_Graphics graphics;
+        internal bool isRenderTexture;
 
         private Texture texture;
         private GLEnum glInternalFormat;
@@ -26,6 +26,11 @@ namespace Foster.OpenGL
         ~GL_Texture()
         {
             Dispose();
+        }
+
+        protected override bool IsRenderTexture()
+        {
+            return isRenderTexture;
         }
 
         protected override void Init(Texture texture)
@@ -91,11 +96,6 @@ namespace Foster.OpenGL
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_S, (int)(texture.WrapX == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)(texture.WrapY == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
             }
-        }
-
-        protected override bool FlipVertically()
-        {
-            return VerticalFlip;
         }
 
         protected override void SetFilter(TextureFilter filter)

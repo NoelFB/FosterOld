@@ -476,7 +476,7 @@ void main(void)
             PushQuad();
             ExpandVertices(VertexCount + 4);
 
-            if (currentBatch.Texture?.FlipVertically ?? false)
+            if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsRenderTexture ?? false))
                 VerticalFlip(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
@@ -517,7 +517,7 @@ void main(void)
             PushQuad();
             ExpandVertices(VertexCount + 4);
 
-            if (currentBatch.Texture?.FlipVertically ?? false)
+            if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsRenderTexture ?? false))
                 VerticalFlip(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);

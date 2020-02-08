@@ -54,6 +54,7 @@ namespace Foster.OpenGL
             GL.DepthMask(true);
 
             MaxTextureSize = GL.MaxTextureSize;
+            OriginBottomLeft = true;
             ApiVersion = new Version(GL.MajorVersion, GL.MinorVersion);
             DeviceName = GL.GetString(GLEnum.RENDERER);
 

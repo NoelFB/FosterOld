@@ -22,7 +22,7 @@ namespace Foster.Framework
             protected internal abstract void SetWrap(TextureWrap x, TextureWrap y);
             protected internal abstract void SetData<T>(ReadOnlyMemory<T> buffer);
             protected internal abstract void GetData<T>(Memory<T> buffer);
-            protected internal abstract bool FlipVertically();
+            protected internal abstract bool IsRenderTexture();
             protected internal abstract void Dispose();
         }
 
@@ -47,9 +47,9 @@ namespace Foster.Framework
         public readonly TextureFormat Format;
 
         /// <summary>
-        /// If the Texture should be flipped Vertically when drawn
+        /// Whether the Texture is part of a Render Texture
         /// </summary>
-        public bool FlipVertically => Internal.FlipVertically();
+        public bool IsRenderTexture => Internal.IsRenderTexture();
 
         /// <summary>
         /// The Size of the Texture, in bytes
