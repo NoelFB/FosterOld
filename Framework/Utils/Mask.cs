@@ -41,6 +41,9 @@ namespace Foster.Framework
             return new Mask((ulong)(1 << index));
         }
 
+        public static Mask operator |(Mask a, Mask b) => new Mask(a.Value | b.Value);
+        public static Mask operator &(Mask a, Mask b) => new Mask(a.Value & b.Value);
+
         public static implicit operator ulong(Mask mask) => mask.Value;
         public static implicit operator Mask(ulong val) => new Mask(val);
 

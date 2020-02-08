@@ -410,6 +410,8 @@ namespace Foster.OpenGL
                 {
                     var scissor = pass.Scissor ?? new RectInt(0, 0, pass.Target.DrawableWidth, pass.Target.DrawableHeight);
                     scissor.Y = pass.Target.DrawableHeight - scissor.Y - scissor.Height;
+                    scissor.Width = Math.Max(0, scissor.Width);
+                    scissor.Height = Math.Max(0, scissor.Height);
 
                     if (updateAll || lastPass.Scissor != scissor || contextMeta.ForceScissorUpdate)
                     {

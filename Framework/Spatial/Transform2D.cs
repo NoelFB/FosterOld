@@ -25,8 +25,6 @@ namespace Foster.Framework
         private Vector2 origin;
         private Vector2 scale = Vector2.One;
         private float rotation;
-        private float? rotationCos;
-        private float? rotationSin;
         private Matrix2D localMatrix;
         private Matrix2D matrix;
         private Matrix2D inverse;
@@ -140,8 +138,6 @@ namespace Foster.Framework
                 if (rotation != value)
                 {
                     rotation = value;
-                    rotationCos = null;
-                    rotationSin = null;
                     MakeDirty();
                 }
             }
@@ -205,26 +201,7 @@ namespace Foster.Framework
 
         private void Update()
         {
-            if (rotationCos == null || rotationSin == null)
-            {
-                rotationCos = Calc.Cos(rotation);
-                rotationSin = Calc.Sin(rotation);
-            }
-
-            var c = rotationCos.Value;
-            var s = rotationSin.Value;
-            var osx = (-origin.X * scale.X);
-            var osy = (-origin.Y * -scale.Y);
-
-            localMatrix = new Matrix2D
-            (
-                (scale.X * c),
-                (scale.X * s),
-                (-scale.Y * -s),
-                (-scale.Y * c),
-                (osx * c - osy * s) + position.X,
-                (osx * s - osy * c) + position.Y
-            );
+            localMatrix = Matrix2D.CreateTransform(this);
 
             if (parent != null)
                 matrix = localMatrix * parent.Matrix;
