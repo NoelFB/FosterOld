@@ -22,7 +22,7 @@ namespace Foster.OpenGL
             public List<uint> FrameBuffersToDelete = new List<uint>();
             public RenderTarget? LastRenderTarget;
             public RenderPass? LastRenderState;
-            public RectInt? LastViewport;
+            public RectInt Viewport;
             public bool ForceScissorUpdate;
         }
 
@@ -107,7 +107,7 @@ namespace Foster.OpenGL
             }
         }
 
-        protected override void AfterRender(Window window)
+        protected override void AfterRenderWindow(Window window)
         {
             GL.Flush();
         }
@@ -163,7 +163,7 @@ namespace Foster.OpenGL
             }
             else if (target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
             {
-                // if we're off the main thread, draw using the Background Context
+                // if we're off the main thread, clear using the Background Context
                 if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
                 {
                     lock (BackgroundContext)
@@ -177,12 +177,15 @@ namespace Foster.OpenGL
                         System.SetCurrentGLContext(null);
                     }
                 }
-                // otherwise just draw, regardless of Context
+                // otherwise just clear, regardless of Context
                 else
                 {
                     var context = System.GetCurrentGLContext();
                     if (context == null)
-                        throw new Exception("Attempting to Draw without a Context");
+                    {
+                        context = System.GetWindowGLContext(App.Window);
+                        System.SetCurrentGLContext(context);
+                    }
 
                     lock (context)
                     {
@@ -197,10 +200,14 @@ namespace Foster.OpenGL
                 // update the viewport
                 var meta = GetContextMeta(context);
                 var viewport = new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight);
-                if (meta.LastViewport == null || meta.LastViewport.Value != viewport)
                 {
-                    GL.Viewport(0, 0, target.DrawableWidth, target.DrawableHeight);
-                    meta.LastViewport = viewport;
+                    viewport.Y = target.DrawableHeight - viewport.Y - viewport.Height;
+
+                    if (meta.Viewport != viewport)
+                    {
+                        GL.Viewport(viewport.X, viewport.Y, viewport.Width, viewport.Height);
+                        meta.Viewport = viewport;
+                    }
                 }
 
                 // we disable the scissor for clearing
@@ -260,7 +267,10 @@ namespace Foster.OpenGL
             {
                 var context = System.GetCurrentGLContext();
                 if (context == null)
-                    throw new Exception("Context is null");
+                {
+                    context = System.GetWindowGLContext(App.Window);
+                    System.SetCurrentGLContext(context);
+                }
 
                 lock (context)
                 {
@@ -386,32 +396,35 @@ namespace Foster.OpenGL
                 // Viewport
                 var viewport = pass.Viewport ?? new RectInt(0, 0, pass.Target.DrawableWidth, pass.Target.DrawableHeight);
                 {
-                    if (updateAll || contextMeta.LastViewport == null || contextMeta.LastViewport.Value != viewport)
+                    viewport.Y = pass.Target.DrawableHeight - viewport.Y - viewport.Height;
+
+                    if (updateAll || contextMeta.Viewport != viewport)
                     {
-                        GL.Viewport(viewport.X, pass.Target.DrawableHeight - viewport.Bottom, viewport.Width, viewport.Height);
-                        contextMeta.LastViewport = viewport;
+                        GL.Viewport(viewport.X, viewport.Y, viewport.Width, viewport.Height);
+                        contextMeta.Viewport = viewport;
                     }
                 }
 
                 // Scissor
-                if (updateAll || lastPass.Scissor != pass.Scissor || contextMeta.ForceScissorUpdate)
                 {
-                    if (pass.Scissor == null)
+                    var scissor = pass.Scissor ?? new RectInt(0, 0, pass.Target.DrawableWidth, pass.Target.DrawableHeight);
+                    scissor.Y = pass.Target.DrawableHeight - scissor.Y - scissor.Height;
+
+                    if (updateAll || lastPass.Scissor != scissor || contextMeta.ForceScissorUpdate)
                     {
-                        GL.Disable(GLEnum.SCISSOR_TEST);
+                        if (pass.Scissor == null)
+                        {
+                            GL.Disable(GLEnum.SCISSOR_TEST);
+                        }
+                        else
+                        {
+                            GL.Enable(GLEnum.SCISSOR_TEST);
+                            GL.Scissor(scissor.X, scissor.Y, scissor.Width, scissor.Height);
+                        }
+
+                        contextMeta.ForceScissorUpdate = false;
+                        lastPass.Scissor = scissor;
                     }
-                    else
-                    {
-                        GL.Enable(GLEnum.SCISSOR_TEST);
-
-                        var scissor = pass.Scissor.Value;
-                        scissor.Width = Math.Max(0, scissor.Width);
-                        scissor.Height = Math.Max(0, scissor.Height);
-
-                        GL.Scissor(pass.Scissor.Value.X, viewport.Height - scissor.Bottom, scissor.Width, scissor.Height);
-                    }
-
-                    contextMeta.ForceScissorUpdate = false;
                 }
 
                 // Draw the Mesh

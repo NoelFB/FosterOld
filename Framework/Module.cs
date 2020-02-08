@@ -75,14 +75,24 @@ namespace Foster.Framework
         protected internal virtual void AfterUpdate() { }
 
         /// <summary>
+        /// Called before any rendering
+        /// </summary>
+        protected internal virtual void BeforeRender() { }
+
+        /// <summary>
         /// Called when a Window is being rendered to, before the Window.OnRender callback
         /// </summary>
-        protected internal virtual void BeforeRender(Window window) { }
+        protected internal virtual void BeforeRenderWindow(Window window) { }
 
         /// <summary>
         /// Called when a Window is being rendered to, after the Window.OnRender callback
         /// </summary>
-        protected internal virtual void AfterRender(Window window) { }
+        protected internal virtual void AfterRenderWindow(Window window) { }
+
+        /// <summary>
+        /// Called after all rendering
+        /// </summary>
+        protected internal virtual void AfterRender() { }
 
         /// <summary>
         /// Called every Tick of the Application

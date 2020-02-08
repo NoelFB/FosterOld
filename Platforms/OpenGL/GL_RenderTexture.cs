@@ -20,7 +20,7 @@ namespace Foster.OpenGL
             {
                 var attachment = new Texture(graphics, width, height, colorAttachmentFormats[i]);
                 var glTexture = (GL_Texture)attachment.Internal;
-                glTexture.Flip = true;
+                glTexture.VerticalFlip = true;
                 Attachments.Add(attachment);
             }
 
@@ -28,7 +28,7 @@ namespace Foster.OpenGL
             {
                 Depth = new Texture(graphics, width, height, depthFormat);
                 var glTexture = (GL_Texture)Depth.Internal;
-                glTexture.Flip = true;
+                glTexture.VerticalFlip = true;
             }
         }
 

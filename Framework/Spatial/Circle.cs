@@ -1,4 +1,6 @@
-﻿namespace Foster.Framework
+﻿using System;
+
+namespace Foster.Framework
 {
     /// <summary>
     /// A 2D Circle
@@ -25,13 +27,11 @@
         {
             pushout = Vector2.Zero;
 
-            if ((Position - other.Position).LengthSquared < (Radius + other.Radius) * (Radius + other.Radius))
+            var lengthSqrd = (other.Position - Position).LengthSquared;
+            if (lengthSqrd < (Radius + other.Radius) * (Radius + other.Radius))
             {
-                var distance = (Position - other.Position).Length;
-                var normal = (other.Position - Position).Normalized;
-
-                pushout = -normal * (Radius + other.Radius - distance);
-
+                var length = MathF.Sqrt(lengthSqrd);
+                pushout = ((Position - other.Position) / length) * (Radius + other.Radius - length);
                 return true;
             }
 

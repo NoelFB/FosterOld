@@ -305,9 +305,9 @@ namespace Foster.Framework
             {
                 Drawable = true;
 
-                App.Modules.BeforeRender(this);
+                App.Modules.BeforeRenderWindow(this);
                 OnRender?.Invoke(this);
-                App.Modules.AfterRender(this);
+                App.Modules.AfterRenderWindow(this);
 
                 Drawable = false;
             }

@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Render Texture that can be drawn to
     /// </summary>
-    public sealed class RenderTexture : RenderTarget, IDisposable
+    public class RenderTexture : RenderTarget, IDisposable
     {
 
         public abstract class Platform

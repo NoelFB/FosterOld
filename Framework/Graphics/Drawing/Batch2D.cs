@@ -477,7 +477,7 @@ void main(void)
             ExpandVertices(VertexCount + 4);
 
             if (currentBatch.Texture?.FlipVertically ?? false)
-                FlipYUVs(ref t0, ref t1, ref t2, ref t3);
+                VerticalFlip(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
 
@@ -518,7 +518,7 @@ void main(void)
             ExpandVertices(VertexCount + 4);
 
             if (currentBatch.Texture?.FlipVertically ?? false)
-                FlipYUVs(ref t0, ref t1, ref t2, ref t3);
+                VerticalFlip(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
 
@@ -1071,15 +1071,12 @@ void main(void)
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlipYUVs(ref Vector2 uv0, ref Vector2 uv1, ref Vector2 uv2, ref Vector2 uv3)
+        private void VerticalFlip(ref Vector2 uv0, ref Vector2 uv1, ref Vector2 uv2, ref Vector2 uv3)
         {
-            var temp = uv0.Y;
-            uv0.Y = uv3.Y;
-            uv3.Y = temp;
-
-            temp = uv1.Y;
-            uv1.Y = uv2.Y;
-            uv2.Y = temp;
+            uv0.Y = 1 - uv0.Y;
+            uv1.Y = 1 - uv1.Y;
+            uv2.Y = 1 - uv2.Y;
+            uv3.Y = 1 - uv3.Y;
         }
 
         #endregion

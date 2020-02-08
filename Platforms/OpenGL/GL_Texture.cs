@@ -8,7 +8,7 @@ namespace Foster.OpenGL
     {
 
         public uint ID { get; private set; }
-        public bool Flip;
+        public bool VerticalFlip;
 
         private readonly GL_Graphics graphics;
 
@@ -95,7 +95,7 @@ namespace Foster.OpenGL
 
         protected override bool FlipVertically()
         {
-            return Flip;
+            return VerticalFlip;
         }
 
         protected override void SetFilter(TextureFilter filter)

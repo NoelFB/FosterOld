@@ -185,6 +185,8 @@ namespace Foster.Framework
                 // render
                 if (!Exiting)
                 {
+                    Modules.BeforeRender();
+
                     foreach (var window in System.Windows)
                     {
                         if (!window.Opened)
@@ -200,6 +202,8 @@ namespace Foster.Framework
 
                         window.Present();
                     }
+
+                    Modules.AfterRender();
                 }
 
                 if (!Exiting)

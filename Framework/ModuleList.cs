@@ -256,16 +256,28 @@ namespace Foster.Framework
                 modules[i]?.AfterUpdate();
         }
 
-        internal void BeforeRender(Window window)
+        internal void BeforeRender()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.BeforeRender(window);
+                modules[i]?.BeforeRender();
         }
 
-        internal void AfterRender(Window window)
+        internal void AfterRender()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.AfterRender(window);
+                modules[i]?.AfterRender();
+        }
+
+        internal void BeforeRenderWindow(Window window)
+        {
+            for (int i = 0; i < modules.Count; i++)
+                modules[i]?.BeforeRenderWindow(window);
+        }
+
+        internal void AfterRenderWindow(Window window)
+        {
+            for (int i = 0; i < modules.Count; i++)
+                modules[i]?.AfterRenderWindow(window);
         }
 
         internal void Tick()
