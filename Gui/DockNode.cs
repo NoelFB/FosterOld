@@ -350,8 +350,18 @@ namespace Foster.GUI
                 }
                 else if (Mode == Modes.Root)
                 {
+                    float y = 0;
+                    float width = Window.DrawableWidth;
+                    float height = Window.DrawableHeight;
+
+                    if (Gui.Toolbar != null)
+                    {
+                        y += Gui.ToolbarHeight;
+                        height -= Gui.ToolbarHeight;
+                    }
+
                     var scale = Window.ContentScale * Gui.ContentScale;
-                    var bounds = new Rect(0, 0, Window.DrawableWidth / scale.X, Window.DrawableHeight / scale.Y);
+                    var bounds = new Rect(0, y / scale.Y, width / scale.X, height / scale.Y);
 
                     return bounds;
                 }

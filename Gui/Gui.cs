@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Foster.Framework;
 
 namespace Foster.GUI
@@ -13,6 +14,8 @@ namespace Foster.GUI
 
         public SpriteFont Font;
         public Vector2 ContentScale = Vector2.One;
+        public Action<Imgui>? Toolbar = null;
+        public float ToolbarHeight = 0f;
 
         internal readonly DockNode Root;
         internal readonly List<DockNode> Floating = new List<DockNode>();
@@ -133,6 +136,16 @@ namespace Foster.GUI
             Imgui.Step();
             Imgui.BeginViewport(Window, Batcher, ContentScale);
             {
+                if (Toolbar != null)
+                {
+                    var bounds = new Rect(0, 0, Window.DrawableWidth, ToolbarHeight).Scale(1f / Window.ContentScale * ContentScale);
+                    if (Imgui.BeginFrame("TOOLBAR", bounds, true))
+                    {
+                        Toolbar(Imgui);
+                        Imgui.EndFrame();
+                    }
+                }
+
                 Root.Refresh();
 
                 for (int i = 0; i < Floating.Count; i++)
