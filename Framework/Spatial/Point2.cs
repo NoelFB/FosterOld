@@ -46,6 +46,8 @@ namespace Foster.Framework
             return $"[{X}, {Y}]";
         }
 
+        public static implicit operator Point2((int X, int Y) tuple) => new Point2(tuple.X, tuple.Y);
+
         public static Point2 operator -(Point2 point) => new Point2(-point.X, -point.Y);
         public static Point2 operator /(Point2 point, int scaler) => new Point2(point.X / scaler, point.Y / scaler);
         public static Point2 operator *(Point2 point, int scaler) => new Point2(point.X * scaler, point.Y * scaler);

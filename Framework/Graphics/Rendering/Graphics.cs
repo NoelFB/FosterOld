@@ -46,28 +46,30 @@ namespace Foster.Framework
         /// <summary>
         /// Clears the Color of the Target
         /// </summary>
-        public void Clear(RenderTarget target, Color color) => Clear(target, Framework.Clear.Color, color, 0, 0);
+        public void Clear(RenderTarget target, Color color) => 
+            Clear(target, Framework.Clear.Color, color, 0, 0, new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight));
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        public void Clear(RenderTarget target, Color color, float depth, int stencil) => Clear(target, Framework.Clear.All, color, depth, stencil);
+        public void Clear(RenderTarget target, Color color, float depth, int stencil) => 
+            Clear(target, Framework.Clear.All, color, depth, stencil, new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight));
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        public void Clear(RenderTarget target, Clear flags, Color color, float depth, int stencil)
+        public void Clear(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
         {
             if (!target.Drawable)
                 throw new Exception("Render Target cannot currently be drawn to");
 
-            ClearInternal(target, flags, color, depth, stencil);
+            ClearInternal(target, flags, color, depth, stencil, viewport);
         }
 
         /// <summary>
         /// Clears the Target
         /// </summary>
-        protected abstract void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil);
+        protected abstract void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport);
 
         /// <summary>
         /// Draws the data from the Render pass to the Render Target.

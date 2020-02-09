@@ -58,26 +58,22 @@ namespace Foster.Framework
             return $"[{X}, {Y}]";
         }
 
-        public static Point3 operator -(Point3 point) => new Point3(-point.X, -point.Y, point.Z);
 
+        public static implicit operator Point3((int X, int Y, int Z) tuple) => new Point3(tuple.X, tuple.Y, tuple.Z);
+
+        public static Point3 operator -(Point3 point) => new Point3(-point.X, -point.Y, -point.Z);
         public static Point3 operator /(Point3 point, int scaler) => new Point3(point.X / scaler, point.Y / scaler, point.Z / scaler);
-
         public static Point3 operator *(Point3 point, int scaler) => new Point3(point.X * scaler, point.Y * scaler, point.Z * scaler);
-
-        public static Vector3 operator %(Point3 point, int scaler) => new Vector3(point.X % scaler, point.Y % scaler, point.Z % scaler);
+        public static Point3 operator %(Point3 point, int scaler) => new Point3(point.X % scaler, point.Y % scaler, point.Z % scaler);
 
         public static Vector3 operator /(Point3 point, float scaler) => new Vector3(point.X / scaler, point.Y / scaler, point.Z / scaler);
-
         public static Vector3 operator *(Point3 point, float scaler) => new Vector3(point.X * scaler, point.Y * scaler, point.Z * scaler);
-
         public static Vector3 operator %(Point3 point, float scaler) => new Vector3(point.X % scaler, point.Y % scaler, point.Z % scaler);
 
         public static Point3 operator +(Point3 a, Point3 b) => new Point3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
-
         public static Point3 operator -(Point3 a, Point3 b) => new Point3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
         public static bool operator ==(Point3 a, Point3 b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
-
         public static bool operator !=(Point3 a, Point3 b) => a.X != b.X || a.Y != b.Y || a.Z != b.Z;
 
     }

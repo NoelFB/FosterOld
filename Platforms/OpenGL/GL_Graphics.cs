@@ -150,14 +150,15 @@ namespace Foster.OpenGL
             return new GL_Mesh(this);
         }
 
-        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil)
+        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
         {
             if (target is Window window)
             {
                 var context = System.GetWindowGLContext(window);
                 lock (context)
                 {
-                    System.SetCurrentGLContext(context);
+                    if (context != System.GetCurrentGLContext())
+                        System.SetCurrentGLContext(context);
                     GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     Clear(context);
                 }
@@ -200,7 +201,6 @@ namespace Foster.OpenGL
             {
                 // update the viewport
                 var meta = GetContextMeta(context);
-                var viewport = new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight);
                 {
                     viewport.Y = target.DrawableHeight - viewport.Y - viewport.Height;
 
@@ -248,7 +248,8 @@ namespace Foster.OpenGL
                 var context = System.GetWindowGLContext(window);
                 lock (context)
                 {
-                    System.SetCurrentGLContext(context);
+                    if (context != System.GetCurrentGLContext())
+                        System.SetCurrentGLContext(context);
                     Draw(ref pass, context);
                 }
             }
