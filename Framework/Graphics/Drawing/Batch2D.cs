@@ -1004,7 +1004,9 @@ void main(void)
                 var cells = 0;
                 for (float x = bounds.Left; x < bounds.Right; x += cellWidth)
                 {
-                    Rect(x, y, Math.Min(bounds.Right - x, cellWidth), Math.Min(bounds.Bottom - y, cellHeight), (odd ? a : b));
+                    var color = (odd ? a : b);
+                    if (color.A > 0)
+                        Rect(x, y, Math.Min(bounds.Right - x, cellWidth), Math.Min(bounds.Bottom - y, cellHeight), color);
 
                     odd = !odd;
                     cells++;
