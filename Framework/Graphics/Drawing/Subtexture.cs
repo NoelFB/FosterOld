@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Foster.Framework
 {
@@ -7,9 +8,19 @@ namespace Foster.Framework
     /// </summary>
     public class Subtexture
     {
+        /// <summary>
+        /// The Texture coordinates. These are set automatically based on the Source rectangle
+        /// </summary>
+        public readonly Vector2[] TexCoords = new Vector2[4];
 
-        private Texture? texture;
+        /// <summary>
+        /// The draw coordinates. These are set automatically based on the Source and Frame rectangle
+        /// </summary>
+        public readonly Vector2[] DrawCoords = new Vector2[4];
 
+        /// <summary>
+        /// The Texture this Subtexture is... a subtexture of
+        /// </summary>
         public Texture? Texture
         {
             get => texture;
@@ -18,57 +29,21 @@ namespace Foster.Framework
                 if (texture != value)
                 {
                     texture = value;
-                    if (texture != null)
-                        UpdateTexCoords();
+                    UpdateCoords();
                 }
             }
         }
-
-        /// <summary>
-        /// The Texture coordinates. These are set automatically based on the Source rectangle
-        /// </summary>
-        public readonly Vector2[] TexCoords = new Vector2[4];
-
-        /// <summary>
-        /// The draw coordinates. These are set automatically based on the Draw rectangle
-        /// </summary>
-        public readonly Vector2[] DrawCoords = new Vector2[4];
 
         /// <summary>
         /// The source rectangle to sample from the Texture
         /// </summary>
-        public Rect SourceRect
+        public Rect Source
         {
-            get => sourceRect;
+            get => source;
             set
             {
-                sourceRect = value;
-                if (texture != null)
-                    UpdateTexCoords();
-            }
-        }
-
-        /// <summary>
-        /// The rectangle to draw to the screen
-        /// </summary>
-        public Rect DrawRect
-        {
-            get => drawRect;
-            set
-            {
-                if (drawRect != value)
-                {
-                    drawRect = value;
-
-                    DrawCoords[0].X = drawRect.X;
-                    DrawCoords[0].Y = drawRect.Y;
-                    DrawCoords[1].X = drawRect.X + drawRect.Width;
-                    DrawCoords[1].Y = drawRect.Y;
-                    DrawCoords[2].X = drawRect.X + drawRect.Width;
-                    DrawCoords[2].Y = drawRect.Y + drawRect.Height;
-                    DrawCoords[3].X = drawRect.X;
-                    DrawCoords[3].Y = drawRect.Y + drawRect.Height;
-                }
+                source = value;
+                UpdateCoords();
             }
         }
 
@@ -76,20 +51,29 @@ namespace Foster.Framework
         /// The frame of the Subtexture. This is useful if you trim transparency and want to store the original size of the image
         /// For example, if the original image was (64, 64), but the trimmed version is (32, 48), the Frame may be (-16, -8, 64, 64)
         /// </summary>
-        public Rect FrameRect;
+        public Rect Frame
+        {
+            get => frame;
+            set
+            {
+                frame = value;
+                UpdateCoords();
+            }
+        }
 
         /// <summary>
         /// The Draw Width of the Subtexture
         /// </summary>
-        public float Width => DrawRect.Width;
+        public float Width => frame.Width;
 
         /// <summary>
         /// The Draw Height of the Subtexture
         /// </summary>
-        public float Height => DrawRect.Height;
+        public float Height => frame.Height;
 
-        private Rect drawRect;
-        private Rect sourceRect;
+        private Texture? texture;
+        private Rect frame;
+        private Rect source;
 
         public Subtexture()
         {
@@ -110,38 +94,101 @@ namespace Foster.Framework
 
         public Subtexture(Texture texture, Rect source, Rect frame)
         {
-            Texture = texture;
-            SourceRect = source;
-            DrawRect = new Rect(-frame.X, -frame.Y, source.Width, source.Height);
-            FrameRect = frame;
+            this.texture = texture;
+            this.source = source;
+            this.frame = frame;
+
+            UpdateCoords();
         }
 
         public void Reset(Texture texture, Rect source, Rect frame)
         {
-            Texture = texture;
-            SourceRect = source;
-            DrawRect = new Rect(-frame.X, -frame.Y, source.Width, source.Height);
-            FrameRect = frame;
+            this.texture = texture;
+            this.source = source;
+            this.frame = frame;
+
+            UpdateCoords();
         }
 
-        private void UpdateTexCoords()
+        public (Rect Source, Rect Frame) GetClip(Rect clip)
         {
-            if (texture == null)
-                throw new Exception("Cannot update Texcoords when the Texture is null");
+            var frame = new Rect(this.frame.X, this.frame.Y, clip.Width, clip.Height);
+            var source = new Rect();
 
-            var tx0 = sourceRect.X / texture.Width;
-            var ty0 = sourceRect.Y / texture.Height;
-            var tx1 = sourceRect.Right / texture.Width;
-            var ty1 = sourceRect.Bottom / texture.Height;
+            if (clip.X < 0)
+            {
+                frame.X += clip.X;
+                source.X = this.source.X;
+                source.Width = Math.Max(0, Math.Min(this.source.Width, clip.Width + clip.X + this.frame.X));
+            }
+            else if (clip.X <= -this.frame.X)
+            {
+                frame.Y = this.frame.X + clip.X;
+                source.X = this.source.X;
+                source.Width = Math.Max(0, Math.Min(this.source.Width, clip.Width - clip.X + this.frame.X));
+            }
+            else
+            {
+                frame.X = 0;
+                source.X = this.source.X + (clip.Y + this.frame.X);
+                source.Width = Math.Max(0, Math.Min(this.source.Width - clip.X - this.frame.X, clip.Width));
+            }
 
-            TexCoords[0].X = tx0;
-            TexCoords[0].Y = ty0;
-            TexCoords[1].X = tx1;
-            TexCoords[1].Y = ty0;
-            TexCoords[2].X = tx1;
-            TexCoords[2].Y = ty1;
-            TexCoords[3].X = tx0;
-            TexCoords[3].Y = ty1;
+            if (clip.Y < 0)
+            {
+                frame.X += clip.X;
+                source.Y = this.source.Y;
+                source.Height = Math.Max(0, Math.Min(this.source.Height, clip.Height + clip.Y + this.frame.Y));
+            }
+            else if (clip.Y <= -this.frame.Y)
+            {
+                frame.Y = this.frame.Y + clip.Y;
+                source.Y = this.source.Y;
+                source.Height = Math.Max(0, Math.Min(this.source.Height, clip.Height - clip.Y + this.frame.Y));
+            }
+            else
+            {
+                frame.Y = 0;
+                source.Y = this.source.Y + (clip.Y + this.frame.Y);
+                source.Height = Math.Max(0, Math.Min(this.source.Height - clip.Y - this.frame.Y, clip.Height));
+            }
+
+            return (source, frame);
+        }
+
+        public Subtexture GetClipSubtexture(Rect clip)
+        {
+            var (source, frame) = GetClip(clip);
+            return new Subtexture(Texture!, source, frame);
+        }
+
+        private void UpdateCoords()
+        {
+            DrawCoords[0].X = -frame.X;
+            DrawCoords[0].Y = -frame.Y;
+            DrawCoords[1].X = -frame.X + source.Width;
+            DrawCoords[1].Y = -frame.Y;
+            DrawCoords[2].X = -frame.X + source.Width;
+            DrawCoords[2].Y = -frame.Y + source.Height;
+            DrawCoords[3].X = -frame.X;
+            DrawCoords[3].Y = -frame.Y + source.Height;
+
+            if (texture != null)
+            {
+                var tx0 = source.X / texture.Width;
+                var ty0 = source.Y / texture.Height;
+                var tx1 = source.Right / texture.Width;
+                var ty1 = source.Bottom / texture.Height;
+
+                TexCoords[0].X = tx0;
+                TexCoords[0].Y = ty0;
+                TexCoords[1].X = tx1;
+                TexCoords[1].Y = ty0;
+                TexCoords[2].X = tx1;
+                TexCoords[2].Y = ty1;
+                TexCoords[3].X = tx0;
+                TexCoords[3].Y = ty1;
+            }
         }
 
     }

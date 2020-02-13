@@ -946,9 +946,35 @@ void main(void)
             MatrixStack = was;
         }
 
-        public void Image(Subtexture subtex, RectInt clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        public void Image(Subtexture subtex, Rect clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
         {
-            throw new NotImplementedException();
+            var (source, frame) = subtex.GetClip(clip);
+            var tex = subtex.Texture;
+            var was = MatrixStack;
+
+            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+
+            // pos
+            float px0 = -frame.X, px1 = -frame.X + source.Width,
+                  py0 = -frame.Y, py1 = -frame.Y + source.Height;
+
+            // tex-coords
+            float tx0 = 0, tx1 = 0, ty0 = 0, ty1 = 0;
+            if (tex != null)
+            {
+                tx0 = source.Left / tex.Width;
+                tx1 = source.Right / tex.Width;
+                ty0 = source.Top / tex.Width;
+                ty1 = source.Bottom / tex.Width;
+            }
+
+            SetTexture(subtex.Texture);
+            Quad(
+                (px0, py0), (px1, py0), (px1, py1), (px0, py1),
+                (tx0, ty0), (tx1, ty0), (tx1, ty1), (tx0, ty1),
+                color, washed);
+
+            MatrixStack = was;
         }
 
         #endregion
@@ -995,6 +1021,8 @@ void main(void)
 
         #endregion
 
+        #region Misc.
+
         public void CheckeredPattern(Rect bounds, float cellWidth, float cellHeight, Color a, Color b)
         {
             var odd = false;
@@ -1016,6 +1044,8 @@ void main(void)
                     odd = !odd;
             }
         }
+
+        #endregion
 
         #region Internal Utils
 
