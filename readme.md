@@ -16,7 +16,7 @@ foster is an open source & cross-platform game framework made in C# dotnet core.
  - **Gui**: A simple dockable GUI system. Inspired by [immediate mode GUIs](https://github.com/ocornut/imgui) for widgets.
 
 ## dependencies
- - [dotnet core 3.0](https://dotnet.microsoft.com/download/dotnet-core/3.0) and [C# 8.0](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)
+ - [dotnet core 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.0) and [C# 8.0](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)
  - [stb_truetype](https://github.com/nothings/stb) for Font loading. We're using a [C# port](https://github.com/StbSharp/StbTrueTypeSharp)
  - Each Platform implementation has its own dependencies
 
