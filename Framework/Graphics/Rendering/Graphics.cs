@@ -33,6 +33,11 @@ namespace Foster.Framework
         /// </summary>
         public bool OriginBottomLeft { get; protected set; } = false;
 
+        /// <summary>
+        /// The Renderer this Graphics Module implements
+        /// </summary>
+        public abstract Renderer Renderer { get; }
+
         protected Graphics() : base(200)
         {
 

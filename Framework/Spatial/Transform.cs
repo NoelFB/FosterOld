@@ -13,25 +13,26 @@ namespace Foster.Framework
     }
 
     /// <summary>
-    /// A 3D Transform
+    /// A 2D Transform
     /// </summary>
     public class Transform : ITransform
     {
         public event Action? OnChanged;
 
-        private Transform? parent;
-        private Vector3 position;
-        private Vector3 scale = Vector3.One;
-        private Quaternion rotation;
-        private Matrix matrix;
-        private Matrix inverse;
-        private Vector3 forward;
-        private Vector3 left;
-        private Vector3 right;
-        private Vector3 backward;
-        private Vector3 up;
-        private Vector3 down;
+        private Transform? parent = null;
+
+        private Vector3 position = Vector3.Zero;
+        private Vector3 localPosition = Vector3.Zero;
+        private Vector3 scale = Vector3.Zero;
+        private Vector3 localScale = Vector3.One;
+        private Quaternion rotation = Quaternion.Identity;
+        private Quaternion localRotation = Quaternion.Identity;
+
         private bool dirty = true;
+
+        private Matrix localMatrix = Matrix.Identity;
+        private Matrix worldMatrix = Matrix.Identity;
+        private Matrix worldToLocalMatrix = Matrix.Identity;
 
         public Transform? Parent
         {
@@ -43,6 +44,9 @@ namespace Foster.Framework
                     if (parent != null)
                         parent.OnChanged -= MakeDirty;
 
+                    if (value != null && value.Parent == this)
+                        throw new Exception("Circular Transform Heritage");
+
                     parent = value;
 
                     if (parent != null)
@@ -50,6 +54,24 @@ namespace Foster.Framework
 
                     MakeDirty();
                 }
+            }
+        }
+
+        public Vector3 Position
+        {
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return position;
+            }
+            set
+            {
+                if (parent == null)
+                    LocalPosition = value;
+                else
+                    LocalPosition = Vector3.Transform(value, worldToLocalMatrix);
             }
         }
 
@@ -71,32 +93,14 @@ namespace Foster.Framework
             set => Position = new Vector3(Position.X, Position.Y, value);
         }
 
-        public float ScaleX
+        public Vector3 LocalPosition
         {
-            get => Scale.X;
-            set => Scale = new Vector3(value, Scale.Y, Scale.Z);
-        }
-
-        public float ScaleY
-        {
-            get => Scale.Y;
-            set => Scale = new Vector3(Scale.X, value, Scale.Z);
-        }
-
-        public float ScaleZ
-        {
-            get => Scale.Z;
-            set => Scale = new Vector3(Scale.X, Scale.Y, value);
-        }
-
-        public Vector3 Position
-        {
-            get => position;
+            get => localPosition;
             set
             {
-                if (position != value)
+                if (localPosition != value)
                 {
-                    position = value;
+                    localPosition = value;
                     MakeDirty();
                 }
             }
@@ -104,12 +108,49 @@ namespace Foster.Framework
 
         public Vector3 Scale
         {
-            get => scale;
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return scale;
+            }
             set
             {
-                if (scale != value)
+                if (parent == null)
                 {
-                    scale = value;
+                    LocalScale = value;
+                }
+                else
+                {
+                    if (parent.Scale.X == 0)
+                        value.X = 0;
+                    else
+                        value.X /= parent.Scale.X;
+
+                    if (parent.Scale.Y == 0)
+                        value.Y = 0;
+                    else
+                        value.Y /= parent.Scale.Y;
+
+                    if (parent.Scale.Z == 0)
+                        value.Z = 0;
+                    else
+                        value.Z /= parent.Scale.Z;
+
+                    LocalScale = value;
+                }
+            }
+        }
+
+        public Vector3 LocalScale
+        {
+            get => localScale;
+            set
+            {
+                if (localScale != value)
+                {
+                    localScale = value;
                     MakeDirty();
                 }
             }
@@ -117,134 +158,100 @@ namespace Foster.Framework
 
         public Quaternion Rotation
         {
-            get => rotation;
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return rotation;
+            }
             set
             {
-                if (rotation != value)
+                if (parent == null)
+                    LocalRotation = value;
+                else
+                    LocalRotation = value / parent.Rotation;
+            }
+        }
+
+        public Quaternion LocalRotation
+        {
+            get => localRotation;
+            set
+            {
+                if (localRotation != value)
                 {
-                    rotation = value;
+                    localRotation = value;
                     MakeDirty();
                 }
             }
         }
 
-        public Matrix Matrix
+        public Matrix LocalMatrix
         {
             get
             {
                 if (dirty)
                     Update();
-
-                return matrix;
+                return localMatrix;
             }
         }
 
-        public Matrix Inverse
+        public Matrix WorldMatrix
         {
             get
             {
                 if (dirty)
                     Update();
-
-                return inverse;
+                return worldMatrix;
             }
         }
 
-        public Vector3 Forward
+        public Matrix WorldToLocalMatrix
         {
             get
             {
                 if (dirty)
                     Update();
-                return forward;
-            }
-        }
-
-        public Vector3 Backward
-        {
-            get
-            {
-                if (dirty)
-                    Update();
-                return backward;
-            }
-        }
-
-        public Vector3 Left
-        {
-            get
-            {
-                if (dirty)
-                    Update();
-                return left;
-            }
-        }
-
-        public Vector3 Right
-        {
-            get
-            {
-                if (dirty)
-                    Update();
-                return right;
-            }
-        }
-
-        public Vector3 Up
-        {
-            get
-            {
-                if (dirty)
-                    Update();
-                return up;
-            }
-        }
-
-        public Vector3 Down
-        {
-            get
-            {
-                if (dirty)
-                    Update();
-                return down;
-            }
-        }
-
-        public Vector3 GlobalPosition
-        {
-            get
-            {
-                if (parent != null)
-                    return Vector3.Transform(position, parent.Matrix);
-                return position;
+                return worldToLocalMatrix;
             }
         }
 
         private void Update()
         {
-            matrix = Matrix.CreateScale(scale) *
-                     Matrix.CreateFromQuaternion(rotation) *
-                     Matrix.CreateTranslation(position);
-
-            forward = Vector3.Transform(Vector3.Forward, rotation);
-            backward = -forward;
-            left = Vector3.Transform(Vector3.Left, rotation);
-            right = -left;
-            up = Vector3.Transform(Vector3.Up, rotation);
-            down = -up;
-
-            if (parent != null)
-                matrix *= parent.Matrix;
-
-            Matrix.Invert(matrix, out inverse);
-
             dirty = false;
+
+            localMatrix = Matrix.CreateScale(localScale) *
+                     Matrix.CreateFromQuaternion(localRotation) *
+                     Matrix.CreateTranslation(localPosition);
+
+            if (parent == null)
+            {
+                worldMatrix = localMatrix;
+                worldToLocalMatrix = Matrix.Identity;
+                position = localPosition;
+                scale = localScale;
+                rotation = localRotation;
+            }
+            else
+            {
+                worldMatrix = localMatrix * parent.WorldMatrix;
+                Matrix.Invert(parent.WorldMatrix, out worldToLocalMatrix);
+                position = Vector3.Transform(localPosition, parent.WorldMatrix);
+                scale = localScale * parent.Scale;
+                rotation = localRotation * parent.Rotation;
+            }
+
         }
 
         private void MakeDirty()
         {
-            dirty = true;
-            OnChanged?.Invoke();
+            if (!dirty)
+            {
+                dirty = true;
+                OnChanged?.Invoke();
+            }
         }
+
     }
 }

@@ -50,17 +50,24 @@ namespace Foster.Framework
         public Matrix2D Invert()
         {
             var det = (M11 * M22) - (M21 * M12);
-            var invDet = 1.0f / det;
-
-            return new Matrix2D()
+            if (det != 0)
             {
-                M11 = M22 * invDet,
-                M12 = -M12 * invDet,
-                M21 = -M21 * invDet,
-                M22 = M11 * invDet,
-                M31 = (M21 * M32 - M31 * M22) * invDet,
-                M32 = (M31 * M12 - M11 * M32) * invDet
-            };
+                var invDet = 1.0f / det;
+
+                return new Matrix2D()
+                {
+                    M11 = M22 * invDet,
+                    M12 = -M12 * invDet,
+                    M21 = -M21 * invDet,
+                    M22 = M11 * invDet,
+                    M31 = (M21 * M32 - M31 * M22) * invDet,
+                    M32 = (M31 * M12 - M11 * M32) * invDet
+                };
+            }
+            else
+            {
+                return Identity;
+            }
         }
 
         public override bool Equals(object? obj) => (obj is Matrix2D other) && (this == other);
@@ -87,7 +94,7 @@ namespace Foster.Framework
             M32 = 0
         };
 
-        public static Matrix2D Add(Matrix2D a, Matrix2D b)
+        public static Matrix2D Add(in Matrix2D a, in Matrix2D b)
         {
             return new Matrix2D()
             {
@@ -100,7 +107,7 @@ namespace Foster.Framework
             };
         }
 
-        public static Matrix2D Subtract(Matrix2D a, Matrix2D b)
+        public static Matrix2D Subtract(in Matrix2D a, in Matrix2D b)
         {
             return new Matrix2D()
             {
@@ -113,7 +120,7 @@ namespace Foster.Framework
             };
         }
 
-        public static Matrix2D Multiply(Matrix2D a, Matrix2D b)
+        public static Matrix2D Multiply(in Matrix2D a, in Matrix2D b)
         {
             return new Matrix2D()
             {
@@ -126,7 +133,7 @@ namespace Foster.Framework
             };
         }
 
-        public static Matrix2D CreateTransform(Vector2 position, Vector2 origin, Vector2 scale, float rotation)
+        public static Matrix2D CreateTransform(in Vector2 position, in Vector2 origin, in Vector2 scale, in float rotation)
         {
             Matrix2D matrix;
 
@@ -147,7 +154,7 @@ namespace Foster.Framework
             return matrix;
         }
 
-        public static Matrix2D CreateTransform(ITransform2D transform) => CreateTransform(transform.Position, transform.Origin, transform.Scale, transform.Rotation);
+        public static Matrix2D CreateTransform(in ITransform2D transform) => CreateTransform(transform.Position, transform.Origin, transform.Scale, transform.Rotation);
 
         public static Matrix2D CreateTranslation(Vector2 vec2) => CreateTranslation(vec2.X, vec2.Y);
         public static Matrix2D CreateTranslation(float x, float y) => new Matrix2D(1, 0, 0, 1, x, y);

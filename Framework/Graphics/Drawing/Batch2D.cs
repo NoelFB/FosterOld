@@ -341,7 +341,7 @@ namespace Foster.Framework
 
         public Matrix2D PushMatrix(Transform2D transform, bool relative = true)
         {
-            return PushMatrix(transform.Matrix, relative);
+            return PushMatrix(transform.WorldMatrix, relative);
         }
 
         public Matrix2D PushMatrix(Vector2 position, bool relative = true)

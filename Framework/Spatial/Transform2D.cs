@@ -20,16 +20,21 @@ namespace Foster.Framework
     {
         public event Action? OnChanged;
 
-        private Transform2D? parent;
-        private Vector2 position;
-        private Vector2 origin;
-        private Vector2 scale = Vector2.One;
-        private float rotation;
-        private Matrix2D localMatrix;
-        private Matrix2D matrix;
-        private Matrix2D inverse;
-        private bool dirtyMatrix = true;
-        private bool dirtyInverseMatrix = true;
+        private Transform2D? parent = null;
+
+        private Vector2 position = Vector2.Zero;
+        private Vector2 localPosition = Vector2.Zero;
+        private Vector2 scale = Vector2.Zero;
+        private Vector2 localScale = Vector2.One;
+        private Vector2 origin = Vector2.Zero;
+        private float rotation = 0f;
+        private float localRotation = 0f;
+
+        private bool dirty = true;
+
+        private Matrix2D localMatrix = Matrix2D.Identity;
+        private Matrix2D worldMatrix = Matrix2D.Identity;
+        private Matrix2D worldToLocalMatrix = Matrix2D.Identity;
 
         public Transform2D? Parent
         {
@@ -51,56 +56,6 @@ namespace Foster.Framework
 
                     MakeDirty();
                 }
-
-            }
-        }
-
-        public float X
-        {
-            get => Position.X;
-            set => Position = new Vector2(value, Position.Y);
-        }
-
-        public float Y
-        {
-            get => Position.Y;
-            set => Position = new Vector2(Position.X, value);
-        }
-
-        public float ScaleX
-        {
-            get => Scale.X;
-            set => Scale = new Vector2(value, Scale.Y);
-        }
-
-        public float ScaleY
-        {
-            get => Scale.Y;
-            set => Scale = new Vector2(Scale.X, value);
-        }
-
-        public float OriginX
-        {
-            get => Origin.X;
-            set => Origin = new Vector2(value, Origin.Y);
-        }
-
-        public float OriginY
-        {
-            get => Origin.Y;
-            set => Origin = new Vector2(Origin.X, value);
-        }
-
-        public Vector2 Position
-        {
-            get => position;
-            set
-            {
-                if (position != value)
-                {
-                    position = value;
-                    MakeDirty();
-                }
             }
         }
 
@@ -117,14 +72,89 @@ namespace Foster.Framework
             }
         }
 
-        public Vector2 Scale
+        public Vector2 Position
         {
-            get => scale;
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return position;
+            }
             set
             {
-                if (scale != value)
+                if (parent == null)
+                    LocalPosition = value;
+                else
+                    LocalPosition = Vector2.Transform(value, worldToLocalMatrix);
+            }
+        }
+
+        public float X
+        {
+            get => Position.X;
+            set => Position = new Vector2(value, Position.Y);
+        }
+
+        public float Y
+        {
+            get => Position.Y;
+            set => Position = new Vector2(Position.X, value);
+        }
+
+        public Vector2 LocalPosition
+        {
+            get => localPosition;
+            set
+            {
+                if (localPosition != value)
                 {
-                    scale = value;
+                    localPosition = value;
+                    MakeDirty();
+                }
+            }
+        }
+
+        public Vector2 Scale
+        {
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return scale;
+            }
+            set
+            {
+                if (parent == null)
+                {
+                    LocalScale = value;
+                }
+                else
+                {
+                    if (parent.Scale.X == 0)
+                        value.X = 0;
+                    else
+                        value.X /= parent.Scale.X;
+
+                    if (parent.Scale.Y == 0)
+                        value.Y = 0;
+                    else
+                        value.Y /= parent.Scale.Y;
+
+                    LocalScale = value;
+                }
+            }
+        }
+
+        public Vector2 LocalScale
+        {
+            get => localScale;
+            set
+            {
+                if (localScale != value)
+                {
+                    localScale = value;
                     MakeDirty();
                 }
             }
@@ -132,12 +162,30 @@ namespace Foster.Framework
 
         public float Rotation
         {
-            get => rotation;
+            get
+            {
+                if (dirty)
+                    Update();
+
+                return rotation;
+            }
             set
             {
-                if (rotation != value)
+                if (parent == null)
+                    LocalRotation = value;
+                else
+                    LocalRotation = value - parent.Rotation;
+            }
+        }
+
+        public float LocalRotation
+        {
+            get => localRotation;
+            set
+            {
+                if (localRotation != value)
                 {
-                    rotation = value;
+                    localRotation = value;
                     MakeDirty();
                 }
             }
@@ -147,58 +195,65 @@ namespace Foster.Framework
         {
             get
             {
-                if (dirtyMatrix)
+                if (dirty)
                     Update();
-
                 return localMatrix;
             }
         }
 
-        public Matrix2D Matrix
+        public Matrix2D WorldMatrix
         {
             get
             {
-                if (dirtyMatrix)
+                if (dirty)
                     Update();
-
-                return matrix;
+                return worldMatrix;
             }
         }
 
-        public Matrix2D Inverse
+        public Matrix2D WorldToLocalMatrix
         {
             get
             {
-                if (dirtyMatrix)
+                if (dirty)
                     Update();
-
-                if (dirtyInverseMatrix)
-                {
-                    inverse = matrix.Invert();
-                    dirtyInverseMatrix = false;
-                }
-
-                return inverse;
+                return worldToLocalMatrix;
             }
         }
 
         private void Update()
         {
-            localMatrix = Matrix2D.CreateTransform(this);
+            dirty = false;
 
-            if (parent != null)
-                matrix = localMatrix * parent.Matrix;
+            localMatrix = Matrix2D.CreateTransform(localPosition, origin, localScale, localRotation);
+
+            if (parent == null)
+            {
+                worldMatrix = localMatrix;
+                worldToLocalMatrix = Matrix2D.Identity;
+                position = localPosition;
+                scale = localScale;
+                rotation = localRotation;
+            }
             else
-                matrix = localMatrix;
+            {
+                worldMatrix = localMatrix * parent.WorldMatrix;
+                worldToLocalMatrix = parent.WorldMatrix.Invert();
+                position = Vector2.Transform(localPosition, parent.WorldMatrix);
+                scale = localScale * parent.Scale;
+                rotation = localRotation + parent.Rotation;
+            }
 
-            dirtyInverseMatrix = true;
-            dirtyMatrix = false;
         }
 
         private void MakeDirty()
         {
-            dirtyMatrix = true;
-            OnChanged?.Invoke();
+            if (!dirty)
+            {
+                dirty = true;
+                OnChanged?.Invoke();
+            }
         }
+
     }
 }
