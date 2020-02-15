@@ -11,6 +11,7 @@ _★ very work in progress! likely to have frequent, breaking changes ★_
  - A simple and lightweight platform API so it's easy to swap out the guts
  - Something to iterate on. I just enjoy making this stuff and it's not trying to be the best possible framework ever
  - This isn't built for modern graphics or like a billion polygons.
+ - This is just for Windowing, Input, Rendering, and Audio - not a full Engine. I'm working on a separate project built over this for things like Entities, Asset Management, etc.
 
 ## what's here
  - **Framework**: The main Framework with an abstract Platform implementation. Handles Input, Drawing, Windowing, etc.
