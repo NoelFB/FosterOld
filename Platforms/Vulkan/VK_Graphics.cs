@@ -34,6 +34,7 @@ namespace Foster.Vulkan
         private readonly string[] deviceExtensions = new[] { VkConst.VK_KHR_SWAPCHAIN_EXTENSION_NAME };
         private readonly List<Delegate> trackedDelegates = new List<Delegate>();
 
+
         protected override void ApplicationStarted()
         {
             ApiName = "Vulkan";
@@ -313,39 +314,49 @@ namespace Foster.Vulkan
             trackedDelegates.Clear();
         }
 
-        public override Mesh CreateMesh()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RenderTexture CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Shader CreateShader(ShaderSource source)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Texture CreateTexture(int width, int height, TextureFormat format)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void RenderInternal(RenderTarget target, ref RenderPass pass)
-        {
-            throw new NotImplementedException();
-        }
-
         public IntPtr GetVulkanInstancePointer()
         {
             return Instance;
+        }
+
+        public override Renderer Renderer => Renderer.Vulkan;
+
+        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void RenderInternal(ref RenderPass pass)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Texture.Platform CreateTexture(int width, int height, TextureFormat format)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] attachments)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Shader.Platform CreateShader(ShaderSource source)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Mesh.Platform CreateMesh()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ShaderSource CreateShaderSourceBatch2D()
+        {
+            var vertexSource = Calc.EmbeddedResource("Resources/batch2d.vert.spv");
+            var fragmentSource = Calc.EmbeddedResource("Resources/batch2d.frag.spv");
+
+            return new ShaderSource(vertexSource, fragmentSource);
         }
     }
 }
