@@ -19,7 +19,7 @@ _★ very work in progress! likely to have frequent, breaking changes ★_
  - **JSON**: Simple JSON reading / writing library. Can also read and write non-strict JSON (like [Hjson](https://hjson.github.io/))
 
 ## dependencies
- - [dotnet core 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.0) and [C# 8.0](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)
+ - [dotnet core 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1) and [C# 8.0](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)
  - [stb_truetype](https://github.com/nothings/stb) for Font loading. We're using a [C# port](https://github.com/StbSharp/StbTrueTypeSharp)
  - Each Platform implementation has its own dependencies
 
