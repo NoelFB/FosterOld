@@ -64,7 +64,6 @@ namespace StbTrueTypeSharp
             return Math.Ceiling(a);
         }
 
-
         public static double floor(double a)
         {
             return Math.Floor(a);
