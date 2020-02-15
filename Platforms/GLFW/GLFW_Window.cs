@@ -49,7 +49,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Point2 DrawableSize
+        public override Point2 RenderSize
         {
             get
             {

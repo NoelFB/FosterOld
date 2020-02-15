@@ -135,9 +135,9 @@ namespace Foster.OpenGL
             return new GL_Texture(this);
         }
 
-        protected override RenderTexture.Platform CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
-            return new GL_RenderTexture(this, width, height, colorAttachmentFormats, depthFormat);
+            return new GL_FrameBuffer(this, width, height, colorAttachmentFormats, depthFormat);
         }
 
         protected override Shader.Platform CreateShader(ShaderSource source)
@@ -148,6 +148,14 @@ namespace Foster.OpenGL
         protected override Mesh.Platform CreateMesh()
         {
             return new GL_Mesh(this);
+        }
+
+        protected override ShaderSource CreateShaderSourceBatch2D()
+        {
+            var vertexSource = Calc.EmbeddedResourceText("Resources/batch2d.vert");
+            var fragmentSource = Calc.EmbeddedResourceText("Resources/batch2d.frag");
+
+            return new ShaderSource(vertexSource, fragmentSource);
         }
 
         protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
@@ -163,7 +171,7 @@ namespace Foster.OpenGL
                     Clear(context);
                 }
             }
-            else if (target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
+            else if (target is Framework.FrameBuffer rt && rt.Implementation is GL_FrameBuffer renderTexture)
             {
                 // if we're off the main thread, clear using the Background Context
                 if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -202,7 +210,7 @@ namespace Foster.OpenGL
                 // update the viewport
                 var meta = GetContextMeta(context);
                 {
-                    viewport.Y = target.DrawableHeight - viewport.Y - viewport.Height;
+                    viewport.Y = target.RenderHeight - viewport.Y - viewport.Height;
 
                     if (meta.Viewport != viewport)
                     {
@@ -303,7 +311,7 @@ namespace Foster.OpenGL
                     {
                         GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     }
-                    else if (pass.Target is RenderTexture rt && rt.Implementation is GL_RenderTexture renderTexture)
+                    else if (pass.Target is Framework.FrameBuffer rt && rt.Implementation is GL_FrameBuffer renderTexture)
                     {
                         renderTexture.Bind(context);
                     }
@@ -396,9 +404,9 @@ namespace Foster.OpenGL
                 }
 
                 // Viewport
-                var viewport = pass.Viewport ?? new RectInt(0, 0, pass.Target.DrawableWidth, pass.Target.DrawableHeight);
+                var viewport = pass.Viewport ?? new RectInt(0, 0, pass.Target.RenderWidth, pass.Target.RenderHeight);
                 {
-                    viewport.Y = pass.Target.DrawableHeight - viewport.Y - viewport.Height;
+                    viewport.Y = pass.Target.RenderHeight - viewport.Y - viewport.Height;
 
                     if (updateAll || contextMeta.Viewport != viewport)
                     {
@@ -409,8 +417,8 @@ namespace Foster.OpenGL
 
                 // Scissor
                 {
-                    var scissor = pass.Scissor ?? new RectInt(0, 0, pass.Target.DrawableWidth, pass.Target.DrawableHeight);
-                    scissor.Y = pass.Target.DrawableHeight - scissor.Y - scissor.Height;
+                    var scissor = pass.Scissor ?? new RectInt(0, 0, pass.Target.RenderWidth, pass.Target.RenderHeight);
+                    scissor.Y = pass.Target.RenderHeight - scissor.Y - scissor.Height;
                     scissor.Width = Math.Max(0, scissor.Width);
                     scissor.Height = Math.Max(0, scissor.Height);
 
@@ -435,24 +443,16 @@ namespace Foster.OpenGL
                 {
                     if (pass.MeshInstanceCount > 0)
                     {
-                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, pass.MeshIndexCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3), pass.MeshInstanceCount);
+                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount * 3), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3), (int)pass.MeshInstanceCount);
                     }
                     else
                     {
-                        GL.DrawElements(GLEnum.TRIANGLES, pass.MeshIndexCount * 3, GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3));
+                        GL.DrawElements(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount * 3), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3));
                     }
 
                     GL.BindVertexArray(0);
                 }
             }
-        }
-
-        protected override ShaderSource CreateShaderSourceBatch2D()
-        {
-            var vertexSource = Calc.EmbeddedResourceText("Resources/batch2d.vert");
-            var fragmentSource = Calc.EmbeddedResourceText("Resources/batch2d.frag");
-
-            return new ShaderSource(vertexSource, fragmentSource);
         }
 
         private static GLEnum GetBlendFunc(BlendOperations operation)

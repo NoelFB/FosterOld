@@ -22,7 +22,7 @@ namespace Foster.Framework
             protected internal abstract void SetWrap(TextureWrap x, TextureWrap y);
             protected internal abstract void SetData<T>(ReadOnlyMemory<T> buffer);
             protected internal abstract void GetData<T>(Memory<T> buffer);
-            protected internal abstract bool IsRenderTexture();
+            protected internal abstract bool IsFrameBuffer();
             protected internal abstract void Dispose();
         }
 
@@ -47,9 +47,9 @@ namespace Foster.Framework
         public readonly TextureFormat Format;
 
         /// <summary>
-        /// Whether the Texture is part of a Render Texture
+        /// Whether the Texture is part of a FrameBuffer
         /// </summary>
-        public bool IsRenderTexture => Internal.IsRenderTexture();
+        public bool IsFrameBuffer => Internal.IsFrameBuffer();
 
         /// <summary>
         /// The Size of the Texture, in bytes

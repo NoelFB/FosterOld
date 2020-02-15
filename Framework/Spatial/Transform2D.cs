@@ -182,23 +182,6 @@ namespace Foster.Framework
             }
         }
 
-        public Vector2 GlobalPosition
-        {
-            get
-            {
-                if (parent != null)
-                    return Vector2.Transform(position, parent.Matrix);
-                return position;
-            }
-            set
-            {
-                if (parent != null)
-                    Position = Vector2.Transform(value, parent.Matrix.Invert());
-                else
-                    Position = value;
-            }
-        }
-
         private void Update()
         {
             localMatrix = Matrix2D.CreateTransform(this);

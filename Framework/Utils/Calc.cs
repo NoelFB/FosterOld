@@ -12,18 +12,34 @@ namespace Foster.Framework
     /// </summary>
     public static class Calc
     {
+        #region Consts
 
+        /// <summary>
+        /// PI in radians
+        /// </summary>
         public const float PI = 3.14159265359f;
+
+        /// <summary>
+        /// Half PI in radians
+        /// </summary>
         public const float HalfPI = 3.14159265359f / 2f;
+
+        /// <summary>
+        /// TAU (2-PI) in radians
+        /// </summary>
         public const float TAU = 6.28318530718f;
 
-        public const float RadiansLeft = PI;
-        public const float RadiansDown = PI / 2;
-        public const float RadiansRight = 0;
-        public const float RadiansUp = PI + PI / 2;
-
+        /// <summary>
+        /// Converts Degrees to Radians
+        /// </summary>
         public const float DegToRad = (MathF.PI * 2) / 360f;
+
+        /// <summary>
+        /// Converts Radians to Degrees
+        /// </summary>
         public const float RadToDeg = 360f / (MathF.PI * 2);
+
+        #endregion
 
         #region Binary  Operations
 
@@ -149,23 +165,6 @@ namespace Foster.Framework
         public static float ClampedMap(float val, float min, float max, float newMin = 0, float newMax = 1)
         {
             return Clamp((val - min) / (max - min), 0, 1) * (newMax - newMin) + newMin;
-        }
-
-        public static Rect Bounds(Rect viewport, Matrix2D matrix)
-        {
-            var inverse = matrix.Invert();
-
-            var topleft = Vector2.Transform(new Vector2(viewport.X, viewport.Y), inverse);
-            var topright = Vector2.Transform(new Vector2(viewport.Width, viewport.Y), inverse);
-            var bottomright = Vector2.Transform(new Vector2(viewport.Width, viewport.Height), inverse);
-            var bottomleft = Vector2.Transform(new Vector2(viewport.X, viewport.Height), inverse);
-
-            var left = Math.Min(Math.Min(Math.Min(topleft.X, topright.X), bottomright.X), bottomleft.X);
-            var right = Math.Max(Math.Max(Math.Max(topleft.X, topright.X), bottomright.X), bottomleft.X);
-            var top = Math.Min(Math.Min(Math.Min(topleft.Y, topright.Y), bottomright.Y), bottomleft.Y);
-            var bottom = Math.Max(Math.Max(Math.Max(topleft.Y, topright.Y), bottomright.Y), bottomleft.Y);
-
-            return new Rect(left, top, (right - left), (bottom - top));
         }
 
         public static float Angle(Vector2 vec)
@@ -552,7 +551,6 @@ namespace Foster.Framework
 
         #region Utils
 
-
         /// <summary>
         /// .NET Core doesn't always hash string values the same (it can seed it based on the running instance)
         /// So this is to get a static value for every same string
@@ -597,26 +595,6 @@ namespace Foster.Framework
             }
 
             return path.Slice(0, length);
-        }
-
-        public static string RelativePath(string root, string path)
-        {
-            var start = 0;
-            while (start < path.Length && start < root.Length && char.ToLower(path[start]) == char.ToLower(root[start]))
-                start++;
-            path = path.Substring(0, start);
-
-            return path.Trim('/');
-        }
-
-        public static Span<char> RelativePath(Span<char> root, Span<char> path)
-        {
-            var start = 0;
-            while (start < path.Length && start < root.Length && char.ToLower(path[start]) == char.ToLower(root[start]))
-                start++;
-            path = path.Slice(start);
-
-            return path.Trim('/');
         }
 
         public static Stream EmbeddedResource(string resourceName)

@@ -376,7 +376,7 @@ namespace Foster.Framework
                     fixed (byte* inArray = buffer)
                     fixed (Color* outArray = pixels)
                     {
-                        Buffer.MemoryCopy(inArray, outArray, width * height * 4, width * height * 4);
+                        global::System.Buffer.MemoryCopy(inArray, outArray, width * height * 4, width * height * 4);
                     }
                 }
             }

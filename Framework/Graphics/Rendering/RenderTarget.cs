@@ -5,23 +5,23 @@ using System.Text;
 namespace Foster.Framework
 {
     /// <summary>
-    /// An Object that can be rendered to (ex. a RenderTexture or a Window)
+    /// An Object that can be rendered to (ex. a FrameBuffer or a Window)
     /// </summary>
     public abstract class RenderTarget
     {
         /// <summary>
-        /// The Width of the Render Target
+        /// The Width of the Target
         /// </summary>
-        public abstract int DrawableWidth { get; }
+        public abstract int RenderWidth { get; }
 
         /// <summary>
-        /// The Height of the Render Target
+        /// The Height of the Target
         /// </summary>
-        public abstract int DrawableHeight { get; }
+        public abstract int RenderHeight { get; }
 
         /// <summary>
-        /// Whether the Render Target can be drawn to.
+        /// Whether the Target can be rendered to.
         /// </summary>
-        public bool Drawable { get; internal protected set; }
+        public bool Renderable { get; internal protected set; }
     }
 }

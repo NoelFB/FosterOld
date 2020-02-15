@@ -6,9 +6,9 @@ using System.Text;
 namespace Foster.Framework
 {
     /// <summary>
-    /// A 2D Render Texture that can be drawn to
+    /// A 2D buffer that can be drawn to
     /// </summary>
-    public class RenderTexture : RenderTarget, IDisposable
+    public class FrameBuffer : RenderTarget, IDisposable
     {
 
         public abstract class Platform
@@ -19,12 +19,8 @@ namespace Foster.Framework
             protected internal abstract void Dispose();
         }
 
-
-        private readonly int width;
-        private readonly int height;
-
         /// <summary>
-        /// A reference to the internal platform implementation of the RenderTexture
+        /// A reference to the internal platform implementation of the FrameBuffer
         /// </summary>
         public readonly Platform Implementation;
 
@@ -41,39 +37,42 @@ namespace Foster.Framework
         /// <summary>
         /// Render Target Width
         /// </summary>
-        public override int DrawableWidth => width;
+        public override int RenderWidth => width;
 
         /// <summary>
         /// Render Target Height
         /// </summary>
-        public override int DrawableHeight => height;
+        public override int RenderHeight => height;
 
-        public RenderTexture(int width, int height)
+        private readonly int width;
+        private readonly int height;
+
+        public FrameBuffer(int width, int height)
             : this(App.Graphics, width, height)
         {
 
         }
 
-        public RenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) 
+        public FrameBuffer(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) 
             : this(App.Graphics, width, height, colorAttachmentFormats, depthFormat)
         {
 
         }
 
-        public RenderTexture(Graphics graphics, int width, int height) 
+        public FrameBuffer(Graphics graphics, int width, int height) 
             : this(graphics, width, height, new[] { TextureFormat.Color }, TextureFormat.None)
         {
 
         }
 
-        public RenderTexture(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public FrameBuffer(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
             this.width = width;
             this.height = height;
 
-            Implementation = graphics.CreateRenderTexture(width, height, colorAttachmentFormats, depthFormat);
+            Implementation = graphics.CreateFrameBuffer(width, height, colorAttachmentFormats, depthFormat);
             Attachments = new ReadOnlyCollection<Texture>(Implementation.Attachments);
-            Drawable = true;
+            Renderable = true;
         }
 
         public void Dispose()
@@ -81,6 +80,6 @@ namespace Foster.Framework
             Implementation.Dispose();
         }
 
-        public static implicit operator Texture(RenderTexture target) => target.Attachments[0];
+        public static implicit operator Texture(FrameBuffer target) => target.Attachments[0];
     }
 }

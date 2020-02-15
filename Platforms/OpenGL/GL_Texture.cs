@@ -28,7 +28,7 @@ namespace Foster.OpenGL
             Dispose();
         }
 
-        protected override bool IsRenderTexture()
+        protected override bool IsFrameBuffer()
         {
             return isRenderTexture;
         }

@@ -82,10 +82,10 @@ namespace Foster.Framework
             public Matrix2D Matrix;
             public Texture? Texture;
             public RectInt? Scissor;
-            public int Offset;
-            public int Elements;
+            public uint Offset;
+            public uint Elements;
 
-            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix2D matrix, int offset, int elements)
+            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix2D matrix, uint offset, uint elements)
             {
                 Layer = 0;
                 NextHasSameState = false;
@@ -143,7 +143,7 @@ namespace Foster.Framework
 
         public void Render(RenderTarget target)
         {
-            var matrix = Matrix.CreateOrthographicOffCenter(0, target.DrawableWidth, target.DrawableHeight, 0, 0, float.MaxValue);
+            var matrix = Matrix.CreateOrthographicOffCenter(0, target.RenderWidth, target.RenderHeight, 0, 0, float.MaxValue);
             Render(target, matrix);
         }
 
@@ -420,7 +420,7 @@ namespace Foster.Framework
             PushQuad();
             ExpandVertices(VertexCount + 4);
 
-            if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsRenderTexture ?? false))
+            if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsFrameBuffer ?? false))
                 VerticalFlip(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
@@ -461,7 +461,7 @@ namespace Foster.Framework
             PushQuad();
             ExpandVertices(VertexCount + 4);
 
-            if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsRenderTexture ?? false))
+            if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsFrameBuffer ?? false))
                 VerticalFlip(ref t0, ref t1, ref t2, ref t3);
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);

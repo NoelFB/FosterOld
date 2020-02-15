@@ -21,7 +21,7 @@ namespace Foster.Framework
             public abstract IntPtr Pointer { get; }
             public abstract Point2 Position { get; set; }
             public abstract Point2 Size { get; set; }
-            public abstract Point2 DrawableSize { get; }
+            public abstract Point2 RenderSize { get; }
             public abstract Vector2 ContentScale { get; }
             public abstract bool Opened { get; }
 
@@ -127,31 +127,31 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// The Drawable Size of the Window, in Pixels
+        /// The Render Size of the Window, in Pixels
         /// </summary>
-        public Point2 DrawableSize => Implementation.DrawableSize;
+        public Point2 RenderSize => Implementation.RenderSize;
 
         /// <summary>
-        /// The Drawable Width of the Window, in Pixels
+        /// The Render Width of the Window, in Pixels
         /// </summary>
-        public override int DrawableWidth => Implementation.DrawableSize.X;
+        public override int RenderWidth => Implementation.RenderSize.X;
 
         /// <summary>
-        /// The Drawable Height of the Window, in Pixels
+        /// The Render Height of the Window, in Pixels
         /// </summary>
-        public override int DrawableHeight => Implementation.DrawableSize.Y;
+        public override int RenderHeight => Implementation.RenderSize.Y;
 
         /// <summary>
         /// The drawable bounds of the Window, in Pixels
         /// </summary>
-        public RectInt DrawableBounds => new RectInt(0, 0, Implementation.DrawableSize.X, Implementation.DrawableSize.Y);
+        public RectInt RenderBounds => new RectInt(0, 0, Implementation.RenderSize.X, Implementation.RenderSize.Y);
 
         /// <summary>
-        /// The scale of the Drawable size compared to the Window size
+        /// The scale of the Render size compared to the Window size
         /// On Windows and Linux this is always 1.
         /// On MacOS Retina displays this is 2.
         /// </summary>
-        public Vector2 DrawableScale => new Vector2(Implementation.DrawableSize.X / (float)Width, Implementation.DrawableSize.Y / (float)Height);
+        public Vector2 RenderScale => new Vector2(Implementation.RenderSize.X / (float)Width, Implementation.RenderSize.Y / (float)Height);
 
         /// <summary>
         /// The Content Scale of the Window
@@ -258,7 +258,7 @@ namespace Foster.Framework
         /// <summary>
         /// The position of the Mouse in pixels, relative to the top-left of the Window
         /// </summary>
-        public Vector2 DrawableMouse => Implementation.Mouse * DrawableScale;
+        public Vector2 RenderMouse => Implementation.Mouse * RenderScale;
 
         /// <summary>
         /// The position of the mouse relative to the top-left of the Screen, in Screen coordinates
@@ -303,13 +303,13 @@ namespace Foster.Framework
             // it greatly simplifies the various states for the Graphics Module
             lock (this)
             {
-                Drawable = true;
+                Renderable = true;
 
                 App.Modules.BeforeRenderWindow(this);
                 OnRender?.Invoke(this);
                 App.Modules.AfterRenderWindow(this);
 
-                Drawable = false;
+                Renderable = false;
             }
         }
 

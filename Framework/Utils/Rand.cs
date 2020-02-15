@@ -34,8 +34,6 @@ namespace Foster.Framework
             Instance = stack.Pop();
         }
 
-        #region Random EXT
-
         public static float NextFloat(this Random random)
         {
             return (float)random.NextDouble();
@@ -61,9 +59,29 @@ namespace Foster.Framework
             return min + random.NextDouble() * (max - min);
         }
 
-        #endregion
+        /// <summary>
+        /// Returns a random integer between min (inclusive) and max (exclusive)
+        /// </summary>
+        public static int Range(this Random random, int min, int max)
+        {
+            return min + random.Next(max - min);
+        }
 
-        #region Choose
+        /// <summary>
+        /// Returns a random float between min (inclusive) and max (exclusive)
+        /// </summary>
+        public static float Range(this Random random, float min, float max)
+        {
+            return min + random.NextFloat(max - min);
+        }
+
+        /// <summary>
+        /// Returns a random Vector2, and x- and y-values of which are between min (inclusive) and max (exclusive)
+        /// </summary>
+        public static Vector2 Range(this Random random, Vector2 min, Vector2 max)
+        {
+            return min + new Vector2(random.NextFloat(max.X - min.X), random.NextFloat(max.Y - min.Y));
+        }
 
         public static T Choose<T>(this Random random, T a, T b)
         {
@@ -99,36 +117,5 @@ namespace Foster.Framework
         {
             return choices[random.Next(choices.Count)];
         }
-
-        #endregion
-
-        #region Range
-
-        /// <summary>
-        /// Returns a random integer between min (inclusive) and max (exclusive)
-        /// </summary>
-        public static int Range(this Random random, int min, int max)
-        {
-            return min + random.Next(max - min);
-        }
-
-        /// <summary>
-        /// Returns a random float between min (inclusive) and max (exclusive)
-        /// </summary>
-        public static float Range(this Random random, float min, float max)
-        {
-            return min + random.NextFloat(max - min);
-        }
-
-        /// <summary>
-        /// Returns a random Vector2, and x- and y-values of which are between min (inclusive) and max (exclusive)
-        /// </summary>
-        public static Vector2 Range(this Random random, Vector2 min, Vector2 max)
-        {
-            return min + new Vector2(random.NextFloat(max.X - min.X), random.NextFloat(max.Y - min.Y));
-        }
-
-        #endregion
-
     }
 }

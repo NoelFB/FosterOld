@@ -10,8 +10,14 @@ namespace Foster.Framework
     public struct RenderPass
     {
 
+        /// <summary>
+        /// Render Target
+        /// </summary>
         public RenderTarget Target;
 
+        /// <summary>
+        /// Render Viewport
+        /// </summary>
         public RectInt? Viewport;
 
         /// <summary>
@@ -27,17 +33,17 @@ namespace Foster.Framework
         /// <summary>
         /// The Index to begin rendering from the Mesh
         /// </summary>
-        public int MeshIndexStart;
+        public uint MeshIndexStart;
 
         /// <summary>
         /// The total number of Indices to draw from the Mesh
         /// </summary>
-        public int MeshIndexCount;
+        public uint MeshIndexCount;
 
         /// <summary>
         /// The total number of Instances to draw from the Mesh
         /// </summary>
-        public int MeshInstanceCount;
+        public uint MeshInstanceCount;
 
         /// <summary>
         /// The Render State Blend Mode

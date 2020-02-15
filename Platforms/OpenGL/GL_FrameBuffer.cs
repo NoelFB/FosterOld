@@ -5,13 +5,13 @@ using System.Threading;
 
 namespace Foster.OpenGL
 {
-    internal class GL_RenderTexture : RenderTexture.Platform
+    internal class GL_FrameBuffer : FrameBuffer.Platform
     {
 
         private readonly GL_Graphics graphics;
         private readonly Dictionary<ISystemOpenGL.Context, uint> framebuffers = new Dictionary<ISystemOpenGL.Context, uint>();
 
-        internal GL_RenderTexture(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        internal GL_FrameBuffer(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
         {
             this.graphics = graphics;
 
@@ -32,7 +32,7 @@ namespace Foster.OpenGL
             }
         }
 
-        ~GL_RenderTexture()
+        ~GL_FrameBuffer()
         {
             Dispose();
         }

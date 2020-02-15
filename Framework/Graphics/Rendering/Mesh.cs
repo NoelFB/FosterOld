@@ -28,22 +28,22 @@ namespace Foster.Framework
         /// <summary>
         /// Number of Vertices in the Mesh
         /// </summary>
-        public int VertexCount { get; private set; }
+        public uint VertexCount { get; private set; }
 
         /// <summary>
         /// Number of Indices in the Mesh
         /// </summary>
-        public int IndexCount { get; private set; }
+        public uint IndexCount { get; private set; }
 
         /// <summary>
         /// Number of Instances in the Mesh
         /// </summary>
-        public int InstanceCount { get; private set; }
+        public uint InstanceCount { get; private set; }
 
         /// <summary>
         /// The Number of Triangle Elements in the Mesh (IndicesCount / 3)
         /// </summary>
-        public int ElementCount => IndexCount / 3;
+        public uint ElementCount => IndexCount / 3;
 
         /// <summary>
         /// Gets the Vertex Format, or null if never set
@@ -87,7 +87,7 @@ namespace Foster.Framework
 
         public void SetVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format)
         {
-            VertexCount = (int)vertices.Length;
+            VertexCount = (uint)vertices.Length;
             VertexFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
             Implementation.UploadVertices(vertices, VertexFormat);
@@ -105,7 +105,7 @@ namespace Foster.Framework
 
         public void SetIndices(ReadOnlySequence<int> indices)
         {
-            IndexCount = (int)indices.Length;
+            IndexCount = (uint)indices.Length;
             Implementation.UploadIndices(indices);
         }
 
@@ -131,7 +131,7 @@ namespace Foster.Framework
 
         public void SetInstances<T>(ReadOnlySequence<T> vertices, VertexFormat format)
         {
-            InstanceCount = (int)vertices.Length;
+            InstanceCount = (uint)vertices.Length;
             InstanceFormat = format ?? throw new Exception("Vertex Format cannot be null");
 
             Implementation.UploadInstances(vertices, InstanceFormat);

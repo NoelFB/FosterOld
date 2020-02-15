@@ -47,20 +47,20 @@ namespace Foster.Framework
         /// Clears the Color of the Target
         /// </summary>
         public void Clear(RenderTarget target, Color color) => 
-            Clear(target, Framework.Clear.Color, color, 0, 0, new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight));
+            Clear(target, Framework.Clear.Color, color, 0, 0, new RectInt(0, 0, target.RenderWidth, target.RenderHeight));
 
         /// <summary>
         /// Clears the Target
         /// </summary>
         public void Clear(RenderTarget target, Color color, float depth, int stencil) => 
-            Clear(target, Framework.Clear.All, color, depth, stencil, new RectInt(0, 0, target.DrawableWidth, target.DrawableHeight));
+            Clear(target, Framework.Clear.All, color, depth, stencil, new RectInt(0, 0, target.RenderWidth, target.RenderHeight));
 
         /// <summary>
         /// Clears the Target
         /// </summary>
         public void Clear(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
         {
-            if (!target.Drawable)
+            if (!target.Renderable)
                 throw new Exception("Render Target cannot currently be drawn to");
 
             ClearInternal(target, flags, color, depth, stencil, viewport);
@@ -77,10 +77,10 @@ namespace Foster.Framework
         /// </summary>
         public void Render(ref RenderPass pass)
         {
-            if (!pass.Target.Drawable)
+            if (!pass.Target.Renderable)
                 throw new Exception("Render Target cannot currently be drawn to");
 
-            if (!(pass.Target is RenderTexture) && !(pass.Target is Window))
+            if (!(pass.Target is FrameBuffer) && !(pass.Target is Window))
                 throw new Exception("RenderTarget must be a Render Texture or a Window");
 
             if (pass.Mesh == null)
@@ -108,7 +108,7 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new render texture of the given size, with the given amount of color and depth buffers
         /// </summary>
-        protected internal abstract RenderTexture.Platform CreateRenderTexture(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
+        protected internal abstract FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
 
         /// <summary>
         /// Creates a new Shader from the Shader Source
