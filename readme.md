@@ -1,5 +1,7 @@
-# foster
-foster is an open source & cross-platform game framework made in C# dotnet core.
+# Foster
+Foster is an open source & cross-platform game framework made in C# dotnet core.
+
+_★ very work in progress! likely to have frequent, breaking changes ★_
 
 ## goals
  - Easy to use for small games
