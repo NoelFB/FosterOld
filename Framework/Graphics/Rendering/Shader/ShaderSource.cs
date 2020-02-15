@@ -18,70 +18,48 @@ namespace Foster.Framework
     ///         The problem here is that I don't want to add more dependencies (especially
     ///         since most of these tools are offline / not in C#). I would like everything to
     ///         be cross-platform and runtime available.
+    ///         
+    ///     3)  Don't worry about it and just make the end-user write shaders for each platform
+    ///         they intend to use, and load them manually. (** what currently happens **)
     /// 
     /// </summary>
     public class ShaderSource
     {
 
-        public class Program
-        {
-            public readonly ShaderProgram Type;
-            public readonly byte[] Source;
-
-            public Program(ShaderProgram type, byte[] source)
-            {
-                Type = type;
-                Source = source;
-            }
-
-            public Program(ShaderProgram type, string source)
-            {
-                Type = type;
-                Source = Encoding.UTF8.GetBytes(source);
-            }
-
-        }
-
-        public List<Program> Programs = new List<Program>();
-
-        public ShaderSource(params Program[] programs)
-        {
-            Programs.AddRange(programs);
-        }
+        public byte[]? Vertex;
+        public byte[]? Fragment;
+        public byte[]? Geometry;
 
         public ShaderSource(string vertexSource, string fragmentSource, string? geomSource = null)
         {
             if (!string.IsNullOrEmpty(vertexSource))
-                Programs.Add(new Program(ShaderProgram.Vertex, vertexSource));
+                Vertex = Encoding.UTF8.GetBytes(vertexSource);
 
             if (!string.IsNullOrEmpty(fragmentSource))
-                Programs.Add(new Program(ShaderProgram.Fragment, fragmentSource));
+                Fragment = Encoding.UTF8.GetBytes(fragmentSource);
 
             if (!string.IsNullOrEmpty(geomSource))
-                Programs.Add(new Program(ShaderProgram.Geometry, geomSource));
+                Geometry = Encoding.UTF8.GetBytes(geomSource);
         }
 
         public ShaderSource(Stream vertexSource, Stream fragmentSource, Stream? geomSource = null)
         {
             if (vertexSource != null)
             {
-                var bytes = new byte[vertexSource.Length];
-                vertexSource.Read(bytes, 0, bytes.Length);
-                Programs.Add(new Program(ShaderProgram.Vertex, bytes));
+                Vertex = new byte[vertexSource.Length];
+                vertexSource.Read(Vertex, 0, Vertex.Length);
             }
 
             if (fragmentSource != null)
             {
-                var bytes = new byte[fragmentSource.Length];
-                fragmentSource.Read(bytes, 0, bytes.Length);
-                Programs.Add(new Program(ShaderProgram.Fragment, bytes));
+                Fragment = new byte[fragmentSource.Length];
+                fragmentSource.Read(Fragment, 0, Fragment.Length);
             }
 
             if (geomSource != null)
             {
-                var bytes = new byte[geomSource.Length];
-                geomSource.Read(bytes, 0, bytes.Length);
-                Programs.Add(new Program(ShaderProgram.Geometry, bytes));
+                Geometry = new byte[geomSource.Length];
+                geomSource.Read(Geometry, 0, Geometry.Length);
             }
         }
 

@@ -38,22 +38,33 @@ namespace Foster.OpenGL
             {
                 ID = GL.CreateProgram();
 
-                Span<uint> shaders = stackalloc uint[source.Programs.Count];
+                Span<uint> shaders = stackalloc uint[2];
 
-                for (int i = 0; i < source.Programs.Count; i ++)
+                // vertex shader
+                if (source.Vertex != null)
                 {
-                    GLEnum type = source.Programs[i].Type switch
-                    {
-                        ShaderProgram.Vertex => GLEnum.VERTEX_SHADER,
-                        ShaderProgram.Fragment => GLEnum.FRAGMENT_SHADER,
-                        _ => throw new Exception()
-                    };
+                    uint shaderId = GL.CreateShader(GLEnum.VERTEX_SHADER);
+                    shaders[0] = shaderId;
 
-                    // create vertex shader
-                    uint shaderId = GL.CreateShader(type);
-                    shaders[i] = shaderId;
+                    string glsl = Encoding.UTF8.GetString(source.Vertex);
 
-                    string glsl = Encoding.UTF8.GetString(source.Programs[i].Source);
+                    GL.ShaderSource(shaderId, 1, new[] { glsl }, new int[] { glsl.Length });
+                    GL.CompileShader(shaderId);
+
+                    string? errorMessage = GL.GetShaderInfoLog(shaderId);
+                    if (!string.IsNullOrEmpty(errorMessage))
+                        throw new Exception(errorMessage);
+
+                    GL.AttachShader(ID, shaderId);
+                }
+
+                // fragment shader
+                if (source.Fragment != null)
+                {
+                    uint shaderId = GL.CreateShader(GLEnum.FRAGMENT_SHADER);
+                    shaders[1] = shaderId;
+
+                    string glsl = Encoding.UTF8.GetString(source.Fragment);
 
                     GL.ShaderSource(shaderId, 1, new[] { glsl }, new int[] { glsl.Length });
                     GL.CompileShader(shaderId);
@@ -92,10 +103,13 @@ namespace Foster.OpenGL
                 }
 
                 // dispose shaders
-                for (int i = 0; i < source.Programs.Count; i ++)
+                for (int i = 0; i < shaders.Length; i ++)
                 {
-                    GL.DetachShader(ID, shaders[i]);
-                    GL.DeleteShader(shaders[i]);
+                    if (shaders[i] != 0)
+                    {
+                        GL.DetachShader(ID, shaders[i]);
+                        GL.DeleteShader(shaders[i]);
+                    }
                 }
             }
         }
