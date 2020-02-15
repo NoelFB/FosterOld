@@ -10,8 +10,15 @@ namespace Foster.Framework
 
         /// <summary>
         /// The name of the Attribute
+        /// Depending on the Graphics Implementation, this may or may not be respected
         /// </summary>
         public readonly string Name;
+
+        /// <summary>
+        /// The Vertex Attribute Type
+        /// Depending on the Graphics Implementation, this may or may not be respected
+        /// </summary>
+        public readonly VertexAttrib Attrib;
 
         /// <summary>
         /// The Vertex Type of the Attribute
@@ -21,7 +28,7 @@ namespace Foster.Framework
         /// <summary>
         /// The number of Components
         /// </summary>
-        public readonly int Components;
+        public readonly VertexComponents Components;
 
         /// <summary>
         /// The size of a single Component, in bytes
@@ -38,9 +45,10 @@ namespace Foster.Framework
         /// </summary>
         public readonly bool Normalized;
 
-        public VertexAttribute(string name, VertexType type, int components, bool normalized = false)
+        public VertexAttribute(string name, VertexAttrib attrib, VertexType type, VertexComponents components, bool normalized = false)
         {
             Name = name;
+            Attrib = attrib;
             Type = type;
             Components = components;
             Normalized = normalized;
@@ -48,16 +56,13 @@ namespace Foster.Framework
             ComponentSize = type switch
             {
                 VertexType.Byte => 1,
-                VertexType.UnsignedByte => 1,
                 VertexType.Short => 2,
-                VertexType.UnsignedShort => 2,
                 VertexType.Int => 4,
-                VertexType.UnsignedInt => 4,
                 VertexType.Float => 4,
-                _ => throw new InvalidOperationException(),
+                _ => throw new NotImplementedException(),
             };
 
-            AttributeSize = Components * ComponentSize;
+            AttributeSize = (int)Components * ComponentSize;
         }
 
     }

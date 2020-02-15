@@ -15,12 +15,10 @@ namespace Foster.Framework
     {
 
         public static readonly VertexFormat VertexFormat = new VertexFormat(
-            new VertexAttribute("vPosition", VertexType.Float, 2),
-            new VertexAttribute("vTex", VertexType.Float, 2),
-            new VertexAttribute("vColor", VertexType.UnsignedByte, 4, true),
-            new VertexAttribute("vMult", VertexType.UnsignedByte, 1, true),
-            new VertexAttribute("vWash", VertexType.UnsignedByte, 1, true),
-            new VertexAttribute("vFill", VertexType.UnsignedByte, 1, true));
+            new VertexAttribute("a_position",    VertexAttrib.Position,  VertexType.Float,   VertexComponents.Two,     false),
+            new VertexAttribute("a_tex",         VertexAttrib.TexCoord0, VertexType.Float,   VertexComponents.Two,     false),
+            new VertexAttribute("a_color",       VertexAttrib.Color0,    VertexType.Byte,    VertexComponents.Four,    true),
+            new VertexAttribute("a_type",        VertexAttrib.TexCoord1, VertexType.Byte,    VertexComponents.Three,   true));
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Vertex : IVertex
@@ -52,68 +50,14 @@ namespace Foster.Framework
 
         private static Shader? defaultBatchShader;
 
-        #region Shader Source
-
-        // TODO: this should not be here ...
-
-        private const string VertexSource = @"
-#version 330
-uniform mat4 matrix;
-
-in vec2 vPosition;
-in vec2 vTex;
-in vec4 vColor;
-in float vMult;
-in float vWash;
-in float vFill;
-
-out vec2 fTex;
-out vec4 fColor;
-out float fMult;
-out float fWash;
-out float fFill;
-
-void main(void)
-{
-    gl_Position = matrix * vec4(vPosition, 0.0, 1.0);
-    fTex = vTex;
-    fColor = vColor;
-    fMult = vMult;
-    fWash = vWash;
-    fFill = vFill;
-}";
-
-        private const string FragmentSource = @"
-#version 330
-uniform sampler2D mainTexture;
-
-in vec2 fTex;
-in vec4 fColor;
-in float fMult;
-in float fWash;
-in float fFill;
-
-out vec4 outColor;
-
-void main(void)
-{
-    vec4 color = texture(mainTexture, fTex);
-    outColor = 
-        fMult * color * fColor + 
-        fWash * color.a * fColor + 
-        fFill * fColor;
-}";
-
-        #endregion
-
         public readonly Graphics Graphics;
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
         public readonly Mesh Mesh;
         public Matrix2D MatrixStack = Matrix2D.Identity;
 
-        public string TextureUniformName = "mainTexture";
-        public string MatrixUniformName = "matrix";
+        public string TextureUniformName = "u_texture";
+        public string MatrixUniformName = "u_matrix";
 
         private readonly Stack<Matrix2D> matrixStack = new Stack<Matrix2D>();
         private Vertex[] vertices;
@@ -170,7 +114,7 @@ void main(void)
             Graphics = graphics;
 
             if (defaultBatchShader == null)
-                defaultBatchShader = new Shader(graphics, new ShaderSource(VertexSource, FragmentSource));
+                defaultBatchShader = new Shader(graphics, graphics.CreateShaderSourceBatch2D());
 
             DefaultShader = defaultBatchShader;
             DefaultMaterial = new Material(DefaultShader);

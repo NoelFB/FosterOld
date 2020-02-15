@@ -51,7 +51,7 @@ namespace Foster.Framework
         /// <summary>
         /// A pointer to the underlying OS Window
         /// </summary>
-        public IntPtr Pointer => Implementation.Pointer;
+        public IntPtr NativePointer => Implementation.Pointer;
 
         /// <summary>
         /// Position of the Window, in Screen coordinates

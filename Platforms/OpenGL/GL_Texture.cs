@@ -190,7 +190,7 @@ namespace Foster.OpenGL
 
         protected override unsafe void GetData<T>(Memory<T> buffer)
         {
-            using System.Buffers.MemoryHandle handle = buffer.Pin();
+            using var handle = buffer.Pin();
 
             if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {

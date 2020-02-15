@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Foster.Framework;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Foster.GLFW
@@ -65,6 +66,18 @@ namespace Foster.GLFW
         public delegate void CursorEnterFunc(IntPtr window, int entered);
         public delegate void ScrollFunc(IntPtr window, double xoffset, double yoffset);
         public delegate void JoystickFunc(int jid, GLFW_Enum eventType);
+
+        [DllImport(DLL, EntryPoint = "glfwGetWin32Window", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetWin32Window(IntPtr window);
+
+        [DllImport(DLL, EntryPoint = "glfwGetCocoaWindow", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetCocoaWindow(IntPtr window);
+
+        [DllImport(DLL, EntryPoint = "glfwGetX11Window", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetX11Window(IntPtr window);
+
+        [DllImport(DLL, EntryPoint = "glfwGetWaylandWindow", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetWaylandWindow(IntPtr window);
 
         [DllImport(DLL, EntryPoint = "glfwInit", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Init();

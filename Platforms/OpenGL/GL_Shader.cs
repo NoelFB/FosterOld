@@ -120,7 +120,7 @@ namespace Foster.OpenGL
                 // get the uniform value
                 object? value;
                 {
-                    if (uniform.Type == UniformType.Texture2D)
+                    if (uniform.Type == UniformType.Sampler)
                     {
                         var texture = ((parameter.Value as Texture)?.Internal as GL_Texture);
                         var id = texture?.ID ?? 0;
@@ -227,7 +227,7 @@ namespace Foster.OpenGL
                             GL.UniformMatrix4fv(uniform.Location, 1, false, new IntPtr(matrix));
                         }
                         break;
-                    case UniformType.Texture2D:
+                    case UniformType.Sampler:
                         GL.Uniform1i(uniform.Location, (int)(value ?? 0));
                         break;
                 }

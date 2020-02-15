@@ -165,9 +165,9 @@ namespace Foster.OpenGL
                 {
                     // this is kind of messy because some attributes can take up multiple slots
                     // ex. a marix4x4 actually takes up 4 (size 16)
-                    for (int i = 0, loc = 0; i < element.Components; i += 4, loc++)
+                    for (int i = 0, loc = 0; i < (int)element.Components; i += 4, loc++)
                     {
-                        var components = Math.Min(element.Components - i, 4);
+                        var components = Math.Min((int)element.Components - i, 4);
                         var location = (uint)(attribute.Location + loc);
 
                         GL.EnableVertexAttribArray(location);
@@ -188,12 +188,9 @@ namespace Foster.OpenGL
         {
             return value switch
             {
-                VertexType.Byte => GLEnum.BYTE,
-                VertexType.UnsignedByte => GLEnum.UNSIGNED_BYTE,
+                VertexType.Byte => GLEnum.UNSIGNED_BYTE,
                 VertexType.Short => GLEnum.SHORT,
-                VertexType.UnsignedShort => GLEnum.UNSIGNED_SHORT,
                 VertexType.Int => GLEnum.INT,
-                VertexType.UnsignedInt => GLEnum.UNSIGNED_INT,
                 VertexType.Float => GLEnum.FLOAT,
                 _ => throw new NotImplementedException(),
             };

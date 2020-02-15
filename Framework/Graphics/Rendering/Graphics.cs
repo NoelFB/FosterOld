@@ -120,7 +120,10 @@ namespace Foster.Framework
         /// </summary>
         protected internal abstract Mesh.Platform CreateMesh();
 
-
+        /// <summary>
+        /// Gets the Shader Source for the Batch2D
+        /// </summary>
+        protected internal abstract ShaderSource CreateShaderSourceBatch2D();
 
     }
 }

@@ -20,9 +20,14 @@ namespace Foster.Framework
         public static readonly Color Yellow = new Color(0xffff00);
 
         /// <summary>
-        /// The Color Value stored in a 32-bit unsigned integer
+        /// The Color Value in a ABGR 32-bit unsigned integer
         /// </summary>
         public uint ABGR;
+
+        /// <summary>
+        /// Gets the Color Value in a RGBA 32-bit unsigned integer
+        /// </summary>
+        public uint RGBA => new Color(A, B, G, R).ABGR;
 
         /// <summary>
         /// The Red Component

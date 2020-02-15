@@ -17,6 +17,6 @@ namespace Foster.Framework
         Float4,
         Matrix2D,
         Matrix,
-        Texture2D
+        Sampler
     }
 }

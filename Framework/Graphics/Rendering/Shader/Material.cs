@@ -41,7 +41,7 @@ namespace Foster.Framework
 
             public void SetTexture(Texture? value)
             {
-                if (Type == UniformType.Texture2D)
+                if (Type == UniformType.Sampler)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Sampler2D");

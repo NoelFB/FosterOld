@@ -25,7 +25,7 @@ namespace Foster.OpenGL
                 GLEnum.FLOAT_VEC4 => UniformType.Float4,
                 GLEnum.FLOAT_MAT3x2 => UniformType.Matrix2D,
                 GLEnum.FLOAT_MAT4 => UniformType.Matrix,
-                GLEnum.SAMPLER_2D => UniformType.Texture2D,
+                GLEnum.SAMPLER_2D => UniformType.Sampler,
 
                 _ => throw new InvalidOperationException("Unknown Enum Type"),
             };

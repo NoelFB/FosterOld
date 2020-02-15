@@ -15,6 +15,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\batch2d.frag" />
+    <None Remove="Resources\batch2d.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\batch2d.frag" />
+    <EmbeddedResource Include="Resources\batch2d.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Framework\Foster.Framework.csproj" />
   </ItemGroup>
 

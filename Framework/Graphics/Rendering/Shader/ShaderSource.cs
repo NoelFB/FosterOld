@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Foster.Framework
@@ -58,6 +59,30 @@ namespace Foster.Framework
 
             if (!string.IsNullOrEmpty(geomSource))
                 Programs.Add(new Program(ShaderProgram.Geometry, geomSource));
+        }
+
+        public ShaderSource(Stream vertexSource, Stream fragmentSource, Stream? geomSource = null)
+        {
+            if (vertexSource != null)
+            {
+                var bytes = new byte[vertexSource.Length];
+                vertexSource.Read(bytes, 0, bytes.Length);
+                Programs.Add(new Program(ShaderProgram.Vertex, bytes));
+            }
+
+            if (fragmentSource != null)
+            {
+                var bytes = new byte[fragmentSource.Length];
+                fragmentSource.Read(bytes, 0, bytes.Length);
+                Programs.Add(new Program(ShaderProgram.Fragment, bytes));
+            }
+
+            if (geomSource != null)
+            {
+                var bytes = new byte[geomSource.Length];
+                geomSource.Read(bytes, 0, bytes.Length);
+                Programs.Add(new Program(ShaderProgram.Geometry, bytes));
+            }
         }
 
     }

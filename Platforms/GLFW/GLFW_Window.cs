@@ -1,5 +1,6 @@
 ﻿using Foster.Framework;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Foster.GLFW
 {
@@ -130,7 +131,17 @@ namespace Foster.GLFW
             }
         }
 
-        public override IntPtr Pointer => GLFW.GetWindowUserPointer(pointer);
+        public override IntPtr Pointer
+        {
+            get
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    return GLFW.GetWin32Window(pointer);
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    return GLFW.GetCocoaWindow(pointer);
+                return IntPtr.Zero;
+            }
+        }
 
         internal GLFW_Window(GLFW_System system, IntPtr pointer, string title, bool visible)
         {
