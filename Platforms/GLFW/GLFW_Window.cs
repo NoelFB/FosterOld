@@ -20,8 +20,10 @@ namespace Foster.GLFW
         private bool focused;
         private bool mouseOver;
         private bool disposed;
+        private bool fullscreen;
+        private RectInt storedBounds;
 
-        public override Point2 Position
+        protected override Point2 Position
         {
             get
             {
@@ -35,7 +37,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Point2 Size
+        protected override Point2 Size
         {
             get
             {
@@ -49,7 +51,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Point2 RenderSize
+        protected override Point2 RenderSize
         {
             get
             {
@@ -58,7 +60,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Vector2 Mouse
+        protected override Vector2 Mouse
         {
             get
             {
@@ -67,7 +69,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Vector2 ScreenMouse
+        protected override Vector2 ScreenMouse
         {
             get
             {
@@ -77,7 +79,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override Vector2 ContentScale
+        protected override Vector2 ContentScale
         {
             get
             {
@@ -86,39 +88,69 @@ namespace Foster.GLFW
             }
         }
 
-        public override bool Opened => !disposed;
+        protected override bool Opened => !disposed;
 
-        public override bool Focused => focused;
+        protected override bool Focused => focused;
 
-        public override bool MouseOver => mouseOver;
+        protected override bool MouseOver => mouseOver;
 
-        public override string Title
+        protected override string Title
         {
             get => title;
             set => GLFW.SetWindowTitle(pointer, title = value);
         }
 
-        public override bool VSync { get; set; } = true;
+        protected override bool VSync { get; set; } = true;
 
-        public override bool Bordered
+        protected override bool Bordered
         {
             get => GLFW.GetWindowAttrib(pointer, GLFW.WindowAttributes.Decorated);
             set => GLFW.SetWindowAttrib(pointer, GLFW.WindowAttributes.Decorated, value);
         }
 
-        public override bool Resizable
+        protected override bool Resizable
         {
             get => GLFW.GetWindowAttrib(pointer, GLFW.WindowAttributes.Resizable);
             set => GLFW.SetWindowAttrib(pointer, GLFW.WindowAttributes.Resizable, value);
         }
 
-        public override bool Fullscreen
+        protected override bool Fullscreen
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+            get
+            {
+                return fullscreen;
+            }
+            set
+            {
+                if (fullscreen != value)
+                {
+                    fullscreen = value;
+
+                    if (fullscreen)
+                    {
+                        var monitor = GLFW.GetWindowMonitor(pointer);
+                        if (monitor == IntPtr.Zero)
+                            monitor = GLFW.GetPrimaryMonitor();
+
+                        if (monitor != IntPtr.Zero)
+                        {
+                            storedBounds = new RectInt(Position, Size);
+
+                            GLFW.GetMonitorWorkarea(monitor, out var x, out var y, out var w, out var h);
+                            GLFW.SetWindowMonitor(pointer, monitor, 0, 0, w, h, (int)GLFW_Enum.GLFW_DONT_CARE);
+                        }
+                        else
+                            fullscreen = false;
+                    }
+                    else
+                    {
+                        GLFW.SetWindowMonitor(pointer, IntPtr.Zero, storedBounds.X, storedBounds.Y, storedBounds.Width, storedBounds.Height, (int)GLFW_Enum.GLFW_DONT_CARE);
+                    }
+                }
+            }
         }
 
-        public override bool Visible
+        protected override bool Visible
         {
             get => visible;
             set
@@ -131,7 +163,7 @@ namespace Foster.GLFW
             }
         }
 
-        public override IntPtr Pointer
+        protected override IntPtr Pointer
         {
             get
             {
@@ -186,7 +218,7 @@ namespace Foster.GLFW
             mouseOver = (entered != 0);
         }
 
-        public override void Present()
+        protected override void Present()
         {
             if (lastVsync != VSync)
             {
@@ -200,13 +232,18 @@ namespace Foster.GLFW
             GLFW.SwapBuffers(pointer);
         }
 
-        public override void Close()
+        protected override void Close()
         {
             if (!disposed)
             {
                 disposed = true;
                 GLFW.SetWindowShouldClose(pointer, true);
             }
+        }
+
+        internal void InvokeCloseWindowCallback()
+        {
+            OnClose?.Invoke();
         }
     }
 }

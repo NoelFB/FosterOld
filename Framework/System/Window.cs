@@ -18,34 +18,37 @@ namespace Foster.Framework
 
         public abstract class Platform
         {
-            public abstract IntPtr Pointer { get; }
-            public abstract Point2 Position { get; set; }
-            public abstract Point2 Size { get; set; }
-            public abstract Point2 RenderSize { get; }
-            public abstract Vector2 ContentScale { get; }
-            public abstract bool Opened { get; }
+            protected internal abstract IntPtr Pointer { get; }
+            protected internal abstract Point2 Position { get; set; }
+            protected internal abstract Point2 Size { get; set; }
+            protected internal abstract Point2 RenderSize { get; }
+            protected internal abstract Vector2 ContentScale { get; }
+            protected internal abstract bool Opened { get; }
 
-            public abstract string Title { get; set; }
-            public abstract bool Bordered { get; set; }
-            public abstract bool Resizable { get; set; }
-            public abstract bool Fullscreen { get; set; }
-            public abstract bool Visible { get; set; }
-            public abstract bool VSync { get; set; }
+            protected internal abstract string Title { get; set; }
+            protected internal abstract bool Bordered { get; set; }
+            protected internal abstract bool Resizable { get; set; }
+            protected internal abstract bool Fullscreen { get; set; }
+            protected internal abstract bool Visible { get; set; }
+            protected internal abstract bool VSync { get; set; }
 
-            public abstract bool Focused { get; }
-            public abstract Vector2 Mouse { get; }
-            public abstract Vector2 ScreenMouse { get; }
-            public abstract bool MouseOver { get; }
+            protected internal abstract bool Focused { get; }
+            protected internal abstract Vector2 Mouse { get; }
+            protected internal abstract Vector2 ScreenMouse { get; }
+            protected internal abstract bool MouseOver { get; }
 
-            public abstract void Present();
-            public abstract void Close();
+            protected internal abstract void Present();
+            protected internal abstract void Close();
 
-            public Action? OnFocus;
-            public Action? OnResize;
-            public Action? OnClose;
-            public Action? OnCloseRequested;
+            protected internal Action? OnFocus;
+            protected internal Action? OnResize;
+            protected internal Action? OnClose;
+            protected internal Action? OnCloseRequested;
         }
 
+        /// <summary>
+        /// A reference to the internal platform implementation of the Window
+        /// </summary>
         public readonly Platform Implementation;
 
         /// <summary>
@@ -54,25 +57,37 @@ namespace Foster.Framework
         public IntPtr NativePointer => Implementation.Pointer;
 
         /// <summary>
-        /// Position of the Window, in Screen coordinates
+        /// Position of the Window, in Screen coordinates. Setting the Position will toggle off Fullscreen.
         /// </summary>
         public Point2 Position
         {
             get => Implementation.Position;
-            set => Implementation.Position = value;
+            set
+            {
+                if (Implementation.Fullscreen)
+                    Implementation.Fullscreen = false;
+
+                Implementation.Position = value;
+            }
         }
 
         /// <summary>
-        /// The size of the Window, in Screen coordinates
+        /// The size of the Window, in Screen coordinates. Setting the Size will toggle off Fullscreen.
         /// </summary>
         public Point2 Size
         {
             get => Implementation.Size;
-            set => Implementation.Size = value;
+            set
+            {
+                if (Implementation.Fullscreen)
+                    Implementation.Fullscreen = false;
+
+                Implementation.Size = value;
+            }
         }
 
         /// <summary>
-        /// The X position of the Window, in Screen coordinates
+        /// The X position of the Window, in Screen coordinates. Setting the Position will toggle off Fullscreen.
         /// </summary>
         public int X
         {
@@ -81,7 +96,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// The X position of the Window, in Screen coordinates
+        /// The X position of the Window, in Screen coordinates. Setting the Position will toggle off Fullscreen.
         /// </summary>
         public int Y
         {
@@ -90,7 +105,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// The Width of the Window, in Screen coordinates
+        /// The Width of the Window, in Screen coordinates. Setting the Width will toggle off Fullscreen.
         /// </summary>
         public int Width
         {
@@ -99,7 +114,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// The Height of the Window, in Screen coordinates
+        /// The Height of the Window, in Screen coordinates. Setting the Height will toggle off Fullscreen.
         /// </summary>
         public int Height
         {
@@ -108,7 +123,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// The Window bounds, in Screen coordinates
+        /// The Window bounds, in Screen coordinates. Setting the Bounds will toggle off Fullscreen.
         /// </summary>
         public RectInt Bounds
         {

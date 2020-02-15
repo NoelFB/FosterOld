@@ -112,8 +112,7 @@ namespace Foster.GLFW
                     {
                         input.StopListening(window.pointer);
                         glfwWindows.Remove(window.pointer);
-
-                        window.OnClose?.Invoke();
+                        window.InvokeCloseWindowCallback();
                     }
 
                     // remove OpenGL context
