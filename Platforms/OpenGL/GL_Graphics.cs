@@ -43,6 +43,8 @@ namespace Foster.OpenGL
         private readonly DeleteResource deleteTexture = GL.DeleteTexture;
         private readonly DeleteResource deleteProgram = GL.DeleteProgram;
 
+        public override Renderer Renderer => Renderer.OpenGL;
+
         protected override void ApplicationStarted()
         {
             ApiName = "OpenGL";
