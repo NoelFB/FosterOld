@@ -41,12 +41,7 @@ internal class Program
 
     private class Game : Module
     {
-        private Batch2D batch;
-
-        public Game()
-        {
-            batch = new Batch2D();
-        }
+        private readonly Batch2D batch = new Batch2D();
 
         protected override void Startup()
         {
@@ -58,15 +53,12 @@ internal class Program
             App.Window.OnRender -= Render;
         }
 
-        protected override void Update()
-        {
-            batch.Clear();
-            batch.Rect(32, 32, 64, 64, Color.Red);
-        }
-
         private void Render(Window window)
         {
             App.Graphics.Clear(window, Color.Black);
+
+            batch.Clear();
+            batch.Rect(32, 32, 64, 64, Color.Red);
             batch.Render(window);
         }
     }
