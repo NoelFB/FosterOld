@@ -66,3 +66,6 @@ internal class Program
     }
 }
 ```
+
+## inspiration
+Taken a lot of inspiration from other Frameworks and APIs, namely [FNA](https://fna-xna.github.io/) and [Halley Game Engine](https://github.com/amzeratul/halley)
