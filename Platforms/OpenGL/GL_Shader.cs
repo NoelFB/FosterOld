@@ -122,7 +122,7 @@ namespace Foster.OpenGL
                 {
                     if (uniform.Type == UniformType.Sampler)
                     {
-                        var texture = ((parameter.Value as Texture)?.Internal as GL_Texture);
+                        var texture = ((parameter.Value as Texture)?.Implementation as GL_Texture);
                         var id = texture?.ID ?? 0;
 
                         GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));

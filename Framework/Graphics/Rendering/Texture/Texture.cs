@@ -29,7 +29,7 @@ namespace Foster.Framework
         /// <summary>
         /// A reference to the internal platform implementation of the Texture
         /// </summary>
-        public readonly Platform Internal;
+        public readonly Platform Implementation;
 
         /// <summary>
         /// Gets the Width of the Texture
@@ -49,7 +49,7 @@ namespace Foster.Framework
         /// <summary>
         /// Whether the Texture is part of a FrameBuffer
         /// </summary>
-        public bool IsFrameBuffer => Internal.IsFrameBuffer();
+        public bool IsFrameBuffer => Implementation.IsFrameBuffer();
 
         /// <summary>
         /// The Size of the Texture, in bytes
@@ -70,7 +70,7 @@ namespace Foster.Framework
         public TextureFilter Filter
         {
             get => filter;
-            set => Internal.SetFilter(filter = value);
+            set => Implementation.SetFilter(filter = value);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Foster.Framework
         public TextureWrap WrapX
         {
             get => wrapX;
-            set => Internal.SetWrap(wrapX = value, wrapY);
+            set => Implementation.SetWrap(wrapX = value, wrapY);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Foster.Framework
         public TextureWrap WrapY
         {
             get => wrapY;
-            set => Internal.SetWrap(wrapX, wrapY = value);
+            set => Implementation.SetWrap(wrapX, wrapY = value);
         }
 
         private TextureFilter filter = TextureFilter.Linear;
@@ -104,8 +104,8 @@ namespace Foster.Framework
             Height = height;
             Format = format;
 
-            Internal = graphics.CreateTexture(Width, Height, Format);
-            Internal.Init(this);
+            Implementation = graphics.CreateTexture(Width, Height, Format);
+            Implementation.Init(this);
         }
 
         public Texture(int width, int height, TextureFormat format = TextureFormat.Color) 
@@ -117,7 +117,7 @@ namespace Foster.Framework
         public Texture(Bitmap bitmap) 
             : this(App.Graphics, bitmap.Width, bitmap.Height, TextureFormat.Color)
         {
-            Internal.SetData<Color>(bitmap.Pixels);
+            Implementation.SetData<Color>(bitmap.Pixels);
         }
 
         public Texture(string path) 
@@ -160,7 +160,7 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            Internal.SetData(buffer);
+            Implementation.SetData(buffer);
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace Foster.Framework
             if (Marshal.SizeOf<T>() * buffer.Length < Size)
                 throw new Exception("Buffer is smaller than the Size of the Texture");
 
-            Internal.GetData(buffer);
+            Implementation.GetData(buffer);
         }
 
         public void SavePng(string path)
@@ -244,7 +244,7 @@ namespace Foster.Framework
 
         public void Dispose()
         {
-            Internal.Dispose();
+            Implementation.Dispose();
         }
     }
 }

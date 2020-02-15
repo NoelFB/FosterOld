@@ -14,8 +14,6 @@ namespace Foster.Framework
         public abstract class Platform
         {
             protected internal readonly List<Texture> Attachments = new List<Texture>();
-            protected internal Texture? Depth;
-
             protected internal abstract void Dispose();
         }
 
@@ -25,14 +23,9 @@ namespace Foster.Framework
         public readonly Platform Implementation;
 
         /// <summary>
-        /// Color Attachments
+        /// Texture Attachments
         /// </summary>
         public readonly ReadOnlyCollection<Texture> Attachments;
-
-        /// <summary>
-        /// Depth Attachment
-        /// </summary>
-        public Texture? Depth => Implementation.Depth;
 
         /// <summary>
         /// Render Target Width
@@ -53,24 +46,18 @@ namespace Foster.Framework
 
         }
 
-        public FrameBuffer(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat) 
-            : this(App.Graphics, width, height, colorAttachmentFormats, depthFormat)
-        {
-
-        }
-
         public FrameBuffer(Graphics graphics, int width, int height) 
-            : this(graphics, width, height, new[] { TextureFormat.Color }, TextureFormat.None)
+            : this(graphics, width, height, TextureFormat.Color)
         {
 
         }
 
-        public FrameBuffer(Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        public FrameBuffer(Graphics graphics, int width, int height, params TextureFormat[] attachments)
         {
             this.width = width;
             this.height = height;
 
-            Implementation = graphics.CreateFrameBuffer(width, height, colorAttachmentFormats, depthFormat);
+            Implementation = graphics.CreateFrameBuffer(width, height, attachments);
             Attachments = new ReadOnlyCollection<Texture>(Implementation.Attachments);
             Renderable = true;
         }

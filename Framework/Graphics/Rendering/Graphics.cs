@@ -108,7 +108,7 @@ namespace Foster.Framework
         /// <summary>
         /// Creates a new render texture of the given size, with the given amount of color and depth buffers
         /// </summary>
-        protected internal abstract FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat);
+        protected internal abstract FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] attachments);
 
         /// <summary>
         /// Creates a new Shader from the Shader Source

@@ -115,6 +115,14 @@
             Height = h;
         }
 
+        public RectInt(Point2 position, Point2 size)
+        {
+            X = position.X;
+            Y = position.Y;
+            Width = size.X;
+            Height = size.Y;
+        }
+
         public bool Contains(Point2 point)
         {
             return (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);

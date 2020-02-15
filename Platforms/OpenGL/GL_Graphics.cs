@@ -135,9 +135,9 @@ namespace Foster.OpenGL
             return new GL_Texture(this);
         }
 
-        protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] attachments)
         {
-            return new GL_FrameBuffer(this, width, height, colorAttachmentFormats, depthFormat);
+            return new GL_FrameBuffer(this, width, height, attachments);
         }
 
         protected override Shader.Platform CreateShader(ShaderSource source)

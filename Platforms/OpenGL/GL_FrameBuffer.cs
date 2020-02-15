@@ -11,24 +11,16 @@ namespace Foster.OpenGL
         private readonly GL_Graphics graphics;
         private readonly Dictionary<ISystemOpenGL.Context, uint> framebuffers = new Dictionary<ISystemOpenGL.Context, uint>();
 
-        internal GL_FrameBuffer(GL_Graphics graphics, int width, int height, TextureFormat[] colorAttachmentFormats, TextureFormat depthFormat)
+        internal GL_FrameBuffer(GL_Graphics graphics, int width, int height, TextureFormat[] attachments)
         {
             this.graphics = graphics;
 
-            // texture (color) attachments
-            for (int i = 0; i < colorAttachmentFormats.Length; i++)
+            for (int i = 0; i < attachments.Length; i++)
             {
-                var attachment = new Texture(graphics, width, height, colorAttachmentFormats[i]);
-                var glTexture = (GL_Texture)attachment.Internal;
+                var attachment = new Texture(graphics, width, height, attachments[i]);
+                var glTexture = (GL_Texture)attachment.Implementation;
                 glTexture.isRenderTexture = true;
                 Attachments.Add(attachment);
-            }
-
-            if (depthFormat != TextureFormat.None)
-            {
-                Depth = new Texture(graphics, width, height, depthFormat);
-                var glTexture = (GL_Texture)Depth.Internal;
-                glTexture.isRenderTexture = true;
             }
         }
 
@@ -51,17 +43,18 @@ namespace Foster.OpenGL
                 int i = 0;
                 foreach (Texture texture in Attachments)
                 {
-                    if (texture.Internal is GL_Texture glTexture)
+                    if (texture.Implementation is GL_Texture glTexture)
                     {
-                        GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.COLOR_ATTACHMENT0 + i, GLEnum.TEXTURE_2D, glTexture.ID, 0);
-                        i++;
+                        if (texture.Format.IsTextureColorFormat())
+                        {
+                            GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.COLOR_ATTACHMENT0 + i, GLEnum.TEXTURE_2D, glTexture.ID, 0);
+                            i++;
+                        }
+                        else
+                        {
+                            GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.TEXTURE_2D, glTexture.ID, 0);
+                        }
                     }
-                }
-
-                // depth stencil attachment
-                if (Depth != null && Depth.Internal is GL_Texture glDepthTexture)
-                {
-                    GL.FramebufferTexture2D(GLEnum.FRAMEBUFFER, GLEnum.DEPTH_STENCIL_ATTACHMENT, GLEnum.TEXTURE_2D, glDepthTexture.ID, 0);
                 }
 
                 framebuffers.Add(context, id);
