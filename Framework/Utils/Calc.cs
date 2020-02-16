@@ -387,10 +387,9 @@ namespace Foster.Framework
             return adler | (sum2 << 16);
         }
 
-        public static uint Adler32(Stream stream)
+        public static uint Adler32(uint adler, Stream stream)
         {
             var next = 0;
-            var adler = 1U;
 
             Span<byte> buffer = stackalloc byte[1024];
             while ((next = stream.Read(buffer)) > 0)
@@ -399,12 +398,12 @@ namespace Foster.Framework
             return adler;
         }
 
-        public static uint Adler32(string path)
+        public static uint Adler32(uint adler, string path)
         {
             if (File.Exists(path))
             {
                 using var stream = File.OpenRead(path);
-                return Adler32(stream);
+                return Adler32(adler, stream);
             }
 
             return 0;
