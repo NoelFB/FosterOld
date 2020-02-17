@@ -10,21 +10,22 @@ namespace Foster.Framework
     {
 
         private readonly BinaryReader reader;
+        private readonly bool disposeStream = true;
         private uint objectSize;
 
-        public JsonBinaryReader(string path) : this(File.OpenRead(path))
+        public JsonBinaryReader(string path) : this(File.OpenRead(path), true)
         {
 
         }
 
-        public JsonBinaryReader(Stream stream) : this(new BinaryReader(stream))
+        public JsonBinaryReader(Stream stream, bool disposeStream = true) : this(new BinaryReader(stream), disposeStream)
         {
-
         }
 
-        public JsonBinaryReader(BinaryReader reader)
+        public JsonBinaryReader(BinaryReader reader, bool disposeStream = true)
         {
             this.reader = reader;
+            this.disposeStream = disposeStream;
         }
 
         public override long Position => reader.BaseStream.Position;
@@ -141,7 +142,8 @@ namespace Foster.Framework
 
         public void Dispose()
         {
-            reader.Dispose();
+            if (disposeStream)
+                reader.Dispose();
         }
     }
 }

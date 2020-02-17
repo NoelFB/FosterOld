@@ -18,6 +18,7 @@ namespace Foster.Json
 
         private readonly TextReader reader;
         private readonly StringBuilder builder = new StringBuilder();
+        private readonly bool disposeStream;
 
         // in the case where the value of a previous key is completely empty, we want to
         // return null, and then store the current value for the next Read call
@@ -27,19 +28,20 @@ namespace Foster.Json
         private JsonToken storedToken;
         private long position;
 
-        public JsonTextReader(string path) : this( File.OpenRead(path))
+        public JsonTextReader(string path) : this(File.OpenRead(path))
         {
 
         }
 
-        public JsonTextReader(Stream stream) : this(new StreamReader(stream, Encoding.UTF8, true, 4096))
+        public JsonTextReader(Stream stream, bool disposeStream = true) : this(new StreamReader(stream, Encoding.UTF8, true, 4096), disposeStream)
         {
 
         }
 
-        public JsonTextReader(TextReader reader)
+        public JsonTextReader(TextReader reader, bool disposeStream = true)
         {
             this.reader = reader;
+            this.disposeStream = disposeStream;
             position = 0;
         }
 
@@ -304,7 +306,8 @@ namespace Foster.Json
 
         public void Dispose()
         {
-            reader.Dispose();
+            if (disposeStream)
+                reader.Dispose();
         }
     }
 }
