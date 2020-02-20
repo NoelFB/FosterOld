@@ -337,7 +337,7 @@ namespace Foster.Framework
 
         public Matrix3x2 PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)
         {
-            return PushMatrix(Transform2D.CreateTransformMatrix(position, origin, scale, rotation), relative);
+            return PushMatrix(Transform2D.CreateMatrix(position, origin, scale, rotation), relative);
         }
 
         public Matrix3x2 PushMatrix(Transform2D transform, bool relative = true)
@@ -868,7 +868,7 @@ namespace Foster.Framework
         {
             var was = MatrixStack;
 
-            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateMatrix(position, origin, scale, rotation) * MatrixStack;
 
             SetTexture(texture);
             Quad(
@@ -908,7 +908,7 @@ namespace Foster.Framework
         {
             var was = MatrixStack;
 
-            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateMatrix(position, origin, scale, rotation) * MatrixStack;
 
             var tx0 = clip.X / texture.Width;
             var ty0 = clip.Y / texture.Height;
@@ -951,7 +951,7 @@ namespace Foster.Framework
         {
             var was = MatrixStack;
 
-            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateMatrix(position, origin, scale, rotation) * MatrixStack;
 
             SetTexture(subtex.Texture);
             Quad(
@@ -968,7 +968,7 @@ namespace Foster.Framework
             var tex = subtex.Texture;
             var was = MatrixStack;
 
-            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateMatrix(position, origin, scale, rotation) * MatrixStack;
 
             // pos
             float px0 = -frame.X, px1 = -frame.X + source.Width,
