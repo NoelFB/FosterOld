@@ -27,6 +27,11 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Default Texture Filter used for all Textures
+        /// </summary>
+        public static TextureFilter DefaultTextureFilter = TextureFilter.Linear;
+
+        /// <summary>
         /// A reference to the internal platform implementation of the Texture
         /// </summary>
         public readonly Platform Implementation;
@@ -106,6 +111,8 @@ namespace Foster.Framework
 
             Implementation = graphics.CreateTexture(Width, Height, Format);
             Implementation.Init(this);
+
+            Filter = DefaultTextureFilter;
         }
 
         public Texture(int width, int height, TextureFormat format = TextureFormat.Color) 
