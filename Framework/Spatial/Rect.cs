@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -13,7 +14,7 @@ namespace Foster.Framework
         public float Width;
         public float Height;
 
-        public float Left
+        public float MinX
         {
             get => X;
             set
@@ -23,13 +24,13 @@ namespace Foster.Framework
             }
         }
 
-        public float Right
+        public float MaxX
         {
             get => X + Width;
             set => Width = value - X;
         }
 
-        public float Top
+        public float MinY
         {
             get => Y;
             set
@@ -39,10 +40,50 @@ namespace Foster.Framework
             }
         }
 
-        public float Bottom
+        public float MaxY
         {
             get => Y + Height;
             set => Height = value - Y;
+        }
+
+        public Vector2 A
+        {
+            get => new Vector2(MinX, MinY);
+            set
+            {
+                MinX = value.X;
+                MinY = value.Y;
+            }
+        }
+
+        public Vector2 B
+        {
+            get => new Vector2(MaxX, MinY);
+            set
+            {
+                MaxX = value.X;
+                MinY = value.Y;
+            }
+        }
+
+        public Vector2 C
+        {
+            get => new Vector2(MinX, MaxY);
+            set
+            {
+                MinX = value.X;
+                MaxY = value.Y;
+            }
+        }
+
+        public Vector2 D
+        {
+            get => new Vector2(MaxX, MaxY);
+            set
+            {
+                MaxX = value.X;
+                MaxY = value.Y;
+            }
         }
 
         public float Area => Math.Abs(Width) * Math.Abs(Height);
@@ -54,46 +95,6 @@ namespace Foster.Framework
             {
                 X = value.X;
                 Y = value.Y;
-            }
-        }
-
-        public Vector2 TopLeft
-        {
-            get => new Vector2(Left, Top);
-            set
-            {
-                Left = value.X;
-                Top = value.Y;
-            }
-        }
-
-        public Vector2 TopRight
-        {
-            get => new Vector2(Right, Top);
-            set
-            {
-                Right = value.X;
-                Top = value.Y;
-            }
-        }
-
-        public Vector2 BottomLeft
-        {
-            get => new Vector2(Left, Bottom);
-            set
-            {
-                Left = value.X;
-                Bottom = value.Y;
-            }
-        }
-
-        public Vector2 BottomRight
-        {
-            get => new Vector2(Right, Bottom);
-            set
-            {
-                Right = value.X;
-                Bottom = value.Y;
             }
         }
 
@@ -122,7 +123,7 @@ namespace Foster.Framework
 
         public bool Contains(in Rect rect)
         {
-            return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
+            return (MinX < rect.MinX && MinY < rect.MinY && MaxY > rect.MaxY && MaxX > rect.MaxX);
         }
 
         public bool Overlaps(in Rect against)
@@ -134,12 +135,13 @@ namespace Foster.Framework
         {
             if (Overlaps(against))
             {
-                var overlap = new Rect();
-                overlap.Left = Math.Max(Left, against.Left);
-                overlap.Top = Math.Max(Top, against.Top);
-                overlap.Right = Math.Min(Right, against.Right);
-                overlap.Bottom = Math.Min(Bottom, against.Bottom);
-                return overlap;
+                return new Rect
+                {
+                    MinX = Math.Max(MinX, against.MinX),
+                    MinY = Math.Max(MinY, against.MinY),
+                    MaxX = Math.Min(MaxX, against.MaxX),
+                    MaxY = Math.Min(MaxY, against.MaxY)
+                };
             }
 
             return new Rect(0, 0, 0, 0);
@@ -158,10 +160,10 @@ namespace Foster.Framework
         public Rect Inflate(float left, float top, float right, float bottom)
         {
             var rect = new Rect(X, Y, Width, Height);
-            rect.Left -= left;
-            rect.Top -= top;
-            rect.Right += right;
-            rect.Bottom += bottom;
+            rect.MinX -= left;
+            rect.MinY -= top;
+            rect.MaxX += right;
+            rect.MaxY += bottom;
             return rect;
         }
 
@@ -200,10 +202,10 @@ namespace Foster.Framework
         {
             return index switch
             {
-                0 => TopLeft,
-                1 => TopRight,
-                2 => BottomRight,
-                3 => BottomLeft,
+                0 => A,
+                1 => B,
+                2 => C,
+                3 => D,
                 _ => throw new IndexOutOfRangeException(),
             };
         }
@@ -214,8 +216,8 @@ namespace Foster.Framework
         {
             return index switch
             {
-                0 => Vector2.Right,
-                1 => Vector2.Down,
+                0 => Vector2.UnitX,
+                1 => Vector2.UnitY,
                 _ => throw new IndexOutOfRangeException(),
             };
         }

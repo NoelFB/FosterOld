@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Foster.Framework
@@ -177,8 +178,8 @@ namespace Foster.Framework
             {
                 var tx0 = source.X / texture.Width;
                 var ty0 = source.Y / texture.Height;
-                var tx1 = source.Right / texture.Width;
-                var ty1 = source.Bottom / texture.Height;
+                var tx1 = source.MaxX / texture.Width;
+                var ty1 = source.MaxY / texture.Height;
 
                 TexCoords[0].X = tx0;
                 TexCoords[0].Y = ty0;

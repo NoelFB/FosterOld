@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -27,7 +28,7 @@ namespace Foster.Framework
         {
             pushout = Vector2.Zero;
 
-            var lengthSqrd = (other.Position - Position).LengthSquared;
+            var lengthSqrd = (other.Position - Position).LengthSquared();
             if (lengthSqrd < (Radius + other.Radius) * (Radius + other.Radius))
             {
                 var length = MathF.Sqrt(lengthSqrd);

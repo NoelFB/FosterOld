@@ -31,7 +31,7 @@
             }
         }
 
-        public int Left
+        public int MinX
         {
             get => X;
             set
@@ -41,13 +41,13 @@
             }
         }
 
-        public int Right
+        public int MaxX
         {
             get => X + Width;
             set => Width = value - X;
         }
 
-        public int Top
+        public int MinY
         {
             get => Y;
             set
@@ -57,49 +57,49 @@
             }
         }
 
-        public int Bottom
+        public int MaxY
         {
             get => Y + Height;
             set => Height = value - Y;
         }
 
-        public Point2 TopLeft
+        public Point2 A
         {
-            get => new Point2(Left, Top);
+            get => new Point2(MinX, MinY);
             set
             {
-                Left = value.X;
-                Top = value.Y;
+                MinX = value.X;
+                MinY = value.Y;
             }
         }
 
-        public Point2 TopRight
+        public Point2 B
         {
-            get => new Point2(Right, Top);
+            get => new Point2(MaxX, MinY);
             set
             {
-                Right = value.X;
-                Top = value.Y;
+                MaxX = value.X;
+                MinY = value.Y;
             }
         }
 
-        public Point2 BottomLeft
+        public Point2 C
         {
-            get => new Point2(Left, Bottom);
+            get => new Point2(MinX, MaxY);
             set
             {
-                Left = value.X;
-                Bottom = value.Y;
+                MinX = value.X;
+                MaxY = value.Y;
             }
         }
 
-        public Point2 BottomRight
+        public Point2 D
         {
-            get => new Point2(Right, Bottom);
+            get => new Point2(MaxX, MaxY);
             set
             {
-                Right = value.X;
-                Bottom = value.Y;
+                MaxX = value.X;
+                MaxY = value.Y;
             }
         }
 
@@ -130,7 +130,7 @@
 
         public bool Contains(RectInt rect)
         {
-            return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
+            return (MinX < rect.MinX && MinY < rect.MinY && MaxY > rect.MaxY && MaxX > rect.MaxX);
         }
 
         public bool Intersects(RectInt against)
@@ -140,14 +140,14 @@
 
         public RectInt CropTo(RectInt other)
         {
-            if (Left < other.Left)
-                Left = other.Left;
-            if (Top < other.Top)
-                Top = other.Top;
-            if (Right > other.Right)
-                Right = other.Right;
-            if (Bottom > other.Bottom)
-                Bottom = other.Bottom;
+            if (MinX < other.MinX)
+                MinX = other.MinX;
+            if (MinY < other.MinY)
+                MinY = other.MinY;
+            if (MaxX > other.MaxX)
+                MaxX = other.MaxX;
+            if (MaxY > other.MaxY)
+                MaxY = other.MaxY;
 
             return this;
         }

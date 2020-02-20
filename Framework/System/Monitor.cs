@@ -1,4 +1,6 @@
-﻿namespace Foster.Framework
+﻿using System.Numerics;
+
+namespace Foster.Framework
 {
     /// <summary>
     /// A Wrapper around a specific Monitor

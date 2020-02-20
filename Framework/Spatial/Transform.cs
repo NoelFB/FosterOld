@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -30,9 +31,9 @@ namespace Foster.Framework
 
         private bool dirty = true;
 
-        private Matrix localMatrix = Matrix.Identity;
-        private Matrix worldMatrix = Matrix.Identity;
-        private Matrix worldToLocalMatrix = Matrix.Identity;
+        private Matrix4x4 localMatrix = Matrix4x4.Identity;
+        private Matrix4x4 worldMatrix = Matrix4x4.Identity;
+        private Matrix4x4 worldToLocalMatrix = Matrix4x4.Identity;
 
         public Transform? Parent
         {
@@ -187,7 +188,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix LocalMatrix
+        public Matrix4x4 LocalMatrix
         {
             get
             {
@@ -197,7 +198,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix WorldMatrix
+        public Matrix4x4 WorldMatrix
         {
             get
             {
@@ -207,7 +208,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix WorldToLocalMatrix
+        public Matrix4x4 WorldToLocalMatrix
         {
             get
             {
@@ -221,14 +222,14 @@ namespace Foster.Framework
         {
             dirty = false;
 
-            localMatrix = Matrix.CreateScale(localScale) *
-                     Matrix.CreateFromQuaternion(localRotation) *
-                     Matrix.CreateTranslation(localPosition);
+            localMatrix = Matrix4x4.CreateScale(localScale) *
+                     Matrix4x4.CreateFromQuaternion(localRotation) *
+                     Matrix4x4.CreateTranslation(localPosition);
 
             if (parent == null)
             {
                 worldMatrix = localMatrix;
-                worldToLocalMatrix = Matrix.Identity;
+                worldToLocalMatrix = Matrix4x4.Identity;
                 position = localPosition;
                 scale = localScale;
                 rotation = localRotation;
@@ -236,7 +237,7 @@ namespace Foster.Framework
             else
             {
                 worldMatrix = localMatrix * parent.WorldMatrix;
-                Matrix.Invert(parent.WorldMatrix, out worldToLocalMatrix);
+                Matrix4x4.Invert(parent.WorldMatrix, out worldToLocalMatrix);
                 position = Vector3.Transform(localPosition, parent.WorldMatrix);
                 scale = localScale * parent.Scale;
                 rotation = localRotation * parent.Rotation;

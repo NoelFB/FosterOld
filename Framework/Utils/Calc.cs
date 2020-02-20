@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -17,17 +18,17 @@ namespace Foster.Framework
         /// <summary>
         /// PI in radians
         /// </summary>
-        public const float PI = 3.14159265359f;
+        public const float PI = MathF.PI;
 
         /// <summary>
         /// Half PI in radians
         /// </summary>
-        public const float HalfPI = 3.14159265359f / 2f;
+        public const float HalfPI = MathF.PI / 2f;
 
         /// <summary>
         /// TAU (2-PI) in radians
         /// </summary>
-        public const float TAU = 6.28318530718f;
+        public const float TAU = MathF.PI * 2f;
 
         /// <summary>
         /// Converts Degrees to Radians
@@ -169,12 +170,17 @@ namespace Foster.Framework
 
         public static float Angle(Vector2 vec)
         {
-            return Atan2(vec.Y, vec.X);
+            return MathF.Atan2(vec.Y, vec.X);
         }
 
         public static float Angle(Vector2 from, Vector2 to)
         {
-            return Atan2(to.Y - from.Y, to.X - from.X);
+            return MathF.Atan2(to.Y - from.Y, to.X - from.X);
+        }
+
+        public static Vector2 AngleToVector(float angle, float length = 1)
+        {
+            return new Vector2(MathF.Cos(angle) * length, MathF.Sin(angle) * length);
         }
 
         public static float AngleApproach(float val, float target, float maxMove)
@@ -200,46 +206,6 @@ namespace Foster.Framework
                 diff += MathF.PI * 2;
 
             return diff;
-        }
-
-        public static float Atan2(float y, float x)
-        {
-            return (float)Math.Atan2(y, x);
-        }
-
-        public static float Cos(float d)
-        {
-            return (float)Math.Cos(d);
-        }
-
-        public static float Sin(float a)
-        {
-            return (float)Math.Sin(a);
-        }
-
-        public static float Tan(float a)
-        {
-            return (float)Math.Tan(a);
-        }
-
-        public static float Sqrt(float d)
-        {
-            return (float)Math.Sqrt(d);
-        }
-
-        public static float Pow(float x, float y)
-        {
-            return (float)Math.Pow(x, y);
-        }
-
-        public static float Round(float a)
-        {
-            return (float)Math.Round(a);
-        }
-
-        public static int RoundToInt(float a)
-        {
-            return (int)Math.Round(a, MidpointRounding.AwayFromZero);
         }
 
         #endregion
@@ -528,22 +494,48 @@ namespace Foster.Framework
 
         #region Parsing
 
-        public static Vector2 ParseVector2(ReadOnlySpan<char> span, char delimiter = ',')
+        public static bool ParseVector2(ReadOnlySpan<char> span, char delimiter, out Vector2 vector)
         {
-            var index = span.IndexOf(delimiter);
+            vector = Vector2.Zero;
 
+            var index = span.IndexOf(delimiter);
             if (index >= 0)
             {
                 var x = span.Slice(0, index);
                 var y = span.Slice(index + 1);
 
-                var result = new Vector2();
-                if (float.TryParse(x, NumberStyles.Float, CultureInfo.InvariantCulture, out result.X) &&
-                    float.TryParse(y, NumberStyles.Float, CultureInfo.InvariantCulture, out result.Y))
-                    return result;
+                if (float.TryParse(x, NumberStyles.Float, CultureInfo.InvariantCulture, out vector.X) &&
+                    float.TryParse(y, NumberStyles.Float, CultureInfo.InvariantCulture, out vector.Y))
+                    return true;
             }
 
-            return Vector2.Zero;
+            return false;
+        }
+
+        public static bool ParseVector3(ReadOnlySpan<char> span, char deliminator, out Vector3 vector)
+        {
+            vector = Vector3.Zero;
+
+            var index = span.IndexOf(deliminator);
+            if (index > 0)
+            {
+                var first = span.Slice(0, index);
+                var remaining = span.Slice(index + 1);
+
+                index = remaining.IndexOf(deliminator);
+                if (index > 0)
+                {
+                    var second = remaining.Slice(0, index);
+                    var third = remaining.Slice(index + 1);
+
+                    if (float.TryParse(first, NumberStyles.Float, CultureInfo.InvariantCulture, out vector.X) && 
+                        float.TryParse(second, NumberStyles.Float, CultureInfo.InvariantCulture, out vector.Y) && 
+                        float.TryParse(third, NumberStyles.Float, CultureInfo.InvariantCulture, out vector.Z))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion
@@ -564,6 +556,10 @@ namespace Foster.Framework
                 return hash;
             }
         }
+
+        #endregion
+
+        #region Paths
 
         public static string NormalizePath(string path)
         {
@@ -595,6 +591,10 @@ namespace Foster.Framework
 
             return path.Slice(0, length);
         }
+
+        #endregion
+
+        #region Embedded Resources
 
         public static Stream EmbeddedResource(string resourceName)
         {

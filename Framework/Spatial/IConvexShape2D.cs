@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -57,7 +58,7 @@ namespace Foster.Framework
             // check against points
             for (int i = 0; i < a.Points; i++)
             {
-                var axis = (a.GetPoint(i) - b.Position).Normalized;
+                var axis = Vector2.Normalize(a.GetPoint(i) - b.Position);
                 if (!a.AxisOverlaps(b, axis, out float amount))
                     return false;
 

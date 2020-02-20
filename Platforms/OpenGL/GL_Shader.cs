@@ -1,6 +1,7 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Specialized;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 
@@ -177,9 +178,9 @@ namespace Foster.OpenGL
                         Vector4 vec4 = (Vector4)(value ?? Vector4.Zero);
                         GL.Uniform4f(uniform.Location, vec4.X, vec4.Y, vec4.Z, vec4.W);
                         break;
-                    case UniformType.Matrix2D:
+                    case UniformType.Matrix3x2:
                         {
-                            Matrix2D m3x2 = (Matrix2D)(value ?? Matrix2D.Identity);
+                            Matrix3x2 m3x2 = (Matrix3x2)(value ?? Matrix3x2.Identity);
                             float* matrix = stackalloc float[6];
 
                             matrix[0] = m3x2.M11;
@@ -192,11 +193,11 @@ namespace Foster.OpenGL
                             GL.UniformMatrix3x2fv(uniform.Location, 1, false, new IntPtr(matrix));
                         }
                         break;
-                    case UniformType.Matrix:
+                    case UniformType.Matrix4x4:
                         {
                             float* matrix = stackalloc float[16];
 
-                            if (value is Matrix2D m3x2)
+                            if (value is Matrix3x2 m3x2)
                             {
                                 matrix[00] = m3x2.M11;
                                 matrix[01] = m3x2.M12;
@@ -215,7 +216,7 @@ namespace Foster.OpenGL
                                 matrix[14] = 0f;
                                 matrix[15] = 1f;
                             }
-                            else if (value is Matrix m4x4)
+                            else if (value is Matrix4x4 m4x4)
                             {
                                 // TODO:
                                 // optimize this out? create pointer to struct and just send that?

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Foster.Framework
@@ -32,8 +33,9 @@ namespace Foster.Framework
         {
             var a = GetPoint(index);
             var b = GetPoint(index >= vertices - 1 ? 0 : index + 1);
+            var normal = Vector2.Normalize(b - a);
 
-            return (b - a).Normalized.TurnRight;
+            return new Vector2(-normal.Y, normal.X);
         }
 
         public void SetPoint(int index, Vector2 position)

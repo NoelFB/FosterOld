@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -78,7 +79,7 @@ namespace Foster.Framework
             return hash;
         }
 
-        public static Quad Transform(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Matrix matrix)
+        public static Quad Transform(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Matrix4x4 matrix)
         {
             return new Quad(
                 Vector3.Transform(a, matrix),
@@ -87,7 +88,7 @@ namespace Foster.Framework
                 Vector3.Transform(d, matrix));
         }
 
-        public static Quad Transform(Quad quad, Matrix matrix)
+        public static Quad Transform(Quad quad, Matrix4x4 matrix)
         {
             return new Quad(
                 Vector3.Transform(quad.A, matrix),

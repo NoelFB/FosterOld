@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -87,19 +88,19 @@ namespace Foster.Framework
                         // normal
                         if (line[1] == 'n')
                         {
-                            if (Vector3.Parse(line.Slice(3), ' ', out var normal))
+                            if (Calc.ParseVector3(line.Slice(3), ' ', out var normal))
                                 Normals.Add(normal);
                         }
                         // tex-coord
                         else if (line[1] == 't')
                         {
-                            if (Vector3.Parse(line.Slice(3), ' ', out var texcoord))
+                            if (Calc.ParseVector2(line.Slice(3), ' ', out var texcoord))
                                 Texcoords.Add(texcoord);
                         }
                         // position
                         else
                         {
-                            if (Vector3.Parse(line.Slice(2), ' ', out var position))
+                            if (Calc.ParseVector3(line.Slice(2), ' ', out var position))
                                 Positions.Add(position);
                         }
                     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -32,9 +33,9 @@ namespace Foster.Framework
 
         private bool dirty = true;
 
-        private Matrix2D localMatrix = Matrix2D.Identity;
-        private Matrix2D worldMatrix = Matrix2D.Identity;
-        private Matrix2D worldToLocalMatrix = Matrix2D.Identity;
+        private Matrix3x2 localMatrix = Matrix3x2.Identity;
+        private Matrix3x2 worldMatrix = Matrix3x2.Identity;
+        private Matrix3x2 worldToLocalMatrix = Matrix3x2.Identity;
 
         public Transform2D? Parent
         {
@@ -191,7 +192,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix2D LocalMatrix
+        public Matrix3x2 LocalMatrix
         {
             get
             {
@@ -201,7 +202,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix2D WorldMatrix
+        public Matrix3x2 WorldMatrix
         {
             get
             {
@@ -211,7 +212,7 @@ namespace Foster.Framework
             }
         }
 
-        public Matrix2D WorldToLocalMatrix
+        public Matrix3x2 WorldToLocalMatrix
         {
             get
             {
@@ -225,12 +226,12 @@ namespace Foster.Framework
         {
             dirty = false;
 
-            localMatrix = Matrix2D.CreateTransform(localPosition, origin, localScale, localRotation);
+            localMatrix = CreateMatrix(localPosition, origin, localScale, localRotation);
 
             if (parent == null)
             {
                 worldMatrix = localMatrix;
-                worldToLocalMatrix = Matrix2D.Identity;
+                worldToLocalMatrix = Matrix3x2.Identity;
                 position = localPosition;
                 scale = localScale;
                 rotation = localRotation;
@@ -238,7 +239,7 @@ namespace Foster.Framework
             else
             {
                 worldMatrix = localMatrix * parent.WorldMatrix;
-                worldToLocalMatrix = parent.WorldMatrix.Invert();
+                Matrix3x2.Invert(parent.worldMatrix, out worldToLocalMatrix);
                 position = Vector2.Transform(localPosition, parent.WorldMatrix);
                 scale = localScale * parent.Scale;
                 rotation = localRotation + parent.Rotation;
@@ -255,5 +256,25 @@ namespace Foster.Framework
             }
         }
 
+        public static Matrix3x2 CreateMatrix(in Vector2 position, in Vector2 origin, in Vector2 scale, in float rotation)
+        {
+            Matrix3x2 matrix;
+
+            if (origin != Vector2.Zero)
+                matrix = Matrix3x2.CreateTranslation(-origin.X, -origin.Y);
+            else
+                matrix = Matrix3x2.Identity;
+
+            if (scale != Vector2.One)
+                matrix *= Matrix3x2.CreateScale(scale.X, scale.Y);
+
+            if (rotation != 0)
+                matrix *= Matrix3x2.CreateRotation(rotation);
+
+            if (position != Vector2.Zero)
+                matrix *= Matrix3x2.CreateTranslation(position.X, position.Y);
+
+            return matrix;
+        }
     }
 }

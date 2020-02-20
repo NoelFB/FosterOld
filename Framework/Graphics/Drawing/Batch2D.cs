@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -54,12 +55,12 @@ namespace Foster.Framework
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
         public readonly Mesh Mesh;
-        public Matrix2D MatrixStack = Matrix2D.Identity;
+        public Matrix3x2 MatrixStack = Matrix3x2.Identity;
 
         public string TextureUniformName = "u_texture";
         public string MatrixUniformName = "u_matrix";
 
-        private readonly Stack<Matrix2D> matrixStack = new Stack<Matrix2D>();
+        private readonly Stack<Matrix3x2> matrixStack = new Stack<Matrix3x2>();
         private Vertex[] vertices;
         private int[] indices;
         private RenderPass pass;
@@ -79,13 +80,13 @@ namespace Foster.Framework
             public bool NextHasSameState;
             public Material? Material;
             public BlendMode BlendMode;
-            public Matrix2D Matrix;
+            public Matrix3x2 Matrix;
             public Texture? Texture;
             public RectInt? Scissor;
             public uint Offset;
             public uint Elements;
 
-            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix2D matrix, uint offset, uint elements)
+            public Batch(Material? material, BlendMode blend, Texture? texture, Matrix3x2 matrix, uint offset, uint elements)
             {
                 Layer = 0;
                 NextHasSameState = false;
@@ -133,21 +134,21 @@ namespace Foster.Framework
             VertexCount = 0;
             IndicesCount = 0;
             currentBatchInsert = 0;
-            currentBatch = new Batch(null, BlendMode.Normal, null, Matrix2D.Identity, 0, 0);
+            currentBatch = new Batch(null, BlendMode.Normal, null, Matrix3x2.Identity, 0, 0);
             batches.Clear();
             matrixStack.Clear();
-            MatrixStack = Matrix2D.Identity;
+            MatrixStack = Matrix3x2.Identity;
         }
 
         #region Rendering
 
         public void Render(RenderTarget target)
         {
-            var matrix = Matrix.CreateOrthographicOffCenter(0, target.RenderWidth, target.RenderHeight, 0, 0, float.MaxValue);
+            var matrix = Matrix4x4.CreateOrthographicOffCenter(0, target.RenderWidth, target.RenderHeight, 0, 0, float.MaxValue);
             Render(target, matrix);
         }
 
-        public void Render(RenderTarget target, Matrix matrix, RectInt? viewport = null)
+        public void Render(RenderTarget target, Matrix4x4 matrix, RectInt? viewport = null)
         {
             pass = new RenderPass(target, Mesh, DefaultMaterial);
             pass.Viewport = viewport;
@@ -182,7 +183,7 @@ namespace Foster.Framework
             }
         }
 
-        private void RenderBatch(Batch batch, ref bool shareState, ref Matrix matrix)
+        private void RenderBatch(Batch batch, ref bool shareState, ref Matrix4x4 matrix)
         {
             if (!shareState)
             {
@@ -195,7 +196,7 @@ namespace Foster.Framework
 
                 pass.Material = batch.Material ?? DefaultMaterial;
                 pass.Material[TextureUniformName]?.SetTexture(batch.Texture);
-                pass.Material[MatrixUniformName]?.SetMatrix(new Matrix(batch.Matrix) * matrix);
+                pass.Material[MatrixUniformName]?.SetMatrix(new Matrix4x4(batch.Matrix) * matrix);
             }
 
             pass.MeshIndexStart = batch.Offset;
@@ -245,7 +246,7 @@ namespace Foster.Framework
             }
         }
 
-        public void SetMatrix(Matrix2D matrix)
+        public void SetMatrix(Matrix3x2 matrix)
         {
             if (currentBatch.Elements == 0)
             {
@@ -326,7 +327,7 @@ namespace Foster.Framework
             currentBatchInsert = insert;
         }
 
-        public void SetState(Material? material, BlendMode blendmode, Matrix2D matrix, RectInt? scissor)
+        public void SetState(Material? material, BlendMode blendmode, Matrix3x2 matrix, RectInt? scissor)
         {
             SetMaterial(material);
             SetBlendMode(blendmode);
@@ -334,22 +335,22 @@ namespace Foster.Framework
             SetScissor(scissor);
         }
 
-        public Matrix2D PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)
+        public Matrix3x2 PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)
         {
-            return PushMatrix(Matrix2D.CreateTransform(position, origin, scale, rotation), relative);
+            return PushMatrix(Transform2D.CreateTransformMatrix(position, origin, scale, rotation), relative);
         }
 
-        public Matrix2D PushMatrix(Transform2D transform, bool relative = true)
+        public Matrix3x2 PushMatrix(Transform2D transform, bool relative = true)
         {
             return PushMatrix(transform.WorldMatrix, relative);
         }
 
-        public Matrix2D PushMatrix(Vector2 position, bool relative = true)
+        public Matrix3x2 PushMatrix(Vector2 position, bool relative = true)
         {
-            return PushMatrix(Matrix2D.CreateTranslation(position.X, position.Y), relative);
+            return PushMatrix(Matrix3x2.CreateTranslation(position.X, position.Y), relative);
         }
 
-        public Matrix2D PushMatrix(Matrix2D matrix, bool relative = true)
+        public Matrix3x2 PushMatrix(Matrix3x2 matrix, bool relative = true)
         {
             matrixStack.Push(MatrixStack);
 
@@ -365,7 +366,7 @@ namespace Foster.Framework
             return MatrixStack;
         }
 
-        public Matrix2D PopMatrix()
+        public Matrix3x2 PopMatrix()
         {
             Debug.Assert(matrixStack.Count > 0, "Batch.MatrixStack Pops more than it Pushes");
 
@@ -375,7 +376,7 @@ namespace Foster.Framework
             }
             else
             {
-                MatrixStack = Matrix2D.Identity;
+                MatrixStack = Matrix3x2.Identity;
             }
 
             return MatrixStack;
@@ -387,7 +388,8 @@ namespace Foster.Framework
 
         public void Line(Vector2 from, Vector2 to, float thickness, Color color)
         {
-            var perp = (to - from).TurnRight.Normalized * thickness * .5f;
+            var normal = Vector2.Normalize(to - from);
+            var perp = new Vector2(-normal.Y, normal.X) * thickness * .5f;
             Quad(from + perp, from - perp, to - perp, to + perp, color);
         }
 
@@ -522,32 +524,61 @@ namespace Foster.Framework
 
         public void Rect(Rect rect, Color color)
         {
-            Quad((rect.X, rect.Y), (rect.X + rect.Width, rect.Y), (rect.X + rect.Width, rect.Y + rect.Height), (rect.X, rect.Y + rect.Height), color);
+            Quad(
+                new Vector2(rect.X, rect.Y), 
+                new Vector2(rect.X + rect.Width, rect.Y), 
+                new Vector2(rect.X + rect.Width, rect.Y + rect.Height), 
+                new Vector2(rect.X, rect.Y + rect.Height), 
+                color);
         }
 
         public void Rect(Vector2 position, Vector2 size, Color color)
         {
-            Quad(position, position + (size.X, 0), position + (size.X, size.Y), position + (0, size.Y), color);
+            Quad(
+                position, 
+                position + new Vector2(size.X, 0), 
+                position + new Vector2(size.X, size.Y), 
+                position + new Vector2(0, size.Y), 
+                color);
         }
 
         public void Rect(float x, float y, float width, float height, Color color)
         {
-            Quad((x, y), (x + width, y), (x + width, y + height), (x, y + height), color);
+            Quad(
+                new Vector2(x, y), 
+                new Vector2(x + width, y), 
+                new Vector2(x + width, y + height),
+                new Vector2(x, y + height), color);
         }
 
         public void Rect(Rect rect, Color c0, Color c1, Color c2, Color c3)
         {
-            Quad((rect.X, rect.Y), (rect.X + rect.Width, rect.Y), (rect.X + rect.Width, rect.Y + rect.Height), (rect.X, rect.Y + rect.Height), c0, c1, c2, c3);
+            Quad(
+                new Vector2(rect.X, rect.Y), 
+                new Vector2(rect.X + rect.Width, rect.Y), 
+                new Vector2(rect.X + rect.Width, rect.Y + rect.Height), 
+                new Vector2(rect.X, rect.Y + rect.Height), 
+                c0, c1, c2, c3);
         }
 
         public void Rect(Vector2 position, Vector2 size, Color c0, Color c1, Color c2, Color c3)
         {
-            Quad(position, position + (size.X, 0), position + (size.X, size.Y), position + (0, size.Y), c0, c1, c2, c3);
+            Quad(
+                position, 
+                position + new Vector2(size.X, 0),
+                position + new Vector2(size.X, size.Y), 
+                position + new Vector2(0, size.Y), 
+                c0, c1, c2, c3);
         }
 
         public void Rect(float x, float y, float width, float height, Color c0, Color c1, Color c2, Color c3)
         {
-            Quad((x, y), (x + width, y), (x + width, y + height), (x, y + height), c0, c1, c2, c3);
+            Quad(
+                new Vector2(x, y), 
+                new Vector2(x + width, y), 
+                new Vector2(x + width, y + height), 
+                new Vector2(x, y + height), 
+                c0, c1, c2, c3);
         }
 
         #endregion
@@ -584,22 +615,22 @@ namespace Foster.Framework
             else
             {
                 // get corners
-                var r0_tl = rect.TopLeft;
+                var r0_tl = rect.A;
                 var r0_tr = r0_tl + new Vector2(r0, 0);
                 var r0_br = r0_tl + new Vector2(r0, r0);
                 var r0_bl = r0_tl + new Vector2(0, r0);
 
-                var r1_tl = rect.TopRight + new Vector2(-r1, 0);
+                var r1_tl = rect.B + new Vector2(-r1, 0);
                 var r1_tr = r1_tl + new Vector2(r1, 0);
                 var r1_br = r1_tl + new Vector2(r1, r1);
                 var r1_bl = r1_tl + new Vector2(0, r1);
 
-                var r2_tl = rect.BottomRight + new Vector2(-r2, -r2);
+                var r2_tl = rect.C + new Vector2(-r2, -r2);
                 var r2_tr = r2_tl + new Vector2(r2, 0);
                 var r2_bl = r2_tl + new Vector2(0, r2);
                 var r2_br = r2_tl + new Vector2(r2, r2);
 
-                var r3_tl = rect.BottomLeft + new Vector2(0, -r3);
+                var r3_tl = rect.D + new Vector2(0, -r3);
                 var r3_tr = r3_tl + new Vector2(r3, 0);
                 var r3_bl = r3_tl + new Vector2(0, r3);
                 var r3_br = r3_tl + new Vector2(r3, r3);
@@ -694,27 +725,33 @@ namespace Foster.Framework
                     VertexCount += 12;
                 }
 
+                // TODO: replace with hard-coded values
+                var left = Calc.Angle(-Vector2.UnitX);
+                var right = Calc.Angle(Vector2.UnitX);
+                var up = Calc.Angle(-Vector2.UnitY);
+                var down = Calc.Angle(Vector2.UnitY);
+
                 // top-left corner
                 if (r0 > 0)
-                    SemiCircle(r0_br, Vector2.Left.Angle(), Vector2.Up.Angle(), r0, Math.Max(3, (int)(r0 / 4)), color);
+                    SemiCircle(r0_br, left, up, r0, Math.Max(3, (int)(r0 / 4)), color);
                 else
                     Quad(r0_tl, r0_tr, r0_br, r0_bl, color);
 
                 // top-right corner
                 if (r1 > 0)
-                    SemiCircle(r1_bl, Vector2.Up.Angle(), Vector2.Right.Angle(), r1, Math.Max(3, (int)(r1 / 4)), color);
+                    SemiCircle(r1_bl, up, right, r1, Math.Max(3, (int)(r1 / 4)), color);
                 else
                     Quad(r1_tl, r1_tr, r1_br, r1_bl, color);
 
                 // bottom-right corner
                 if (r2 > 0)
-                    SemiCircle(r2_tl, Vector2.Right.Angle(), Vector2.Down.Angle(), r2, Math.Max(3, (int)(r2 / 4)), color);
+                    SemiCircle(r2_tl, right, down, r2, Math.Max(3, (int)(r2 / 4)), color);
                 else
                     Quad(r2_tl, r2_tr, r2_br, r2_bl, color);
 
                 // bottom-left corner
                 if (r3 > 0)
-                    SemiCircle(r3_tr, Vector2.Down.Angle(), Vector2.Left.Angle(), r3, Math.Max(3, (int)(r3 / 4)), color);
+                    SemiCircle(r3_tr, down, left, r3, Math.Max(3, (int)(r3 / 4)), color);
                 else
                     Quad(r3_tl, r3_tr, r3_br, r3_bl, color);
             }
@@ -723,11 +760,11 @@ namespace Foster.Framework
 
         public void SemiCircle(Vector2 center, float startRadians, float endRadians, float radius, int steps, Color color)
         {
-            var last = Vector2.Angle(startRadians, radius);
+            var last = Calc.AngleToVector(startRadians, radius);
 
             for (int i = 1; i <= steps; i++)
             {
-                var next = Vector2.Angle(Calc.AngleLerp(startRadians, endRadians, (i / (float)steps)), radius);
+                var next = Calc.AngleToVector(Calc.AngleLerp(startRadians, endRadians, (i / (float)steps)), radius);
                 Triangle(center + last, center + next, center, color);
                 last = next;
             }
@@ -735,11 +772,11 @@ namespace Foster.Framework
 
         public void Circle(Vector2 center, float radius, int steps, Color color)
         {
-            var last = Vector2.Angle(0, radius);
+            var last = Calc.AngleToVector(0, radius);
 
             for (int i = 1; i <= steps; i++)
             {
-                var next = Vector2.Angle((i / (float)steps) * Calc.TAU, radius);
+                var next = Calc.AngleToVector((i / (float)steps) * Calc.TAU, radius);
                 Triangle(center + last, center + next, center, color);
                 last = next;
             }
@@ -747,11 +784,11 @@ namespace Foster.Framework
 
         public void HollowCircle(Vector2 center, float radius, float thickness, int steps, Color color)
         {
-            var last = Vector2.Angle(0, radius);
+            var last = Calc.AngleToVector(0, radius);
 
             for (int i = 1; i <= steps; i++)
             {
-                var next = Vector2.Angle((i / (float)steps) * Calc.TAU, radius);
+                var next = Calc.AngleToVector((i / (float)steps) * Calc.TAU, radius);
                 Line(center + last, center + next, thickness, color);
                 last = next;
             }
@@ -769,9 +806,9 @@ namespace Foster.Framework
                 var ty = Math.Min(t, rect.Height / 2f);
 
                 Rect(rect.X, rect.Y, rect.Width, ty, color);
-                Rect(rect.X, rect.Bottom - ty, rect.Width, ty, color);
+                Rect(rect.X, rect.MaxY - ty, rect.Width, ty, color);
                 Rect(rect.X, rect.Y + ty, tx, rect.Height - ty * 2, color);
-                Rect(rect.Right - tx, rect.Y + ty, tx, rect.Height - ty * 2, color);
+                Rect(rect.MaxX - tx, rect.Y + ty, tx, rect.Height - ty * 2, color);
             }
         }
 
@@ -800,28 +837,50 @@ namespace Foster.Framework
         public void Image(Texture texture, Color color, bool washed = false)
         {
             SetTexture(texture);
-            Quad((0, 0), (texture.Width, 0), (texture.Width, texture.Height), (0, texture.Height),
-                 (0, 0), (1, 0), (1, 1), (0, 1), color, washed);
+            Quad(
+                new Vector2(0, 0), 
+                new Vector2(texture.Width, 0), 
+                new Vector2(texture.Width, texture.Height), 
+                new Vector2(0, texture.Height),
+                new Vector2(0, 0), 
+                Vector2.UnitX, 
+                new Vector2(1, 1), 
+                Vector2.UnitY, 
+                color, washed);
         }
 
         public void Image(Texture texture, Vector2 position, Color color, bool washed = false)
         {
             SetTexture(texture);
             Quad(
-                position, position + (texture.Width, 0), position + (texture.Width, texture.Height), position + (0, texture.Height),
-                (0, 0), (1, 0), (1, 1), (0, 1), color, washed);
+                position, 
+                position + new Vector2(texture.Width, 0), 
+                position + new Vector2(texture.Width, texture.Height),
+                position + new Vector2(0, texture.Height),
+                new Vector2(0, 0), 
+                Vector2.UnitX, 
+                new Vector2(1, 1), 
+                Vector2.UnitY, 
+                color, washed);
         }
 
         public void Image(Texture texture, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
         {
             var was = MatrixStack;
 
-            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
 
             SetTexture(texture);
             Quad(
-                (0, 0), (texture.Width, 0), (texture.Width, texture.Height), (0, texture.Height),
-                (0, 0), (1, 0), (1, 1), (0, 1), color, washed);
+                new Vector2(0, 0), 
+                new Vector2(texture.Width, 0), 
+                new Vector2(texture.Width, texture.Height), 
+                new Vector2(0, texture.Height),
+                new Vector2(0, 0), 
+                Vector2.UnitX, 
+                new Vector2(1, 1), 
+                Vector2.UnitY, 
+                color, washed);
 
             MatrixStack = was;
         }
@@ -830,30 +889,43 @@ namespace Foster.Framework
         {
             var tx0 = clip.X / texture.Width;
             var ty0 = clip.Y / texture.Height;
-            var tx1 = clip.Right / texture.Width;
-            var ty1 = clip.Bottom / texture.Height;
+            var tx1 = clip.MaxX / texture.Width;
+            var ty1 = clip.MaxY / texture.Height;
 
             SetTexture(texture);
             Quad(
-                position, position + (clip.Width, 0), position + (clip.Width, clip.Height), position + (0, clip.Height),
-                (tx0, ty0), (tx1, ty0), (tx1, ty1), (tx0, ty1), color, washed);
+                position, 
+                position + new Vector2(clip.Width, 0), 
+                position + new Vector2(clip.Width, clip.Height), 
+                position + new Vector2(0, clip.Height),
+                new Vector2(tx0, ty0), 
+                new Vector2(tx1, ty0), 
+                new Vector2(tx1, ty1), 
+                new Vector2(tx0, ty1), color, washed);
         }
 
         public void Image(Texture texture, Rect clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
         {
             var was = MatrixStack;
 
-            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
 
             var tx0 = clip.X / texture.Width;
             var ty0 = clip.Y / texture.Height;
-            var tx1 = clip.Right / texture.Width;
-            var ty1 = clip.Bottom / texture.Height;
+            var tx1 = clip.MaxX / texture.Width;
+            var ty1 = clip.MaxY / texture.Height;
 
             SetTexture(texture);
             Quad(
-                (0, 0), (clip.Width, 0), (clip.Width, clip.Height), (0, clip.Height),
-                (tx0, ty0), (tx1, ty0), (tx1, ty1), (tx0, ty1), color, washed);
+                new Vector2(0, 0), 
+                new Vector2(clip.Width, 0), 
+                new Vector2(clip.Width, clip.Height), 
+                new Vector2(0, clip.Height),
+                new Vector2(tx0, ty0), 
+                new Vector2(tx1, ty0), 
+                new Vector2(tx1, ty1), 
+                new Vector2(tx0, ty1), 
+                color, washed);
 
             MatrixStack = was;
         }
@@ -879,7 +951,7 @@ namespace Foster.Framework
         {
             var was = MatrixStack;
 
-            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
 
             SetTexture(subtex.Texture);
             Quad(
@@ -896,7 +968,7 @@ namespace Foster.Framework
             var tex = subtex.Texture;
             var was = MatrixStack;
 
-            MatrixStack = Matrix2D.CreateTransform(position, origin, scale, rotation) * MatrixStack;
+            MatrixStack = Transform2D.CreateTransformMatrix(position, origin, scale, rotation) * MatrixStack;
 
             // pos
             float px0 = -frame.X, px1 = -frame.X + source.Width,
@@ -906,16 +978,16 @@ namespace Foster.Framework
             float tx0 = 0, tx1 = 0, ty0 = 0, ty1 = 0;
             if (tex != null)
             {
-                tx0 = source.Left / tex.Width;
-                tx1 = source.Right / tex.Width;
-                ty0 = source.Top / tex.Width;
-                ty1 = source.Bottom / tex.Width;
+                tx0 = source.MinX / tex.Width;
+                tx1 = source.MaxX / tex.Width;
+                ty0 = source.MinY / tex.Width;
+                ty1 = source.MaxY / tex.Width;
             }
 
             SetTexture(subtex.Texture);
             Quad(
-                (px0, py0), (px1, py0), (px1, py1), (px0, py1),
-                (tx0, ty0), (tx1, ty0), (tx1, ty1), (tx0, ty1),
+                new Vector2(px0, py0), new Vector2(px1, py0), new Vector2(px1, py1), new Vector2(px0, py1),
+                new Vector2(tx0, ty0), new Vector2(tx1, ty0), new Vector2(tx1, ty1), new Vector2(tx0, ty1),
                 color, washed);
 
             MatrixStack = was;
@@ -971,14 +1043,14 @@ namespace Foster.Framework
         {
             var odd = false;
 
-            for (float y = bounds.Top; y < bounds.Bottom; y += cellHeight)
+            for (float y = bounds.MinY; y < bounds.MaxY; y += cellHeight)
             {
                 var cells = 0;
-                for (float x = bounds.Left; x < bounds.Right; x += cellWidth)
+                for (float x = bounds.MinX; x < bounds.MaxX; x += cellWidth)
                 {
                     var color = (odd ? a : b);
                     if (color.A > 0)
-                        Rect(x, y, Math.Min(bounds.Right - x, cellWidth), Math.Min(bounds.Bottom - y, cellHeight), color);
+                        Rect(x, y, Math.Min(bounds.MaxX - x, cellWidth), Math.Min(bounds.MaxY - y, cellHeight), color);
 
                     odd = !odd;
                     cells++;
@@ -1040,7 +1112,7 @@ namespace Foster.Framework
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Transform(ref Vector2 to, ref Vector2 position, ref Matrix2D matrix)
+        private void Transform(ref Vector2 to, ref Vector2 position, ref Matrix3x2 matrix)
         {
             to.X = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M31;
             to.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M32;

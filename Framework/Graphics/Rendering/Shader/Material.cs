@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 
 namespace Foster.Framework
@@ -63,17 +64,17 @@ namespace Foster.Framework
                     throw new Exception($"Parameter {Name} isn't a Int");
             }
 
-            public void SetMatrix(Matrix2D value)
+            public void SetMatrix(Matrix3x2 value)
             {
-                if (Type == UniformType.Matrix2D || Type == UniformType.Matrix)
+                if (Type == UniformType.Matrix3x2 || Type == UniformType.Matrix4x4)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a 2D Matrix");
             }
 
-            public void SetMatrix(Matrix value)
+            public void SetMatrix(Matrix4x4 value)
             {
-                if (Type == UniformType.Matrix)
+                if (Type == UniformType.Matrix4x4)
                     Value = value;
                 else
                     throw new Exception($"Parameter {Name} isn't a Matrix");

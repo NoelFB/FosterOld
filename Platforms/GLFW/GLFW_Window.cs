@@ -1,5 +1,6 @@
 ﻿using Foster.Framework;
 using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Foster.GLFW

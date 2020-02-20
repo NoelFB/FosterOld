@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -125,10 +126,14 @@ namespace Foster.Framework
 
         private void UpdateQuad()
         {
-            normalAB = (b - a).Normalized.TurnLeft;
-            normalBC = (c - b).Normalized.TurnLeft;
-            normalCD = (d - c).Normalized.TurnLeft;
-            normalDA = (a - d).Normalized.TurnLeft;
+            normalAB = Vector2.Normalize(b - a);
+            normalAB = new Vector2(-normalAB.Y, normalAB.X);
+            normalBC = Vector2.Normalize(c - b);
+            normalBC = new Vector2(-normalBC.Y, normalBC.X);
+            normalCD = Vector2.Normalize(d - c);
+            normalCD = new Vector2(-normalCD.Y, normalCD.X);
+            normalDA = Vector2.Normalize(a - d);
+            normalDA = new Vector2(-normalDA.Y, normalDA.X);
 
             dirty = false;
         }
@@ -181,10 +186,10 @@ namespace Foster.Framework
         {
             return index switch
             {
-                0 => normalAB.TurnRight,
-                1 => normalBC.TurnRight,
-                2 => normalCD.TurnRight,
-                3 => normalDA.TurnRight,
+                0 => new Vector2(-normalAB.Y, normalAB.X),
+                1 => new Vector2(-normalBC.Y, normalBC.X),
+                2 => new Vector2(-normalCD.Y, normalCD.X),
+                3 => new Vector2(-normalDA.Y, normalDA.X),
                 _ => throw new IndexOutOfRangeException(),
             };
         }
@@ -211,7 +216,7 @@ namespace Foster.Framework
             return hash;
         }
 
-        public static Quad2D Transform(Vector2 a, Vector2 b, Vector2 c, Vector2 d, Matrix2D matrix)
+        public static Quad2D Transform(Vector2 a, Vector2 b, Vector2 c, Vector2 d, Matrix3x2 matrix)
         {
             return new Quad2D(
                 Vector2.Transform(a, matrix),
@@ -220,7 +225,7 @@ namespace Foster.Framework
                 Vector2.Transform(d, matrix));
         }
 
-        public static Quad2D Transform(Quad2D quad, Matrix2D matrix)
+        public static Quad2D Transform(Quad2D quad, Matrix3x2 matrix)
         {
             return new Quad2D(
                 Vector2.Transform(quad.a, matrix),

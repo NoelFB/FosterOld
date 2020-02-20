@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -8,11 +9,8 @@ namespace Foster.Framework
     public struct Point2
     {
         public static readonly Point2 Zero = new Point2(0, 0);
-        public static readonly Point2 One = new Point2(1, 1);
-        public static readonly Point2 Left = new Point2(-1, 0);
-        public static readonly Point2 Right = new Point2(1, 0);
-        public static readonly Point2 Up = new Point2(0, -1);
-        public static readonly Point2 Down = new Point2(0, 1);
+        public static readonly Point2 UnitX = new Point2(1, 0);
+        public static readonly Point2 UnitY = new Point2(0, 1);
 
         public int X;
         public int Y;
