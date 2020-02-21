@@ -68,20 +68,20 @@ namespace Foster.Framework
 
         public Vector2 C
         {
-            get => new Vector2(MinX, MaxY);
+            get => new Vector2(MaxX, MaxY);
             set
             {
-                MinX = value.X;
+                MaxX = value.X;
                 MaxY = value.Y;
             }
         }
 
         public Vector2 D
         {
-            get => new Vector2(MaxX, MaxY);
+            get => new Vector2(MinX, MaxY);
             set
             {
-                MaxX = value.X;
+                MinX = value.X;
                 MaxY = value.Y;
             }
         }

@@ -409,10 +409,10 @@ namespace Foster.Framework
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 4);
 
-            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
 
             VertexCount += 4;
         }
@@ -427,10 +427,10 @@ namespace Foster.Framework
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
 
-            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
 
             vertices[VertexCount + 1].Tex = t1;
             vertices[VertexCount + 2].Tex = t2;
@@ -446,10 +446,10 @@ namespace Foster.Framework
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), VertexCount, 4);
 
-            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
 
             vertices[VertexCount + 1].Col = c1;
             vertices[VertexCount + 2].Col = c2;
@@ -468,10 +468,10 @@ namespace Foster.Framework
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
 
-            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, ref v3, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
 
             vertices[VertexCount + 1].Col = c1;
             vertices[VertexCount + 1].Tex = t1;
@@ -494,9 +494,9 @@ namespace Foster.Framework
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 3);
 
-            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
 
             VertexCount += 3;
         }
@@ -508,9 +508,9 @@ namespace Foster.Framework
 
             Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), VertexCount, 3);
 
-            Transform(ref vertices[VertexCount + 0].Pos, ref v0, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, ref v1, ref MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, ref v2, ref MatrixStack);
+            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
 
             vertices[VertexCount + 1].Col = c1;
             vertices[VertexCount + 2].Col = c2;
@@ -706,21 +706,21 @@ namespace Foster.Framework
 
                     Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 12);
 
-                    Transform(ref vertices[VertexCount + 00].Pos, ref r0_tr, ref MatrixStack); // 0
-                    Transform(ref vertices[VertexCount + 01].Pos, ref r0_br, ref MatrixStack); // 1
-                    Transform(ref vertices[VertexCount + 02].Pos, ref r0_bl, ref MatrixStack); // 2
+                    Transform(ref vertices[VertexCount + 00].Pos, r0_tr, MatrixStack); // 0
+                    Transform(ref vertices[VertexCount + 01].Pos, r0_br, MatrixStack); // 1
+                    Transform(ref vertices[VertexCount + 02].Pos, r0_bl, MatrixStack); // 2
 
-                    Transform(ref vertices[VertexCount + 03].Pos, ref r1_tl, ref MatrixStack); // 3
-                    Transform(ref vertices[VertexCount + 04].Pos, ref r1_br, ref MatrixStack); // 4
-                    Transform(ref vertices[VertexCount + 05].Pos, ref r1_bl, ref MatrixStack); // 5
+                    Transform(ref vertices[VertexCount + 03].Pos, r1_tl, MatrixStack); // 3
+                    Transform(ref vertices[VertexCount + 04].Pos, r1_br, MatrixStack); // 4
+                    Transform(ref vertices[VertexCount + 05].Pos, r1_bl, MatrixStack); // 5
 
-                    Transform(ref vertices[VertexCount + 06].Pos, ref r2_tl, ref MatrixStack); // 6
-                    Transform(ref vertices[VertexCount + 07].Pos, ref r2_tr, ref MatrixStack); // 7
-                    Transform(ref vertices[VertexCount + 08].Pos, ref r2_bl, ref MatrixStack); // 8
+                    Transform(ref vertices[VertexCount + 06].Pos, r2_tl, MatrixStack); // 6
+                    Transform(ref vertices[VertexCount + 07].Pos, r2_tr, MatrixStack); // 7
+                    Transform(ref vertices[VertexCount + 08].Pos, r2_bl, MatrixStack); // 8
 
-                    Transform(ref vertices[VertexCount + 09].Pos, ref r3_tl, ref MatrixStack); // 9
-                    Transform(ref vertices[VertexCount + 10].Pos, ref r3_tr, ref MatrixStack); // 10
-                    Transform(ref vertices[VertexCount + 11].Pos, ref r3_br, ref MatrixStack); // 11
+                    Transform(ref vertices[VertexCount + 09].Pos, r3_tl, MatrixStack); // 9
+                    Transform(ref vertices[VertexCount + 10].Pos, r3_tr, MatrixStack); // 10
+                    Transform(ref vertices[VertexCount + 11].Pos, r3_br, MatrixStack); // 11
 
                     VertexCount += 12;
                 }
@@ -1112,7 +1112,7 @@ namespace Foster.Framework
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Transform(ref Vector2 to, ref Vector2 position, ref Matrix3x2 matrix)
+        private void Transform(ref Vector2 to, in Vector2 position, in Matrix3x2 matrix)
         {
             to.X = (position.X * matrix.M11) + (position.Y * matrix.M21) + matrix.M31;
             to.Y = (position.X * matrix.M12) + (position.Y * matrix.M22) + matrix.M32;

@@ -85,20 +85,20 @@
 
         public Point2 C
         {
-            get => new Point2(MinX, MaxY);
+            get => new Point2(MaxX, MaxY);
             set
             {
-                MinX = value.X;
+                MaxX = value.X;
                 MaxY = value.Y;
             }
         }
 
         public Point2 D
         {
-            get => new Point2(MaxX, MaxY);
+            get => new Point2(MinX, MaxY);
             set
             {
-                MaxX = value.X;
+                MinX = value.X;
                 MaxY = value.Y;
             }
         }
