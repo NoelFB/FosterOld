@@ -55,6 +55,10 @@ namespace Foster.Framework
         public static Vector2 operator *(Point2 point, float scaler) => new Vector2(point.X * scaler, point.Y * scaler);
         public static Vector2 operator %(Point2 point, float scaler) => new Vector2(point.X % scaler, point.Y % scaler);
 
+        public static Vector2 operator /(Point2 point, Vector2 vector) => new Vector2(point.X / vector.X, point.Y / vector.Y);
+        public static Vector2 operator *(Point2 point, Vector2 vector) => new Vector2(point.X * vector.X, point.Y * vector.Y);
+        public static Vector2 operator %(Point2 point, Vector2 vector) => new Vector2(point.X % vector.X, point.Y % vector.Y);
+
         public static Point2 operator +(Point2 a, Point2 b) => new Point2(a.X + b.X, a.Y + b.Y);
         public static Point2 operator -(Point2 a, Point2 b) => new Point2(a.X - b.X, a.Y - b.Y);
 
@@ -63,6 +67,9 @@ namespace Foster.Framework
 
         public static bool operator ==(Point2 a, Point2 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Point2 a, Point2 b) => a.X != b.X || a.Y != b.Y;
+
+        public static explicit operator Point2(Vector2 vector) => new Point2((int)vector.X, (int)vector.Y);
+        public static explicit operator Vector2(Point2 point) => new Vector2(point.X, point.Y);
 
     }
 }
