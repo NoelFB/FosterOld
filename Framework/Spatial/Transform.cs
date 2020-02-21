@@ -222,9 +222,10 @@ namespace Foster.Framework
         {
             dirty = false;
 
-            localMatrix = Matrix4x4.CreateScale(localScale) *
-                     Matrix4x4.CreateFromQuaternion(localRotation) *
-                     Matrix4x4.CreateTranslation(localPosition);
+            localMatrix = 
+                Matrix4x4.CreateTranslation(localPosition) *
+                Matrix4x4.CreateFromQuaternion(localRotation) *
+                Matrix4x4.CreateScale(localScale);
 
             if (parent == null)
             {
