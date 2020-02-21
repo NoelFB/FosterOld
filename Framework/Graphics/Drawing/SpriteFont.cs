@@ -215,5 +215,21 @@ namespace Foster.Framework
             return Math.Max(width, line);
         }
 
+        public float HeightOf(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return 0;
+
+            var height = Height;
+
+            for (int i = 0; i < text.Length; i ++)
+            {
+                if (text[i] == '\n')
+                    height += LineHeight;
+            }
+
+            return height;
+        }
+
     }
 }
