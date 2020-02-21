@@ -12,6 +12,7 @@ namespace Foster.Framework
         private readonly BinaryReader reader;
         private readonly bool disposeStream = true;
         private uint objectSize;
+        private long streamLength;
 
         public JsonBinaryReader(string path) : this(File.OpenRead(path), true)
         {
@@ -25,6 +26,7 @@ namespace Foster.Framework
         public JsonBinaryReader(BinaryReader reader, bool disposeStream = true)
         {
             this.reader = reader;
+            this.streamLength = reader.BaseStream.Length;
             this.disposeStream = disposeStream;
         }
 
@@ -32,7 +34,7 @@ namespace Foster.Framework
 
         public override bool Read()
         {
-            if (reader.BaseStream.Position < reader.BaseStream.Length)
+            if (reader.BaseStream.Position < streamLength)
             {
                 var token = (JsonBinaryWriter.BinaryTokens)reader.ReadByte();
                 
