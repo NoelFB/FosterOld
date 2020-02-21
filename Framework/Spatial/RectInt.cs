@@ -1,4 +1,6 @@
-﻿namespace Foster.Framework
+﻿using System;
+
+namespace Foster.Framework
 {
     /// <summary>
     /// A 2D Integer Rectangle
@@ -160,6 +162,27 @@
         public RectInt Scale(float scale)
         {
             return new RectInt((int)(X * scale), (int)(Y * scale), (int)(Width * scale), (int)(Height * scale));
+        }
+
+        public bool Overlaps(in RectInt against)
+        {
+            return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
+        }
+
+        public RectInt OverlapRect(in RectInt against)
+        {
+            if (Overlaps(against))
+            {
+                return new RectInt
+                {
+                    MinX = Math.Max(MinX, against.MinX),
+                    MinY = Math.Max(MinY, against.MinY),
+                    MaxX = Math.Min(MaxX, against.MaxX),
+                    MaxY = Math.Min(MaxY, against.MaxY)
+                };
+            }
+
+            return new RectInt(0, 0, 0, 0);
         }
 
         public override bool Equals(object? obj) => (obj is RectInt other) && (this == other);
