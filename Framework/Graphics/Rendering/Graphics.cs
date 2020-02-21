@@ -68,7 +68,10 @@ namespace Foster.Framework
             if (!target.Renderable)
                 throw new Exception("Render Target cannot currently be drawn to");
 
-            ClearInternal(target, flags, color, depth, stencil, viewport);
+            var bounds = new RectInt(0, 0, target.RenderWidth, target.RenderHeight);
+            var clamped = viewport.OverlapRect(bounds);
+
+            ClearInternal(target, flags, color, depth, stencil, clamped);
         }
 
         /// <summary>
@@ -99,6 +102,12 @@ namespace Foster.Framework
 
             if (pass.Mesh.ElementCount < pass.MeshIndexStart + pass.MeshIndexCount)
                 throw new Exception("Trying to draw more Elements than exist in the Mesh");
+
+            if (pass.Viewport != null)
+            {
+                var bounds = new RectInt(0, 0, pass.Target.RenderWidth, pass.Target.RenderHeight);
+                pass.Viewport = pass.Viewport.Value.OverlapRect(bounds);
+            }
 
             RenderInternal(ref pass);
         }
