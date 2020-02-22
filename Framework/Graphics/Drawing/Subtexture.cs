@@ -113,48 +113,53 @@ namespace Foster.Framework
 
         public (Rect Source, Rect Frame) GetClip(Rect clip)
         {
-            var frame = new Rect(this.frame.X, this.frame.Y, clip.Width, clip.Height);
-            var source = new Rect();
+            return GetClip(clip.X, clip.Y, clip.Width, clip.Height);
+        }
 
-            if (clip.X < 0)
+        public (Rect Source, Rect Frame) GetClip(float x, float y, float w, float h)
+        {
+            var offset = new Vector2(-frame.X, -frame.Y);
+            var crop = new Rect();
+
+            if (x < 0)
             {
-                frame.X += clip.X;
-                source.X = this.source.X;
-                source.Width = Math.Max(0, Math.Min(this.source.Width, clip.Width + clip.X + this.frame.X));
+                offset.X -= x;
+                crop.X = source.X;
+                crop.Width = Math.Max(0, Math.Min(source.Width, w + x + frame.X));
             }
-            else if (clip.X <= -this.frame.X)
+            else if (x <= -frame.X)
             {
-                frame.Y = this.frame.X + clip.X;
-                source.X = this.source.X;
-                source.Width = Math.Max(0, Math.Min(this.source.Width, clip.Width - clip.X + this.frame.X));
+                offset.X = -frame.X - x;
+                crop.X = source.X;
+                crop.Width = Math.Max(0, Math.Min(source.Width, w - x + frame.X));
             }
             else
             {
-                frame.X = 0;
-                source.X = this.source.X + (clip.Y + this.frame.X);
-                source.Width = Math.Max(0, Math.Min(this.source.Width - clip.X - this.frame.X, clip.Width));
+                offset.X = 0;
+                crop.X = source.X + (x + frame.X);
+                crop.Width = Math.Max(0, Math.Min(source.Width - x - frame.X, w));
             }
 
-            if (clip.Y < 0)
+            if (y < 0)
             {
-                frame.X += clip.X;
-                source.Y = this.source.Y;
-                source.Height = Math.Max(0, Math.Min(this.source.Height, clip.Height + clip.Y + this.frame.Y));
+                offset.Y -= y;
+                crop.Y = source.Y;
+                crop.Height = Math.Max(0, Math.Min(source.Height, h + y + frame.Y));
             }
-            else if (clip.Y <= -this.frame.Y)
+            else if (y <= -frame.Y)
             {
-                frame.Y = this.frame.Y + clip.Y;
-                source.Y = this.source.Y;
-                source.Height = Math.Max(0, Math.Min(this.source.Height, clip.Height - clip.Y + this.frame.Y));
+                offset.Y = -frame.Y - y;
+                crop.Y = source.Y;
+                crop.Height = Math.Max(0, Math.Min(source.Height, h - y + frame.Y));
             }
             else
             {
-                frame.Y = 0;
-                source.Y = this.source.Y + (clip.Y + this.frame.Y);
-                source.Height = Math.Max(0, Math.Min(this.source.Height - clip.Y - this.frame.Y, clip.Height));
+                offset.Y = 0;
+                crop.Y = source.Y + (y + frame.Y);
+                crop.Height = Math.Max(0, Math.Min(source.Height - y - frame.Y, h));
             }
 
-            return (source, frame);
+            return (crop, new Rect(-offset.X, -offset.Y, w, h));
         }
 
         public Subtexture GetClipSubtexture(Rect clip)
