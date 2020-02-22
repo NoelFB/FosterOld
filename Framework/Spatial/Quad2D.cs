@@ -126,13 +126,13 @@ namespace Foster.Framework
 
         private void UpdateQuad()
         {
-            normalAB = Vector2.Normalize(b - a);
+            normalAB = (b - a).Normalized();
             normalAB = new Vector2(-normalAB.Y, normalAB.X);
-            normalBC = Vector2.Normalize(c - b);
+            normalBC = (c - b).Normalized();
             normalBC = new Vector2(-normalBC.Y, normalBC.X);
-            normalCD = Vector2.Normalize(d - c);
+            normalCD = (d - c).Normalized();
             normalCD = new Vector2(-normalCD.Y, normalCD.X);
-            normalDA = Vector2.Normalize(a - d);
+            normalDA = (a - d).Normalized();
             normalDA = new Vector2(-normalDA.Y, normalDA.X);
 
             dirty = false;

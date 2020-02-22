@@ -388,7 +388,7 @@ namespace Foster.Framework
 
         public void Line(Vector2 from, Vector2 to, float thickness, Color color)
         {
-            var normal = Vector2.Normalize(to - from);
+            var normal = (to - from).Normalized();
             var perp = new Vector2(-normal.Y, normal.X) * thickness * .5f;
             Quad(from + perp, from - perp, to - perp, to + perp, color);
         }

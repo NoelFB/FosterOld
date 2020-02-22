@@ -33,7 +33,7 @@ namespace Foster.Framework
         {
             var a = GetPoint(index);
             var b = GetPoint(index >= vertices - 1 ? 0 : index + 1);
-            var normal = Vector2.Normalize(b - a);
+            var normal = (b - a).Normalized();
 
             return new Vector2(-normal.Y, normal.X);
         }

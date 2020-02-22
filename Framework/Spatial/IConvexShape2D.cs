@@ -58,7 +58,7 @@ namespace Foster.Framework
             // check against points
             for (int i = 0; i < a.Points; i++)
             {
-                var axis = Vector2.Normalize(a.GetPoint(i) - b.Position);
+                var axis = (a.GetPoint(i) - b.Position).Normalized();
                 if (!a.AxisOverlaps(b, axis, out float amount))
                     return false;
 
