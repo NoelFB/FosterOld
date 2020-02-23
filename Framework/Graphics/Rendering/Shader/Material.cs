@@ -139,7 +139,10 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float2, index);
 
                 if (Value is float[] values)
-                    return new Vector2(values[index * 2 + 0], values[index * 2 + 1]);
+                {
+                    var offset = index * 2;
+                    return new Vector2(values[offset + 0], values[offset + 1]);
+                }
 
                 return Vector2.Zero;
             }
@@ -160,7 +163,10 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float3, index);
 
                 if (Value is float[] values)
-                    return new Vector3(values[index * 3 + 0], values[index * 3 + 1], values[index * 3 + 2]);
+                {
+                    var offset = index * 3;
+                    return new Vector3(values[offset + 0], values[offset + 1], values[offset + 2]);
+                }
 
                 return Vector3.Zero;
             }
@@ -182,7 +188,10 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float4, index);
 
                 if (Value is float[] values)
-                    return new Vector4(values[index * 4 + 0], values[index * 4 + 1], values[index * 4 + 2], values[index * 4 + 3]);
+                {
+                    var offset = index * 4;
+                    return new Vector4(values[offset + 0], values[offset + 1], values[offset + 2], values[offset + 3]);
+                }
 
                 return Vector4.Zero;
             }
@@ -206,14 +215,17 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float4, index);
 
                 if (Value is float[] values)
+                {
+                    var offset = index * 6;
                     return new Matrix3x2(
-                        values[index * 6 + 0], 
-                        values[index * 6 + 1], 
-                        values[index * 6 + 2], 
-                        values[index * 6 + 3],
-                        values[index * 6 + 4],
-                        values[index * 6 + 5]
+                        values[offset + 0],
+                        values[offset + 1],
+                        values[offset + 2],
+                        values[offset + 3],
+                        values[offset + 4],
+                        values[offset + 5]
                         );
+                }
 
                 return Matrix3x2.Identity;
             }
@@ -247,24 +259,27 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float4, index);
 
                 if (Value is float[] values)
+                {
+                    var offset = index * 16;
                     return new Matrix4x4(
-                        values[index * 16 + 00],
-                        values[index * 16 + 01],
-                        values[index * 16 + 02],
-                        values[index * 16 + 03],
-                        values[index * 16 + 04],
-                        values[index * 16 + 05],
-                        values[index * 16 + 06],
-                        values[index * 16 + 07],
-                        values[index * 16 + 08],
-                        values[index * 16 + 09],
-                        values[index * 16 + 10],
-                        values[index * 16 + 11],
-                        values[index * 16 + 12],
-                        values[index * 16 + 13],
-                        values[index * 16 + 14],
-                        values[index * 16 + 15]
+                        values[offset + 00],
+                        values[offset + 01],
+                        values[offset + 02],
+                        values[offset + 03],
+                        values[offset + 04],
+                        values[offset + 05],
+                        values[offset + 06],
+                        values[offset + 07],
+                        values[offset + 08],
+                        values[offset + 09],
+                        values[offset + 10],
+                        values[offset + 11],
+                        values[offset + 12],
+                        values[offset + 13],
+                        values[offset + 14],
+                        values[offset + 15]
                         );
+                }
 
                 return Matrix4x4.Identity;
             }
@@ -287,7 +302,10 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float4, index);
 
                 if (Value is float[] values)
-                    return new Color(values[index * 4 + 0], values[index * 4 + 1], values[index * 4 + 2], values[index * 4 + 3]);
+                {
+                    var offset = index * 4;
+                    return new Color(values[offset + 0], values[offset + 1], values[offset + 2], values[offset + 3]);
+                }
 
                 return Color.Transparent;
             }

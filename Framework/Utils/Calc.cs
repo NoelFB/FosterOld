@@ -198,14 +198,7 @@ namespace Foster.Framework
 
         public static float AngleDiff(float radiansA, float radiansB)
         {
-            float diff = radiansB - radiansA;
-
-            while (diff > MathF.PI)
-                diff -= MathF.PI * 2;
-            while (diff <= -MathF.PI)
-                diff += MathF.PI * 2;
-
-            return diff;
+            return ((radiansB - radiansA - PI) % TAU + TAU) % TAU - PI;
         }
 
         #endregion
