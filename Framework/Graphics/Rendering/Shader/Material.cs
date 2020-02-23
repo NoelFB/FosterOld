@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 
 namespace Foster.Framework
 {
@@ -30,86 +31,265 @@ namespace Foster.Framework
             public UniformType Type => Uniform.Type;
 
             /// <summary>
+            /// Array Length (1 for single values)
+            /// </summary>
+            public int Length => Uniform.Length;
+
+            /// <summary>
+            /// Whether the Parameter is an Array
+            /// </summary>
+            public bool IsArray => Length > 1;
+
+            /// <summary>
             /// The Value of the Parameter
             /// </summary>
-            public object? Value { get; private set; }
+            public Array Value { get; private set; }
 
             public Parameter(ShaderUniform uniform)
             {
                 Uniform = uniform;
-                Value = null;
+
+                Value = uniform.Type switch
+                {
+                    UniformType.Int => new int[uniform.Length],
+                    UniformType.Float => new float[uniform.Length],
+                    UniformType.Float2 => new float[uniform.Length * 2],
+                    UniformType.Float3 => new float[uniform.Length * 3],
+                    UniformType.Float4 => new float[uniform.Length * 4],
+                    UniformType.Matrix3x2 => new float[uniform.Length * 6],
+                    UniformType.Matrix4x4 => new float[uniform.Length * 16],
+                    UniformType.Sampler => new Texture?[uniform.Length],
+                    UniformType.Unknown => null!,
+                    _ => null!
+                };
             }
 
-            public void SetTexture(Texture? value)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void AssertParameters(UniformType expected, int index)
             {
-                if (Type == UniformType.Sampler)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Sampler2D");
+                if (Type != expected)
+                    throw new Exception($"Parameter {Name} isn't a {expected}");
+
+                if (index < 0 || index > Length)
+                    throw new IndexOutOfRangeException($"Paramater {Name} Index is out range");
             }
 
-            public void SetFloat(float value)
+            public void SetTexture(Texture? value) => SetTexture(0, value);
+            public void SetTexture(int index, Texture? value)
             {
-                if (Type == UniformType.Float)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Float");
+                AssertParameters(UniformType.Sampler, index);
+                Value.SetValue(value, index);
             }
 
-            public void SetInt(int value)
+            public Texture? GetTexture(int index = 0)
             {
-                if (Type == UniformType.Int)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Int");
+                AssertParameters(UniformType.Sampler, index);
+
+                if (Value is Texture?[] textures)
+                    return textures[index];
+
+                return null;
             }
 
-            public void SetMatrix(Matrix3x2 value)
+            public void SetInt(int value) => SetInt(0, value);
+            public void SetInt(int index, int value)
             {
-                if (Type == UniformType.Matrix3x2 || Type == UniformType.Matrix4x4)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a 2D Matrix");
+                AssertParameters(UniformType.Int, index);
+                Value.SetValue(value, index);
             }
 
-            public void SetMatrix(Matrix4x4 value)
+            public int GetInt(int index = 0)
             {
-                if (Type == UniformType.Matrix4x4)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Matrix");
+                AssertParameters(UniformType.Int, index);
+
+                if (Value is int[] values)
+                    return values[index];
+
+                return 0;
             }
 
-            public void SetVector2(Vector2 value)
+            public void SetFloat(float value) => SetFloat(0, value);
+            public void SetFloat(int index, float value)
             {
-                if (Type == UniformType.Float2)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Vector2");
+                AssertParameters(UniformType.Float, index);
+                Value.SetValue(value, index);
             }
 
-            public void SetVector3(Vector3 value)
+            public float GetFloat(int index = 0)
             {
-                if (Type == UniformType.Float3)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Vector3");
+                AssertParameters(UniformType.Float, index);
+
+                if (Value is float[] values)
+                    return values[index];
+
+                return 0;
             }
 
-            public void SetVector4(Vector4 value)
+            public void SetVector2(in Vector2 value) => SetVector2(0, value);
+            public void SetVector2(int index, in Vector2 value)
             {
-                if (Type == UniformType.Float4)
-                    Value = value;
-                else
-                    throw new Exception($"Parameter {Name} isn't a Vector4");
+                AssertParameters(UniformType.Float2, index);
+                var offset = index * 2;
+                Value.SetValue(value.X, offset + 0);
+                Value.SetValue(value.Y, offset + 1);
             }
 
-            public void SetColor(Color value)
+            public Vector2 GetVector2(int index = 0)
             {
-                if (Type == UniformType.Float4)
-                    Value = value.ToVector4();
-                else
-                    throw new Exception($"Parameter {Name} isn't a Vector4");
+                AssertParameters(UniformType.Float2, index);
+
+                if (Value is float[] values)
+                    return new Vector2(values[index * 2 + 0], values[index * 2 + 1]);
+
+                return Vector2.Zero;
+            }
+
+            public void SetVector3(in Vector3 value) => SetVector3(0, value);
+
+            public void SetVector3(int index, in Vector3 value)
+            {
+                AssertParameters(UniformType.Float3, index);
+                var offset = index * 3;
+                Value.SetValue(value.X, offset + 0);
+                Value.SetValue(value.Y, offset + 1);
+                Value.SetValue(value.Z, offset + 2);
+            }
+
+            public Vector3 GetVector3(int index = 0)
+            {
+                AssertParameters(UniformType.Float3, index);
+
+                if (Value is float[] values)
+                    return new Vector3(values[index * 3 + 0], values[index * 3 + 1], values[index * 3 + 2]);
+
+                return Vector3.Zero;
+            }
+
+            public void SetVector4(in Vector4 value) => SetVector4(0, value);
+
+            public void SetVector4(int index, in Vector4 value)
+            {
+                AssertParameters(UniformType.Float4, index);
+                var offset = index * 4;
+                Value.SetValue(value.X, offset + 0);
+                Value.SetValue(value.Y, offset + 1);
+                Value.SetValue(value.Z, offset + 2);
+                Value.SetValue(value.W, offset + 3);
+            }
+
+            public Vector4 GetVector4(int index = 0)
+            {
+                AssertParameters(UniformType.Float4, index);
+
+                if (Value is float[] values)
+                    return new Vector4(values[index * 4 + 0], values[index * 4 + 1], values[index * 4 + 2], values[index * 4 + 3]);
+
+                return Vector4.Zero;
+            }
+
+            public void SetMatrix3x2(in Matrix3x2 value) => SetMatrix3x2(0, value);
+
+            public void SetMatrix3x2(int index, in Matrix3x2 value)
+            {
+                AssertParameters(UniformType.Matrix3x2, index);
+                var offset = index * 6;
+                Value.SetValue(value.M11, offset + 0);
+                Value.SetValue(value.M12, offset + 1);
+                Value.SetValue(value.M21, offset + 2);
+                Value.SetValue(value.M22, offset + 3);
+                Value.SetValue(value.M31, offset + 4);
+                Value.SetValue(value.M32, offset + 5);
+            }
+
+            public Matrix3x2 GetMatrix3x2(int index = 0)
+            {
+                AssertParameters(UniformType.Float4, index);
+
+                if (Value is float[] values)
+                    return new Matrix3x2(
+                        values[index * 6 + 0], 
+                        values[index * 6 + 1], 
+                        values[index * 6 + 2], 
+                        values[index * 6 + 3],
+                        values[index * 6 + 4],
+                        values[index * 6 + 5]
+                        );
+
+                return Matrix3x2.Identity;
+            }
+
+            public void SetMatrix4x4(in Matrix4x4 value) => SetMatrix4x4(0, value);
+
+            public void SetMatrix4x4(int index, in Matrix4x4 value)
+            {
+                AssertParameters(UniformType.Matrix4x4, index);
+                var offset = index * 16;
+                Value.SetValue(value.M11, offset + 00);
+                Value.SetValue(value.M12, offset + 01);
+                Value.SetValue(value.M13, offset + 02);
+                Value.SetValue(value.M14, offset + 03);
+                Value.SetValue(value.M21, offset + 04);
+                Value.SetValue(value.M22, offset + 05);
+                Value.SetValue(value.M23, offset + 06);
+                Value.SetValue(value.M24, offset + 07);
+                Value.SetValue(value.M31, offset + 08);
+                Value.SetValue(value.M32, offset + 09);
+                Value.SetValue(value.M33, offset + 10);
+                Value.SetValue(value.M34, offset + 11);
+                Value.SetValue(value.M41, offset + 12);
+                Value.SetValue(value.M42, offset + 13);
+                Value.SetValue(value.M43, offset + 14);
+                Value.SetValue(value.M44, offset + 15);
+            }
+
+            public Matrix4x4 GetMatrix4x4(int index = 0)
+            {
+                AssertParameters(UniformType.Float4, index);
+
+                if (Value is float[] values)
+                    return new Matrix4x4(
+                        values[index * 16 + 00],
+                        values[index * 16 + 01],
+                        values[index * 16 + 02],
+                        values[index * 16 + 03],
+                        values[index * 16 + 04],
+                        values[index * 16 + 05],
+                        values[index * 16 + 06],
+                        values[index * 16 + 07],
+                        values[index * 16 + 08],
+                        values[index * 16 + 09],
+                        values[index * 16 + 10],
+                        values[index * 16 + 11],
+                        values[index * 16 + 12],
+                        values[index * 16 + 13],
+                        values[index * 16 + 14],
+                        values[index * 16 + 15]
+                        );
+
+                return Matrix4x4.Identity;
+            }
+
+            public void SetColor(in Color value) => SetColor(0, value);
+
+            public void SetColor(int index, in Color value)
+            {
+                AssertParameters(UniformType.Float4, index);
+                var vec = value.ToVector4();
+                var offset = index * 4;
+                Value.SetValue(vec.X, offset + 0);
+                Value.SetValue(vec.Y, offset + 1);
+                Value.SetValue(vec.Z, offset + 2);
+                Value.SetValue(vec.W, offset + 3);
+            }
+
+            public Color GetColor(int index = 0)
+            {
+                AssertParameters(UniformType.Float4, index);
+
+                if (Value is float[] values)
+                    return new Color(values[index * 4 + 0], values[index * 4 + 1], values[index * 4 + 2], values[index * 4 + 3]);
+
+                return Color.Transparent;
             }
         }
 
@@ -130,6 +310,7 @@ namespace Foster.Framework
             var parameters = new Dictionary<string, Parameter>();
             foreach (var uniform in shader.Uniforms.Values)
                 parameters.Add(uniform.Name, new Parameter(uniform));
+
             Parameters = new ReadOnlyDictionary<string, Parameter>(parameters);
         }
 

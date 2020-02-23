@@ -16,20 +16,20 @@
         public readonly int Location;
 
         /// <summary>
-        /// The size of the uniform (ex. Array Length)
+        /// The Array length of the uniform
         /// </summary>
-        public readonly int Size;
+        public readonly int Length;
 
         /// <summary>
         /// The Type of Uniform
         /// </summary>
         public readonly UniformType Type;
 
-        public ShaderUniform(string name, int location, int size, UniformType type)
+        public ShaderUniform(string name, int location, int length, UniformType type)
         {
             Name = name;
             Location = location;
-            Size = size;
+            Length = length;
             Type = type;
         }
     }

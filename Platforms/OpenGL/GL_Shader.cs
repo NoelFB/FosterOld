@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -100,7 +101,11 @@ namespace Foster.OpenGL
                     GL.GetActiveUniform(ID, (uint)i, out int size, out GLEnum type, out string name);
                     int location = GL.GetUniformLocation(ID, name);
                     if (location >= 0)
+                    {
+                        if (size > 1 && name.EndsWith("[0]"))
+                            name = name.Substring(0, name.Length - 3);
                         Uniforms.Add(name, new GL_Uniform(this, name, size, location, type));
+                    }
                 }
 
                 // dispose shaders
@@ -132,119 +137,66 @@ namespace Foster.OpenGL
                 if (!(parameter.Uniform is GL_Uniform uniform))
                     continue;
 
-                // get the uniform value
-                object? value;
+                // Sampler 2D
+                if (uniform.Type == UniformType.Sampler)
                 {
-                    if (uniform.Type == UniformType.Sampler)
+                    int* n = stackalloc int[uniform.Length];
+
+                    for (int i = 0; i < uniform.Length; i++)
                     {
-                        var texture = ((parameter.Value as Texture)?.Implementation as GL_Texture);
+                        var texture = (parameter.Value.GetValue(i) as Texture)?.Implementation as GL_Texture;
                         var id = texture?.ID ?? 0;
 
                         GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));
                         GL.BindTexture(GLEnum.TEXTURE_2D, id);
 
-                        value = textureSlot;
+                        n[i] = textureSlot;
                         textureSlot++;
                     }
-                    else
-                    {
-                        value = parameter.Value;
-                    }
+
+                    GL.Uniform1iv(uniform.Location, uniform.Length, new IntPtr(n));
                 }
-
-                // check if it's different
-                if (uniform.LastValue == value)
-                    continue;
-                uniform.LastValue = value;
-
-                // upload it
-                switch (uniform.Type)
+                // Int
+                else if (uniform.Type == UniformType.Int && parameter.Value is int[] intArray)
                 {
-                    case UniformType.Int:
-                        GL.Uniform1i(uniform.Location, (int)(value ?? 0));
-                        break;
-                    case UniformType.Float:
-                        GL.Uniform1f(uniform.Location, (float)(value ?? 0));
-                        break;
-                    case UniformType.Float2:
-                        Vector2 vec2 = (Vector2)(value ?? Vector2.Zero);
-                        GL.Uniform2f(uniform.Location, vec2.X, vec2.Y);
-                        break;
-                    case UniformType.Float3:
-                        Vector3 vec3 = (Vector3)(value ?? Vector3.Zero);
-                        GL.Uniform3f(uniform.Location, vec3.X, vec3.Y, vec3.Z);
-                        break;
-                    case UniformType.Float4:
-                        Vector4 vec4 = (Vector4)(value ?? Vector4.Zero);
-                        GL.Uniform4f(uniform.Location, vec4.X, vec4.Y, vec4.Z, vec4.W);
-                        break;
-                    case UniformType.Matrix3x2:
-                        {
-                            Matrix3x2 m3x2 = (Matrix3x2)(value ?? Matrix3x2.Identity);
-                            float* matrix = stackalloc float[6];
-
-                            matrix[0] = m3x2.M11;
-                            matrix[1] = m3x2.M12;
-                            matrix[2] = m3x2.M21;
-                            matrix[3] = m3x2.M22;
-                            matrix[4] = m3x2.M31;
-                            matrix[5] = m3x2.M32;
-
-                            GL.UniformMatrix3x2fv(uniform.Location, 1, false, new IntPtr(matrix));
-                        }
-                        break;
-                    case UniformType.Matrix4x4:
-                        {
-                            float* matrix = stackalloc float[16];
-
-                            if (value is Matrix3x2 m3x2)
-                            {
-                                matrix[00] = m3x2.M11;
-                                matrix[01] = m3x2.M12;
-                                matrix[02] = 0f;
-                                matrix[03] = 0f;
-                                matrix[04] = m3x2.M21;
-                                matrix[05] = m3x2.M22;
-                                matrix[06] = 0f;
-                                matrix[07] = 0f;
-                                matrix[08] = 0f;
-                                matrix[09] = 0f;
-                                matrix[10] = 1f;
-                                matrix[11] = 0f;
-                                matrix[12] = m3x2.M31;
-                                matrix[13] = m3x2.M32;
-                                matrix[14] = 0f;
-                                matrix[15] = 1f;
-                            }
-                            else if (value is Matrix4x4 m4x4)
-                            {
-                                // TODO:
-                                // optimize this out? create pointer to struct and just send that?
-
-                                matrix[00] = m4x4.M11;
-                                matrix[01] = m4x4.M12;
-                                matrix[02] = m4x4.M13;
-                                matrix[03] = m4x4.M14;
-                                matrix[04] = m4x4.M21;
-                                matrix[05] = m4x4.M22;
-                                matrix[06] = m4x4.M23;
-                                matrix[07] = m4x4.M24;
-                                matrix[08] = m4x4.M31;
-                                matrix[09] = m4x4.M32;
-                                matrix[10] = m4x4.M33;
-                                matrix[11] = m4x4.M34;
-                                matrix[12] = m4x4.M41;
-                                matrix[13] = m4x4.M42;
-                                matrix[14] = m4x4.M43;
-                                matrix[15] = m4x4.M44;
-                            }
-
-                            GL.UniformMatrix4fv(uniform.Location, 1, false, new IntPtr(matrix));
-                        }
-                        break;
-                    case UniformType.Sampler:
-                        GL.Uniform1i(uniform.Location, (int)(value ?? 0));
-                        break;
+                    fixed (int* ptr = intArray)
+                        GL.Uniform1iv(uniform.Location, uniform.Length, new IntPtr(ptr));
+                }
+                // Float
+                else if (uniform.Type == UniformType.Float && parameter.Value is float[] floatArray)
+                {
+                    fixed (float* ptr = floatArray)
+                        GL.Uniform1fv(uniform.Location, uniform.Length, new IntPtr(ptr));
+                }
+                // Float2
+                else if (uniform.Type == UniformType.Float2 && parameter.Value is float[] float2Array)
+                {
+                    fixed (float* ptr = float2Array)
+                        GL.Uniform2fv(uniform.Location, uniform.Length, new IntPtr(ptr));
+                }
+                // Float3
+                else if (uniform.Type == UniformType.Float3 && parameter.Value is float[] float3Array)
+                {
+                    fixed (float* ptr = float3Array)
+                        GL.Uniform3fv(uniform.Location, uniform.Length, new IntPtr(ptr));
+                }
+                // Float4
+                else if (uniform.Type == UniformType.Float4 && parameter.Value is float[] float4Array)
+                {
+                    fixed (float* ptr = float4Array)
+                        GL.Uniform4fv(uniform.Location, uniform.Length, new IntPtr(ptr));
+                }
+                // Matrix3x2
+                else if (uniform.Type == UniformType.Matrix3x2 && parameter.Value is float[] matrix3x2Array)
+                {
+                    fixed (float* ptr = matrix3x2Array)
+                        GL.UniformMatrix3x2fv(uniform.Location, uniform.Length, false, new IntPtr(ptr));
+                }
+                // Matrix4x4
+                else if (uniform.Type == UniformType.Matrix4x4 && parameter.Value is float[] matrix4x4Array)
+                {
+                    fixed (float* ptr = matrix4x4Array)
+                        GL.UniformMatrix4fv(uniform.Location, uniform.Length, false, new IntPtr(ptr));
                 }
             }
         }

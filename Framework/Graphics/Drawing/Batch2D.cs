@@ -196,7 +196,7 @@ namespace Foster.Framework
 
                 pass.Material = batch.Material ?? DefaultMaterial;
                 pass.Material[TextureUniformName]?.SetTexture(batch.Texture);
-                pass.Material[MatrixUniformName]?.SetMatrix(new Matrix4x4(batch.Matrix) * matrix);
+                pass.Material[MatrixUniformName]?.SetMatrix4x4(new Matrix4x4(batch.Matrix) * matrix);
             }
 
             pass.MeshIndexStart = batch.Offset;
