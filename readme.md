@@ -24,7 +24,7 @@ _★ very work in progress! likely to have frequent, breaking changes ★_
  - Each Platform implementation has its own dependencies
 
 ## example app
-```
+```cs
 using Foster.Framework;
 
 internal class Program
