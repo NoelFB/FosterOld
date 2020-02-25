@@ -18,10 +18,23 @@ namespace Foster.Json
         {
         }
 
-        public static JsonObject FromFile(string path)
+        public JsonObject(string path) 
+            : this()
         {
             using var reader = new JsonTextReader(File.OpenRead(path));
-            return reader.ReadObject();
+            reader.ReadObject(this);
+        }
+
+        public JsonObject(Stream stream)
+            : this()
+        {
+            using var reader = new JsonTextReader(stream);
+            reader.ReadObject(this);
+        }
+
+        public static JsonObject FromFile(string path)
+        {
+            return new JsonObject(path);
         }
 
         public static JsonObject FromString(string jsonString)

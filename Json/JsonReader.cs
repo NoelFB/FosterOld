@@ -16,14 +16,30 @@ namespace Foster.Json
     /// </summary>
     public abstract class JsonReader
     {
-
+        /// <summary>
+        /// The current Token
+        /// </summary>
         public JsonToken Token { get; protected set; }
+
+        /// <summary>
+        /// The current Value
+        /// </summary>
         public object? Value { get; protected set; }
+
+        /// <summary>
+        /// The current Position in the Stream
+        /// </summary>
         public abstract long Position { get; }
 
-        public JsonObject ReadObject()
+        /// <summary>
+        /// Reads an Json Object from the Stream and returns it
+        /// </summary>
+        /// <param name="into">An optional object to read into. If null, it creates a new JsonObject</param>
+        public JsonObject ReadObject(JsonObject? into = null)
         {
-            var obj = new JsonObject();
+            if (into == null)
+                into = new JsonObject();
+
             var opened = false;
 
             while (Read() && Token != JsonToken.ObjectEnd)
@@ -41,12 +57,15 @@ namespace Foster.Json
                 if (string.IsNullOrEmpty(key))
                     throw new Exception($"Invalid Object Key");
 
-                obj[key] = ReadValue();
+                into[key] = ReadValue();
             }
 
-            return obj;
+            return into;
         }
 
+        /// <summary>
+        /// Tries to read a JsonObject from the Stream
+        /// </summary>
         public bool TryReadObject([MaybeNullWhen(false)] out JsonObject obj)
         {
             try 
@@ -65,6 +84,9 @@ namespace Foster.Json
             return true;
         }
 
+        /// <summary>
+        /// Reads a JsonArray from the Stream
+        /// </summary>
         public JsonArray ReadArray()
         {
             var arr = new JsonArray();
@@ -73,6 +95,9 @@ namespace Foster.Json
             return arr;
         }
 
+        /// <summary>
+        /// Reads a JsonValue from the Stream
+        /// </summary>
         public JsonValue ReadValue()
         {
             Read();
@@ -141,11 +166,17 @@ namespace Foster.Json
             return new JsonNull();
         }
 
+        /// <summary>
+        /// Skips the current Value
+        /// </summary>
         public virtual void SkipValue()
         {
             ReadValue();
         }
 
+        /// <summary>
+        /// Reads the next Token in the Stream
+        /// </summary>
         public abstract bool Read();
     }
 }

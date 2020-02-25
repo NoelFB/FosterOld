@@ -45,9 +45,9 @@ namespace Foster.Json
         public abstract string String { get; }
         public abstract byte[] Bytes { get; }
 
-        public T Enum<T>(T defaultValue = default(T)) where T : struct, IConvertible
+        public T Enum<T>(T defaultValue = default) where T : struct, IConvertible
         {
-            if (global::System.Enum.TryParse<T>(String, true, out var value))
+            if (System.Enum.TryParse<T>(String, true, out var value))
                 return value;
             return defaultValue;
         }
