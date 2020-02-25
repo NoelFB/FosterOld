@@ -4,14 +4,12 @@ Foster is an open source & cross-platform game framework made in C# dotnet core.
 _★ very work in progress! likely to have frequent, breaking changes ★_
 
 ## goals
- - Easy to use for small games
- - Designed for desktop + console 2D and 3D games; no mobile
+ - Designed for small desktop + console 2D and 3D games; No mobile
+ - A simple and lightweight Platform API so it's easy to swap out the guts
  - As few dependencies outside of C# as possible
- - Modern C# - don't care about backwards compatibility
- - A simple and lightweight platform API so it's easy to swap out the guts
- - Something to iterate on. I just enjoy making this stuff and it's not trying to be the best possible framework ever
- - This isn't built for modern graphics or like a billion polygons.
- - This is just for Windowing, Input, Rendering, and Audio - not a full Engine. I'm working on a separate project built over this for things like Entities, Asset Management, etc.
+ - Modern C# without worry about backwards compatibility
+ - This isn't built for modern graphics or like a billion polygons
+ - This isn't meant to have Game or Engine specific code, but rather just contain Windowing, Rendering, Input, and Audio
 
 ## what's here
  - **Framework**: The main Framework with an abstract Platform implementation. Handles Input, Drawing, Windowing, etc.
