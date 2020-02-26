@@ -10,6 +10,7 @@ namespace Foster.Framework
 
         public const ulong All = 0xFFFFFFFFFFFFFFFF;
         public const ulong None = 0;
+        public const ulong Default = (1 << 0);
 
         public ulong Value;
 

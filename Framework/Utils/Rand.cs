@@ -118,5 +118,10 @@ namespace Foster.Framework
         {
             return choices[random.Next(choices.Count)];
         }
+
+        public static T Choose<T>(this Random random, ReadOnlySpan<T> choices)
+        {
+            return choices[random.Next(choices.Length)];
+        }
     }
 }
