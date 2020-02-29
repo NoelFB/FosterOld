@@ -7,6 +7,9 @@ namespace Foster.Framework
     /// </summary>
     public interface IProjectable
     {
+        /// <summary>
+        /// Projects the Shape onto an Axis
+        /// </summary>
         void Project(Vector3 axis, out float min, out float max);
     }
 }

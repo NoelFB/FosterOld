@@ -12,22 +12,41 @@ namespace Foster.Framework
         public static readonly Point2 UnitX = new Point2(1, 0);
         public static readonly Point2 UnitY = new Point2(0, 1);
 
+        /// <summary>
+        /// The X component of the Point
+        /// </summary>
         public int X;
+
+        /// <summary>
+        /// The Y component of the Point
+        /// </summary>
         public int Y;
 
-        public float Length => (float)Math.Sqrt(X * X + Y * Y);
-        public Vector2 Normal => new Vector2(X, Y) / Length;
-
-        public Point2(int xy)
-        {
-            X = Y = xy;
-        }
-
+        /// <summary>
+        /// Creates a Point with the given X and Y components
+        /// </summary>
         public Point2(int x, int y)
         {
             X = x;
             Y = y;
         }
+
+        /// <summary>
+        /// Gets the Length of the Point
+        /// </summary>
+        public float Length()
+        {
+            return new Vector2(X, Y).Length();
+        }
+
+        /// <summary>
+        /// Gets the Normalized Vector of the Point
+        /// </summary>
+        public Vector2 Normalized()
+        {
+            return new Vector2(X, Y).Normalized();
+        }
+
 
         public override bool Equals(object? obj) => (obj is Point2 other) && (other == this);
 

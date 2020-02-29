@@ -8,11 +8,17 @@ namespace Foster.Framework
     /// </summary>
     public interface IProjectable2D
     {
+        /// <summary>
+        /// Projects the shape onto the Axis
+        /// </summary>
         void Project(in Vector2 axis, out float min, out float max);
     }
 
     public static class IProjectable2DExt
     {
+        /// <summary>
+        /// Checks if two Projectable Shapes overlap on the given Axis, and returns the amount
+        /// </summary>
         public static bool AxisOverlaps(this IProjectable2D a, in IProjectable2D b, in Vector2 axis, out float amount)
         {
             a.Project(axis, out float min0, out float max0);

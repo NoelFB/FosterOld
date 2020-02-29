@@ -35,6 +35,9 @@ namespace Foster.Framework
     public static class IConvexShape2DExt
     {
 
+        /// <summary>
+        /// Checks if the Convex Shape overlaps a Circle, and returns the pushout vector
+        /// </summary>
         public static bool Overlaps(this IConvexShape2D a, in Circle b, out Vector2 pushout)
         {
             pushout = Vector2.Zero;
@@ -72,6 +75,9 @@ namespace Foster.Framework
             return true;
         }
 
+        /// <summary>
+        /// Checks if the Convex Shape overlaps another Convex Shape, and returns the pushout vector
+        /// </summary>
         public static bool Overlaps(this IConvexShape2D a, in IConvexShape2D b, out Vector2 pushout)
         {
             pushout = Vector2.Zero;

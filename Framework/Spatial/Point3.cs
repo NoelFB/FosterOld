@@ -22,9 +22,6 @@ namespace Foster.Framework
         public int Y;
         public int Z;
 
-        public float Length => (float)Math.Sqrt(X * X + Y * Y + Z * Z);
-        public Vector3 Normal => new Vector3(X, Y, Z) / Length;
-
         public Point3(int xyz)
         {
             X = Y = Z = xyz;
@@ -42,6 +39,16 @@ namespace Foster.Framework
             X = x;
             Y = y;
             Z = z;
+        }
+
+        public float Length()
+        {
+            return new Vector3(X, Y, Z).Length();
+        }
+
+        public Vector3 Normalized()
+        {
+            return new Vector3(X, Y, Z).Normalized();
         }
 
         public override bool Equals(object? obj) => (obj is Point3 other) && (this == other);
