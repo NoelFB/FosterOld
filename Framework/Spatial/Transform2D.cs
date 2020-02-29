@@ -8,9 +8,24 @@ namespace Foster.Framework
     /// </summary>
     public interface ITransform2D
     {
+        /// <summary>
+        /// Gets or Sets the World Position of the Transform
+        /// </summary>
         Vector2 Position { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the World Scale of the Transform
+        /// </summary>
         Vector2 Scale { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the Origin of the Transform
+        /// </summary>
         Vector2 Origin { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the World Rotation of the Transform
+        /// </summary>
         float Rotation { get; set; }
     }
 
@@ -19,9 +34,8 @@ namespace Foster.Framework
     /// </summary>
     public class Transform2D : ITransform2D
     {
-        public event Action? OnChanged;
-
         private Transform2D? parent = null;
+        private bool dirty = true;
 
         private Vector2 position = Vector2.Zero;
         private Vector2 localPosition = Vector2.Zero;
@@ -31,12 +45,19 @@ namespace Foster.Framework
         private float rotation = 0f;
         private float localRotation = 0f;
 
-        private bool dirty = true;
-
         private Matrix3x2 localMatrix = Matrix3x2.Identity;
         private Matrix3x2 worldMatrix = Matrix3x2.Identity;
         private Matrix3x2 worldToLocalMatrix = Matrix3x2.Identity;
 
+        /// <summary>
+        /// An action called whenever the Transform is modified
+        /// </summary>
+        public event Action? OnChanged;
+
+        /// <summary>
+        /// Gets or Sets the Transform's Parent
+        /// Modifying this does not change the World position of the Transform
+        /// </summary>
         public Transform2D? Parent
         {
             get => parent;
@@ -46,7 +67,7 @@ namespace Foster.Framework
                 {
                     // Circular Hierarchy isn't allowed
                     if (value != null && value.Parent == this)
-                        throw new Exception("Circular Transform Heritage");
+                        throw new Exception("Circular Transform Heritage is not allowed");
 
                     // Remove our OnChanged listener from the existing parent
                     if (parent != null)
@@ -76,6 +97,10 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the Origin of the Transform
+        /// This is useful for setting Rotation Origins for things like Sprites
+        /// </summary>
         public Vector2 Origin
         {
             get => origin;
@@ -89,6 +114,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the World Position of the Transform
+        /// </summary>
         public Vector2 Position
         {
             get
@@ -107,18 +135,27 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the X Component of the World Position of the Transform
+        /// </summary>
         public float X
         {
             get => Position.X;
             set => Position = new Vector2(value, Position.Y);
         }
 
+        /// <summary>
+        /// Gets or Sets the Y Component of the World Position of the Transform
+        /// </summary>
         public float Y
         {
             get => Position.Y;
             set => Position = new Vector2(Position.X, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the Local Position of the Transform
+        /// </summary>
         public Vector2 LocalPosition
         {
             get => localPosition;
@@ -132,6 +169,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the World Scale of the Transform
+        /// </summary>
         public Vector2 Scale
         {
             get
@@ -164,6 +204,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the Local Scale of the Transform
+        /// </summary>
         public Vector2 LocalScale
         {
             get => localScale;
@@ -177,6 +220,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the World Rotation of the Transform
+        /// </summary>
         public float Rotation
         {
             get
@@ -195,6 +241,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the Local Rotation of the Transform
+        /// </summary>
         public float LocalRotation
         {
             get => localRotation;
@@ -208,6 +257,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the Local Matrix of the Transform
+        /// </summary>
         public Matrix3x2 LocalMatrix
         {
             get
@@ -218,6 +270,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the World Matrix of the Transform
+        /// </summary>
         public Matrix3x2 WorldMatrix
         {
             get
@@ -228,6 +283,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the World-to-Local Matrix of the Transform
+        /// </summary>
         public Matrix3x2 WorldToLocalMatrix
         {
             get
@@ -272,6 +330,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Creates a Matrix3x2 given the Transform Values
+        /// </summary>
         public static Matrix3x2 CreateMatrix(in Vector2 position, in Vector2 origin, in Vector2 scale, in float rotation)
         {
             Matrix3x2 matrix;

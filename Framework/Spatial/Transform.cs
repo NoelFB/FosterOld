@@ -8,19 +8,29 @@ namespace Foster.Framework
     /// </summary>
     public interface ITransform
     {
+        /// <summary>
+        /// Gets or Sets the World Position of the Transform
+        /// </summary>
         Vector3 Position { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the World Scale of the Transform
+        /// </summary>
         Vector3 Scale { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the World Rotation of the Transform
+        /// </summary>
         Quaternion Rotation { get; set; }
     }
 
     /// <summary>
-    /// A 2D Transform
+    /// A 3D Transform
     /// </summary>
     public class Transform : ITransform
     {
-        public event Action? OnChanged;
-
         private Transform? parent = null;
+        private bool dirty = true;
 
         private Vector3 position = Vector3.Zero;
         private Vector3 localPosition = Vector3.Zero;
@@ -29,12 +39,19 @@ namespace Foster.Framework
         private Quaternion rotation = Quaternion.Identity;
         private Quaternion localRotation = Quaternion.Identity;
 
-        private bool dirty = true;
-
         private Matrix4x4 localMatrix = Matrix4x4.Identity;
         private Matrix4x4 worldMatrix = Matrix4x4.Identity;
         private Matrix4x4 worldToLocalMatrix = Matrix4x4.Identity;
 
+        /// <summary>
+        /// An action called whenever the Transform is modified
+        /// </summary>
+        public event Action? OnChanged;
+
+        /// <summary>
+        /// Gets or Sets the Transform's Parent
+        /// Modifying this does not change the World position of the Transform
+        /// </summary>
         public Transform? Parent
         {
             get => parent;
@@ -42,22 +59,41 @@ namespace Foster.Framework
             {
                 if (parent != value)
                 {
+                    // Circular Hierarchy isn't allowed
+                    if (value != null && value.Parent == this)
+                        throw new Exception("Circular Transform Heritage is not allowed");
+
+                    // Remove our OnChanged listener from the existing parent
                     if (parent != null)
                         parent.OnChanged -= MakeDirty;
 
-                    if (value != null && value.Parent == this)
-                        throw new Exception("Circular Transform Heritage");
+                    // store state
+                    var position = Position;
+                    var scale = Scale;
+                    var rotation = Rotation;
 
+                    // update parent
                     parent = value;
+                    dirty = true;
 
+                    // retain state
+                    Position = position;
+                    Scale = scale;
+                    Rotation = rotation;
+
+                    // Add our OnChanged listener to the new parent
                     if (parent != null)
                         parent.OnChanged += MakeDirty;
 
-                    MakeDirty();
+                    // we have changed
+                    OnChanged?.Invoke();
                 }
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the World Position of the Transform
+        /// </summary>
         public Vector3 Position
         {
             get
@@ -72,28 +108,40 @@ namespace Foster.Framework
                 if (parent == null)
                     LocalPosition = value;
                 else
-                    LocalPosition = Vector3.Transform(value, worldToLocalMatrix);
+                    LocalPosition = Vector3.Transform(value, WorldToLocalMatrix);
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the X Component of the World Position of the Transform
+        /// </summary>
         public float X
         {
             get => Position.X;
             set => Position = new Vector3(value, Position.Y, Position.Z);
         }
 
+        /// <summary>
+        /// Gets or Sets the Y Component of the World Position of the Transform
+        /// </summary>
         public float Y
         {
             get => Position.Y;
             set => Position = new Vector3(Position.X, value, Position.Z);
         }
 
+        /// <summary>
+        /// Gets or Sets the Z Component of the World Position of the Transform
+        /// </summary>
         public float Z
         {
             get => Position.Z;
             set => Position = new Vector3(Position.X, Position.Y, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the Local Position of the Transform
+        /// </summary>
         public Vector3 LocalPosition
         {
             get => localPosition;
@@ -107,6 +155,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the World Scale of the Transform
+        /// </summary>
         public Vector3 Scale
         {
             get
@@ -144,6 +195,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the Local Scale of the Transform
+        /// </summary>
         public Vector3 LocalScale
         {
             get => localScale;
@@ -157,6 +211,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the World Rotation of the Transform
+        /// </summary>
         public Quaternion Rotation
         {
             get
@@ -175,6 +232,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the Local Rotation of the Transform
+        /// </summary>
         public Quaternion LocalRotation
         {
             get => localRotation;
@@ -188,6 +248,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the Local Matrix of the Transform
+        /// </summary>
         public Matrix4x4 LocalMatrix
         {
             get
@@ -198,6 +261,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the World Matrix of the Transform
+        /// </summary>
         public Matrix4x4 WorldMatrix
         {
             get
@@ -208,6 +274,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// Gets the World-to-Local Matrix of the Transform
+        /// </summary>
         public Matrix4x4 WorldToLocalMatrix
         {
             get
