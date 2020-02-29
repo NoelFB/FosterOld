@@ -71,7 +71,7 @@ namespace Foster.Framework
         /// Starts running the Application
         /// You must register the System Module before calling this
         /// </summary>
-        public static void Start(string title, int width, int height, WindowFlags flags = WindowFlags.None, Action? callback = null)
+        public static void Start(string title, int width, int height, WindowFlags flags = WindowFlags.ScaleToMonitor, Action? callback = null)
         {
             if (Running)
                 throw new Exception("App is already running");

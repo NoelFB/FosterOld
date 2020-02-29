@@ -286,12 +286,12 @@ namespace Foster.Framework
         /// </summary>
         public bool MouseOver => Implementation.MouseOver;
 
-        public Window(string title, int width, int height, WindowFlags flags = WindowFlags.None) : this(App.System, title, width, height, flags)
+        public Window(string title, int width, int height, WindowFlags flags = WindowFlags.ScaleToMonitor) : this(App.System, title, width, height, flags)
         {
 
         }
 
-        public Window(System system, string title, int width, int height, WindowFlags flags = WindowFlags.None)
+        public Window(System system, string title, int width, int height, WindowFlags flags = WindowFlags.ScaleToMonitor)
         {
             system.windows.Add(this);
 
