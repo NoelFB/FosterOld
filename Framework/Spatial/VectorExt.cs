@@ -63,6 +63,11 @@ namespace Foster.Framework
         public static Vector2 TurnLeft(this Vector2 vector) => new Vector2(vector.Y, -vector.X);
 
         /// <summary>
+        /// Gets the Angle of a Vector in radians
+        /// </summary>
+        public static float Angle(this Vector2 vector) => MathF.Atan2(vector.Y, vector.X);
+
+        /// <summary>
         /// Normalizes a Vector2 safely (a zero-length Vector2 returns 0)
         /// </summary>
         public static Vector2 Normalized(this Vector2 vector)
