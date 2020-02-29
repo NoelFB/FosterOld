@@ -25,7 +25,7 @@ namespace Foster.Framework
 
         private Vector2 position = Vector2.Zero;
         private Vector2 localPosition = Vector2.Zero;
-        private Vector2 scale = Vector2.Zero;
+        private Vector2 scale = Vector2.One;
         private Vector2 localScale = Vector2.One;
         private Vector2 origin = Vector2.Zero;
         private float rotation = 0f;
@@ -44,18 +44,34 @@ namespace Foster.Framework
             {
                 if (parent != value)
                 {
-                    if (parent != null)
-                        parent.OnChanged -= MakeDirty;
-
+                    // Circular Hierarchy isn't allowed
                     if (value != null && value.Parent == this)
                         throw new Exception("Circular Transform Heritage");
 
-                    parent = value;
+                    // Remove our OnChanged listener from the existing parent
+                    if (parent != null)
+                        parent.OnChanged -= MakeDirty;
 
+                    // store state
+                    var position = Position;
+                    var scale = Scale;
+                    var rotation = Rotation;
+
+                    // update parent
+                    parent = value;
+                    dirty = true;
+
+                    // retain state
+                    Position = position;
+                    Scale = scale;
+                    Rotation = rotation;
+
+                    // Add our OnChanged listener to the new parent
                     if (parent != null)
                         parent.OnChanged += MakeDirty;
 
-                    MakeDirty();
+                    // we have changed
+                    OnChanged?.Invoke();
                 }
             }
         }
@@ -87,7 +103,7 @@ namespace Foster.Framework
                 if (parent == null)
                     LocalPosition = value;
                 else
-                    LocalPosition = Vector2.Transform(value, worldToLocalMatrix);
+                    LocalPosition = Vector2.Transform(value, WorldToLocalMatrix);
             }
         }
 
