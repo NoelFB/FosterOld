@@ -51,7 +51,7 @@ namespace Foster.Framework
         public Action<Window>? OnWindowCreated;
 
         /// <summary>
-        /// Internal list of all Windows owned by the System. The Platform implementation should maintain this.
+        /// Internal list of all Windows owned by the System.
         /// </summary>
         internal readonly List<Window> windows = new List<Window>();
 
