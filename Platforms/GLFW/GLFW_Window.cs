@@ -16,12 +16,12 @@ namespace Foster.GLFW
         private readonly GLFW.CursorEnterFunc windowCursorEnterCallbackRef;
 
         private string title;
-        private bool visible;
-        private bool lastVsync;
-        private bool focused;
-        private bool mouseOver;
-        private bool disposed;
-        private bool fullscreen;
+        private bool isVisible;
+        private bool isVSyncEnabled;
+        private bool isFocused;
+        private bool isMouseOver;
+        private bool isDisposed;
+        private bool isFullscreen;
         private RectInt storedBounds;
 
         protected override Point2 Position
@@ -89,11 +89,11 @@ namespace Foster.GLFW
             }
         }
 
-        protected override bool Opened => !disposed;
+        protected override bool Opened => !isDisposed;
 
-        protected override bool Focused => focused;
+        protected override bool Focused => isFocused;
 
-        protected override bool MouseOver => mouseOver;
+        protected override bool MouseOver => isMouseOver;
 
         protected override string Title
         {
@@ -119,15 +119,15 @@ namespace Foster.GLFW
         {
             get
             {
-                return fullscreen;
+                return isFullscreen;
             }
             set
             {
-                if (fullscreen != value)
+                if (isFullscreen != value)
                 {
-                    fullscreen = value;
+                    isFullscreen = value;
 
-                    if (fullscreen)
+                    if (isFullscreen)
                     {
                         var monitor = GLFW.GetWindowMonitor(pointer);
                         if (monitor == IntPtr.Zero)
@@ -141,7 +141,7 @@ namespace Foster.GLFW
                             GLFW.SetWindowMonitor(pointer, monitor, 0, 0, w, h, (int)GLFW_Enum.GLFW_DONT_CARE);
                         }
                         else
-                            fullscreen = false;
+                            isFullscreen = false;
                     }
                     else
                     {
@@ -153,11 +153,11 @@ namespace Foster.GLFW
 
         protected override bool Visible
         {
-            get => visible;
+            get => isVisible;
             set
             {
-                visible = value;
-                if (visible)
+                isVisible = value;
+                if (isVisible)
                     GLFW.ShowWindow(pointer);
                 else
                     GLFW.HideWindow(pointer);
@@ -181,13 +181,13 @@ namespace Foster.GLFW
             this.system = system;
             this.pointer = pointer;
             this.title = title;
-            this.visible = visible;
+            this.isVisible = visible;
 
             // opengl swap interval
             if (App.Graphics is IGraphicsOpenGL)
             {
                 system.SetCurrentGLContext(pointer);
-                GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
+                GLFW.SwapInterval((isVSyncEnabled = VSync) ? 1 : 0);
             }
 
             GLFW.SetWindowCloseCallback(this.pointer, windowCloseCallbackRef = OnWindowClose);
@@ -209,24 +209,24 @@ namespace Foster.GLFW
 
         private void OnWindowFocus(IntPtr window, int focused)
         {
-            this.focused = (focused != 0);
-            if (this.focused)
+            isFocused = (focused != 0);
+            if (isFocused)
                 OnFocus?.Invoke();
         }
 
         private void OnCursorEnter(IntPtr window, int entered)
         {
-            mouseOver = (entered != 0);
+            isMouseOver = (entered != 0);
         }
 
         protected override void Present()
         {
-            if (lastVsync != VSync)
+            if (isVSyncEnabled != VSync)
             {
                 if (App.Graphics is IGraphicsOpenGL)
                 {
                     system.SetCurrentGLContext(pointer);
-                    GLFW.SwapInterval((lastVsync = VSync) ? 1 : 0);
+                    GLFW.SwapInterval((isVSyncEnabled = VSync) ? 1 : 0);
                 }
             }
 
@@ -235,9 +235,9 @@ namespace Foster.GLFW
 
         protected override void Close()
         {
-            if (!disposed)
+            if (!isDisposed)
             {
-                disposed = true;
+                isDisposed = true;
                 GLFW.SetWindowShouldClose(pointer, true);
             }
         }
