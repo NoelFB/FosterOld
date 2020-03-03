@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Foster.GLFW
 {
-    public class GLFW_Input : Input
+    internal class GLFW_Input : Input
     {
 
         // we need to keep track of delegates because otherwise they can be garbage collected

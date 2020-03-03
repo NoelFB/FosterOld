@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.GLFW
 {
-    public class GLFW_Window : Window.Platform
+    internal class GLFW_Window : Window.Platform
     {
         private readonly GLFW_System system;
         internal readonly IntPtr pointer;
