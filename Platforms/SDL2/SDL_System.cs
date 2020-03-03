@@ -52,6 +52,11 @@ namespace Foster.SDL2
                 SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
                 SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             }
+
+            // Displays
+            var numDisplays = SDL.SDL_GetNumVideoDisplays();
+            for (int i = 0; i < numDisplays; i ++)
+                monitors.Add(new SDL_Monitor(i));
         }
 
         protected override Window.Platform CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
