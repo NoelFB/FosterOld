@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Foster.Framework
 {
@@ -116,16 +117,19 @@ namespace Foster.Framework
             Height = Math.Max(a.Y, b.Y) - Y;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Vector2 point)
         {
             return (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Rect rect)
         {
             return (MinX < rect.MinX && MinY < rect.MinY && MaxY > rect.MaxY && MaxX > rect.MaxX);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Overlaps(in Rect against)
         {
             return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
