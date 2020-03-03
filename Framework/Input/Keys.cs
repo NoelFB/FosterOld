@@ -57,7 +57,7 @@
         Z = 90,
 
         LeftBracket = 91,
-        Backlash = 92,
+        BackSlash = 92,
         RightBracket = 93,
         GraveAccent = 96,
         World1 = 161,
