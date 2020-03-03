@@ -4,7 +4,7 @@ using System;
 
 namespace Foster.SDL2
 {
-    public class SDL_GLContext : ISystemOpenGL.Context
+    internal class SDL_GLContext : ISystemOpenGL.Context
     {
         internal SDL_System system;
         internal IntPtr context;
