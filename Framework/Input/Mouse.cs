@@ -44,6 +44,7 @@ namespace Foster.Framework
         {
             Array.Fill(pressed, false);
             Array.Fill(released, false);
+            wheelValue = Vector2.Zero;
         }
 
     }
