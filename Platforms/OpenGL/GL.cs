@@ -429,7 +429,7 @@ namespace Foster.OpenGL
 
     }
 
-    public enum GLEnum
+    internal enum GLEnum
     {
         // Hint Enum Value
         DONT_CARE = 0x1100,
