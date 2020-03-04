@@ -72,7 +72,7 @@ namespace Foster.SDL2
             }
             else if (e.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
             {
-                // Foster API missing implementation
+                OnMouseWheel(e.wheel.x, e.wheel.y);
             }
             // joystick
             else if (e.type == SDL.SDL_EventType.SDL_JOYDEVICEADDED)

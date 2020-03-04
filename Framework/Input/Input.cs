@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -116,6 +117,12 @@ namespace Foster.Framework
         {
             nextState.Mouse.down[(int)button] = false;
             nextState.Mouse.released[(int)button] = true;
+        }
+
+        protected void OnMouseWheel(float offsetX, float offsetY)
+        {
+            Console.WriteLine(offsetX + ", " + offsetY);
+            nextState.Mouse.wheelValue = new Vector2(offsetX, offsetY);
         }
 
         protected void OnJoystickConnect(uint index, string name, uint buttonCount, uint axisCount, bool isGamepad)

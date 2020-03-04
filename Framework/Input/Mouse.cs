@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -13,6 +14,7 @@ namespace Foster.Framework
         internal readonly bool[] down = new bool[MaxButtons];
         internal readonly bool[] released = new bool[MaxButtons];
         internal readonly long[] timestamp = new long[MaxButtons];
+        internal Vector2 wheelValue;
 
         public bool Pressed(MouseButtons button) => pressed[(int)button];
         public bool Down(MouseButtons button) => down[(int)button];
@@ -26,12 +28,16 @@ namespace Foster.Framework
         public bool RightDown => Down(MouseButtons.Right);
         public bool RightReleased => Released(MouseButtons.Right);
 
+        public Vector2 Wheel => wheelValue;
+
         internal void Copy(Mouse other)
         {
             Array.Copy(other.pressed, 0, pressed, 0, MaxButtons);
             Array.Copy(other.down, 0, down, 0, MaxButtons);
             Array.Copy(other.released, 0, released, 0, MaxButtons);
             Array.Copy(other.timestamp, 0, timestamp, 0, MaxButtons);
+
+            wheelValue = other.wheelValue;
         }
 
         internal void Step()

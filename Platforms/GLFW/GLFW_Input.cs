@@ -40,6 +40,7 @@ namespace Foster.GLFW
             GLFW.SetKeyCallback(window, TrackDelegate<GLFW.KeyFunc>(window, OnKeyCallback));
             GLFW.SetCharCallback(window, TrackDelegate<GLFW.CharFunc>(window, OnCharCallback));
             GLFW.SetMouseButtonCallback(window, TrackDelegate<GLFW.MouseButtonFunc>(window, OnMouseCallback));
+            GLFW.SetScrollCallback(window, TrackDelegate<GLFW.ScrollFunc>(window, OnScrollCallback));
         }
 
         internal void StopListening(IntPtr window)
@@ -141,6 +142,11 @@ namespace Foster.GLFW
             {
                 OnMouseUp(mb);
             }
+        }
+
+        private void OnScrollCallback(IntPtr window, double offsetX, double offsetY)
+        {
+            OnMouseWheel((float)offsetX, (float)offsetY);
         }
 
         private void OnCharCallback(IntPtr window, uint codepoint)
