@@ -88,7 +88,7 @@ namespace Foster.Framework
         public static bool operator !=(Point2 a, Point2 b) => a.X != b.X || a.Y != b.Y;
 
         public static explicit operator Point2(Vector2 vector) => new Point2((int)vector.X, (int)vector.Y);
-        public static explicit operator Vector2(Point2 point) => new Vector2(point.X, point.Y);
+        public static implicit operator Vector2(Point2 point) => new Vector2(point.X, point.Y);
 
     }
 }

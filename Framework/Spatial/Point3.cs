@@ -68,6 +68,8 @@ namespace Foster.Framework
 
 
         public static implicit operator Point3((int X, int Y, int Z) tuple) => new Point3(tuple.X, tuple.Y, tuple.Z);
+        public static explicit operator Point3(Vector3 vector) => new Point3((int)vector.X, (int)vector.Y, (int)vector.Z);
+        public static implicit operator Vector3(Point3 point) => new Vector3(point.X, point.Y, point.Z);
 
         public static Point3 operator -(Point3 point) => new Point3(-point.X, -point.Y, -point.Z);
         public static Point3 operator /(Point3 point, int scaler) => new Point3(point.X / scaler, point.Y / scaler, point.Z / scaler);
