@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Foster.Framework;
 using SDL2;
@@ -11,9 +13,10 @@ namespace Foster.SDL2
     public class SDL_System : Framework.System, ISystemOpenGL
     {
         public override bool SupportsMultipleWindows => true;
-        public override Input Input { get; } = new SDL_Input();
+        public override Input Input => input;
 
         internal readonly Dictionary<IntPtr, SDL_GLContext> glContexts = new Dictionary<IntPtr, SDL_GLContext>();
+        internal readonly SDL_Input input;
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetProcessDPIAware();
@@ -24,6 +27,8 @@ namespace Foster.SDL2
 
             SDL.SDL_GetVersion(out var ver);
             ApiVersion = new Version(ver.major, ver.major, ver.patch);
+
+            input = new SDL_Input();
         }
 
         protected override void ApplicationStarted()
@@ -47,6 +52,11 @@ namespace Foster.SDL2
                 SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, (int)SDL.SDL_GLcontext.SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
                 SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1);
             }
+
+            // Displays
+            var numDisplays = SDL.SDL_GetNumVideoDisplays();
+            for (int i = 0; i < numDisplays; i ++)
+                monitors.Add(new SDL_Monitor(i));
         }
 
         protected override Window.Platform CreateWindow(string title, int width, int height, WindowFlags flags = WindowFlags.None)
@@ -58,34 +68,68 @@ namespace Foster.SDL2
         {
             while (SDL.SDL_PollEvent(out SDL.SDL_Event e) != 0)
             {
-                // exit event
-                if (e.type == SDL.SDL_EventType.SDL_QUIT)
+                switch (e.type)
                 {
-                    App.Exit();
-                    return;
-                }
-                // window events
-                else if (e.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
-                {
-                    // find the window
-                    SDL_Window? window = null;
-                    for (int i = 0; i < Windows.Count; i ++)
-                    {
-                        if (Windows[i].Implementation is SDL_Window win && win.SDLWindowID == e.window.windowID)
+                    // Quit
+                    case SDL.SDL_EventType.SDL_QUIT:
+                        App.Exit();
+                        return;
+
+                    // Window Event
+                    case SDL.SDL_EventType.SDL_WINDOWEVENT:
                         {
-                            window = win;
-                            break;
+                            // find the window
+                            SDL_Window? window = null;
+                            for (int i = 0; i < Windows.Count; i++)
+                            {
+                                if (Windows[i].Implementation is SDL_Window win && win.SDLWindowID == e.window.windowID)
+                                {
+                                    window = win;
+                                    break;
+                                }
+                            }
+
+                            if (window == null)
+                                continue;
+
+                            if (e.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
+                                window.Resized();
+                            else if (e.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE)
+                                window.CloseRequested();
                         }
-                    }
-
-                    if (window == null)
-                        continue;
-
-                    if (e.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
-                        window.Resized();
-                    else if (e.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE)
-                        window.CloseRequested();
+                        break;
+                    
+                    // Input Events
+                    case SDL.SDL_EventType.SDL_KEYDOWN:
+                    case SDL.SDL_EventType.SDL_KEYUP:
+                    case SDL.SDL_EventType.SDL_TEXTEDITING:
+                    case SDL.SDL_EventType.SDL_TEXTINPUT:
+                    case SDL.SDL_EventType.SDL_KEYMAPCHANGED:
+                    case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN:
+                    case SDL.SDL_EventType.SDL_MOUSEBUTTONUP:
+                    case SDL.SDL_EventType.SDL_MOUSEWHEEL:
+                    case SDL.SDL_EventType.SDL_JOYAXISMOTION:
+                    case SDL.SDL_EventType.SDL_JOYBALLMOTION:
+                    case SDL.SDL_EventType.SDL_JOYHATMOTION:
+                    case SDL.SDL_EventType.SDL_JOYBUTTONDOWN:
+                    case SDL.SDL_EventType.SDL_JOYBUTTONUP:
+                    case SDL.SDL_EventType.SDL_JOYDEVICEADDED:
+                    case SDL.SDL_EventType.SDL_JOYDEVICEREMOVED:
+                    case SDL.SDL_EventType.SDL_CONTROLLERAXISMOTION:
+                    case SDL.SDL_EventType.SDL_CONTROLLERBUTTONDOWN:
+                    case SDL.SDL_EventType.SDL_CONTROLLERBUTTONUP:
+                    case SDL.SDL_EventType.SDL_CONTROLLERDEVICEADDED:
+                    case SDL.SDL_EventType.SDL_CONTROLLERDEVICEREMOVED:
+                    case SDL.SDL_EventType.SDL_CONTROLLERDEVICEREMAPPED:
+                        input.ProcessEvent(e);
+                        break;
                 }
+
+
+                var error = SDL.SDL_GetError();
+                if (!string.IsNullOrEmpty(error))
+                    Console.WriteLine(e.type + ": " + error);
+                SDL.SDL_ClearError();
             }
         }
 

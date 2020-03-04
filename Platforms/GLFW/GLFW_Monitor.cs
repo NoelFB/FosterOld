@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Foster.GLFW
 {
-    public class GLFW_Monitor : Monitor
+    internal class GLFW_Monitor : Monitor
     {
         public readonly IntPtr Pointer;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Foster.Framework
 {
@@ -19,21 +20,25 @@ namespace Foster.Framework
             Value = value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(Mask mask)
         {
             Value |= mask.Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(Mask mask)
         {
             Value &= ~mask.Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(Mask mask)
         {
             return (Value & mask.Value) > 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Mask Make(int index)
         {
             if (index < 0 || index > 63)
@@ -42,7 +47,10 @@ namespace Foster.Framework
             return new Mask((ulong)(1 << index));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Mask operator |(Mask a, Mask b) => new Mask(a.Value | b.Value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Mask operator &(Mask a, Mask b) => new Mask(a.Value & b.Value);
 
         public static implicit operator ulong(Mask mask) => mask.Value;

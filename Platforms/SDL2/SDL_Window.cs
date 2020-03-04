@@ -198,8 +198,9 @@ namespace Foster.SDL2
         {
             get
             {
-                return Vector2.Zero;
-                throw new NotImplementedException();
+                SDL.SDL_GetWindowPosition(SDLWindowPtr, out int winX, out int winY);
+                SDL.SDL_GetGlobalMouseState(out int x, out int y);
+                return new Vector2(x - winX, y - winY);
             }
         }
 
@@ -207,8 +208,8 @@ namespace Foster.SDL2
         {
             get
             {
-                return Vector2.Zero;
-                throw new NotImplementedException();
+                SDL.SDL_GetGlobalMouseState(out int x, out int y);
+                return new Vector2(x, y);
             }
         }
 
@@ -221,7 +222,11 @@ namespace Foster.SDL2
         {
             this.system = system;
 
-            var sdlWindowFlags = SDL.SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN;
+            var sdlWindowFlags = 
+                SDL.SDL_WindowFlags.SDL_WINDOW_ALLOW_HIGHDPI | 
+                SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN | 
+                SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
+
             if (flags.HasFlag(WindowFlags.Fullscreen))
             {
                 sdlWindowFlags |= SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -241,6 +246,9 @@ namespace Foster.SDL2
             if (SDLWindowPtr == IntPtr.Zero)
                 throw new Exception($"Failed to create a new Window: {SDL.SDL_GetError()}");
             SDLWindowID = SDL.SDL_GetWindowID(SDLWindowPtr);
+
+            if (flags.HasFlag(WindowFlags.Transparent))
+                SDL.SDL_SetWindowOpacity(SDLWindowPtr, 0f);
 
             // scale to monitor for HiDPI displays
             if (flags.HasFlag(WindowFlags.ScaleToMonitor))
@@ -263,7 +271,10 @@ namespace Foster.SDL2
 
             // create the OpenGL context
             if (App.Graphics is IGraphicsOpenGL)
+            {
                 glContext = new SDL_GLContext(system, SDLWindowPtr);
+                system.SetCurrentGLContext(glContext);
+            }
 
             // show window
             isVisible = false;
@@ -278,6 +289,7 @@ namespace Foster.SDL2
         {
             if (App.Graphics is IGraphicsOpenGL)
             {
+                system.SetCurrentGLContext(glContext);
                 SDL.SDL_GL_SetSwapInterval(isVSyncEnabled ? 1 : 0);
                 SDL.SDL_GL_SwapWindow(SDLWindowPtr);
             }
