@@ -121,7 +121,6 @@ namespace Foster.Framework
 
         protected void OnMouseWheel(float offsetX, float offsetY)
         {
-            Console.WriteLine(offsetX + ", " + offsetY);
             nextState.Mouse.wheelValue = new Vector2(offsetX, offsetY);
         }
 
