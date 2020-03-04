@@ -14,7 +14,8 @@ namespace Foster.Framework
         private readonly List<Type> registered = new List<Type>();
         private readonly List<Module?> modules = new List<Module?>();
         private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
-        private bool started;
+        private bool immediateInit;
+        private bool immediateStart;
 
         /// <summary>
         /// Registers a Module
@@ -29,18 +30,12 @@ namespace Foster.Framework
         /// </summary>
         public void Register(Type type)
         {
-            if (started)
+            if (immediateInit)
             {
                 var module = Instantiate(type);
 
-                if (module is AppModule appModule)
-                {
-                    appModule.ApplicationStarted();
-                    appModule.FirstWindowCreated();
-                }
-
-                module.IsStarted = true;
-                module.Startup();
+                if (immediateStart)
+                    StartupModule(module, true);
             }
             else
             {
@@ -193,7 +188,7 @@ namespace Foster.Framework
 
             for (int i = 0; i < modules.Count; i++)
             {
-                if (modules[i] != null && modules[i] is AppModule module)
+                if (modules[i] is AppModule module)
                     module.ApplicationStarted();
             }
         }
@@ -202,26 +197,49 @@ namespace Foster.Framework
         {
             for (int i = 0; i < modules.Count; i++)
             {
-                if (modules[i] != null && modules[i] is AppModule module)
+                if (modules[i] is AppModule module)
                     module.FirstWindowCreated();
             }
         }
 
         internal void Startup()
         {
-            for (int i = 0; i < registered.Count; i ++)
+            // this method is a little strange because it makes sure all App Modules have
+            // had their Startup methods called BEFORE instantiating normal Modules
+            // Thus it has to iterate over modules and call Startup twice
+
+            // run startup on on App Modules
+            for (int i = 0; i < modules.Count; i++)
+                StartupModule(modules[i], false);
+
+            // instantiate remaining modules that are registered
+            for (int i = 0; i < registered.Count; i++)
                 Instantiate(registered[i]);
 
-            started = true;
+            // further modules will be instantiated immediately
+            immediateInit = true;
 
+            // call started on all modules
             for (int i = 0; i < modules.Count; i++)
+                StartupModule(modules[i], true);
+
+            // further modules will have Startup called immediately
+            immediateStart = true;
+        }
+
+        private static void StartupModule(Module? module, bool callAppMethods)
+        {
+            if (module != null && !module.IsStarted)
             {
-                var module = modules[i];
-                if (module != null && !module.IsStarted)
+                module.IsStarted = true;
+
+                if (module is AppModule appModule && callAppMethods)
                 {
-                    module.IsStarted = true;
-                    module.Startup();
+                    appModule.ApplicationStarted();
+                    appModule.FirstWindowCreated();
                 }
+
+                module.Startup();
             }
         }
 
