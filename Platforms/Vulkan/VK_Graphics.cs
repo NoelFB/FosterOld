@@ -20,7 +20,8 @@ namespace Foster.Vulkan
         internal VkDebugUtilsMessengerEXT DebugMessenger;
 
         // Vulkan Bindings
-        internal VK VK;
+        // Can be null until First Window is created, and then never again
+        internal VK VK = null!;
 
         // Debug Validation Layers
 #if DEBUG
@@ -33,7 +34,6 @@ namespace Foster.Vulkan
 
         private readonly string[] deviceExtensions = new[] { VkConst.VK_KHR_SWAPCHAIN_EXTENSION_NAME };
         private readonly List<Delegate> trackedDelegates = new List<Delegate>();
-
 
         protected override void ApplicationStarted()
         {
@@ -323,38 +323,38 @@ namespace Foster.Vulkan
 
         protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
         {
-            throw new NotImplementedException();
+
         }
 
         protected override void RenderInternal(ref RenderPass pass)
         {
-            throw new NotImplementedException();
+
         }
 
         protected override Texture.Platform CreateTexture(int width, int height, TextureFormat format)
         {
-            throw new NotImplementedException();
+            return new VK_Texture(this, width, height, format);
         }
 
         protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] attachments)
         {
-            throw new NotImplementedException();
+            return new VK_FrameBuffer(this, width, height, attachments);
         }
 
         protected override Shader.Platform CreateShader(ShaderSource source)
         {
-            throw new NotImplementedException();
+            return new VK_Shader();
         }
 
         protected override Mesh.Platform CreateMesh()
         {
-            throw new NotImplementedException();
+            return new VK_Mesh();
         }
 
         protected override ShaderSource CreateShaderSourceBatch2D()
         {
-            var vertexSource = Calc.EmbeddedResource("Resources/batch2d.vert.spv");
-            var fragmentSource = Calc.EmbeddedResource("Resources/batch2d.frag.spv");
+            var vertexSource = Calc.EmbeddedResource("Foster/Vulkan/Resources/batch2d.vert.spv");
+            var fragmentSource = Calc.EmbeddedResource("Foster/Vulkan/Resources/batch2d.frag.spv");
 
             return new ShaderSource(vertexSource, fragmentSource);
         }

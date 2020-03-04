@@ -42,7 +42,7 @@ namespace Foster.Vulkan
         public static string STRING(byte* ptr)
         {
             int length = 0;
-            while (length < 1000 && ptr[length] != 0)
+            while (length < 4096 && ptr[length] != 0)
                 length++;
 
             return Encoding.UTF8.GetString(ptr, length);
