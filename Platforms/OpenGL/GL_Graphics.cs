@@ -11,9 +11,7 @@ namespace Foster.OpenGL
         internal ISystemOpenGL System => App.System as ISystemOpenGL ?? throw new Exception("System does not implement IGLSystem");
 
         // Background Context can be null up until Startup, at which point they never are again
-#pragma warning disable CS8618
-        internal ISystemOpenGL.Context BackgroundContext;
-#pragma warning restore CS8618
+        internal ISystemOpenGL.Context BackgroundContext = null!;
 
         // Stores info about the Context
         internal class ContextMeta
