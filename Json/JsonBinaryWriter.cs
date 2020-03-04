@@ -1,10 +1,9 @@
-﻿using Foster.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Foster.Framework
+namespace Foster.Json
 {
     public class JsonBinaryWriter : JsonWriter, IDisposable
     {

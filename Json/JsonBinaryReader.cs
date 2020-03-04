@@ -1,10 +1,7 @@
-﻿using Foster.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Text;
 
-namespace Foster.Framework
+namespace Foster.Json
 {
     public class JsonBinaryReader : JsonReader, IDisposable
     {
