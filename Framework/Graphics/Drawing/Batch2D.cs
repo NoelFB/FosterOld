@@ -1035,6 +1035,34 @@ namespace Foster.Framework
             }
         }
 
+        public void Text(SpriteFont font, string text, Vector2 position, Color color)
+        {
+            PushMatrix(position);
+            Text(font, text.AsSpan(), color);
+            PopMatrix();
+        }
+
+        public void Text(SpriteFont font, ReadOnlySpan<char> text, Vector2 position, Color color)
+        {
+            PushMatrix(position);
+            Text(font, text, color);
+            PopMatrix();
+        }
+
+        public void Text(SpriteFont font, string text, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color)
+        {
+            PushMatrix(position, scale, origin, rotation);
+            Text(font, text.AsSpan(), color);
+            PopMatrix();
+        }
+
+        public void Text(SpriteFont font, ReadOnlySpan<char> text, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color)
+        {
+            PushMatrix(position, scale, origin, rotation);
+            Text(font, text, color);
+            PopMatrix();
+        }
+
         #endregion
 
         #region Misc.
