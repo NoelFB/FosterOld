@@ -353,8 +353,8 @@ namespace Foster.Vulkan
 
         protected override ShaderSource CreateShaderSourceBatch2D()
         {
-            var vertexSource = Calc.EmbeddedResource("Foster/Vulkan/Resources/batch2d.vert.spv");
-            var fragmentSource = Calc.EmbeddedResource("Foster/Vulkan/Resources/batch2d.frag.spv");
+            var vertexSource = Calc.EmbeddedResource("Resources/batch2d.vert.spv");
+            var fragmentSource = Calc.EmbeddedResource("Resources/batch2d.frag.spv");
 
             return new ShaderSource(vertexSource, fragmentSource);
         }
