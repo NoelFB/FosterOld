@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Foster.Framework
 {
@@ -125,17 +126,20 @@ namespace Foster.Framework
             Height = size.Y;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Point2 point)
         {
             return (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in RectInt rect)
         {
             return (MinX < rect.MinX && MinY < rect.MinY && MaxY > rect.MaxY && MaxX > rect.MaxX);
         }
 
-        public bool Intersects(in RectInt against)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Overlaps(in RectInt against)
         {
             return X + Width > against.X && Y + Height > against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
@@ -162,11 +166,6 @@ namespace Foster.Framework
         public RectInt Scale(float scale)
         {
             return new RectInt((int)(X * scale), (int)(Y * scale), (int)(Width * scale), (int)(Height * scale));
-        }
-
-        public bool Overlaps(in RectInt against)
-        {
-            return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
 
         public RectInt OverlapRect(in RectInt against)
