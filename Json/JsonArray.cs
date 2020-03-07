@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace Foster.Json
 {
     /// <summary>
     /// A data structure encapsulating a Json Array
     /// </summary>
-    public class JsonArray : JsonValue<List<JsonValue>>
+    public class JsonArray : JsonValue<List<JsonValue>>, IEnumerable
     {
         public JsonArray() : base(JsonType.Array, new List<JsonValue>())
         {
@@ -60,5 +61,9 @@ namespace Foster.Json
             return clone;
         }
 
+        public IEnumerator GetEnumerator()
+        {
+            return Value.GetEnumerator();
+        }
     }
 }
