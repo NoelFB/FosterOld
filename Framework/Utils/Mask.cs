@@ -44,7 +44,7 @@ namespace Foster.Framework
             if (index < 0 || index > 63)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index must be between 0 and 63");
 
-            return new Mask((ulong)(1 << index));
+            return new Mask(((ulong)1 << index));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

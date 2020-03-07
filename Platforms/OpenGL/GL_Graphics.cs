@@ -152,8 +152,8 @@ namespace Foster.OpenGL
 
         protected override ShaderSource CreateShaderSourceBatch2D()
         {
-            var vertexSource = Calc.EmbeddedResourceText("Foster/OpenGL/Resources/batch2d.vert");
-            var fragmentSource = Calc.EmbeddedResourceText("Foster/OpenGL/Resources/batch2d.frag");
+            var vertexSource = Calc.EmbeddedResourceText("Resources/batch2d.vert");
+            var fragmentSource = Calc.EmbeddedResourceText("Resources/batch2d.frag");
 
             return new ShaderSource(vertexSource, fragmentSource);
         }

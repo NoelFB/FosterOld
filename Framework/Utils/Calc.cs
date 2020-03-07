@@ -597,7 +597,8 @@ namespace Foster.Framework
 
         public static Stream EmbeddedResource(Assembly assembly, string resourceName)
         {
-            var path = resourceName.Replace('/', '.').Replace('\\', '.');
+            var fullname = assembly.GetName().Name + "." + resourceName;
+            var path = fullname.Replace('/', '.').Replace('\\', '.');
 
             var stream = assembly.GetManifestResourceStream(path);
             if (stream == null)

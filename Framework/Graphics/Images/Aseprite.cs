@@ -65,14 +65,15 @@ namespace Foster.Framework
         {
             public Aseprite Sprite;
             public int Duration;
-            public Color[] Pixels;
+            public Bitmap Bitmap;
+            public Color[] Pixels => Bitmap.Pixels;
             public List<Cel> Cels;
 
             public Frame(Aseprite sprite)
             {
                 Sprite = sprite;
                 Cels = new List<Cel>();
-                Pixels = new Color[sprite.Width * sprite.Height];
+                Bitmap = new Bitmap(sprite.Width, sprite.Height);
             }
         }
 
@@ -525,7 +526,7 @@ namespace Foster.Framework
         private void CelToFrame(Frame frame, Cel cel)
         {
             var opacity = (byte)((cel.Alpha * cel.Layer.Alpha) * 255);
-            var pxLen = frame.Pixels.Length;
+            var pxLen = frame.Bitmap.Pixels.Length;
 
             var blend = BlendModes[0];
             if (cel.Layer.BlendMode < BlendModes.Length)
@@ -539,7 +540,7 @@ namespace Foster.Framework
                 for (int sy = Math.Max(0, -cel.Y), bottom = Math.Min(cel.Height, frame.Sprite.Height - cel.Y); sy < bottom; sy++, dy += frame.Sprite.Width)
                 {
                     if (dx + dy >= 0 && dx + dy < pxLen)
-                        blend(ref frame.Pixels[dx + dy], cel.Pixels[sx + sy * cel.Width], opacity);
+                        blend(ref frame.Bitmap.Pixels[dx + dy], cel.Pixels[sx + sy * cel.Width], opacity);
                 }
             }
         }
@@ -556,7 +557,7 @@ namespace Foster.Framework
             foreach (var frame in Frames)
             {
                 var name = string.Format(namingFormat, frameIndex);
-                packer.AddPixels(name, Width, Height, frame.Pixels);
+                packer.AddPixels(name, Width, Height, frame.Bitmap.Pixels);
 
                 frameIndex++;
             }

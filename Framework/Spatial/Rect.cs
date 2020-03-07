@@ -126,13 +126,13 @@ namespace Foster.Framework
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Rect rect)
         {
-            return (MinX < rect.MinX && MinY < rect.MinY && MaxY > rect.MaxY && MaxX > rect.MaxX);
+            return (MinX <= rect.MinX && MinY <= rect.MinY && MaxY >= rect.MaxY && MaxX >= rect.MaxX);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Overlaps(in Rect against)
         {
-            return X + Width >= against.X && Y + Height >= against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
+            return X + Width > against.X && Y + Height > against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
 
         public Rect OverlapRect(in Rect against)
@@ -263,6 +263,9 @@ namespace Foster.Framework
             return new Rect(a.X * scaler.X, a.Y * scaler.Y, a.Width * scaler.X, a.Height * scaler.Y);
         }
 
-
+        public static Rect operator +(Rect a, Vector2 b)
+        {
+            return new Rect(a.X + b.X, a.Y + b.Y, a.Width, a.Height);
+        }
     }
 }
