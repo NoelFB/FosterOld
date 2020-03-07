@@ -31,6 +31,8 @@ using System;
 using System.Runtime.InteropServices;
 #endregion
 
+#nullable disable
+
 namespace SDL2
 {
     public static class SDL
@@ -7455,3 +7457,5 @@ namespace SDL2
         #endregion
     }
 }
+
+#nullable enable
