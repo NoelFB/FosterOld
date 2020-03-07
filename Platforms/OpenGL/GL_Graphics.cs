@@ -168,10 +168,10 @@ namespace Foster.OpenGL
                     if (context != System.GetCurrentGLContext())
                         System.SetCurrentGLContext(context);
                     GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
-                    Clear(context);
+                    Clear(this, context, target, flags, color, depth, stencil, viewport);
                 }
             }
-            else if (target is Framework.FrameBuffer rt && rt.Implementation is GL_FrameBuffer renderTexture)
+            else if (target is FrameBuffer rt && rt.Implementation is GL_FrameBuffer renderTexture)
             {
                 // if we're off the main thread, clear using the Background Context
                 if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -181,7 +181,7 @@ namespace Foster.OpenGL
                         System.SetCurrentGLContext(BackgroundContext);
 
                         renderTexture.Bind(BackgroundContext);
-                        Clear(BackgroundContext);
+                        Clear(this, BackgroundContext, target, flags, color, depth, stencil, viewport);
                         GL.Flush();
 
                         System.SetCurrentGLContext(null);
@@ -200,15 +200,15 @@ namespace Foster.OpenGL
                     lock (context)
                     {
                         renderTexture.Bind(context);
-                        Clear(context);
+                        Clear(this, context, target, flags, color, depth, stencil, viewport);
                     }
                 }
             }
 
-            void Clear(ISystemOpenGL.Context context)
+            static void Clear(GL_Graphics graphics, ISystemOpenGL.Context context, RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
             {
                 // update the viewport
-                var meta = GetContextMeta(context);
+                var meta = graphics.GetContextMeta(context);
                 {
                     viewport.Y = target.RenderHeight - viewport.Y - viewport.Height;
 
@@ -258,7 +258,7 @@ namespace Foster.OpenGL
                 {
                     if (context != System.GetCurrentGLContext())
                         System.SetCurrentGLContext(context);
-                    Draw(ref pass, context);
+                    Draw(this, ref pass, context);
                 }
             }
             else if (MainThreadId != Thread.CurrentThread.ManagedThreadId)
@@ -267,7 +267,7 @@ namespace Foster.OpenGL
                 {
                     System.SetCurrentGLContext(BackgroundContext);
 
-                    Draw(ref pass, BackgroundContext);
+                    Draw(this, ref pass, BackgroundContext);
                     GL.Flush();
 
                     System.SetCurrentGLContext(null);
@@ -284,17 +284,17 @@ namespace Foster.OpenGL
 
                 lock (context)
                 {
-                    Draw(ref pass, context);
+                    Draw(this, ref pass, context);
                 }
             }
 
-            void Draw(ref RenderPass pass, ISystemOpenGL.Context context)
+            static void Draw(GL_Graphics graphics, ref RenderPass pass, ISystemOpenGL.Context context)
             {
                 RenderPass lastPass;
 
                 // get the previous state
                 var updateAll = false;
-                var contextMeta = GetContextMeta(context);
+                var contextMeta = graphics.GetContextMeta(context);
                 if (contextMeta.LastRenderState == null)
                 {
                     updateAll = true;
