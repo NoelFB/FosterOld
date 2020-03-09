@@ -40,6 +40,14 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Gets the Length Squared of the Point
+        /// </summary>
+        public float LengthSquared()
+        {
+            return new Vector2(X, Y).LengthSquared();
+        }
+
+        /// <summary>
         /// Gets the Normalized Vector of the Point
         /// </summary>
         public Vector2 Normalized()
@@ -83,6 +91,9 @@ namespace Foster.Framework
 
         public static Rect operator +(Point2 a, Rect b) => new Rect(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
         public static Rect operator +(Rect b, Point2 a) => new Rect(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
+
+        public static RectInt operator +(Point2 a, RectInt b) => new RectInt(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
+        public static RectInt operator +(RectInt b, Point2 a) => new RectInt(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
 
         public static bool operator ==(Point2 a, Point2 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Point2 a, Point2 b) => a.X != b.X || a.Y != b.Y;
