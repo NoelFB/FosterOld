@@ -267,5 +267,10 @@ namespace Foster.Framework
         {
             return new Rect(a.X + b.X, a.Y + b.Y, a.Width, a.Height);
         }
+
+        public static Rect operator *(Rect a, float scaler)
+        {
+            return new Rect(a.X * scaler, a.Y * scaler, a.Width * scaler, a.Height * scaler);
+        }
     }
 }
