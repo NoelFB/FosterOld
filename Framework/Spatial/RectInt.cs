@@ -210,5 +210,10 @@ namespace Foster.Framework
         {
             return !(a == b);
         }
+
+        public static RectInt operator *(RectInt a, int b)
+        {
+            return new RectInt(a.X * b, a.Y * b, a.Width * b, a.Height * b);
+        }
     }
 }
