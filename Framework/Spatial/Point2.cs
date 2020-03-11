@@ -90,10 +90,14 @@ namespace Foster.Framework
         public static Point2 operator -(Point2 a, Point2 b) => new Point2(a.X - b.X, a.Y - b.Y);
 
         public static Rect operator +(Point2 a, Rect b) => new Rect(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
-        public static Rect operator +(Rect b, Point2 a) => new Rect(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
+        public static Rect operator +(Rect a, Point2 b) => new Rect(b.X + a.X, b.Y + a.Y, a.Width, a.Height);
+
+        public static Rect operator -(Rect a, Point2 b) => new Rect(a.X - b.X, a.Y - b.Y, a.Width, a.Height);
 
         public static RectInt operator +(Point2 a, RectInt b) => new RectInt(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
-        public static RectInt operator +(RectInt b, Point2 a) => new RectInt(a.X + b.X, a.Y + b.Y, b.Width, b.Height);
+        public static RectInt operator +(RectInt a, Point2 b) => new RectInt(b.X + a.X, b.Y + a.Y, a.Width, a.Height);
+
+        public static RectInt operator -(RectInt a, Point2 b) => new RectInt(a.X - b.X, a.Y - b.Y, a.Width, a.Height);
 
         public static bool operator ==(Point2 a, Point2 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Point2 a, Point2 b) => a.X != b.X || a.Y != b.Y;
