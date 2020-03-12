@@ -168,6 +168,32 @@ namespace Foster.Framework
             return new RectInt((int)(X * scale), (int)(Y * scale), (int)(Width * scale), (int)(Height * scale));
         }
 
+        public RectInt MultiplyX(int scale)
+        {
+            var r = new RectInt(X * scale, Y, Width * scale, Height);
+
+            if (r.Width < 0)
+            {
+                r.X += r.Width;
+                r.Width *= -1;
+            }
+
+            return r;
+        }
+
+        public RectInt MultiplyY(int scale)
+        {
+            var r = new RectInt(X, Y * scale, Width, Height * scale);
+
+            if (r.Height < 0)
+            {
+                r.Y += r.Height;
+                r.Height *= -1;
+            }
+
+            return r;
+        }
+
         public RectInt OverlapRect(in RectInt against)
         {
             if (Overlaps(against))
