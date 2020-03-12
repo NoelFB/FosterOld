@@ -37,6 +37,22 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Checks if the Vector2 is in the Circle
+        /// </summary>
+        public bool Contains(in Vector2 point)
+        {
+            return (Position - point).LengthSquared() < (Radius * Radius);
+        }
+
+        /// <summary>
+        /// Checks if the Point2 is in the Circle
+        /// </summary>
+        public bool Contains(in Point2 point)
+        {
+            return (Position - point).LengthSquared() < (Radius * Radius);
+        }
+
+        /// <summary>
         /// Checks if the Circle overlaps with another Circle, and returns their pushout vector
         /// </summary>
         public bool Overlaps(in Circle other, out Vector2 pushout)
