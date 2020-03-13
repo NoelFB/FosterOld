@@ -156,13 +156,16 @@ namespace Foster.GLFW
 
         private void OnKeyCallback(IntPtr window, int key, int scancode, int action, int mods)
         {
-            if (action == 1)
+            if (key >= 0 && key < Keyboard.MaxKeys)
             {
-                OnKeyDown((Keys)key);
-            }
-            else if (action == 0)
-            {
-                OnKeyUp((Keys)key);
+                if (action == 1)
+                {
+                    OnKeyDown((Keys)key);
+                }
+                else if (action == 0)
+                {
+                    OnKeyUp((Keys)key);
+                }
             }
         }
 
