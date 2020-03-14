@@ -543,9 +543,9 @@ namespace Foster.Framework
         {
             unchecked
             {
-                int hash = 17;
+                var hash = 5381;
                 for (int i = 0; i < value.Length; i++)
-                    hash = hash * 32 + (int)value[i];
+                    hash = ((hash << 5) + hash) + value[i];
                 return hash;
             }
         }
