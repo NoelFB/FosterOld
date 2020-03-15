@@ -77,7 +77,6 @@ namespace Foster.Framework
         private struct Batch
         {
             public int Layer;
-            public bool NextHasSameState;
             public Material? Material;
             public BlendMode BlendMode;
             public Matrix3x2 Matrix;
@@ -89,7 +88,6 @@ namespace Foster.Framework
             public Batch(Material? material, BlendMode blend, Texture? texture, Matrix3x2 matrix, uint offset, uint elements)
             {
                 Layer = 0;
-                NextHasSameState = false;
                 Material = material;
                 BlendMode = blend;
                 Texture = texture;
@@ -97,11 +95,6 @@ namespace Foster.Framework
                 Scissor = null;
                 Offset = offset;
                 Elements = elements;
-            }
-
-            public bool CanMerge(ref Batch batch)
-            {
-                return batch.Layer == Layer && batch.Material == Material && batch.BlendMode == BlendMode && batch.Matrix == Matrix && batch.Texture == Texture && batch.Scissor == Scissor;
             }
         }
 
@@ -166,46 +159,40 @@ namespace Foster.Framework
                 }
 
                 // render batches
-                var shareState = false;
                 for (int i = 0; i < batches.Count; i++)
                 {
                     // remaining elements in the current batch
                     if (currentBatchInsert == i && currentBatch.Elements > 0)
-                        RenderBatch(currentBatch, ref shareState, ref matrix);
+                        RenderBatch(currentBatch, matrix);
 
                     // render the batch
-                    RenderBatch(batches[i], ref shareState, ref matrix);
+                    RenderBatch(batches[i], matrix);
                 }
 
                 // remaining elements in the current batch
                 if (currentBatchInsert == batches.Count && currentBatch.Elements > 0)
-                    RenderBatch(currentBatch, ref shareState, ref matrix);
+                    RenderBatch(currentBatch, matrix);
             }
         }
 
-        private void RenderBatch(Batch batch, ref bool shareState, ref Matrix4x4 matrix)
+        private void RenderBatch(in Batch batch, in Matrix4x4 matrix)
         {
-            if (!shareState)
-            {
-                pass.Scissor = batch.Scissor;
-                pass.BlendMode = batch.BlendMode;
+            pass.Scissor = batch.Scissor;
+            pass.BlendMode = batch.BlendMode;
 
-                // Render the Mesh
-                // Note we apply the texture and matrix based on the current batch
-                // If the user set these on the Material themselves, they will be overwritten here
+            // Render the Mesh
+            // Note we apply the texture and matrix based on the current batch
+            // If the user set these on the Material themselves, they will be overwritten here
 
-                pass.Material = batch.Material ?? DefaultMaterial;
-                pass.Material[TextureUniformName]?.SetTexture(batch.Texture);
-                pass.Material[MatrixUniformName]?.SetMatrix4x4(new Matrix4x4(batch.Matrix) * matrix);
-            }
+            pass.Material = batch.Material ?? DefaultMaterial;
+            pass.Material[TextureUniformName]?.SetTexture(batch.Texture);
+            pass.Material[MatrixUniformName]?.SetMatrix4x4(new Matrix4x4(batch.Matrix) * matrix);
 
             pass.MeshIndexStart = batch.Offset;
             pass.MeshIndexCount = batch.Elements;
             pass.MeshInstanceCount = 0;
 
             Graphics.Render(ref pass);
-
-            shareState = batch.NextHasSameState;
         }
 
         #endregion
@@ -314,14 +301,6 @@ namespace Foster.Framework
             var insert = 0;
             while (insert < batches.Count && batches[insert].Layer >= layer)
                 insert++;
-
-            // can the previous one merge with us?
-            if (insert > 0 && batches[insert - 1].CanMerge(ref currentBatch))
-            {
-                var prev = batches[insert - 1];
-                prev.NextHasSameState = true;
-                batches[insert - 1] = prev;
-            }
 
             currentBatch.Layer = layer;
             currentBatchInsert = insert;
