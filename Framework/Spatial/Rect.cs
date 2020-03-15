@@ -47,7 +47,7 @@ namespace Foster.Framework
             set => Height = value - Y;
         }
 
-        public Vector2 A
+        public Vector2 TopLeft
         {
             get => new Vector2(MinX, MinY);
             set
@@ -57,7 +57,7 @@ namespace Foster.Framework
             }
         }
 
-        public Vector2 B
+        public Vector2 TopRight
         {
             get => new Vector2(MaxX, MinY);
             set
@@ -67,7 +67,7 @@ namespace Foster.Framework
             }
         }
 
-        public Vector2 C
+        public Vector2 BottomRight
         {
             get => new Vector2(MaxX, MaxY);
             set
@@ -77,7 +77,7 @@ namespace Foster.Framework
             }
         }
 
-        public Vector2 D
+        public Vector2 BottomLeft
         {
             get => new Vector2(MinX, MaxY);
             set
@@ -206,10 +206,10 @@ namespace Foster.Framework
         {
             return index switch
             {
-                0 => A,
-                1 => B,
-                2 => C,
-                3 => D,
+                0 => TopLeft,
+                1 => TopRight,
+                2 => BottomRight,
+                3 => BottomLeft,
                 _ => throw new IndexOutOfRangeException(),
             };
         }

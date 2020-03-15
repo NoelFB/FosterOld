@@ -66,7 +66,7 @@ namespace Foster.Framework
             set => Height = value - Y;
         }
 
-        public Point2 A
+        public Point2 TopLeft
         {
             get => new Point2(MinX, MinY);
             set
@@ -76,7 +76,7 @@ namespace Foster.Framework
             }
         }
 
-        public Point2 B
+        public Point2 TopRight
         {
             get => new Point2(MaxX, MinY);
             set
@@ -86,7 +86,7 @@ namespace Foster.Framework
             }
         }
 
-        public Point2 C
+        public Point2 BottomRight
         {
             get => new Point2(MaxX, MaxY);
             set
@@ -96,7 +96,7 @@ namespace Foster.Framework
             }
         }
 
-        public Point2 D
+        public Point2 BottomLeft
         {
             get => new Point2(MinX, MaxY);
             set

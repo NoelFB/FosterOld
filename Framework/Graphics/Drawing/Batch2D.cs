@@ -594,22 +594,22 @@ namespace Foster.Framework
             else
             {
                 // get corners
-                var r0_tl = rect.A;
+                var r0_tl = rect.TopLeft;
                 var r0_tr = r0_tl + new Vector2(r0, 0);
                 var r0_br = r0_tl + new Vector2(r0, r0);
                 var r0_bl = r0_tl + new Vector2(0, r0);
 
-                var r1_tl = rect.B + new Vector2(-r1, 0);
+                var r1_tl = rect.TopRight + new Vector2(-r1, 0);
                 var r1_tr = r1_tl + new Vector2(r1, 0);
                 var r1_br = r1_tl + new Vector2(r1, r1);
                 var r1_bl = r1_tl + new Vector2(0, r1);
 
-                var r2_tl = rect.C + new Vector2(-r2, -r2);
+                var r2_tl = rect.BottomRight + new Vector2(-r2, -r2);
                 var r2_tr = r2_tl + new Vector2(r2, 0);
                 var r2_bl = r2_tl + new Vector2(0, r2);
                 var r2_br = r2_tl + new Vector2(r2, r2);
 
-                var r3_tl = rect.D + new Vector2(0, -r3);
+                var r3_tl = rect.BottomLeft + new Vector2(0, -r3);
                 var r3_tr = r3_tl + new Vector2(r3, 0);
                 var r3_bl = r3_tl + new Vector2(0, r3);
                 var r3_br = r3_tl + new Vector2(r3, r3);
