@@ -255,5 +255,24 @@ namespace Foster.Framework
 
             return r;
         }
+
+        public static RectInt operator /(RectInt a, int b)
+        {
+            var r = new RectInt(a.X / b, a.Y / b, a.Width / b, a.Height / b);
+
+            if (r.Width < 0)
+            {
+                r.X += r.Width;
+                r.Width *= -1;
+            }
+
+            if (r.Height < 0)
+            {
+                r.Y += r.Height;
+                r.Height *= -1;
+            }
+
+            return r;
+        }
     }
 }
