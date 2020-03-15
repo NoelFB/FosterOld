@@ -108,6 +108,7 @@ namespace Foster.Framework
             public int Width;
             public int Height;
             public Point2? Pivot;
+            public RectInt? NineSlice;
             public string UserDataText { get; set; }
             public Color UserDataColor { get; set; }
         }
@@ -422,10 +423,11 @@ namespace Foster.Framework
                             // 9 slice (ignored atm)
                             if (Calc.IsBitSet(flags, 0))
                             {
-                                LONG();
-                                LONG();
-                                DWORD();
-                                DWORD();
+                                slice.NineSlice = new RectInt(
+                                    (int)LONG(),
+                                    (int)LONG(),
+                                    (int)DWORD(),
+                                    (int)DWORD());
                             }
 
                             // pivot point
