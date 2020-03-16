@@ -237,42 +237,41 @@ namespace Foster.Framework
             return !(a == b);
         }
 
-        public static RectInt operator *(RectInt a, int b)
+        public static RectInt operator *(RectInt rect, int scaler)
         {
-            var r = new RectInt(a.X * b, a.Y * b, a.Width * b, a.Height * b);
-
-            if (r.Width < 0)
-            {
-                r.X += r.Width;
-                r.Width *= -1;
-            }
-
-            if (r.Height < 0)
-            {
-                r.Y += r.Height;
-                r.Height *= -1;
-            }
-
-            return r;
+            return new RectInt(rect.X * scaler, rect.Y * scaler, rect.Width * scaler, rect.Height * scaler).Validate();
         }
 
-        public static RectInt operator /(RectInt a, int b)
+        public static RectInt operator *(RectInt rect, Point2 scaler)
         {
-            var r = new RectInt(a.X / b, a.Y / b, a.Width / b, a.Height / b);
+            return new RectInt(rect.X * scaler.X, rect.Y * scaler.Y, rect.Width * scaler.X, rect.Height * scaler.Y).Validate();
+        }
 
-            if (r.Width < 0)
+        public static RectInt operator /(RectInt rect, int scaler)
+        {
+            return new RectInt(rect.X / scaler, rect.Y / scaler, rect.Width / scaler, rect.Height / scaler).Validate();
+        }
+
+        public static RectInt operator /(RectInt rect, Point2 scaler)
+        {
+            return new RectInt(rect.X / scaler.X, rect.Y / scaler.Y, rect.Width / scaler.X, rect.Height / scaler.Y).Validate();
+        }
+
+        private RectInt Validate()
+        {
+            if (Width < 0)
             {
-                r.X += r.Width;
-                r.Width *= -1;
+                X += Width;
+                Width *= -1;
             }
 
-            if (r.Height < 0)
+            if (Height < 0)
             {
-                r.Y += r.Height;
-                r.Height *= -1;
+                Y += Height;
+                Height *= -1;
             }
 
-            return r;
+            return this;
         }
     }
 }
