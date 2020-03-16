@@ -11,6 +11,11 @@ namespace Foster.Framework
         public static readonly Point2 Zero = new Point2(0, 0);
         public static readonly Point2 UnitX = new Point2(1, 0);
         public static readonly Point2 UnitY = new Point2(0, 1);
+        public static readonly Point2 One = new Point2(1, 1);
+        public static readonly Point2 Right = new Point2(1, 0);
+        public static readonly Point2 Left = new Point2(-1, 0);
+        public static readonly Point2 Up = new Point2(0, -1);
+        public static readonly Point2 Down = new Point2(0, 1);
 
         /// <summary>
         /// The X component of the Point
