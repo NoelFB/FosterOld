@@ -14,8 +14,8 @@ namespace Foster.Json
 
         public JsonArray(IList<string> list) : base(JsonType.Array, new List<JsonValue>())
         {
-            foreach (var value in list)
-                Value.Add(value);
+            for (int i = 0; i < list.Count; i ++)
+                Value.Add(list[i]);
         }
 
         public override JsonValue this[int index]
@@ -24,12 +24,12 @@ namespace Foster.Json
             set => Value[index] = value;
         }
 
-        public void Add(JsonValue value)
+        public override void Add(JsonValue value)
         {
             Value.Add(value);
         }
 
-        public void Remove(JsonValue value)
+        public override void Remove(JsonValue value)
         {
             Value.Remove(value);
         }
@@ -40,7 +40,7 @@ namespace Foster.Json
         }
 
         public override int Count => Value.Count;
-        public override IEnumerable<JsonValue> Array => Value;
+        public override IEnumerable<JsonValue> Values => Value;
 
         public override int GetHashedValue()
         {

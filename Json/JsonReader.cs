@@ -27,11 +27,9 @@ namespace Foster.Json
         /// Reads an Json Object from the Stream and returns it
         /// </summary>
         /// <param name="into">An optional object to read into. If null, it creates a new JsonObject</param>
-        public JsonObject ReadObject(JsonObject? into = null)
+        public JsonValue ReadObject()
         {
-            if (into == null)
-                into = new JsonObject();
-
+            var result = new JsonObject();
             var opened = false;
 
             while (Read() && Token != JsonToken.ObjectEnd)
@@ -49,16 +47,16 @@ namespace Foster.Json
                 if (string.IsNullOrEmpty(key))
                     throw new Exception($"Invalid Object Key");
 
-                into[key] = ReadValue();
+                result[key] = ReadValue();
             }
 
-            return into;
+            return result;
         }
 
         /// <summary>
         /// Tries to read a JsonObject from the Stream
         /// </summary>
-        public bool TryReadObject([MaybeNullWhen(false)] out JsonObject obj)
+        public bool TryReadObject([MaybeNullWhen(false)] out JsonValue obj)
         {
             try 
             { 
@@ -79,7 +77,7 @@ namespace Foster.Json
         /// <summary>
         /// Reads a JsonArray from the Stream
         /// </summary>
-        public JsonArray ReadArray()
+        public JsonValue ReadArray()
         {
             var arr = new JsonArray();
             while (Read() && Token != JsonToken.ArrayEnd)

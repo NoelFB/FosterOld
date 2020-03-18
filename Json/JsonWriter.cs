@@ -40,10 +40,10 @@ namespace Foster.Json
                 switch (value.Type)
                 {
                     case JsonType.Object:
-                        if (value.Object != null)
+                        if (value.IsObject)
                         {
                             ObjectBegin();
-                            foreach (var pair in value.Object)
+                            foreach (var pair in value.Pairs)
                             {
                                 Key(pair.Key);
                                 Json(pair.Value);
@@ -54,10 +54,10 @@ namespace Foster.Json
                         break;
 
                     case JsonType.Array:
-                        if (value.Array != null)
+                        if (value.IsArray)
                         {
                             ArrayBegin();
-                            foreach (var item in value.Array)
+                            foreach (var item in value.Values)
                                 Json(item);
                             ArrayEnd();
                             return;
