@@ -72,6 +72,19 @@ namespace Foster.GLFW
             }
         }
 
+        public override string? GetClipboardString()
+        {
+            if (App.System.Windows[0].Implementation is GLFW_Window window)
+                return GLFW.GetClipboardString(window.pointer);
+            return null;
+        }
+
+        public override void SetClipboardString(string value)
+        {
+            if (App.System.Windows[0].Implementation is GLFW_Window window)
+                GLFW.SetClipboardString(window.pointer, value);
+        }
+
         private IntPtr GetCursor(Cursors fosterCursor)
         {
             if (!cursors.TryGetValue(fosterCursor, out var ptr))

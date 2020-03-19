@@ -48,6 +48,18 @@ namespace Foster.SDL2
             SDL.SDL_SetCursor(sdlCursors[index]);
         }
 
+        public override string? GetClipboardString()
+        {
+            if (SDL.SDL_HasClipboardText() == SDL.SDL_bool.SDL_TRUE)
+                return SDL.SDL_GetClipboardText();
+            return null;
+        }
+
+        public override void SetClipboardString(string value)
+        {
+            SDL.SDL_SetClipboardText(value);
+        }
+
         public void ProcessEvent(SDL.SDL_Event e)
         {
             if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)

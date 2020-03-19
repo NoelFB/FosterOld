@@ -80,6 +80,16 @@ namespace Foster.Framework
         /// </summary>
         public abstract void SetMouseCursor(Cursors cursors);
 
+        /// <summary>
+        /// Gets the Clipboard String, if it is a String
+        /// </summary>
+        public abstract string? GetClipboardString();
+
+        /// <summary>
+        /// Sets the Clipboard to the given String
+        /// </summary>
+        public abstract void SetClipboardString(string value);
+
         protected void OnText(char value)
         {
             nextState.Keyboard.Text.Append(value);
