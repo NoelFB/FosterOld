@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
 namespace Foster.Framework
@@ -6,7 +9,7 @@ namespace Foster.Framework
     /// <summary>
     /// A 2D Integer Point
     /// </summary>
-    public struct Point2
+    public struct Point2 : IEquatable<Point2>
     {
         public static readonly Point2 Zero = new Point2(0, 0);
         public static readonly Point2 UnitX = new Point2(1, 0);
@@ -60,8 +63,9 @@ namespace Foster.Framework
             return new Vector2(X, Y).Normalized();
         }
 
-
         public override bool Equals(object? obj) => (obj is Point2 other) && (other == this);
+
+        public bool Equals(Point2 other) => (X == other.X && Y == other.Y);
 
         public override int GetHashCode()
         {
