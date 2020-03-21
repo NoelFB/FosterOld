@@ -132,8 +132,10 @@ namespace Foster.OpenGL
             // upload uniform values
             int textureSlot = 0;
 
-            foreach (var parameter in material.Parameters.Values)
+            for (int p = 0; p < material.Parameters.Count; p ++)
             {
+                var parameter = material.Parameters[p];
+
                 if (!(parameter.Uniform is GL_Uniform uniform))
                     continue;
 

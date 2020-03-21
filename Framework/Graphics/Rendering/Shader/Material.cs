@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
@@ -347,19 +348,37 @@ namespace Foster.Framework
         public readonly Shader Shader;
 
         /// <summary>
-        /// The list of all Parameters within this Material, based on its shader
+        /// The list of all Parameters within this Material
         /// </summary>
-        public readonly ReadOnlyDictionary<string, Parameter> Parameters;
+        public readonly ReadOnlyCollection<Parameter> Parameters;
+
+        private readonly Dictionary<string, Parameter> parametersByName = new Dictionary<string, Parameter>();
 
         public Material(Shader shader)
         {
             Shader = shader;
 
-            var parameters = new Dictionary<string, Parameter>();
-            foreach (var uniform in shader.Uniforms.Values)
-                parameters.Add(uniform.Name, new Parameter(uniform));
+            var parameters = new List<Parameter>();
 
-            Parameters = new ReadOnlyDictionary<string, Parameter>(parameters);
+            foreach (var uniform in shader.Uniforms.Values)
+            {
+                var parameter = new Parameter(uniform);
+                parametersByName[uniform.Name] = parameter;
+                parameters.Add(parameter);
+            }
+
+            Parameters = new ReadOnlyCollection<Parameter>(parameters);
+        }
+
+        /// <summary>
+        /// Gets the Parameter with the given name and returns true if found
+        /// </summary>
+        public bool TryGetParameter(string name, [MaybeNullWhen(false)] out Parameter parameter)
+        {
+            if (parametersByName.TryGetValue(name, out parameter!))
+                return true;
+
+            return false;
         }
 
         /// <summary>
@@ -369,8 +388,9 @@ namespace Foster.Framework
         {
             get
             {
-                if (Parameters.TryGetValue(name, out var parameter))
+                if (parametersByName.TryGetValue(name, out var parameter))
                     return parameter;
+
                 return null;
             }
         }
