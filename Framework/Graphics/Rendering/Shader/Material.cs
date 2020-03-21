@@ -43,7 +43,7 @@ namespace Foster.Framework
             /// <summary>
             /// The Value of the Parameter
             /// </summary>
-            public Array Value { get; private set; }
+            public object Value { get; private set; }
 
             public Parameter(ShaderUniform uniform)
             {
@@ -78,7 +78,9 @@ namespace Foster.Framework
             public void SetTexture(int index, Texture? value)
             {
                 AssertParameters(UniformType.Sampler, index);
-                Value.SetValue(value, index);
+
+                if (Value is Texture?[] textures)
+                    textures[index] = value;
             }
 
             public Texture? GetTexture(int index = 0)
@@ -95,7 +97,9 @@ namespace Foster.Framework
             public void SetInt(int index, int value)
             {
                 AssertParameters(UniformType.Int, index);
-                Value.SetValue(value, index);
+
+                if (Value is int[] values)
+                    values[index] = value;
             }
 
             public int GetInt(int index = 0)
@@ -112,7 +116,9 @@ namespace Foster.Framework
             public void SetFloat(int index, float value)
             {
                 AssertParameters(UniformType.Float, index);
-                Value.SetValue(value, index);
+
+                if (Value is float[] values)
+                    values[index] = value;
             }
 
             public float GetFloat(int index = 0)
@@ -129,9 +135,13 @@ namespace Foster.Framework
             public void SetVector2(int index, in Vector2 value)
             {
                 AssertParameters(UniformType.Float2, index);
+
                 var offset = index * 2;
-                Value.SetValue(value.X, offset + 0);
-                Value.SetValue(value.Y, offset + 1);
+                if (Value is float[] values)
+                {
+                    values[offset + 0] = value.X;
+                    values[offset + 1] = value.Y;
+                }
             }
 
             public Vector2 GetVector2(int index = 0)
@@ -152,10 +162,14 @@ namespace Foster.Framework
             public void SetVector3(int index, in Vector3 value)
             {
                 AssertParameters(UniformType.Float3, index);
+
                 var offset = index * 3;
-                Value.SetValue(value.X, offset + 0);
-                Value.SetValue(value.Y, offset + 1);
-                Value.SetValue(value.Z, offset + 2);
+                if (Value is float[] values)
+                {
+                    values[offset + 0] = value.X;
+                    values[offset + 1] = value.Y;
+                    values[offset + 2] = value.Z;
+                }
             }
 
             public Vector3 GetVector3(int index = 0)
@@ -176,11 +190,15 @@ namespace Foster.Framework
             public void SetVector4(int index, in Vector4 value)
             {
                 AssertParameters(UniformType.Float4, index);
+
                 var offset = index * 4;
-                Value.SetValue(value.X, offset + 0);
-                Value.SetValue(value.Y, offset + 1);
-                Value.SetValue(value.Z, offset + 2);
-                Value.SetValue(value.W, offset + 3);
+                if (Value is float[] values)
+                {
+                    values[offset + 0] = value.X;
+                    values[offset + 1] = value.Y;
+                    values[offset + 2] = value.Z;
+                    values[offset + 3] = value.W;
+                }
             }
 
             public Vector4 GetVector4(int index = 0)
@@ -201,13 +219,17 @@ namespace Foster.Framework
             public void SetMatrix3x2(int index, in Matrix3x2 value)
             {
                 AssertParameters(UniformType.Matrix3x2, index);
+
                 var offset = index * 6;
-                Value.SetValue(value.M11, offset + 0);
-                Value.SetValue(value.M12, offset + 1);
-                Value.SetValue(value.M21, offset + 2);
-                Value.SetValue(value.M22, offset + 3);
-                Value.SetValue(value.M31, offset + 4);
-                Value.SetValue(value.M32, offset + 5);
+                if (Value is float[] values)
+                {
+                    values[offset + 0] = value.M11;
+                    values[offset + 1] = value.M12;
+                    values[offset + 2] = value.M21;
+                    values[offset + 3] = value.M22;
+                    values[offset + 4] = value.M31;
+                    values[offset + 5] = value.M32;
+                }
             }
 
             public Matrix3x2 GetMatrix3x2(int index = 0)
@@ -235,23 +257,28 @@ namespace Foster.Framework
             public void SetMatrix4x4(int index, in Matrix4x4 value)
             {
                 AssertParameters(UniformType.Matrix4x4, index);
+
                 var offset = index * 16;
-                Value.SetValue(value.M11, offset + 00);
-                Value.SetValue(value.M12, offset + 01);
-                Value.SetValue(value.M13, offset + 02);
-                Value.SetValue(value.M14, offset + 03);
-                Value.SetValue(value.M21, offset + 04);
-                Value.SetValue(value.M22, offset + 05);
-                Value.SetValue(value.M23, offset + 06);
-                Value.SetValue(value.M24, offset + 07);
-                Value.SetValue(value.M31, offset + 08);
-                Value.SetValue(value.M32, offset + 09);
-                Value.SetValue(value.M33, offset + 10);
-                Value.SetValue(value.M34, offset + 11);
-                Value.SetValue(value.M41, offset + 12);
-                Value.SetValue(value.M42, offset + 13);
-                Value.SetValue(value.M43, offset + 14);
-                Value.SetValue(value.M44, offset + 15);
+                if (Value is float[] values)
+                {
+                    values[offset + 00] = value.M11;
+                    values[offset + 01] = value.M12;
+                    values[offset + 02] = value.M13;
+                    values[offset + 03] = value.M14;
+                    values[offset + 04] = value.M21;
+                    values[offset + 05] = value.M22;
+                    values[offset + 06] = value.M23;
+                    values[offset + 07] = value.M24;
+                    values[offset + 08] = value.M31;
+                    values[offset + 09] = value.M32;
+                    values[offset + 10] = value.M33;
+                    values[offset + 11] = value.M34;
+                    values[offset + 12] = value.M41;
+                    values[offset + 13] = value.M42;
+                    values[offset + 14] = value.M43;
+                    values[offset + 15] = value.M44;
+                }
+
             }
 
             public Matrix4x4 GetMatrix4x4(int index = 0)
@@ -291,10 +318,13 @@ namespace Foster.Framework
                 AssertParameters(UniformType.Float4, index);
                 var vec = value.ToVector4();
                 var offset = index * 4;
-                Value.SetValue(vec.X, offset + 0);
-                Value.SetValue(vec.Y, offset + 1);
-                Value.SetValue(vec.Z, offset + 2);
-                Value.SetValue(vec.W, offset + 3);
+                if (Value is float[] values)
+                {
+                    values[offset + 0] = vec.X;
+                    values[offset + 1] = vec.Y;
+                    values[offset + 2] = vec.Z;
+                    values[offset + 3] = vec.W;
+                }
             }
 
             public Color GetColor(int index = 0)

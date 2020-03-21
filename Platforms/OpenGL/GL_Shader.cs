@@ -144,7 +144,8 @@ namespace Foster.OpenGL
 
                     for (int i = 0; i < uniform.Length; i++)
                     {
-                        var texture = (parameter.Value.GetValue(i) as Texture)?.Implementation as GL_Texture;
+                        var textures = (parameter.Value as Texture?[]);
+                        var texture = textures?[i]?.Implementation as GL_Texture;
                         var id = texture?.ID ?? 0;
 
                         GL.ActiveTexture((uint)(GLEnum.TEXTURE0 + textureSlot));
