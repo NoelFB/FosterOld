@@ -262,8 +262,8 @@ namespace Foster.Framework
 
         internal void Update()
         {
-            foreach (var node in nodes)
-                node.Update();
+            for (int i = 0; i < nodes.Count; i ++)
+                nodes[i].Update();
         }
 
     }
