@@ -37,14 +37,44 @@ namespace Foster.Framework
         public bool Pressed(Keys key) => pressed[(int)key];
 
         /// <summary>
+        /// Checks if any of the given keys were pressed
+        /// </summary>
+        public bool Pressed(Keys key1, Keys key2) => pressed[(int)key1] || pressed[(int)key2];
+
+        /// <summary>
+        /// Checks if any of the given keys were pressed
+        /// </summary>
+        public bool Pressed(Keys key1, Keys key2, Keys key3) => pressed[(int)key1] || pressed[(int)key2] || pressed[(int)key3];
+
+        /// <summary>
         /// Checks if the given key is held
         /// </summary>
         public bool Down(Keys key) => down[(int)key];
 
         /// <summary>
+        /// Checks if any of the given keys were down
+        /// </summary>
+        public bool Down(Keys key1, Keys key2) => down[(int)key1] || down[(int)key2];
+
+        /// <summary>
+        /// Checks if any of the given keys were down
+        /// </summary>
+        public bool Down(Keys key1, Keys key2, Keys key3) => down[(int)key1] || down[(int)key2] || down[(int)key3];
+
+        /// <summary>
         /// Checks if the given key was released
         /// </summary>
         public bool Released(Keys key) => released[(int)key];
+
+        /// <summary>
+        /// Checks if any of the given keys were released
+        /// </summary>
+        public bool Released(Keys key1, Keys key2) => released[(int)key1] || released[(int)key2];
+
+        /// <summary>
+        /// Checks if any of the given keys were released
+        /// </summary>
+        public bool Released(Keys key1, Keys key2, Keys key3) => released[(int)key1] || released[(int)key2] || released[(int)key3];
 
         /// <summary>
         /// Checks if any of the given keys were pressed
