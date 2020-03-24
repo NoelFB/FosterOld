@@ -99,7 +99,25 @@ namespace Foster.Framework
             }
         }
 
-        public Vector2 Center => new Vector2(X + Width / 2, Y + Height / 2);
+        public Vector2 Center
+        {
+            get => new Vector2(X + Width / 2, Y + Height / 2);
+            set
+            {
+                X = value.X - Width / 2f;
+                Y = value.Y - Height / 2f;
+            }
+        }
+
+        public Vector2 Size
+        {
+            get => new Vector2(Width, Height);
+            set
+            {
+                Width = value.X;
+                Height = value.Y;
+            }
+        }
 
         public Rect(float x, float y, float w, float h)
         {

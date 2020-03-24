@@ -24,6 +24,16 @@ namespace Foster.Framework
             }
         }
 
+        public Point2 Center
+        {
+            get => new Point2(X + Width / 2, Y + Height / 2);
+            set
+            {
+                X = value.X - Width / 2;
+                Y = value.Y - Height / 2;
+            }
+        }
+
         public Point2 Size
         {
             get => new Point2(Width, Height);
@@ -105,8 +115,6 @@ namespace Foster.Framework
                 MaxY = value.Y;
             }
         }
-
-        public Point2 Center => new Point2(X + Width / 2, Y + Height / 2);
 
         public int Area => Width * Height;
 
@@ -257,6 +265,7 @@ namespace Foster.Framework
             return new RectInt(rect.X / scaler.X, rect.Y / scaler.Y, rect.Width / scaler.X, rect.Height / scaler.Y).Validate();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private RectInt Validate()
         {
             if (Width < 0)
