@@ -20,13 +20,17 @@ namespace Foster.Framework
         public bool Down(MouseButtons button) => down[(int)button];
         public bool Released(MouseButtons button) => released[(int)button];
 
-        public bool LeftPressed => Pressed(MouseButtons.Left);
-        public bool LeftDown => Down(MouseButtons.Left);
-        public bool LeftReleased => Released(MouseButtons.Left);
+        public bool LeftPressed => pressed[(int)MouseButtons.Left];
+        public bool LeftDown => down[(int)MouseButtons.Left];
+        public bool LeftReleased => released[(int)MouseButtons.Left];
 
-        public bool RightPressed => Pressed(MouseButtons.Right);
-        public bool RightDown => Down(MouseButtons.Right);
-        public bool RightReleased => Released(MouseButtons.Right);
+        public bool RightPressed => pressed[(int)MouseButtons.Right];
+        public bool RightDown => down[(int)MouseButtons.Right];
+        public bool RightReleased => released[(int)MouseButtons.Right];
+
+        public bool MiddlePressed => pressed[(int)MouseButtons.Middle];
+        public bool MiddleDown => down[(int)MouseButtons.Middle];
+        public bool MiddleReleased => released[(int)MouseButtons.Middle];
 
         public Vector2 Wheel => wheelValue;
 
