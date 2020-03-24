@@ -134,7 +134,7 @@
 
         RightShift = 344,
         RightControl = 345,
-        RightALt = 346,
+        RightAlt = 346,
         RightSuper = 347,
 
         Menu = 348
