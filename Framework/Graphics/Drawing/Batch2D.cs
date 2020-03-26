@@ -949,18 +949,22 @@ namespace Foster.Framework
 
             MatrixStack = Transform2D.CreateMatrix(position, origin, scale, rotation) * MatrixStack;
 
-            // pos
-            float px0 = -frame.X, px1 = -frame.X + source.Width,
-                  py0 = -frame.Y, py1 = -frame.Y + source.Height;
+            var px0 = -frame.X;
+            var py0 = -frame.Y;
+            var px1 = -frame.X + source.Width;
+            var py1 = -frame.Y + source.Height;
 
-            // tex-coords
-            float tx0 = 0, tx1 = 0, ty0 = 0, ty1 = 0;
+            var tx0 = 0f;
+            var ty0 = 0f;
+            var tx1 = 0f;
+            var ty1 = 0f;
+
             if (tex != null)
             {
                 tx0 = source.MinX / tex.Width;
+                ty0 = source.MinY / tex.Height;
                 tx1 = source.MaxX / tex.Width;
-                ty0 = source.MinY / tex.Width;
-                ty1 = source.MaxY / tex.Width;
+                ty1 = source.MaxY / tex.Height;
             }
 
             SetTexture(subtex.Texture);
