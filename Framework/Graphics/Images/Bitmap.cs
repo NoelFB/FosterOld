@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 
 namespace Foster.Framework
@@ -72,28 +73,66 @@ namespace Foster.Framework
         /// <summary>
         /// Sets the contents of the bitmap to the given data
         /// </summary>
-        public void SetPixels(Memory<Color> pixels)
+        public void SetPixels(Memory<Color> source)
         {
-            pixels.Span.CopyTo(Pixels);
+            source.Span.CopyTo(Pixels);
         }
 
         /// <summary>
         /// Sets the contents of the bitmap over the given Rect to the given data
         /// </summary>
-        public void SetPixels(RectInt desintation, Memory<Color> pixels)
+        public void SetPixels(RectInt destination, Memory<Color> source)
         {
             // TODO: perform bounds checking?
 
-            var src = pixels.Span;
+            var src = source.Span;
             var dst = new Span<Color>(Pixels);
 
-            for (int y = 0; y < desintation.Height; y++)
+            for (int y = 0; y < destination.Height; y++)
             {
-                var from = src.Slice(y * desintation.Width, desintation.Width);
-                var to = dst.Slice(desintation.X + (desintation.Y + y) * Width, desintation.Width);
+                var from = src.Slice(y * destination.Width, destination.Width);
+                var to = dst.Slice(destination.X + (destination.Y + y) * Width, destination.Width);
 
                 from.CopyTo(to);
             }
+        }
+
+        public void GetPixels(Memory<Color> destination)
+        {
+            Pixels.CopyTo(destination);
+        }
+
+        public void GetPixels(Memory<Color> dest, Point2 destPosition, Point2 destSize, RectInt sourceRect)
+        {
+            var src = new Span<Color>(Pixels);
+            var dst = dest.Span;
+
+            // can't be outside of the source image
+            if (sourceRect.MinX < 0) sourceRect.MinX = 0;
+            if (sourceRect.MinY < 0) sourceRect.MinY = 0;
+            if (sourceRect.MaxX > Width) sourceRect.MaxX = Width;
+            if (sourceRect.MaxY > Height) sourceRect.MaxY = Height;
+
+            // can't be larger than our destination
+            if (sourceRect.Width > destSize.X - destPosition.X)
+                sourceRect.Width = destSize.X - destPosition.X;
+            if (sourceRect.Height > destSize.Y - destPosition.Y)
+                sourceRect.Height = destSize.Y - destPosition.Y;
+
+            for (int y = 0; y < sourceRect.Height; y++)
+            {
+                var from = src.Slice(sourceRect.X + (sourceRect.Y + y) * Width, sourceRect.Width);
+                var to = dst.Slice(destPosition.X + (destPosition.Y + y) * destSize.X, sourceRect.Width);
+
+                from.CopyTo(to);
+            }
+        }
+
+        public Bitmap GetSubBitmap(RectInt source)
+        {
+            var bmp = new Bitmap(source.Width, source.Height);
+            GetPixels(bmp.Pixels, Point2.Zero, source.Size, source);
+            return bmp;
         }
 
         public void SavePng(string path)
