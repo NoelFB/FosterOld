@@ -392,8 +392,7 @@ namespace Foster.GLFW
         public static extern void SetClipboardString(IntPtr window, [MarshalAs(UnmanagedType.LPStr)] string str);
 
         [DllImport(DLL, EntryPoint = "glfwGetClipboardString", CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.LPStr)]
-        public static extern string? GetClipboardString(IntPtr window);
+        public static extern IntPtr GetClipboardString(IntPtr window);
 
         [DllImport(DLL, EntryPoint = "glfwGetTime", CallingConvention = CallingConvention.Cdecl)]
         public static extern double GetTime();

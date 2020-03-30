@@ -86,6 +86,11 @@ namespace Foster.GLFW
             GLFW.Terminate();
         }
 
+        protected override void BeforeUpdate()
+        {
+            input.BeforeUpdate();
+        }
+
         protected override void AfterUpdate()
         {
             Poll();

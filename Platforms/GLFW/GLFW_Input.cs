@@ -1,6 +1,7 @@
 ﻿using Foster.Framework;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Foster.GLFW
 {
@@ -11,6 +12,8 @@ namespace Foster.GLFW
         // and then the C++ GLFW stuff is calling garbage collected delegates...
         private readonly Dictionary<IntPtr, List<Delegate>> delegateTracker = new Dictionary<IntPtr, List<Delegate>>();
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
+
+        private string? clipboardText;
 
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState()
         {
@@ -74,13 +77,13 @@ namespace Foster.GLFW
 
         public override string? GetClipboardString()
         {
-            if (App.System.Windows[0].Implementation is GLFW_Window window)
-                return GLFW.GetClipboardString(window.pointer);
-            return null;
+            return clipboardText;
         }
 
         public override void SetClipboardString(string value)
         {
+            clipboardText = value;
+
             if (App.System.Windows[0].Implementation is GLFW_Window window)
                 GLFW.SetClipboardString(window.pointer, value);
         }
@@ -179,6 +182,18 @@ namespace Foster.GLFW
                 {
                     OnKeyUp((Keys)key);
                 }
+            }
+        }
+
+        internal void BeforeUpdate()
+        {
+            if (App.Window.Implementation is GLFW_Window window)
+            {
+                var ptr = GLFW.GetClipboardString(window.pointer);
+                if (ptr == IntPtr.Zero)
+                    clipboardText = null;
+                else
+                    clipboardText = Marshal.PtrToStringUTF8(ptr);
             }
         }
 
