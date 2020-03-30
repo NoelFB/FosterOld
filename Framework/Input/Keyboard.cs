@@ -141,6 +141,21 @@ namespace Foster.Framework
             return timestamp[(int)key];
         }
 
+        /// <summary>
+        /// Returns True if the Left or Right Control keys are held
+        /// </summary>
+        public bool Ctrl => Down(Keys.LeftControl, Keys.RightControl);
+
+        /// <summary>
+        /// Returns True if the Left or Right Alt keys are held
+        /// </summary>
+        public bool Alt => Down(Keys.LeftAlt, Keys.RightAlt);
+
+        /// <summary>
+        /// Returns True of the Left or Right Shift keys are held
+        /// </summary>
+        public bool Shift => Down(Keys.LeftShift, Keys.RightShift);
+
         internal void Copy(Keyboard other)
         {
             Array.Copy(other.pressed, 0, pressed, 0, MaxKeys);
