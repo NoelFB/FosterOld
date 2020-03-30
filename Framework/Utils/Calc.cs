@@ -130,6 +130,20 @@ namespace Foster.Framework
                 return Math.Min(from + amount, target);
         }
 
+        public static Vector2 Approach(Vector2 from, Vector2 target, float amount)
+        {
+            if (from == target)
+                return target;
+            else
+            {
+                var diff = target - from;
+                if (diff.Length() <= amount * amount)
+                    return target;
+                else
+                    return from + diff.Normalized() * amount;
+            }
+        }
+
         public static float Lerp(float a, float b, float percent)
         {
             return (a + (b - a) * percent);
