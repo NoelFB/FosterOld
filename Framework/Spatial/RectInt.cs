@@ -265,6 +265,11 @@ namespace Foster.Framework
             return new RectInt(rect.X / scaler.X, rect.Y / scaler.Y, rect.Width / scaler.X, rect.Height / scaler.Y).Validate();
         }
 
+        public static explicit operator RectInt(Rect rect)
+        {
+            return new RectInt((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private RectInt Validate()
         {
