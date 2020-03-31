@@ -55,7 +55,9 @@ namespace Foster.Framework
         public readonly Shader DefaultShader;
         public readonly Material DefaultMaterial;
         public readonly Mesh Mesh;
+
         public Matrix3x2 MatrixStack = Matrix3x2.Identity;
+        public RectInt? Scissor => currentBatch.Scissor;
 
         public string TextureUniformName = "u_texture";
         public string MatrixUniformName = "u_matrix";
