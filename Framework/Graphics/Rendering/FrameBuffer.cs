@@ -14,18 +14,19 @@ namespace Foster.Framework
         public abstract class Platform
         {
             protected internal readonly List<Texture> Attachments = new List<Texture>();
+            protected internal abstract void Resize(int width, int height);
             protected internal abstract void Dispose();
         }
 
         /// <summary>
         /// A reference to the internal platform implementation of the FrameBuffer
         /// </summary>
-        public readonly Platform Implementation;
+        public Platform Implementation { get; private set; }
 
         /// <summary>
         /// Texture Attachments
         /// </summary>
-        public readonly ReadOnlyCollection<Texture> Attachments;
+        public ReadOnlyCollection<Texture> Attachments { get; private set; }
 
         /// <summary>
         /// Render Target Width
@@ -37,8 +38,8 @@ namespace Foster.Framework
         /// </summary>
         public override int RenderHeight => height;
 
-        private readonly int width;
-        private readonly int height;
+        private int width;
+        private int height;
 
         public FrameBuffer(int width, int height)
             : this(App.Graphics, width, height)
@@ -62,8 +63,22 @@ namespace Foster.Framework
             Renderable = true;
         }
 
+        public void Resize(int width, int height)
+        {
+            if (this.width != width || this.height != height)
+            {
+                this.width = width;
+                this.height = height;
+
+                Implementation.Resize(width, height);
+            }
+        }
+
         public void Dispose()
         {
+            foreach (var texture in Attachments)
+                texture.Dispose();
+
             Implementation.Dispose();
         }
 

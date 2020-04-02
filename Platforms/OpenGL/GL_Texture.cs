@@ -67,6 +67,11 @@ namespace Foster.OpenGL
                 _ => throw new Exception("Invalid Texture Format"),
             };
 
+            Initialize();
+        }
+
+        private void Initialize()
+        {
             if (graphics.MainThreadId != Thread.CurrentThread.ManagedThreadId)
             {
                 lock (graphics.BackgroundContext)
@@ -96,6 +101,12 @@ namespace Foster.OpenGL
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_S, (int)(texture.WrapX == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
                 GL.TexParameteri(GLEnum.TEXTURE_2D, GLEnum.TEXTURE_WRAP_T, (int)(texture.WrapY == TextureWrap.Clamp ? GLEnum.CLAMP_TO_EDGE : GLEnum.REPEAT));
             }
+        }
+
+        protected override void Resize(int width, int height)
+        {
+            Dispose();
+            Initialize();
         }
 
         protected override void SetFilter(TextureFilter filter)

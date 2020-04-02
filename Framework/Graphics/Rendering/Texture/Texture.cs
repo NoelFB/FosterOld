@@ -18,6 +18,7 @@ namespace Foster.Framework
         public abstract class Platform
         {
             protected internal abstract void Init(Texture texture);
+            protected internal abstract void Resize(int width, int height);
             protected internal abstract void SetFilter(TextureFilter filter);
             protected internal abstract void SetWrap(TextureWrap x, TextureWrap y);
             protected internal abstract void SetData<T>(ReadOnlyMemory<T> buffer);
@@ -37,19 +38,19 @@ namespace Foster.Framework
         public readonly Platform Implementation;
 
         /// <summary>
+        /// The Texture Data Format
+        /// </summary>
+        public readonly TextureFormat Format;
+
+        /// <summary>
         /// Gets the Width of the Texture
         /// </summary>
-        public readonly int Width;
+        public int Width { get; private set; }
 
         /// <summary>
         /// Gets the Height of the Texture
         /// </summary>
-        public readonly int Height;
-
-        /// <summary>
-        /// The Texture Data Format
-        /// </summary>
-        public readonly TextureFormat Format;
+        public int Height { get; private set; }
 
         /// <summary>
         /// Whether the Texture is part of a FrameBuffer
@@ -137,6 +138,17 @@ namespace Foster.Framework
             : this(new Bitmap(stream))
         {
 
+        }
+
+        public void Resize(int width, int height)
+        {
+            if (Width != width || Height != height)
+            {
+                Width = width;
+                Height = height;
+
+                Implementation.Resize(width, height);
+            }
         }
 
         /// <summary>

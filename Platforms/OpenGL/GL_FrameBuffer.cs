@@ -29,6 +29,14 @@ namespace Foster.OpenGL
             Dispose();
         }
 
+        protected override void Resize(int width, int height)
+        {
+            Dispose();
+
+            for (int i = 0; i < Attachments.Count; i++)
+                Attachments[i].Resize(width, height);
+        }
+
         public void Bind(ISystemOpenGL.Context context)
         {
             // create new framebuffer if it's needed
