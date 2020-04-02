@@ -382,18 +382,9 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Gets the Parameter with the given name, or null if it doesn't exist
+        /// Gets the Parameter with the given name
         /// </summary>
-        public Parameter? this[string name]
-        {
-            get
-            {
-                if (parametersByName.TryGetValue(name, out var parameter))
-                    return parameter;
-
-                return null;
-            }
-        }
+        public Parameter this[string name] => parametersByName[name];
 
     }
 }
