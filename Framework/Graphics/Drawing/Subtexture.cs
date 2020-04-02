@@ -113,53 +113,21 @@ namespace Foster.Framework
 
         public (Rect Source, Rect Frame) GetClip(Rect clip)
         {
-            return GetClip(clip.X, clip.Y, clip.Width, clip.Height);
+            (Rect Source, Rect Frame) result;
+
+            result.Source = (clip + Source.Position + Frame.Position).OverlapRect(Source);
+
+            result.Frame.X = MathF.Min(0, Frame.X + clip.X);
+            result.Frame.Y = MathF.Min(0, Frame.Y + clip.Y);
+            result.Frame.Width = clip.Width;
+            result.Frame.Height = clip.Height;
+
+            return result;
         }
 
         public (Rect Source, Rect Frame) GetClip(float x, float y, float w, float h)
         {
-            var offset = new Vector2(-frame.X, -frame.Y);
-            var crop = new Rect();
-
-            if (x < 0)
-            {
-                offset.X -= x;
-                crop.X = source.X;
-                crop.Width = Math.Max(0, Math.Min(source.Width, w + x + frame.X));
-            }
-            else if (x <= -frame.X)
-            {
-                offset.X = -frame.X - x;
-                crop.X = source.X;
-                crop.Width = Math.Max(0, Math.Min(source.Width, w - x + frame.X));
-            }
-            else
-            {
-                offset.X = 0;
-                crop.X = source.X + (x + frame.X);
-                crop.Width = Math.Max(0, Math.Min(source.Width - x - frame.X, w));
-            }
-
-            if (y < 0)
-            {
-                offset.Y -= y;
-                crop.Y = source.Y;
-                crop.Height = Math.Max(0, Math.Min(source.Height, h + y + frame.Y));
-            }
-            else if (y <= -frame.Y)
-            {
-                offset.Y = -frame.Y - y;
-                crop.Y = source.Y;
-                crop.Height = Math.Max(0, Math.Min(source.Height, h - y + frame.Y));
-            }
-            else
-            {
-                offset.Y = 0;
-                crop.Y = source.Y + (y + frame.Y);
-                crop.Height = Math.Max(0, Math.Min(source.Height - y - frame.Y, h));
-            }
-
-            return (crop, new Rect(-offset.X, -offset.Y, w, h));
+            return GetClip(new Rect(x, y, w, h));
         }
 
         public Subtexture GetClipSubtexture(Rect clip)

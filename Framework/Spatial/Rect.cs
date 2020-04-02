@@ -155,7 +155,10 @@ namespace Foster.Framework
 
         public Rect OverlapRect(in Rect against)
         {
-            if (Overlaps(against))
+            var overlapX = X + Width > against.X && X < against.X + against.Width;
+            var overlapY = Y + Height > against.Y && Y < against.Y + against.Height;
+
+            if (overlapX && overlapY)
             {
                 return new Rect
                 {
@@ -163,6 +166,22 @@ namespace Foster.Framework
                     MinY = Math.Max(MinY, against.MinY),
                     MaxX = Math.Min(MaxX, against.MaxX),
                     MaxY = Math.Min(MaxY, against.MaxY)
+                };
+            }
+            else if (overlapX)
+            {
+                return new Rect
+                {
+                    MinX = Math.Max(MinX, against.MinX), MinY = 0,
+                    MaxX = Math.Min(MaxX, against.MaxX), MaxY = 0
+                };
+            }
+            else if (overlapY)
+            {
+                return new Rect
+                {
+                    MinX = 0, MinY = Math.Max(MinY, against.MinY),
+                    MaxX = 0, MaxY = Math.Min(MaxY, against.MaxY)
                 };
             }
 
@@ -284,6 +303,11 @@ namespace Foster.Framework
         public static Rect operator +(Rect a, Vector2 b)
         {
             return new Rect(a.X + b.X, a.Y + b.Y, a.Width, a.Height);
+        }
+
+        public static Rect operator -(Rect a, Vector2 b)
+        {
+            return new Rect(a.X - b.X, a.Y - b.Y, a.Width, a.Height);
         }
 
         public static Rect operator *(Rect a, float scaler)
