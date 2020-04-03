@@ -73,7 +73,10 @@ namespace Foster.Framework
             Color = Color.White;
         }
 
-        public BlendMode(BlendOperations colorOperation, BlendOperations alphaOperation, BlendFactors colorSource, BlendFactors alphaSource, BlendFactors colorDestination, BlendFactors alphaDestination, BlendMask mask, Color color)
+        public BlendMode(
+            BlendOperations colorOperation, BlendFactors colorSource, BlendFactors colorDestination, 
+            BlendOperations alphaOperation, BlendFactors alphaSource, BlendFactors alphaDestination, 
+            BlendMask mask, Color color)
         {
             ColorOperation = colorOperation;
             ColorSource = colorSource;
