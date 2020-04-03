@@ -741,24 +741,34 @@ namespace Foster.Framework
 
         public void SemiCircle(Vector2 center, float startRadians, float endRadians, float radius, int steps, Color color)
         {
+            SemiCircle(center, startRadians, endRadians, radius, steps, color, color);
+        }
+
+        public void SemiCircle(Vector2 center, float startRadians, float endRadians, float radius, int steps, Color centerColor, Color edgeColor)
+        {
             var last = Calc.AngleToVector(startRadians, radius);
 
             for (int i = 1; i <= steps; i++)
             {
-                var next = Calc.AngleToVector(Calc.AngleLerp(startRadians, endRadians, (i / (float)steps)), radius);
-                Triangle(center + last, center + next, center, color);
+                var next = Calc.AngleToVector(startRadians + (endRadians - startRadians) * (i / (float)steps), radius);
+                Triangle(center + last, center + next, center, edgeColor, edgeColor, centerColor);
                 last = next;
             }
         }
 
         public void Circle(Vector2 center, float radius, int steps, Color color)
         {
+            Circle(center, radius, steps, color, color);
+        }
+
+        public void Circle(Vector2 center, float radius, int steps, Color centerColor, Color edgeColor)
+        {
             var last = Calc.AngleToVector(0, radius);
 
             for (int i = 1; i <= steps; i++)
             {
                 var next = Calc.AngleToVector((i / (float)steps) * Calc.TAU, radius);
-                Triangle(center + last, center + next, center, color);
+                Triangle(center + last, center + next, center, edgeColor, edgeColor, centerColor);
                 last = next;
             }
         }
