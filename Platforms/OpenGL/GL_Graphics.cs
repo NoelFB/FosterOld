@@ -328,15 +328,50 @@ namespace Foster.OpenGL
                     glMesh.Bind(context, pass.Material);
 
                 // Blend Mode
-                if (updateAll || lastPass.BlendMode != pass.BlendMode)
                 {
-                    GLEnum op = GetBlendFunc(pass.BlendMode.Operation);
-                    GLEnum src = GetBlendFactor(pass.BlendMode.Source);
-                    GLEnum dst = GetBlendFactor(pass.BlendMode.Destination);
-
                     GL.Enable(GLEnum.BLEND);
-                    GL.BlendEquation(op);
-                    GL.BlendFunc(src, dst);
+
+                    if (updateAll ||
+                        lastPass.BlendMode.ColorOperation != pass.BlendMode.ColorOperation ||
+                        lastPass.BlendMode.AlphaOperation != pass.BlendMode.AlphaOperation)
+                    {
+                        GLEnum colorOp = GetBlendFunc(pass.BlendMode.ColorOperation);
+                        GLEnum alphaOp = GetBlendFunc(pass.BlendMode.AlphaOperation);
+
+                        GL.BlendEquationSeparate(colorOp, alphaOp);
+                    }
+
+                    if (updateAll ||
+                        lastPass.BlendMode.ColorSource != pass.BlendMode.ColorSource ||
+                        lastPass.BlendMode.ColorDestination != pass.BlendMode.ColorDestination ||
+                        lastPass.BlendMode.AlphaSource != pass.BlendMode.AlphaSource ||
+                        lastPass.BlendMode.AlphaDestination != pass.BlendMode.AlphaDestination)
+                    {
+                        GLEnum colorSrc = GetBlendFactor(pass.BlendMode.ColorSource);
+                        GLEnum colorDst = GetBlendFactor(pass.BlendMode.ColorDestination);
+                        GLEnum alphaSrc = GetBlendFactor(pass.BlendMode.AlphaSource);
+                        GLEnum alphaDst = GetBlendFactor(pass.BlendMode.AlphaDestination);
+
+                        GL.BlendFuncSeparate(colorSrc, colorDst, alphaSrc, alphaDst);
+                    }
+
+                    if (updateAll || lastPass.BlendMode.Mask != pass.BlendMode.Mask)
+                    {
+                        GL.ColorMask(
+                            (pass.BlendMode.Mask & BlendMask.Red) != 0,
+                            (pass.BlendMode.Mask & BlendMask.Green) != 0,
+                            (pass.BlendMode.Mask & BlendMask.Blue) != 0,
+                            (pass.BlendMode.Mask & BlendMask.Alpha) != 0);
+                    }
+
+                    if (updateAll || lastPass.BlendMode.Color != pass.BlendMode.Color)
+                    {
+                        GL.BlendColor(
+                            pass.BlendMode.Color.R / 255f,
+                            pass.BlendMode.Color.G / 255f,
+                            pass.BlendMode.Color.B / 255f,
+                            pass.BlendMode.Color.A / 255f);
+                    }
                 }
 
                 // Depth Function

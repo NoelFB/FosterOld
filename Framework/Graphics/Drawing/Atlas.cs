@@ -19,8 +19,14 @@ namespace Foster.Framework
         /// </summary>
         public readonly Dictionary<string, Subtexture> Subtextures = new Dictionary<string, Subtexture>();
 
+        /// <summary>
+        /// An empty Atlas
+        /// </summary>
         public Atlas() { }
 
+        /// <summary>
+        /// An Atlas created from an Image Packer, optionally premultiplying the textures
+        /// </summary>
         public Atlas(Packer packer, bool premultiply = false)
         {
             var output = packer.Pack();
@@ -47,8 +53,6 @@ namespace Foster.Framework
         /// <summary>
         /// Gets or Sets a Subtexture by name
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
         public Subtexture? this[string name]
         {
             get

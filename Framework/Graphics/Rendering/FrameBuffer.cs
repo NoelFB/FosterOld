@@ -58,6 +58,9 @@ namespace Foster.Framework
             this.width = width;
             this.height = height;
 
+            if (width <= 0 || height <= 0)
+                throw new Exception("FrameBuffer must have a size larger than 0");
+
             Implementation = graphics.CreateFrameBuffer(width, height, attachments);
             Attachments = new ReadOnlyCollection<Texture>(Implementation.Attachments);
             Renderable = true;
@@ -65,6 +68,9 @@ namespace Foster.Framework
 
         public void Resize(int width, int height)
         {
+            if (width <= 0 || height <= 0)
+                throw new Exception("FrameBuffer must have a size larger than 0");
+
             if (this.width != width || this.height != height)
             {
                 this.width = width;

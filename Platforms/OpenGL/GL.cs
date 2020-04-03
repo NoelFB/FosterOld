@@ -129,6 +129,12 @@ namespace Foster.OpenGL
 
         public static void BlendFunc(GLEnum sfactor, GLEnum dfactor) => bindings.glBlendFunc(sfactor, dfactor);
 
+        public static void BlendFuncSeparate(GLEnum srcRGB, GLEnum dstRGB, GLEnum srcAlpha, GLEnum dstAlpha) => bindings.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+
+        public static void BlendColor(float red, float green, float blue, float alpha) => bindings.glBlendColor(red, green, blue, alpha);
+
+        public static void ColorMask(bool red, bool green, bool blue, bool alpha) => bindings.glColorMask(red, green, blue, alpha);
+
         public static void GetIntegerv(GLEnum name, out int data) => bindings.glGetIntegerv(name, out data);
 
         public static void GenTextures(int n, IntPtr textures) => bindings.glGenTextures(n, textures);

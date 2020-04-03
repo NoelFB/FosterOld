@@ -29,6 +29,9 @@ namespace Foster.OpenGL
             CreateDelegate(ref glBlendEquation, "glBlendEquation");
             CreateDelegate(ref glBlendEquationSeparate, "glBlendEquationSeparate");
             CreateDelegate(ref glBlendFunc, "glBlendFunc");
+            CreateDelegate(ref glBlendFuncSeparate, "glBlendFuncSeparate");
+            CreateDelegate(ref glBlendColor, "glBlendColor");
+            CreateDelegate(ref glColorMask, "glColorMask");
             CreateDelegate(ref glGetIntegerv, "glGetIntegerv");
             CreateDelegate(ref glGenTextures, "glGenTextures");
             CreateDelegate(ref glGenRenderbuffers, "glGenRenderbuffers");
@@ -187,6 +190,18 @@ namespace Foster.OpenGL
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void BlendFunc(GLEnum sfactor, GLEnum dfactor);
         public BlendFunc glBlendFunc;
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate void BlendFuncSeparate(GLEnum srcRGB, GLEnum dstRGB, GLEnum srcAlpha, GLEnum dstAlpha);
+        public BlendFuncSeparate glBlendFuncSeparate;
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate void BlendColor(float red, float green, float blue, float alpha);
+        public BlendColor glBlendColor;
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate void ColorMask(bool red, bool green, bool blue, bool alpha);
+        public ColorMask glColorMask;
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void GetIntegerv(GLEnum name, out int data);

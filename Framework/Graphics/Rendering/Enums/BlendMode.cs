@@ -5,7 +5,7 @@ namespace Foster.Framework
     /// <summary>
     /// Blend Operations
     /// </summary>
-    public enum BlendOperations
+    public enum BlendOperations : byte
     {
         Add,
         Subtract,
@@ -17,7 +17,7 @@ namespace Foster.Framework
     /// <summary>
     /// Blend Factors
     /// </summary>
-    public enum BlendFactors
+    public enum BlendFactors : byte
     {
         Zero,
         One,
@@ -40,20 +40,48 @@ namespace Foster.Framework
         OneMinusSrc1Alpha
     }
 
+    public enum BlendMask : byte
+    {
+        Red     = 1,
+        Green   = 2,
+        Blue    = 4,
+        Alpha   = 8,
+        All     = Red | Green | Blue | Alpha,
+    }
+
     /// <summary>
     /// Blend Mode
     /// </summary>
     public struct BlendMode
     {
-        public BlendOperations Operation;
-        public BlendFactors Source;
-        public BlendFactors Destination;
+        public BlendOperations ColorOperation;
+        public BlendFactors ColorSource;
+        public BlendFactors ColorDestination;
+        public BlendOperations AlphaOperation;
+        public BlendFactors AlphaSource;
+        public BlendFactors AlphaDestination;
+        public BlendMask Mask;
+        public Color Color;
 
         public BlendMode(BlendOperations operation, BlendFactors source, BlendFactors destination)
         {
-            Operation = operation;
-            Source = source;
-            Destination = destination;
+            ColorOperation = AlphaOperation = operation;
+            ColorSource = AlphaSource = source;
+            ColorDestination = AlphaDestination = destination;
+            Mask = BlendMask.All;
+            Color = Color.White;
+        }
+
+        public BlendMode(BlendOperations colorOperation, BlendOperations alphaOperation, BlendFactors colorSource, BlendFactors alphaSource, BlendFactors colorDestination, BlendFactors alphaDestination, BlendMask mask, Color color)
+        {
+            ColorOperation = colorOperation;
+            ColorSource = colorSource;
+            ColorDestination = colorDestination;
+            AlphaOperation = alphaOperation;
+            AlphaSource = alphaSource;
+            AlphaDestination = alphaDestination;
+            Mask = mask;
+            Color = color;
         }
 
         public static readonly BlendMode Normal = new BlendMode(BlendOperations.Add, BlendFactors.One, BlendFactors.OneMinusSrcAlpha);
@@ -64,25 +92,38 @@ namespace Foster.Framework
 
         public static bool operator ==(BlendMode a, BlendMode b)
         {
-            return a.Operation == b.Operation && a.Source == b.Source && a.Destination == b.Destination;
+            return
+                a.ColorOperation == b.ColorOperation &&
+                a.ColorSource == b.ColorSource &&
+                a.ColorDestination == b.ColorDestination &&
+                a.AlphaOperation == b.AlphaOperation &&
+                a.AlphaSource == b.AlphaSource &&
+                a.AlphaDestination == b.AlphaDestination &&
+                a.Mask == b.Mask &&
+                a.Color == b.Color;
         }
 
         public static bool operator !=(BlendMode a, BlendMode b)
         {
-            return a.Operation != b.Operation || a.Source != b.Source || a.Destination != b.Destination;
+            return !(a == b);
         }
 
         public override bool Equals(object? obj)
         {
-            return obj is BlendMode mode &&
-                   Operation == mode.Operation &&
-                   Source == mode.Source &&
-                   Destination == mode.Destination;
+            return (obj is BlendMode mode) && (this == mode);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Operation, Source, Destination);
+            return HashCode.Combine(
+                ColorOperation,
+                ColorSource,
+                ColorDestination,
+                AlphaOperation,
+                AlphaSource,
+                AlphaDestination,
+                Mask,
+                Color);
         }
     }
 }

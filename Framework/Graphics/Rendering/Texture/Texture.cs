@@ -106,6 +106,9 @@ namespace Foster.Framework
             if (format == TextureFormat.None)
                 throw new Exception("Invalid Texture Format");
 
+            if (width <= 0 || height <= 0)
+                throw new Exception("Texture must have a size larger than 0");
+
             Width = width;
             Height = height;
             Format = format;
@@ -142,6 +145,9 @@ namespace Foster.Framework
 
         public void Resize(int width, int height)
         {
+            if (width <= 0 || height <= 0)
+                throw new Exception("Texture must have a size larger than 0");
+
             if (Width != width || Height != height)
             {
                 Width = width;
