@@ -82,5 +82,15 @@ namespace Foster.Framework
             DepthFunction = Compare.None;
             CullMode = CullMode.None;
         }
+
+        public void Render()
+        {
+            App.Graphics.Render(ref this);
+        }
+
+        public void Render(Graphics graphics)
+        {
+            graphics.Render(ref this);
+        }
     }
 }

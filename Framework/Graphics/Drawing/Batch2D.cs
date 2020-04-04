@@ -143,8 +143,17 @@ namespace Foster.Framework
             Render(target, matrix);
         }
 
-        public void Render(RenderTarget target, Matrix4x4 matrix, RectInt? viewport = null)
+        public void Render(RenderTarget target, Color clearColor)
         {
+            App.Graphics.Clear(target, clearColor);
+            Render(target);
+        }
+
+        public void Render(RenderTarget target, Matrix4x4 matrix, RectInt? viewport = null, Color? clearColor = null)
+        {
+            if (clearColor != null)
+                App.Graphics.Clear(target, clearColor.Value);
+
             pass = new RenderPass(target, Mesh, DefaultMaterial);
             pass.Viewport = viewport;
 
