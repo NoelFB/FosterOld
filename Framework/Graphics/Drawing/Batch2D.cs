@@ -714,7 +714,7 @@ namespace Foster.Framework
 
                 // top-left corner
                 if (r0 > 0)
-                    SemiCircle(r0_br, left, up, r0, Math.Max(3, (int)(r0 / 4)), color);
+                    SemiCircle(r0_br, up, -left, r0, Math.Max(3, (int)(r0 / 4)), color);
                 else
                     Quad(r0_tl, r0_tr, r0_br, r0_bl, color);
 
