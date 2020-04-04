@@ -47,7 +47,8 @@ namespace Foster.Framework
         Green   = 2,
         Blue    = 4,
         Alpha   = 8,
-        All     = Red | Green | Blue | Alpha,
+        RGB     = Red | Green | Blue,
+        RGBA    = Red | Green | Blue | Alpha,
     }
 
     /// <summary>
@@ -69,7 +70,7 @@ namespace Foster.Framework
             ColorOperation = AlphaOperation = operation;
             ColorSource = AlphaSource = source;
             ColorDestination = AlphaDestination = destination;
-            Mask = BlendMask.All;
+            Mask = BlendMask.RGBA;
             Color = Color.White;
         }
 
