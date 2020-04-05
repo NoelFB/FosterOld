@@ -17,7 +17,6 @@ namespace Foster.GLFW
 
         private string title;
         private bool isVisible;
-        private bool isVSyncEnabled;
         private bool isFocused;
         private bool isMouseOver;
         private bool isDisposed;
@@ -187,7 +186,7 @@ namespace Foster.GLFW
             if (App.Graphics is IGraphicsOpenGL)
             {
                 system.SetCurrentGLContext(pointer);
-                GLFW.SwapInterval((isVSyncEnabled = VSync) ? 1 : 0);
+                GLFW.SwapInterval(VSync ? 1 : 0);
             }
 
             GLFW.SetWindowCloseCallback(this.pointer, windowCloseCallbackRef = OnWindowClose);
@@ -221,15 +220,17 @@ namespace Foster.GLFW
 
         protected override void Present()
         {
-            if (isVSyncEnabled != VSync)
+            // update our Swap Interval while we're here
+            if (App.Graphics is IGraphicsOpenGL)
             {
-                if (App.Graphics is IGraphicsOpenGL)
-                {
+                var context = system.GetCurrentGLContext();
+                if (context == null || (context is GLFW_GLContext ctx && ctx.window != pointer))
                     system.SetCurrentGLContext(pointer);
-                    GLFW.SwapInterval((isVSyncEnabled = VSync) ? 1 : 0);
-                }
+
+                GLFW.SwapInterval(VSync ? 1 : 0);
             }
 
+            // Swap
             GLFW.SwapBuffers(pointer);
         }
 
