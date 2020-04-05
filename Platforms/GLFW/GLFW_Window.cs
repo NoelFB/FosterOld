@@ -128,9 +128,32 @@ namespace Foster.GLFW
 
                     if (isFullscreen)
                     {
-                        var monitor = GLFW.GetWindowMonitor(pointer);
-                        if (monitor == IntPtr.Zero)
-                            monitor = GLFW.GetPrimaryMonitor();
+                        var bounds = new RectInt(Position, Size);
+                        var monitor = GLFW.GetPrimaryMonitor();
+
+                        // find the monitor we overlap with most
+                        unsafe
+                        {
+                            var monitors = GLFW.GetMonitors(out int count);
+
+                            if (count > 1)
+                            {
+                                var currMonBounds = new RectInt();
+                                GLFW.GetMonitorWorkarea(monitor, out currMonBounds.X, out currMonBounds.Y, out currMonBounds.Width, out currMonBounds.Height);
+
+                                for (int i = 0; i < count; i++)
+                                {
+                                    var nextMonBounds = new RectInt();
+                                    GLFW.GetMonitorWorkarea(monitors[i], out nextMonBounds.X, out nextMonBounds.Y, out nextMonBounds.Width, out nextMonBounds.Height);
+
+                                    if (bounds.OverlapRect(nextMonBounds).Area > bounds.OverlapRect(currMonBounds).Area)
+                                    {
+                                        monitor = monitors[i];
+                                        currMonBounds = nextMonBounds;
+                                    }
+                                }
+                            }
+                        }
 
                         if (monitor != IntPtr.Zero)
                         {
