@@ -227,19 +227,23 @@ namespace Foster.Framework
                 {
                     case 'R':
                     case 'r':
-                        color.R = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        if (byte.TryParse(value.Slice(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var r))
+                            color.R = r;
                         break;
                     case 'G':
                     case 'g':
-                        color.G = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        if (byte.TryParse(value.Slice(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var g))
+                            color.G = g;
                         break;
                     case 'B':
                     case 'b':
-                        color.B = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        if (byte.TryParse(value.Slice(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var b))
+                            color.B = b;
                         break;
                     case 'A':
                     case 'a':
-                        color.A = byte.Parse(value.Slice(i * 2, 2), NumberStyles.HexNumber);
+                        if (byte.TryParse(value.Slice(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var a))
+                            color.A = a;
                         break;
                 }
             }
