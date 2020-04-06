@@ -12,8 +12,14 @@ namespace Foster.GLFW
         // and then the C++ GLFW stuff is calling garbage collected delegates...
         private readonly Dictionary<IntPtr, List<Delegate>> delegateTracker = new Dictionary<IntPtr, List<Delegate>>();
         private readonly Dictionary<Cursors, IntPtr> cursors = new Dictionary<Cursors, IntPtr>();
-
+        private readonly List<IntPtr> windows = new List<IntPtr>();
         private string? clipboardText;
+
+        // GLFW has this really weird bug where if you're holding the Mouse Down
+        // while creating a new Window, it will trigger a Mouse Up event, along with a second
+        // Mouse-Up when you actually release the mouse ... So when a new Window is created
+        // we ignore the next mouse-up event, if a Mouse Button is held
+        private readonly bool[] ignoreMouseUp = new bool[3];
 
         private GLFW.GamepadState gamepadState = new GLFW.GamepadState()
         {
@@ -40,6 +46,12 @@ namespace Foster.GLFW
 
         internal void StartListening(IntPtr window)
         {
+            windows.Add(window);
+
+            ignoreMouseUp[0] = Mouse.LeftDown;
+            ignoreMouseUp[1] = Mouse.MiddleDown;
+            ignoreMouseUp[2] = Mouse.RightDown;
+
             GLFW.SetKeyCallback(window, TrackDelegate<GLFW.KeyFunc>(window, OnKeyCallback));
             GLFW.SetCharCallback(window, TrackDelegate<GLFW.CharFunc>(window, OnCharCallback));
             GLFW.SetMouseButtonCallback(window, TrackDelegate<GLFW.MouseButtonFunc>(window, OnMouseCallback));
@@ -48,6 +60,8 @@ namespace Foster.GLFW
 
         internal void StopListening(IntPtr window)
         {
+            windows.Remove(window);
+
             GLFW.SetKeyCallback(window, null);
             GLFW.SetCharCallback(window, null);
             GLFW.SetMouseButtonCallback(window, null);
@@ -156,7 +170,9 @@ namespace Foster.GLFW
             }
             else if (action == 0)
             {
-                OnMouseUp(mb);
+                if (!ignoreMouseUp[button])
+                    OnMouseUp(mb);
+                ignoreMouseUp[button] = false;
             }
         }
 
@@ -187,9 +203,10 @@ namespace Foster.GLFW
 
         internal void BeforeUpdate()
         {
-            if (App.Window.Implementation is GLFW_Window window)
+            // clipboard text
+            if (windows.Count > 0)
             {
-                var ptr = GLFW.GetClipboardString(window.pointer);
+                var ptr = GLFW.GetClipboardString(windows[0]);
                 if (ptr == IntPtr.Zero)
                     clipboardText = null;
                 else

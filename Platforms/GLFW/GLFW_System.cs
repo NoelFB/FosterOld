@@ -172,8 +172,7 @@ namespace Foster.GLFW
 
         internal IntPtr CreateGlfwWindow(string title, int width, int height, WindowFlags flags)
         {
-            GLFW.WindowHint(GLFW_Enum.VISIBLE, !flags.HasFlag(WindowFlags.Hidden));
-            GLFW.WindowHint(GLFW_Enum.FOCUS_ON_SHOW, false);
+            GLFW.WindowHint(GLFW_Enum.VISIBLE, false);
             GLFW.WindowHint(GLFW_Enum.TRANSPARENT_FRAMEBUFFER, flags.HasFlag(WindowFlags.Transparent));
             GLFW.WindowHint(GLFW_Enum.SCALE_TO_MONITOR, flags.HasFlag(WindowFlags.ScaleToMonitor));
             GLFW.WindowHint(GLFW_Enum.SAMPLES, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
@@ -182,8 +181,12 @@ namespace Foster.GLFW
             if (App.Graphics is IGraphicsOpenGL && windowPointers.Count > 0)
                 shared = windowPointers[0];
 
+            var monitor = IntPtr.Zero;
+            if (flags.HasFlag(WindowFlags.Fullscreen))
+                monitor = GLFW.GetPrimaryMonitor();
+
             // create the GLFW Window and return thr pointer
-            var ptr = GLFW.CreateWindow(width, height, title, IntPtr.Zero, shared);
+            var ptr = GLFW.CreateWindow(width, height, title, monitor, shared);
             if (ptr == IntPtr.Zero)
             {
                 GLFW.GetError(out string error);
@@ -202,6 +205,10 @@ namespace Foster.GLFW
 
                 vkSurfaces.Add(ptr, surface);
             }
+
+            // show window
+            if (!flags.HasFlag(WindowFlags.Hidden))
+                GLFW.ShowWindow(ptr);
 
             return ptr;
         }

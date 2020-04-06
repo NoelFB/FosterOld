@@ -144,6 +144,9 @@ namespace Foster.GLFW
         [DllImport(DLL, EntryPoint = "glfwDefaultWindowHints", CallingConvention = CallingConvention.Cdecl)]
         public static extern void DefaultWindowHints();
 
+        [DllImport(DLL, EntryPoint = "glfwWindowFocus", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void WindowFocus(IntPtr window);
+
         [DllImport(DLL, EntryPoint = "glfwWindowHint", CallingConvention = CallingConvention.Cdecl)]
         public static extern void WindowHint(GLFW_Enum hint, bool value);
 
