@@ -285,6 +285,11 @@ namespace Foster.SDL2
             }
         }
 
+        protected override void Focus()
+        {
+            SDL.SDL_RaiseWindow(SDLWindowPtr);
+        }
+
         protected override void Present()
         {
             if (App.Graphics is IGraphicsOpenGL)

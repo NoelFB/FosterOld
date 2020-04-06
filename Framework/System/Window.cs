@@ -38,6 +38,7 @@ namespace Foster.Framework
             protected internal abstract Vector2 ScreenMouse { get; }
             protected internal abstract bool MouseOver { get; }
 
+            protected internal abstract void Focus();
             protected internal abstract void Present();
             protected internal abstract void Close();
 
@@ -308,6 +309,11 @@ namespace Foster.Framework
 
             // default close request to... close the window!
             OnCloseRequested = (window) => window.Close();
+        }
+
+        public void Focus()
+        {
+            Implementation.Focus();
         }
 
         /// <summary>

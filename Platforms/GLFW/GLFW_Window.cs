@@ -241,6 +241,11 @@ namespace Foster.GLFW
             isMouseOver = (entered != 0);
         }
 
+        protected override void Focus()
+        {
+            GLFW.FocusWindow(pointer);
+        }
+
         protected override void Present()
         {
             // update our Swap Interval while we're here
