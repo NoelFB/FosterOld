@@ -8,7 +8,7 @@ namespace Foster.Framework
     /// </summary>
     public class VirtualButton
     {
-        private interface INode
+        public interface INode
         {
             bool Pressed(float buffer, long lastBufferConsumedTime);
             bool Down { get; }
@@ -17,7 +17,7 @@ namespace Foster.Framework
             void Update();
         }
 
-        private class KeyNode : INode
+        public class KeyNode : INode
         {
             public Input Input;
             public Keys Key;
@@ -48,7 +48,7 @@ namespace Foster.Framework
             }
         }
 
-        private class ButtonNode : INode
+        public class ButtonNode : INode
         {
             public Input Input;
             public int Index;
@@ -81,7 +81,7 @@ namespace Foster.Framework
             }
         }
 
-        private class AxisNode : INode
+        public class AxisNode : INode
         {
             public Input Input;
             public int Index;
@@ -89,7 +89,6 @@ namespace Foster.Framework
             public float Threshold;
 
             private float pressedTimestamp;
-
             private const float AXIS_EPSILON = 0.00001f;
 
             public bool Pressed(float buffer, long lastBufferConsumedTime)
@@ -164,20 +163,20 @@ namespace Foster.Framework
             }
         }
 
-        private readonly List<INode> nodes = new List<INode>();
-        private long lastBufferConsumeTime;
-
         public readonly Input Input;
+        public readonly List<INode> Nodes = new List<INode>();
         public float RepeatDelay;
         public float RepeatInterval;
         public float Buffer;
+
+        private long lastBufferConsumeTime;
 
         public bool Pressed
         {
             get
             {
-                for (int i = 0; i < nodes.Count; i++)
-                    if (nodes[i].Pressed(Buffer, lastBufferConsumeTime))
+                for (int i = 0; i < Nodes.Count; i++)
+                    if (Nodes[i].Pressed(Buffer, lastBufferConsumeTime))
                         return true;
 
                 return false;
@@ -188,8 +187,8 @@ namespace Foster.Framework
         {
             get
             {
-                for (int i = 0; i < nodes.Count; i++)
-                    if (nodes[i].Down)
+                for (int i = 0; i < Nodes.Count; i++)
+                    if (Nodes[i].Down)
                         return true;
 
                 return false;
@@ -200,8 +199,8 @@ namespace Foster.Framework
         {
             get
             {
-                for (int i = 0; i < nodes.Count; i++)
-                    if (nodes[i].Released)
+                for (int i = 0; i < Nodes.Count; i++)
+                    if (Nodes[i].Released)
                         return true;
 
                 return false;
@@ -212,8 +211,8 @@ namespace Foster.Framework
         {
             get
             {
-                for (int i = 0; i < nodes.Count; i++)
-                    if (nodes[i].Pressed(Buffer, lastBufferConsumeTime) || nodes[i].Repeated(RepeatDelay, RepeatInterval))
+                for (int i = 0; i < Nodes.Count; i++)
+                    if (Nodes[i].Pressed(Buffer, lastBufferConsumeTime) || Nodes[i].Repeated(RepeatDelay, RepeatInterval))
                         return true;
 
                 return false;
@@ -243,27 +242,32 @@ namespace Foster.Framework
         public VirtualButton Add(params Keys[] keys)
         {
             foreach (var key in keys)
-                nodes.Add(new KeyNode(Input, key));
+                Nodes.Add(new KeyNode(Input, key));
             return this;
         }
 
         public VirtualButton Add(int controller, params Buttons[] buttons)
         {
             foreach (var button in buttons)
-                nodes.Add(new ButtonNode(Input, controller, button));
+                Nodes.Add(new ButtonNode(Input, controller, button));
             return this;
         }
 
         public VirtualButton Add(int controller, Axes axis, float threshold)
         {
-            nodes.Add(new AxisNode(Input, controller, axis, threshold));
+            Nodes.Add(new AxisNode(Input, controller, axis, threshold));
             return this;
+        }
+
+        public void Clear()
+        {
+            Nodes.Clear();
         }
 
         internal void Update()
         {
-            for (int i = 0; i < nodes.Count; i ++)
-                nodes[i].Update();
+            for (int i = 0; i < Nodes.Count; i ++)
+                Nodes[i].Update();
         }
 
     }

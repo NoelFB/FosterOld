@@ -12,11 +12,9 @@ namespace Foster.Framework
         public VirtualAxis Vertical;
 
         public Vector2 Value => new Vector2(Horizontal.Value, Vertical.Value);
-
         public Vector2 ValueNoDeadzone => new Vector2(Horizontal.ValueNoDeadzone, Vertical.ValueNoDeadzone);
 
         public Point2 IntValue => new Point2(Horizontal.IntValue, Vertical.IntValue);
-
         public Point2 IntValueNoDeadzone => new Point2(Horizontal.IntValueNoDeadzone, Vertical.IntValueNoDeadzone);
 
         public VirtualStick(Input input)
@@ -57,6 +55,12 @@ namespace Foster.Framework
             Horizontal.Add(controller, Axes.RightX, deadzoneX);
             Vertical.Add(controller, Axes.RightY, deadzoneY);
             return this;
+        }
+
+        public void Clear()
+        {
+            Horizontal.Clear();
+            Vertical.Clear();
         }
 
     }
