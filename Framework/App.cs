@@ -136,7 +136,8 @@ namespace Foster.Framework
                     if (Time.FixedStepEnabled)
                     {
                         // delta time is always the same
-                        Time.Delta = 1f / Time.FixedStepTarget;
+                        Time.UnscaledDelta = 1f / Time.FixedStepTarget;
+                        Time.Delta = Time.UnscaledDelta * Time.DeltaScale;
 
                         var target = TimeSpan.FromSeconds(1f / Time.FixedStepTarget);
                         var current = TimeSpan.FromTicks(timer.Elapsed.Ticks);
@@ -170,7 +171,8 @@ namespace Foster.Framework
                     else
                     {
                         Time.Duration = TimeSpan.FromTicks(timer.Elapsed.Ticks);
-                        Time.Delta = (float)(Time.Duration - lastTime).TotalSeconds;
+                        Time.UnscaledDelta = (float)(Time.Duration - lastTime).TotalSeconds;
+                        Time.Delta = Time.UnscaledDelta * Time.DeltaScale;
                         lastTime = Time.Duration;
                         accumulator = TimeSpan.Zero;
 

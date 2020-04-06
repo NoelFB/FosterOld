@@ -29,9 +29,19 @@ namespace Foster.Framework
         public static TimeSpan Duration { get; internal set; }
 
         /// <summary>
+        /// Multiplies the Delta Time per frame by the scale value
+        /// </summary>
+        public static float DeltaScale = 1.0f;
+
+        /// <summary>
         /// The Delta Time from the last frame
         /// </summary>
         public static float Delta { get; internal set; }
+
+        /// <summary>
+        /// The Delta Time from the last frame, not scaled by DeltaScale
+        /// </summary>
+        public static float UnscaledDelta { get; internal set; }
 
         /// <summary>
         /// A rough estimate of the current Frames Per Second
