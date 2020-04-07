@@ -219,7 +219,7 @@ namespace Foster.Framework
             if (value.Length > 1 && value[0] == '0' && (value[1] == 'x' || value[1] == 'X'))
                 value = value.Slice(2);
 
-            var color = Transparent;
+            var color = Black;
 
             for (int i = 0; i < components.Length && i * 2 + 2 <= value.Length; i++)
             {
