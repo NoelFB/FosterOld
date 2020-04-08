@@ -13,7 +13,7 @@ _★ very work in progress! likely to have frequent, breaking changes ★_
 
 ## what's here
  - **Framework**: The main Framework with an abstract Platform implementation. Handles Input, Drawing, Windowing, etc.
- - **Platforms**: Platform implementations of the Framework modules (such as [GLFW](https://www.glfw.org/), [SLD2](https://www.libsdl.org/), OpenGL, DirectX, Vulkan, etc)
+ - **Platforms**: Platform implementations of the Framework modules (such as [GLFW](https://www.glfw.org/), [SDL2](https://www.libsdl.org/), OpenGL, DirectX, Vulkan, etc)
  - **JSON**: Simple JSON reading / writing library. Can also read and write non-strict JSON (like [Hjson](https://hjson.github.io/))
 
 ## dependencies
