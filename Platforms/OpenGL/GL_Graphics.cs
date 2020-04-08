@@ -66,7 +66,7 @@ namespace Foster.OpenGL
             BackgroundContext.Dispose();
         }
 
-        protected override void Tick()
+        protected override void BeforeUpdate()
         {
             // delete any GL graphics resources that are shared between contexts
             DeleteResources(deleteBuffer, BuffersToDelete);
@@ -76,6 +76,7 @@ namespace Foster.OpenGL
             // check for any resources we're still tracking that are tied to contexts
             {
                 var lastContext = System.GetCurrentGLContext();
+                var changedContext = false;
 
                 lock (contextMetadata)
                 {
@@ -97,7 +98,7 @@ namespace Foster.OpenGL
                                 DeleteResources(deleteFramebuffer, meta.FrameBuffersToDelete);
                                 DeleteResources(deleteArray, meta.VertexArraysToDelete);
 
-                                System.SetCurrentGLContext(lastContext);
+                                changedContext = true;
                             }
                         }
                     }
@@ -105,6 +106,9 @@ namespace Foster.OpenGL
                     foreach (var context in disposedContexts)
                         contextMetadata.Remove(context);
                 }
+
+                if (changedContext)
+                    System.SetCurrentGLContext(lastContext);
             }
         }
 

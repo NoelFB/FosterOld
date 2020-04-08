@@ -9,11 +9,6 @@ namespace Foster.Framework
     {
 
         /// <summary>
-        /// Whether the Update function runs at a Fixed Timestep
-        /// </summary>
-        public static bool FixedStepEnabled = false;
-
-        /// <summary>
         /// The Target Framerate of a Fixed Timestep update
         /// </summary>
         public static int FixedStepTarget = 60;
@@ -24,9 +19,14 @@ namespace Foster.Framework
         public static TimeSpan FixedMaxElapsedTime = TimeSpan.FromMilliseconds(500);
 
         /// <summary>
-        /// The total running time of the application
+        /// The time since the start of the Application
         /// </summary>
         public static TimeSpan Duration { get; internal set; }
+
+        /// <summary>
+        /// The total fixed-update duration since the start of the Application
+        /// </summary>
+        public static TimeSpan FixedDuration { get; internal set; }
 
         /// <summary>
         /// Multiplies the Delta Time per frame by the scale value
@@ -34,14 +34,36 @@ namespace Foster.Framework
         public static float DeltaScale = 1.0f;
 
         /// <summary>
-        /// The Delta Time from the last frame
+        /// The Delta Time from the last frame. Fixed or Variable depending on the current Update method.
+        /// Note that outside of Update Methods, this will return the last Variable Delta Time
         /// </summary>
         public static float Delta { get; internal set; }
 
         /// <summary>
-        /// The Delta Time from the last frame, not scaled by DeltaScale
+        /// The Delta Time from the last frame, not scaled by DeltaScale. Fixed or Variable depending on the current Update method.
+        /// Note that outside of Update Methods, this will return the last Raw Variable Delta Time
         /// </summary>
-        public static float UnscaledDelta { get; internal set; }
+        public static float RawDelta { get; internal set; }
+
+        /// <summary>
+        /// The last Fixed Delta Time.
+        /// </summary>
+        public static float FixedDelta { get; internal set; }
+
+        /// <summary>
+        /// The last Fixed Delta Time, not scaled by DeltaScale
+        /// </summary>
+        public static float RawFixedDelta { get; internal set; }
+
+        /// <summary>
+        /// The last Variable Delta Time.
+        /// </summary>
+        public static float VariableDelta { get; internal set; }
+
+        /// <summary>
+        /// The last Variable Delta Time, not scaled by DeltaScale
+        /// </summary>
+        public static float RawVariableDelta { get; internal set; }
 
         /// <summary>
         /// A rough estimate of the current Frames Per Second

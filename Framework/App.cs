@@ -122,63 +122,68 @@ namespace Foster.Framework
         private static void Run()
         {
             // timer
+            var timer = Stopwatch.StartNew();
+            var lastTime = new TimeSpan();
+            var fixedTime = TimeSpan.Zero;
             var framecount = 0;
             var frameticks = 0L;
-            var lastTime = new TimeSpan();
-            var timer = Stopwatch.StartNew();
-            var accumulator = TimeSpan.Zero;
 
             while (Running)
             {
+                Modules.BeforeUpdate();
+
                 // update
                 {
-                    // fixed timestep update
-                    if (Time.FixedStepEnabled)
-                    {
-                        // delta time is always the same
-                        Time.UnscaledDelta = 1f / Time.FixedStepTarget;
-                        Time.Delta = Time.UnscaledDelta * Time.DeltaScale;
+                    var currTime = TimeSpan.FromTicks(timer.Elapsed.Ticks);
 
-                        var target = TimeSpan.FromSeconds(1f / Time.FixedStepTarget);
-                        var current = TimeSpan.FromTicks(timer.Elapsed.Ticks);
-                        accumulator += (current - lastTime);
-                        lastTime = current;
+                    // fixed timestep update
+                    if (!Exiting)
+                    {
+                        var fixedTarget = TimeSpan.FromSeconds(1f / Time.FixedStepTarget);
+
+                        // fixed delta time is always the same
+                        Time.RawDelta = Time.RawFixedDelta = (float)fixedTarget.TotalSeconds;
+                        Time.Delta = Time.FixedDelta = Time.RawFixedDelta * Time.DeltaScale;
 
                         // while we're too fast, wait
-                        while (accumulator < target)
-                        {
-                            Thread.Sleep((int)((target - accumulator).TotalMilliseconds));
-
-                            current = TimeSpan.FromTicks(timer.Elapsed.Ticks);
-                            accumulator += (current - lastTime);
-                            lastTime = current;
-                        }
+                        fixedTime += (currTime - lastTime);
 
                         // Do not allow any update to take longer than our maximum.
-                        if (accumulator > Time.FixedMaxElapsedTime)
-                            accumulator = Time.FixedMaxElapsedTime;
+                        if (fixedTime > Time.FixedMaxElapsedTime)
+                            fixedTime = Time.FixedMaxElapsedTime;
 
-                        // do as many updates as we can
-                        while (accumulator >= target)
+                        // perform fixed-update
+                        if (fixedTime >= fixedTarget && !Exiting)
                         {
-                            accumulator -= target;
-                            Time.Duration += target;
+                            // input updates on the first fixed-timestep
+                            System.Input.Step();
 
-                            Update();
+                            // do as many updates as we can
+                            while (fixedTime >= fixedTarget && !Exiting)
+                            {
+                                Time.FixedDuration += fixedTarget;
+
+                                fixedTime -= fixedTarget;
+                                Modules.FixedUpdate();
+                            }
                         }
                     }
-                    // non-fixed timestep update
-                    else
-                    {
-                        Time.Duration = TimeSpan.FromTicks(timer.Elapsed.Ticks);
-                        Time.UnscaledDelta = (float)(Time.Duration - lastTime).TotalSeconds;
-                        Time.Delta = Time.UnscaledDelta * Time.DeltaScale;
-                        lastTime = Time.Duration;
-                        accumulator = TimeSpan.Zero;
 
-                        Update();
+                    // variable timestep update
+                    if (!Exiting)
+                    {
+                        Time.Duration += (currTime - lastTime);
+                        Time.RawDelta = Time.RawVariableDelta = (float)(currTime - lastTime).TotalSeconds;
+                        Time.Delta = Time.VariableDelta = Time.RawDelta * Time.DeltaScale;
+
+                        Modules.Update();
                     }
+
+                    lastTime = currTime;
                 }
+
+                if (!Exiting)
+                    Modules.AfterUpdate();
 
                 // Check if the Primary Window has been closed
                 if (primaryWindow == null || !primaryWindow.Opened)
@@ -218,8 +223,6 @@ namespace Foster.Framework
                         frameticks = timer.Elapsed.Ticks;
                         framecount = 0;
                     }
-
-                    Modules.Tick();
                 }
             }
 
@@ -229,15 +232,6 @@ namespace Foster.Framework
             Exiting = false;
 
             Log.Message(Name, "Exited");
-        }
-
-        private static void Update()
-        {
-            System.Input.BeforeUpdate();
-
-            Modules.BeforeUpdate();
-            Modules.Update();
-            Modules.AfterUpdate();
         }
 
         /// <summary>

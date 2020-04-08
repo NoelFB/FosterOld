@@ -258,8 +258,19 @@ namespace Foster.Framework
 
         internal void BeforeUpdate()
         {
+            // remove null module entries
+            int toRemove;
+            while ((toRemove = modules.IndexOf(null)) >= 0)
+                modules.RemoveAt(toRemove);
+
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.BeforeUpdate();
+        }
+
+        internal void FixedUpdate()
+        {
+            for (int i = 0; i < modules.Count; i++)
+                modules[i]?.FixedUpdate();
         }
 
         internal void Update()
@@ -296,17 +307,6 @@ namespace Foster.Framework
         {
             for (int i = 0; i < modules.Count; i++)
                 modules[i]?.AfterRenderWindow(window);
-        }
-
-        internal void Tick()
-        {
-            for (int i = 0; i < modules.Count; i++)
-                modules[i]?.Tick();
-
-            // remove null module entries
-            int toRemove;
-            while ((toRemove = modules.IndexOf(null)) >= 0)
-                modules.RemoveAt(toRemove);
         }
 
         public IEnumerator<Module> GetEnumerator()

@@ -59,7 +59,7 @@ namespace Foster.Framework
             nextState = new InputState(this);
         }
 
-        internal void BeforeUpdate()
+        internal void Step()
         {
             LastState.Copy(State);
             State.Copy(nextState);

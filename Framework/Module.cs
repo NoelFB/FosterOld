@@ -60,17 +60,22 @@ namespace Foster.Framework
         protected internal virtual void Disposed() { }
 
         /// <summary>
-        /// Called every frame before the Update method
+        /// Called every update tick before FixedUpdate and Update
         /// </summary>
         protected internal virtual void BeforeUpdate() { }
 
         /// <summary>
-        /// Called every frame
+        /// Called every fixed update frame
+        /// </summary>
+        protected internal virtual void FixedUpdate() { }
+
+        /// <summary>
+        /// Called every variable update frame
         /// </summary>
         protected internal virtual void Update() { }
 
         /// <summary>
-        /// Called every frame after the Update method
+        /// Called every update tick after FixedUpdate and Update
         /// </summary>
         protected internal virtual void AfterUpdate() { }
 
@@ -93,12 +98,6 @@ namespace Foster.Framework
         /// Called after all rendering
         /// </summary>
         protected internal virtual void AfterRender() { }
-
-        /// <summary>
-        /// Called every Tick of the Application
-        /// Multiple update functions can be called per tick
-        /// </summary>
-        protected internal virtual void Tick() { }
 
     }
 }
