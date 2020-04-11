@@ -4,24 +4,31 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Framework\Foster.Framework.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- Determine OS Platform -->
+  <PropertyGroup Condition="($([MSBuild]::IsOsPlatform(Windows)) and '$(RuntimeIdentifier)'=='') or '$(RuntimeIdentifier)'=='win-x64'">
+    <TargetOS>win</TargetOS>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="($([MSBuild]::IsOsPlatform(OSX)) and '$(RuntimeIdentifier)'=='') or '$(RuntimeIdentifier)'=='osx-x64'">
+    <TargetOS>osx</TargetOS>
+  </PropertyGroup>
+
+  <!-- Copy glfw3.dll for Windows -->  
+  <ItemGroup Condition="'$(TargetOS)'=='win'">
     <None Update="glfw3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <!-- Copy libglfw3.dylib for macOS -->
+  <ItemGroup Condition="'$(TargetOS)'=='osx'">
     <None Update="libglfw3.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

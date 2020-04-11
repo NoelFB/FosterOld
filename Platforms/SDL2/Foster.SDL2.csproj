@@ -4,13 +4,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -18,11 +11,25 @@
     <ProjectReference Include="..\..\Framework\Foster.Framework.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="libSDL2-2.0.0.dylib">
+  <!-- Determine OS Platform -->
+  <PropertyGroup Condition="($([MSBuild]::IsOsPlatform(Windows)) and '$(RuntimeIdentifier)'=='') or '$(RuntimeIdentifier)'=='win-x64'">
+    <TargetOS>win</TargetOS>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="($([MSBuild]::IsOsPlatform(OSX)) and '$(RuntimeIdentifier)'=='') or '$(RuntimeIdentifier)'=='osx-x64'">
+    <TargetOS>osx</TargetOS>
+  </PropertyGroup>
+
+  <!-- Copy SDL2.dll for Windows -->  
+  <ItemGroup Condition="'$(TargetOS)'=='win'">
+    <None Update="SDL2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SDL2.dll">
+  </ItemGroup>
+
+  <!-- Copy libSDL2-2.0.0.dylib for macOS -->
+  <ItemGroup Condition="'$(TargetOS)'=='osx'">
+    <None Update="libSDL2-2.0.0.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
