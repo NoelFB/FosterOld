@@ -128,6 +128,10 @@ namespace Foster.GLFW
 
                     if (isFullscreen)
                     {
+                        // force window to be shown before calling fullscreen
+                        // this way it also becomes focused
+                        GLFW.ShowWindow(pointer);
+
                         var bounds = new RectInt(Position, Size);
                         var monitor = GLFW.GetPrimaryMonitor();
 
