@@ -130,6 +130,10 @@ namespace Foster.Framework
 
             while (Running)
             {
+                // update input state
+                System.Input.Step();
+
+                // before-update
                 Modules.BeforeUpdate();
 
                 // update
@@ -152,20 +156,13 @@ namespace Foster.Framework
                         if (fixedTime > Time.FixedMaxElapsedTime)
                             fixedTime = Time.FixedMaxElapsedTime;
 
-                        // perform fixed-update
-                        if (fixedTime >= fixedTarget && !Exiting)
+                        // do as many fixed updates as we can
+                        while (fixedTime >= fixedTarget && !Exiting)
                         {
-                            // input updates on the first fixed-timestep
-                            System.Input.Step();
+                            Time.FixedDuration += fixedTarget;
 
-                            // do as many updates as we can
-                            while (fixedTime >= fixedTarget && !Exiting)
-                            {
-                                Time.FixedDuration += fixedTarget;
-
-                                fixedTime -= fixedTarget;
-                                Modules.FixedUpdate();
-                            }
+                            fixedTime -= fixedTarget;
+                            Modules.FixedUpdate();
                         }
                     }
 
