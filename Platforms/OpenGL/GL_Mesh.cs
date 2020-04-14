@@ -95,7 +95,7 @@ namespace Foster.OpenGL
                 if (currentBufferSize < neededBufferSize)
                 {
                     currentBufferSize = neededBufferSize;
-                    GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.STATIC_DRAW);
+                    GL.BufferData(type, new IntPtr(structSize * currentBufferSize), IntPtr.Zero, GLEnum.DYNAMIC_DRAW);
                 }
 
                 // upload the data

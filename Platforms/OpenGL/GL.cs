@@ -593,6 +593,7 @@ namespace Foster.OpenGL
         ELEMENT_ARRAY_BUFFER = 0x8893,
         STREAM_DRAW = 0x88E0,
         STATIC_DRAW = 0x88E4,
+        DYNAMIC_DRAW = 0x88E8,
         MAX_VERTEX_ATTRIBS = 0x8869,
         // Render targets
         FRAMEBUFFER = 0x8D40,
