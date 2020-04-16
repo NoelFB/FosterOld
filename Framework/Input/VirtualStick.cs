@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -8,25 +9,69 @@ namespace Foster.Framework
     public class VirtualStick
     {
 
+        /// <summary>
+        /// The Horizontal Axis
+        /// </summary>
         public VirtualAxis Horizontal;
+
+        /// <summary>
+        /// The Vertical Axis
+        /// </summary>
         public VirtualAxis Vertical;
 
-        public Vector2 Value => new Vector2(Horizontal.Value, Vertical.Value);
+        /// <summary>
+        /// This Deadzone is applied to the Length of the combined Horizontal and Vertical axis values
+        /// </summary>
+        public float CircularDeadzone = 0f;
+
+        /// <summary>
+        /// Gets the current Virtual Stick value
+        /// </summary>
+        public Vector2 Value
+        {
+            get
+            {
+                var result = new Vector2(Horizontal.Value, Vertical.Value);
+                if (CircularDeadzone != 0 && result.Length() < CircularDeadzone)
+                    return Vector2.Zero;
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Gets the current Virtual Stick value, ignoring Deadzones
+        /// </summary>
         public Vector2 ValueNoDeadzone => new Vector2(Horizontal.ValueNoDeadzone, Vertical.ValueNoDeadzone);
 
-        public Point2 IntValue => new Point2(Horizontal.IntValue, Vertical.IntValue);
+        /// <summary>
+        /// Gets the current Virtual Stick value, clamping to Integer Values
+        /// </summary>
+        public Point2 IntValue
+        {
+            get
+            {
+                var result = Value;
+                return new Point2(MathF.Sign(result.X), MathF.Sign(result.Y));
+            }
+        }
+
+        /// <summary>
+        /// Gets the current Virtual Stick value, clamping to Integer values and Ignoring Deadzones
+        /// </summary>
         public Point2 IntValueNoDeadzone => new Point2(Horizontal.IntValueNoDeadzone, Vertical.IntValueNoDeadzone);
 
-        public VirtualStick(Input input)
+        public VirtualStick(Input input, float circularDeadzone = 0f)
         {
             Horizontal = new VirtualAxis(input);
             Vertical = new VirtualAxis(input);
+            CircularDeadzone = circularDeadzone;
         }
 
-        public VirtualStick(Input input, VirtualAxis.Overlaps overlapBehaviour)
+        public VirtualStick(Input input, VirtualAxis.Overlaps overlapBehaviour, float circularDeadzone = 0f)
         {
             Horizontal = new VirtualAxis(input, overlapBehaviour);
             Vertical = new VirtualAxis(input, overlapBehaviour);
+            CircularDeadzone = circularDeadzone;
         }
 
         public VirtualStick Add(Keys left, Keys right, Keys up, Keys down)
@@ -43,17 +88,24 @@ namespace Foster.Framework
             return this;
         }
 
-        public VirtualStick AddLeftJoystick(int controller, float deadzoneX = 0, float deadzoneY = 0)
+        public VirtualStick Add(int controller, Axes horizontal, Axes vertical, float deadzoneHorizontal = 0f, float deadzoneVertical = 0f)
         {
-            Horizontal.Add(controller, Axes.LeftX, deadzoneX);
-            Vertical.Add(controller, Axes.LeftY, deadzoneY);
+            Horizontal.Add(controller, horizontal, deadzoneHorizontal);
+            Vertical.Add(controller, vertical, deadzoneVertical);
             return this;
         }
 
-        public VirtualStick AddRightJoystick(int controller, float deadzoneX = 0, float deadzoneY = 0)
+        public VirtualStick AddLeftJoystick(int controller, float deadzoneHorizontal = 0, float deadzoneVertical = 0)
         {
-            Horizontal.Add(controller, Axes.RightX, deadzoneX);
-            Vertical.Add(controller, Axes.RightY, deadzoneY);
+            Horizontal.Add(controller, Axes.LeftX, deadzoneHorizontal);
+            Vertical.Add(controller, Axes.LeftY, deadzoneVertical);
+            return this;
+        }
+
+        public VirtualStick AddRightJoystick(int controller, float deadzoneHorizontal = 0, float deadzoneVertical = 0)
+        {
+            Horizontal.Add(controller, Axes.RightX, deadzoneHorizontal);
+            Vertical.Add(controller, Axes.RightY, deadzoneVertical);
             return this;
         }
 
