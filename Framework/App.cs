@@ -63,6 +63,11 @@ namespace Foster.Framework
         public static Window Window => primaryWindow ?? throw new Exception("Application has not yet created a Primary Window");
 
         /// <summary>
+        /// When set to true, this forces the entire application to use Fixed Timestep, including normal Update methods.
+        /// </summary>
+        public static bool ForceFixedTimestep;
+
+        /// <summary>
         /// Reference to the Primary Window
         /// </summary>
         private static Window? primaryWindow;
@@ -130,11 +135,14 @@ namespace Foster.Framework
 
             while (Running)
             {
-                // update input state
-                System.Input.Step();
+                var forceFixedTimestep = ForceFixedTimestep;
 
-                // before-update
-                Modules.BeforeUpdate();
+                // start-of-frame update
+                if (!forceFixedTimestep)
+                {
+                    System.Input.Step();
+                    Modules.BeforeUpdate();
+                }
 
                 // update
                 {
@@ -160,26 +168,49 @@ namespace Foster.Framework
                         while (fixedTime >= fixedTarget && !Exiting)
                         {
                             Time.FixedDuration += fixedTarget;
-
                             fixedTime -= fixedTarget;
-                            Modules.FixedUpdate();
+
+                            // in forced fixed timestep, every update is fixed
+                            if (forceFixedTimestep)
+                            {
+                                Time.Duration += fixedTarget;
+                                Time.RawVariableDelta = Time.RawFixedDelta;
+                                Time.VariableDelta = Time.FixedDelta;
+
+                                System.Input.Step();
+                                Modules.BeforeUpdate();
+
+                                if (!Exiting)
+                                    Modules.FixedUpdate();
+
+                                if (!Exiting)
+                                    Modules.Update();
+
+                                if (!Exiting)
+                                    Modules.AfterUpdate();
+                            }
+                            else
+                            {
+                                Modules.FixedUpdate();
+                            }
                         }
                     }
 
                     // variable timestep update
-                    if (!Exiting)
+                    if (!forceFixedTimestep && !Exiting)
                     {
                         Time.Duration += (currTime - lastTime);
                         Time.RawDelta = Time.RawVariableDelta = (float)(currTime - lastTime).TotalSeconds;
                         Time.Delta = Time.VariableDelta = Time.RawDelta * Time.DeltaScale;
-
+                        
                         Modules.Update();
                     }
 
                     lastTime = currTime;
                 }
 
-                if (!Exiting)
+                // end-of-frame update
+                if (!forceFixedTimestep && !Exiting)
                     Modules.AfterUpdate();
 
                 // Check if the Primary Window has been closed
