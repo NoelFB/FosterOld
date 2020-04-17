@@ -60,24 +60,24 @@ namespace Foster.Framework
         protected internal virtual void Disposed() { }
 
         /// <summary>
-        /// Called every update tick before FixedUpdate and Update
+        /// Called at the start of the frame, before Update or Fixed Update.
         /// </summary>
-        protected internal virtual void BeforeUpdate() { }
+        protected internal virtual void FrameStart() { }
 
         /// <summary>
-        /// Called every fixed update frame
+        /// Called every fixed step
         /// </summary>
         protected internal virtual void FixedUpdate() { }
 
         /// <summary>
-        /// Called every variable update frame
+        /// Called every variable step
         /// </summary>
         protected internal virtual void Update() { }
 
         /// <summary>
-        /// Called every update tick after FixedUpdate and Update
+        /// Called at the end of the frame, after Update and Fixed Update.
         /// </summary>
-        protected internal virtual void AfterUpdate() { }
+        protected internal virtual void FrameEnd() { }
 
         /// <summary>
         /// Called before any rendering

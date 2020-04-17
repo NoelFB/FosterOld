@@ -256,7 +256,7 @@ namespace Foster.Framework
             modulesByType.Clear();
         }
 
-        internal void BeforeUpdate()
+        internal void FrameStart()
         {
             // remove null module entries
             int toRemove;
@@ -264,7 +264,7 @@ namespace Foster.Framework
                 modules.RemoveAt(toRemove);
 
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.BeforeUpdate();
+                modules[i]?.FrameStart();
         }
 
         internal void FixedUpdate()
@@ -279,10 +279,10 @@ namespace Foster.Framework
                 modules[i]?.Update();
         }
 
-        internal void AfterUpdate()
+        internal void FrameEnd()
         {
             for (int i = 0; i < modules.Count; i++)
-                modules[i]?.AfterUpdate();
+                modules[i]?.FrameEnd();
         }
 
         internal void BeforeRender()

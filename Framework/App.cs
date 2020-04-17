@@ -129,89 +129,95 @@ namespace Foster.Framework
             // timer
             var timer = Stopwatch.StartNew();
             var lastTime = new TimeSpan();
-            var fixedTime = TimeSpan.Zero;
+            var fixedAccumulator = TimeSpan.Zero;
             var framecount = 0;
             var frameticks = 0L;
 
             while (Running)
             {
                 var forceFixedTimestep = ForceFixedTimestep;
-
-                // start-of-frame update
                 if (!forceFixedTimestep)
-                {
                     System.Input.Step();
-                    Modules.BeforeUpdate();
-                }
 
-                // update
+                Modules.FrameStart();
+
+                // get current time & diff
+                var currTime = TimeSpan.FromTicks(timer.Elapsed.Ticks);
+                var diffTime = (currTime - lastTime);
+                lastTime = currTime;
+
+                // fixed timestep update
                 {
-                    var currTime = TimeSpan.FromTicks(timer.Elapsed.Ticks);
+                    // fixed delta time is always the same
+                    var fixedTarget = TimeSpan.FromSeconds(1f / Time.FixedStepTarget);
+                    Time.RawDelta = Time.RawFixedDelta = (float)fixedTarget.TotalSeconds;
+                    Time.Delta = Time.FixedDelta = Time.RawFixedDelta * Time.DeltaScale;
 
-                    // fixed timestep update
-                    if (!Exiting)
+                    if (forceFixedTimestep)
                     {
-                        var fixedTarget = TimeSpan.FromSeconds(1f / Time.FixedStepTarget);
+                        Time.RawVariableDelta = Time.RawFixedDelta;
+                        Time.VariableDelta = Time.FixedDelta;
+                    }
 
-                        // fixed delta time is always the same
-                        Time.RawDelta = Time.RawFixedDelta = (float)fixedTarget.TotalSeconds;
-                        Time.Delta = Time.FixedDelta = Time.RawFixedDelta * Time.DeltaScale;
+                    // increment time
+                    fixedAccumulator += diffTime;
 
-                        // while we're too fast, wait
-                        fixedTime += (currTime - lastTime);
-
-                        // Do not allow any update to take longer than our maximum.
-                        if (fixedTime > Time.FixedMaxElapsedTime)
-                            fixedTime = Time.FixedMaxElapsedTime;
-
-                        // do as many fixed updates as we can
-                        while (fixedTime >= fixedTarget && !Exiting)
+                    // if we're forcing fixed timestep and running too fast,
+                    // we should sleep the thread while we wait
+                    if (forceFixedTimestep)
+                    {
+                        while (fixedAccumulator < fixedTarget)
                         {
-                            Time.FixedDuration += fixedTarget;
-                            fixedTime -= fixedTarget;
+                            Thread.Sleep((int)((fixedTarget - fixedAccumulator).TotalMilliseconds));
 
-                            // in forced fixed timestep, every update is fixed
-                            if (forceFixedTimestep)
-                            {
-                                Time.Duration += fixedTarget;
-                                Time.RawVariableDelta = Time.RawFixedDelta;
-                                Time.VariableDelta = Time.FixedDelta;
-
-                                System.Input.Step();
-                                Modules.BeforeUpdate();
-
-                                if (!Exiting)
-                                    Modules.FixedUpdate();
-
-                                if (!Exiting)
-                                    Modules.Update();
-
-                                if (!Exiting)
-                                    Modules.AfterUpdate();
-                            }
-                            else
-                            {
-                                Modules.FixedUpdate();
-                            }
+                            currTime = TimeSpan.FromTicks(timer.Elapsed.Ticks);
+                            diffTime = (currTime - lastTime);
+                            lastTime = currTime;
+                            fixedAccumulator += diffTime;
                         }
                     }
 
-                    // variable timestep update
-                    if (!forceFixedTimestep && !Exiting)
-                    {
-                        Time.Duration += (currTime - lastTime);
-                        Time.RawDelta = Time.RawVariableDelta = (float)(currTime - lastTime).TotalSeconds;
-                        Time.Delta = Time.VariableDelta = Time.RawDelta * Time.DeltaScale;
-                        
-                        Modules.Update();
-                    }
+                    // Do not allow any update to take longer than our maximum.
+                    if (fixedAccumulator > Time.FixedMaxElapsedTime)
+                        fixedAccumulator = Time.FixedMaxElapsedTime;
 
-                    lastTime = currTime;
+                    // do as many fixed updates as we can
+                    while (fixedAccumulator >= fixedTarget)
+                    {
+                        Time.FixedDuration += fixedTarget;
+                        fixedAccumulator -= fixedTarget;
+
+                        if (forceFixedTimestep)
+                        {
+                            Time.Duration += fixedTarget;
+
+                            System.Input.Step();
+                            Modules.FixedUpdate();
+                            Modules.Update();
+                        }
+                        else
+                        {
+                            Modules.FixedUpdate();
+                        }
+
+                        if (Exiting)
+                            break;
+                    }
                 }
 
-                // end-of-frame update
-                if (!forceFixedTimestep && !Exiting)
-                    Modules.AfterUpdate();
+                // variable timestep update
+                if (!forceFixedTimestep)
+                {
+                    // get Time values
+                    Time.Duration += diffTime;
+                    Time.RawDelta = Time.RawVariableDelta = (float)diffTime.TotalSeconds;
+                    Time.Delta = Time.VariableDelta = Time.RawDelta * Time.DeltaScale;
+
+                    // update
+                    Modules.Update();
+                }
+
+                Modules.FrameEnd();
 
                 // Check if the Primary Window has been closed
                 if (primaryWindow == null || !primaryWindow.Opened)
@@ -222,35 +228,24 @@ namespace Foster.Framework
                 {
                     Modules.BeforeRender();
 
-                    foreach (var window in System.Windows)
-                    {
-                        if (!window.Opened)
-                            continue;
+                    for (int i = 0; i < System.Windows.Count; i++)
+                        if (System.Windows[i].Opened)
+                            System.Windows[i].Render();
 
-                        window.Render();
-                    }
-
-                    foreach (var window in System.Windows)
-                    {
-                        if (!window.Opened)
-                            continue;
-
-                        window.Present();
-                    }
+                    for (int i = 0; i < System.Windows.Count; i++)
+                        if (System.Windows[i].Opened)
+                            System.Windows[i].Present();
 
                     Modules.AfterRender();
                 }
 
-                if (!Exiting)
+                // get fps
+                framecount++;
+                if (TimeSpan.FromTicks(timer.Elapsed.Ticks - frameticks).TotalSeconds >= 1)
                 {
-                    // determine fps
-                    framecount++;
-                    if (TimeSpan.FromTicks(timer.Elapsed.Ticks - frameticks).TotalSeconds >= 1)
-                    {
-                        Time.FPS = framecount;
-                        frameticks = timer.Elapsed.Ticks;
-                        framecount = 0;
-                    }
+                    Time.FPS = framecount;
+                    frameticks = timer.Elapsed.Ticks;
+                    framecount = 0;
                 }
             }
 

@@ -86,12 +86,12 @@ namespace Foster.GLFW
             GLFW.Terminate();
         }
 
-        protected override void BeforeUpdate()
+        protected override void FrameStart()
         {
             input.BeforeUpdate();
         }
 
-        protected override void AfterUpdate()
+        protected override void FrameEnd()
         {
             Poll();
 

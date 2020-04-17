@@ -66,7 +66,7 @@ namespace Foster.OpenGL
             BackgroundContext.Dispose();
         }
 
-        protected override void BeforeUpdate()
+        protected override void FrameStart()
         {
             // delete any GL graphics resources that are shared between contexts
             DeleteResources(deleteBuffer, BuffersToDelete);
