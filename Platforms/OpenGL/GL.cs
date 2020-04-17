@@ -82,7 +82,7 @@ namespace Foster.OpenGL
                         throw new Exception(output);
                     }
 
-                    Log.Warning(graphics.Name, $"{typeName}, {severityName}: {output}");
+                    Log.Warning($"{typeName}, {severityName}: {output}");
 
                 })), IntPtr.Zero);
             }
