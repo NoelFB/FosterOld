@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Foster.Framework
@@ -41,9 +43,9 @@ namespace Foster.Framework
         public abstract Input Input { get; }
 
         /// <summary>
-        /// The application directory
+        /// The User Directory & a safe location to store save data or preferences
         /// </summary>
-        public virtual string Directory => AppDomain.CurrentDomain?.BaseDirectory ?? "";
+        public virtual string UserDirectory(string applicationName) => DefaultUserDirectory(applicationName);
 
         /// <summary>
         /// Called when a Window is Created
@@ -70,7 +72,41 @@ namespace Foster.Framework
 
         protected internal override void Startup()
         {
-            Log.Message(Name, $"{ApiName} {ApiVersion}");
+            Log.Message($"{ApiName} {ApiVersion}");
+        }
+
+        /// <summary>
+        /// Gets the Default UserDirectory
+        /// </summary>
+        internal static string DefaultUserDirectory(string applicationName)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), applicationName);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var result = Environment.GetEnvironmentVariable("HOME");
+                if (!string.IsNullOrEmpty(result))
+                    return Path.Combine(result, "Library", "Application Support", applicationName);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+            {
+                var result = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    return Path.Combine(result, applicationName);
+                }
+                else
+                {
+                    result = Environment.GetEnvironmentVariable("HOME");
+                    if (!string.IsNullOrEmpty(result))
+                        return Path.Combine(result, ".local", "share", applicationName);
+                }
+            }
+
+            return AppDomain.CurrentDomain.BaseDirectory!;
         }
     }
 }

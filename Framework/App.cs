@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -15,7 +16,7 @@ namespace Foster.Framework
         /// <summary>
         /// The Application Name
         /// </summary>
-        public static string Name = "Application";
+        public static string Name = "";
 
         /// <summary>
         /// Foster.Framework Version Number
@@ -84,11 +85,12 @@ namespace Foster.Framework
             if (Exiting)
                 throw new Exception("App is still exiting");
 
-            Name = title;
+            if (string.IsNullOrWhiteSpace(Name))
+                Name = title;
 
-            Log.Message(Name, $"Version: {Version}");
-            Log.Message(Name, $"Platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
-            Log.Message(Name, $"Framework: {RuntimeInformation.FrameworkDescription}");
+            Log.Message($"Version: {Version}");
+            Log.Message($"Platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+            Log.Message($"Framework: {RuntimeInformation.FrameworkDescription}");
 
 #if DEBUG
             Launch();
@@ -99,8 +101,12 @@ namespace Foster.Framework
             }
             catch (Exception e)
             {
+                var path = System.DefaultUserDirectory(Name);
+                if (Modules.Has<System>())
+                    path = Modules.Get<System>().UserDirectory(Name);
+
                 Log.Error(e);
-                Log.WriteTo("ErrorLog.txt");
+                Log.AppendToFile(Name, Path.Combine(path, "ErrorLog.txt"));
                 throw e;
             }
 #endif
@@ -121,6 +127,7 @@ namespace Foster.Framework
                 Modules.Startup();
                 callback?.Invoke();
                 Run();
+
             }
         }
 
@@ -254,7 +261,7 @@ namespace Foster.Framework
             primaryWindow = null;
             Exiting = false;
 
-            Log.Message(Name, "Exited");
+            Log.Message("Exited");
         }
 
         /// <summary>

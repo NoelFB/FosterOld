@@ -20,7 +20,6 @@ namespace Foster.Framework
 
         public struct LogLine
         {
-            public string Caller;
             public Types Type;
             public string Text;
         }
@@ -30,49 +29,49 @@ namespace Foster.Framework
 
         public static bool PrintToConsole = true;
 
-        public static void Message(string message) => Message(null, message);
-        public static void Message(string? caller, string message)
+        public static void Message(string message)
         {
-            Line(caller, "INFO", ConsoleColor.White, message);
-            Lines.Add(new LogLine { Caller = caller ?? "", Type = Types.Message, Text = message });
+            Line("INFO", ConsoleColor.White, message);
+            Lines.Add(new LogLine { Type = Types.Message, Text = message });
         }
 
-        public static void Warning(string warning) => Warning(null, warning);
-        public static void Warning(string? caller, string warning)
+        public static void Warning(string warning)
         {
-            Line(caller, "WARN", ConsoleColor.Yellow, warning);
-            Lines.Add(new LogLine { Caller = caller ?? "", Type = Types.Warning, Text = warning });
+            Line("WARN", ConsoleColor.Yellow, warning);
+            Lines.Add(new LogLine { Type = Types.Warning, Text = warning });
         }
 
-        public static void Error(string error) => Error(null, error);
         public static void Error(Exception exception) => Error(exception.ToString());
-        public static void Error(string? caller, string error)
+        public static void Error(string error)
         {
-            Line(caller, "FAIL", ConsoleColor.Red, error);
-            Lines.Add(new LogLine { Caller = caller ?? "", Type = Types.Error, Text = error });
+            Line("FAIL", ConsoleColor.Red, error);
+            Lines.Add(new LogLine { Type = Types.Error, Text = error });
         }
 
-        public static void WriteTo(string file)
+        public static void AppendToFile(string title, string file)
         {
-            using var writer = File.AppendText(file);
-            writer.WriteLine("FOSTER ERROR LOG");
-            writer.WriteLine(DateTime.Now.ToString());
-            writer.Write(log.ToString());
-            writer.WriteLine();
+            var directory = Path.GetDirectoryName(file);
+            if (directory != null && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            var builder = new StringBuilder();
+            builder.AppendLine($"{title} ERROR LOG");
+            builder.AppendLine(DateTime.Now.ToString());
+            builder.AppendLine(log.ToString());
+            builder.AppendLine();
+
+            if (File.Exists(file))
+                builder.Append(File.ReadAllText(file));
+
+            File.WriteAllText(file, builder.ToString());
         }
 
-        private static void Line(string? caller, string subtitle, ConsoleColor subtitleFg, string message)
+        private static void Line(string subtitle, ConsoleColor subtitleFg, string message)
         {
             Append("FOSTER", ConsoleColor.DarkCyan, true);
 
-            Append(":", subtitleFg);
+            Append(":", subtitleFg, true);
             Append(subtitle, subtitleFg);
-
-            if (caller != null)
-            {
-                Append(" ", ConsoleColor.DarkGray);
-                Append(caller, ConsoleColor.DarkGray);
-            }
 
             Append(": ", ConsoleColor.DarkGray);
             Append(message);

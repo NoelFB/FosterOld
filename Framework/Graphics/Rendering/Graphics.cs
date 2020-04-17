@@ -45,7 +45,7 @@ namespace Foster.Framework
 
         protected internal override void Startup()
         {
-            Log.Message(Name, $"{ApiName} {ApiVersion} ({DeviceName})");
+            Log.Message($"{ApiName} {ApiVersion} ({DeviceName})");
         }
 
         /// <summary>
