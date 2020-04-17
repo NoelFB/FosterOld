@@ -162,7 +162,7 @@ namespace Foster.Framework
             var output = packer.Pack();
             if (output != null)
             {
-                for (int i = 0; i < output.Pages.Count; i ++)
+                for (int i = 0; i < output.Pages.Count; i++)
                 {
                     var texture = new Texture(output.Pages[i]);
                     texture.Filter = filter;
@@ -220,15 +220,33 @@ namespace Foster.Framework
             if (string.IsNullOrEmpty(text))
                 return 0;
 
+            return HeightOf(text.AsSpan());
+        }
+
+        public float HeightOf(ReadOnlySpan<char> text)
+        {
+            if (text.Length <= 0)
+                return 0;
+
             var height = Height;
 
-            for (int i = 0; i < text.Length; i ++)
+            for (int i = 0; i < text.Length; i++)
             {
                 if (text[i] == '\n')
                     height += LineHeight;
             }
 
             return height;
+        }
+
+        public Vector2 SizeOf(string text)
+        {
+            return new Vector2(WidthOf(text.AsSpan()), HeightOf(text.AsSpan()));
+        }
+
+        public Vector2 SizeOf(ReadOnlySpan<char> text)
+        {
+            return new Vector2(WidthOf(text), HeightOf(text));
         }
 
     }
