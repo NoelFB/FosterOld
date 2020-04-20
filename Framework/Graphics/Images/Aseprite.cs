@@ -99,17 +99,17 @@ namespace Foster.Framework
             Color UserDataColor { get; set; }
         }
 
-        public struct Slice : IUserData
+        public class Slice : IUserData
         {
             public int Frame;
-            public string Name;
+            public string Name = "";
             public int OriginX;
             public int OriginY;
             public int Width;
             public int Height;
             public Point2? Pivot;
             public RectInt? NineSlice;
-            public string UserDataText { get; set; }
+            public string UserDataText { get; set; } = "";
             public Color UserDataColor { get; set; }
         }
 
@@ -433,7 +433,7 @@ namespace Foster.Framework
                             // pivot point
                             if (Calc.IsBitSet(flags, 1))
                                 slice.Pivot = new Point2((int)DWORD(), (int)DWORD());
-
+                            
                             last = slice;
                             Slices.Add(slice);
                         }
