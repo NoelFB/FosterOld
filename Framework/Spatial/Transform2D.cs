@@ -61,40 +61,7 @@ namespace Foster.Framework
         public Transform2D? Parent
         {
             get => parent;
-            set
-            {
-                if (parent != value)
-                {
-                    // Circular Hierarchy isn't allowed
-                    if (value != null && value.Parent == this)
-                        throw new Exception("Circular Transform Heritage is not allowed");
-
-                    // Remove our OnChanged listener from the existing parent
-                    if (parent != null)
-                        parent.OnChanged -= MakeDirty;
-
-                    // store state
-                    var position = Position;
-                    var scale = Scale;
-                    var rotation = Rotation;
-
-                    // update parent
-                    parent = value;
-                    dirty = true;
-
-                    // retain state
-                    Position = position;
-                    Scale = scale;
-                    Rotation = rotation;
-
-                    // Add our OnChanged listener to the new parent
-                    if (parent != null)
-                        parent.OnChanged += MakeDirty;
-
-                    // we have changed
-                    OnChanged?.Invoke();
-                }
-            }
+            set => SetParent(value, true);
         }
 
         /// <summary>
@@ -293,6 +260,50 @@ namespace Foster.Framework
                 if (dirty)
                     Update();
                 return worldToLocalMatrix;
+            }
+        }
+
+        /// <summary>
+        /// Sets the Parent of this Transform
+        /// </summary>
+        /// <param name="value">The new Parent</param>
+        /// <param name="retainWorldPosition">Whether this Transform should retain its world position when it is transfered to the new parent</param>
+        public void SetParent(Transform2D value, bool retainWorldPosition)
+        {
+            if (parent != value)
+            {
+                // Circular Hierarchy isn't allowed
+                // TODO: this only checks 1 parent, instead of the whole tree
+                if (value != null && value.Parent == this)
+                    throw new Exception("Circular Transform Heritage is not allowed");
+
+                // Remove our OnChanged listener from the existing parent
+                if (parent != null)
+                    parent.OnChanged -= MakeDirty;
+
+                // store state
+                var position = Position;
+                var scale = Scale;
+                var rotation = Rotation;
+
+                // update parent
+                parent = value;
+                dirty = true;
+
+                // retain state
+                if (retainWorldPosition)
+                {
+                    Position = position;
+                    Scale = scale;
+                    Rotation = rotation;
+                }
+
+                // Add our OnChanged listener to the new parent
+                if (parent != null)
+                    parent.OnChanged += MakeDirty;
+
+                // we have changed
+                OnChanged?.Invoke();
             }
         }
 
