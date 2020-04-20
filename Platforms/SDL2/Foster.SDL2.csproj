@@ -20,16 +20,16 @@
     <TargetOS>osx</TargetOS>
   </PropertyGroup>
 
-  <!-- Copy SDL2.dll for Windows -->  
+  <!-- Copy SDL2 for Windows -->  
   <ItemGroup Condition="'$(TargetOS)'=='win'">
     <None Update="SDL2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
-  <!-- Copy libSDL2-2.0.0.dylib for macOS -->
+  <!-- Copy libSDL2 for macOS -->
   <ItemGroup Condition="'$(TargetOS)'=='osx'">
-    <None Update="libSDL2-2.0.0.dylib">
+    <None Update="libSDL2.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
