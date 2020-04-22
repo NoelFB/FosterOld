@@ -97,6 +97,7 @@ namespace Foster.Framework
             set => Implementation.SetWrap(wrapX, wrapY = value);
         }
 
+        private readonly Graphics graphics;
         private TextureFilter filter = TextureFilter.Linear;
         private TextureWrap wrapX = TextureWrap.Clamp;
         private TextureWrap wrapY = TextureWrap.Clamp;
@@ -109,6 +110,7 @@ namespace Foster.Framework
             if (width <= 0 || height <= 0)
                 throw new Exception("Texture must have a size larger than 0");
 
+            this.graphics = graphics;
             Width = width;
             Height = height;
             Format = format;
@@ -251,6 +253,24 @@ namespace Foster.Framework
                 else
                 {
                     throw new NotImplementedException();
+                }
+            }
+
+            // We may need to flip our buffer.
+            // This is due to some rendering APIs drawing from the bottom left (OpenGL).
+            if (IsFrameBuffer && graphics.OriginBottomLeft)
+            {
+                for (int y = 0; y < Height / 2; y++)
+                {
+                    var a = y * Width;
+                    var b = (Height - y - 1) * Width;
+
+                    for (int x = 0; x < Width; x ++, a++, b++)
+                    {
+                        var temp = color[a];
+                        color[a] = color[b];
+                        color[b] = temp;
+                    }
                 }
             }
 
