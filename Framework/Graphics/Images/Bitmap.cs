@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 
@@ -66,8 +67,20 @@ namespace Foster.Framework
         /// </summary>
         public void Premultiply()
         {
-            for (int i = 0; i < Pixels.Length; i++)
-                Pixels[i] = Pixels[i].Premultiply();
+            unsafe
+            {
+                fixed (void* ptr = Pixels)
+                {
+                    byte* rgba = (byte*)ptr;
+
+                    for (int i = 0, len = Pixels.Length * 4; i < len ; i += 4)
+                    {
+                        rgba[i + 0] = (byte)(rgba[i + 0] * rgba[i + 3] / 255);
+                        rgba[i + 1] = (byte)(rgba[i + 1] * rgba[i + 3] / 255);
+                        rgba[i + 2] = (byte)(rgba[i + 2] * rgba[i + 3] / 255);
+                    }
+                }
+            }
         }
 
         /// <summary>

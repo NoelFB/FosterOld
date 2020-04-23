@@ -2,6 +2,7 @@
 using System.Buffers.Binary;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Foster.Framework
@@ -376,7 +377,7 @@ namespace Foster.Framework
                     fixed (byte* inArray = buffer)
                     fixed (Color* outArray = pixels)
                     {
-                        global::System.Buffer.MemoryCopy(inArray, outArray, width * height * 4, width * height * 4);
+                        Buffer.MemoryCopy(inArray, outArray, width * height * 4, width * height * 4);
                     }
                 }
             }
@@ -517,6 +518,7 @@ namespace Foster.Framework
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte PaethPredictor(byte a, byte b, byte c)
         {
             int p = a + b - c;
@@ -532,6 +534,7 @@ namespace Foster.Framework
             return c;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool Check(string name, Span<byte> buffer)
         {
             if (buffer.Length < name.Length)
@@ -546,6 +549,7 @@ namespace Foster.Framework
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int SwapEndian(int input)
         {
             if (BitConverter.IsLittleEndian)
