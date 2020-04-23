@@ -16,10 +16,10 @@ namespace Foster.Framework
     {
 
         public static readonly VertexFormat VertexFormat = new VertexFormat(
-            new VertexAttribute("a_position",    VertexAttrib.Position,  VertexType.Float,   VertexComponents.Two,     false),
-            new VertexAttribute("a_tex",         VertexAttrib.TexCoord0, VertexType.Float,   VertexComponents.Two,     false),
-            new VertexAttribute("a_color",       VertexAttrib.Color0,    VertexType.Byte,    VertexComponents.Four,    true),
-            new VertexAttribute("a_type",        VertexAttrib.TexCoord1, VertexType.Byte,    VertexComponents.Three,   true));
+            new VertexAttribute("a_position", VertexAttrib.Position, VertexType.Float, VertexComponents.Two, false),
+            new VertexAttribute("a_tex", VertexAttrib.TexCoord0, VertexType.Float, VertexComponents.Two, false),
+            new VertexAttribute("a_color", VertexAttrib.Color0, VertexType.Byte, VertexComponents.Four, true),
+            new VertexAttribute("a_type", VertexAttrib.TexCoord1, VertexType.Byte, VertexComponents.Three, true));
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Vertex : IVertex
@@ -70,10 +70,12 @@ namespace Foster.Framework
         private Batch currentBatch;
         private int currentBatchInsert;
         private bool dirty;
+        private int vertexCount;
+        private int indexCount;
 
-        public int TriangleCount => IndicesCount / 3;
-        public int VertexCount { get; private set; }
-        public int IndicesCount { get; private set; }
+        public int TriangleCount => indexCount / 3;
+        public int VertexCount => vertexCount;
+        public int IndexCount => indexCount;
         public int BatchCount => batches.Count + (currentBatch.Elements > 0 ? 1 : 0);
 
         private struct Batch
@@ -126,8 +128,8 @@ namespace Foster.Framework
 
         public void Clear()
         {
-            VertexCount = 0;
-            IndicesCount = 0;
+            vertexCount = 0;
+            indexCount = 0;
             currentBatchInsert = 0;
             currentBatch = new Batch(null, BlendMode.Normal, null, Matrix3x2.Identity, 0, 0);
             batches.Clear();
@@ -163,8 +165,8 @@ namespace Foster.Framework
             {
                 if (dirty)
                 {
-                    Mesh.SetVertices(new ReadOnlyMemory<Vertex>(vertices, 0, VertexCount));
-                    Mesh.SetIndices(new ReadOnlyMemory<int>(indices, 0, IndicesCount));
+                    Mesh.SetVertices(new ReadOnlyMemory<Vertex>(vertices, 0, vertexCount));
+                    Mesh.SetIndices(new ReadOnlyMemory<int>(indices, 0, indexCount));
 
                     dirty = false;
                 }
@@ -227,7 +229,7 @@ namespace Foster.Framework
             }
         }
 
-        public void SetBlendMode(BlendMode blendmode)
+        public void SetBlendMode(in BlendMode blendmode)
         {
             if (currentBatch.Elements == 0)
             {
@@ -244,7 +246,12 @@ namespace Foster.Framework
             }
         }
 
-        public void SetMatrix(Matrix3x2 matrix)
+        public BlendMode GetBlendMode()
+        {
+            return currentBatch.BlendMode;
+        }
+
+        public void SetMatrix(in Matrix3x2 matrix)
         {
             if (currentBatch.Elements == 0)
             {
@@ -317,7 +324,7 @@ namespace Foster.Framework
             currentBatchInsert = insert;
         }
 
-        public void SetState(Material? material, BlendMode blendmode, Matrix3x2 matrix, RectInt? scissor)
+        public void SetState(Material? material, in BlendMode blendmode, in Matrix3x2 matrix, RectInt? scissor)
         {
             SetMaterial(material);
             SetBlendMode(blendmode);
@@ -325,7 +332,7 @@ namespace Foster.Framework
             SetScissor(scissor);
         }
 
-        public Matrix3x2 PushMatrix(Vector2 position, Vector2 scale, Vector2 origin, float rotation, bool relative = true)
+        public Matrix3x2 PushMatrix(in Vector2 position, in Vector2 scale, in Vector2 origin, float rotation, bool relative = true)
         {
             return PushMatrix(Transform2D.CreateMatrix(position, origin, scale, rotation), relative);
         }
@@ -335,12 +342,12 @@ namespace Foster.Framework
             return PushMatrix(transform.WorldMatrix, relative);
         }
 
-        public Matrix3x2 PushMatrix(Vector2 position, bool relative = true)
+        public Matrix3x2 PushMatrix(in Vector2 position, bool relative = true)
         {
             return PushMatrix(Matrix3x2.CreateTranslation(position.X, position.Y), relative);
         }
 
-        public Matrix3x2 PushMatrix(Matrix3x2 matrix, bool relative = true)
+        public Matrix3x2 PushMatrix(in Matrix3x2 matrix, bool relative = true)
         {
             matrixStack.Push(MatrixStack);
 
@@ -387,187 +394,323 @@ namespace Foster.Framework
 
         #region Quad
 
-        public void Quad(Quad2D quad, Color color)
+        public void Quad(in Quad2D quad, Color color)
         {
             Quad(quad.A, quad.B, quad.C, quad.D, color);
         }
 
-        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Color color)
+        public void Quad(in Vector2 v0, in Vector2 v1, in Vector2 v2, in Vector2 v3, Color color)
         {
             PushQuad();
-            ExpandVertices(VertexCount + 4);
+            ExpandVertices(vertexCount + 4);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 4);
+            // POS
+            Transform(ref vertices[vertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[vertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[vertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[vertexCount + 3].Pos, v3, MatrixStack);
 
-            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
+            // COL
+            vertices[vertexCount + 0].Col = color;
+            vertices[vertexCount + 1].Col = color;
+            vertices[vertexCount + 2].Col = color;
+            vertices[vertexCount + 3].Col = color;
 
-            VertexCount += 4;
+            // MULT
+            vertices[vertexCount + 0].Mult = 0;
+            vertices[vertexCount + 1].Mult = 0;
+            vertices[vertexCount + 2].Mult = 0;
+            vertices[vertexCount + 3].Mult = 0;
+
+            // WASH
+            vertices[vertexCount + 0].Wash = 0;
+            vertices[vertexCount + 1].Wash = 0;
+            vertices[vertexCount + 2].Wash = 0;
+            vertices[vertexCount + 3].Wash = 0;
+
+            // FILL
+            vertices[vertexCount + 0].Fill = 255;
+            vertices[vertexCount + 1].Fill = 255;
+            vertices[vertexCount + 2].Fill = 255;
+            vertices[vertexCount + 3].Fill = 255;
+
+            vertexCount += 4;
         }
 
-        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color color, bool washed = false)
+        public void Quad(in Vector2 v0, in Vector2 v1, in Vector2 v2, in Vector2 v3, in Vector2 t0, in Vector2 t1, in Vector2 t2, in Vector2 t3, Color color, bool washed = false)
         {
             PushQuad();
-            ExpandVertices(VertexCount + 4);
+            ExpandVertices(vertexCount + 4);
+
+            var mult = (byte)(washed ? 0 : 255);
+            var wash = (byte)(washed ? 255 : 0);
+
+            // POS
+            Transform(ref vertices[vertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[vertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[vertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[vertexCount + 3].Pos, v3, MatrixStack);
+
+            // TEX
+            vertices[vertexCount + 0].Tex = t0;
+            vertices[vertexCount + 1].Tex = t1;
+            vertices[vertexCount + 2].Tex = t2;
+            vertices[vertexCount + 3].Tex = t3;
 
             if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsFrameBuffer ?? false))
-                VerticalFlip(ref t0, ref t1, ref t2, ref t3);
+                VerticalFlip(ref vertices[vertexCount + 0].Tex, ref vertices[vertexCount + 1].Tex, ref vertices[vertexCount + 2].Tex, ref vertices[vertexCount + 3].Tex);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, color, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
+            // COL
+            vertices[vertexCount + 0].Col = color;
+            vertices[vertexCount + 1].Col = color;
+            vertices[vertexCount + 2].Col = color;
+            vertices[vertexCount + 3].Col = color;
 
-            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
+            // MULT
+            vertices[vertexCount + 0].Mult = mult;
+            vertices[vertexCount + 1].Mult = mult;
+            vertices[vertexCount + 2].Mult = mult;
+            vertices[vertexCount + 3].Mult = mult;
 
-            vertices[VertexCount + 1].Tex = t1;
-            vertices[VertexCount + 2].Tex = t2;
-            vertices[VertexCount + 3].Tex = t3;
+            // WASH
+            vertices[vertexCount + 0].Wash = wash;
+            vertices[vertexCount + 1].Wash = wash;
+            vertices[vertexCount + 2].Wash = wash;
+            vertices[vertexCount + 3].Wash = wash;
 
-            VertexCount += 4;
+            // FILL
+            vertices[vertexCount + 0].Fill = 0;
+            vertices[vertexCount + 1].Fill = 0;
+            vertices[vertexCount + 2].Fill = 0;
+            vertices[vertexCount + 3].Fill = 0;
+
+            vertexCount += 4;
         }
 
-        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Color c0, Color c1, Color c2, Color c3)
+        public void Quad(in Vector2 v0, in Vector2 v1, in Vector2 v2, in Vector2 v3, Color c0, Color c1, Color c2, Color c3)
         {
             PushQuad();
-            ExpandVertices(VertexCount + 4);
+            ExpandVertices(vertexCount + 4);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), VertexCount, 4);
+            // POS
+            Transform(ref vertices[vertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[vertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[vertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[vertexCount + 3].Pos, v3, MatrixStack);
 
-            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
+            // COL
+            vertices[vertexCount + 0].Col = c0;
+            vertices[vertexCount + 1].Col = c1;
+            vertices[vertexCount + 2].Col = c2;
+            vertices[vertexCount + 3].Col = c3;
 
-            vertices[VertexCount + 1].Col = c1;
-            vertices[VertexCount + 2].Col = c2;
-            vertices[VertexCount + 3].Col = c3;
+            // MULT
+            vertices[vertexCount + 0].Mult = 0;
+            vertices[vertexCount + 1].Mult = 0;
+            vertices[vertexCount + 2].Mult = 0;
+            vertices[vertexCount + 3].Mult = 0;
 
-            VertexCount += 4;
+            // WASH
+            vertices[vertexCount + 0].Wash = 0;
+            vertices[vertexCount + 1].Wash = 0;
+            vertices[vertexCount + 2].Wash = 0;
+            vertices[vertexCount + 3].Wash = 0;
+
+            // FILL
+            vertices[vertexCount + 0].Fill = 255;
+            vertices[vertexCount + 1].Fill = 255;
+            vertices[vertexCount + 2].Fill = 255;
+            vertices[vertexCount + 3].Fill = 255;
+
+            vertexCount += 4;
         }
 
-        public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t0, Vector2 t1, Vector2 t2, Vector2 t3, Color c0, Color c1, Color c2, Color c3, bool washed = false)
+        public void Quad(in Vector2 v0, in Vector2 v1, in Vector2 v2, in Vector2 v3, in Vector2 t0, in Vector2 t1, in Vector2 t2, in Vector2 t3, Color c0, Color c1, Color c2, Color c3, bool washed = false)
         {
             PushQuad();
-            ExpandVertices(VertexCount + 4);
+            ExpandVertices(vertexCount + 4);
+
+            var mult = (byte)(washed ? 0 : 255);
+            var wash = (byte)(washed ? 255 : 0);
+
+            // POS
+            Transform(ref vertices[vertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[vertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[vertexCount + 2].Pos, v2, MatrixStack);
+            Transform(ref vertices[vertexCount + 3].Pos, v3, MatrixStack);
+
+            // TEX
+            vertices[vertexCount + 0].Tex = t0;
+            vertices[vertexCount + 1].Tex = t1;
+            vertices[vertexCount + 2].Tex = t2;
+            vertices[vertexCount + 3].Tex = t3;
 
             if (Graphics.OriginBottomLeft && (currentBatch.Texture?.IsFrameBuffer ?? false))
-                VerticalFlip(ref t0, ref t1, ref t2, ref t3);
+                VerticalFlip(ref vertices[vertexCount + 0].Tex, ref vertices[vertexCount + 1].Tex, ref vertices[vertexCount + 2].Tex, ref vertices[vertexCount + 3].Tex);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, t0, c0, washed ? 0 : 255, washed ? 255 : 0, 0), VertexCount, 4);
+            // COL
+            vertices[vertexCount + 0].Col = c0;
+            vertices[vertexCount + 1].Col = c1;
+            vertices[vertexCount + 2].Col = c2;
+            vertices[vertexCount + 3].Col = c3;
 
-            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
-            Transform(ref vertices[VertexCount + 3].Pos, v3, MatrixStack);
+            // MULT
+            vertices[vertexCount + 0].Mult = mult;
+            vertices[vertexCount + 1].Mult = mult;
+            vertices[vertexCount + 2].Mult = mult;
+            vertices[vertexCount + 3].Mult = mult;
 
-            vertices[VertexCount + 1].Col = c1;
-            vertices[VertexCount + 1].Tex = t1;
-            vertices[VertexCount + 2].Col = c2;
-            vertices[VertexCount + 2].Tex = t2;
-            vertices[VertexCount + 3].Col = c3;
-            vertices[VertexCount + 3].Tex = t3;
+            // WASH
+            vertices[vertexCount + 0].Wash = wash;
+            vertices[vertexCount + 1].Wash = wash;
+            vertices[vertexCount + 2].Wash = wash;
+            vertices[vertexCount + 3].Wash = wash;
 
-            VertexCount += 4;
+            // FILL
+            vertices[vertexCount + 0].Fill = 0;
+            vertices[vertexCount + 1].Fill = 0;
+            vertices[vertexCount + 2].Fill = 0;
+            vertices[vertexCount + 3].Fill = 0;
+
+            vertexCount += 4;
         }
 
         #endregion
 
         #region Triangle
 
-        public void Triangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color)
+        public void Triangle(in Vector2 v0, in Vector2 v1, in Vector2 v2, Color color)
         {
             PushTriangle();
-            ExpandVertices(VertexCount + 3);
+            ExpandVertices(vertexCount + 3);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 3);
+            // POS
+            Transform(ref vertices[vertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[vertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[vertexCount + 2].Pos, v2, MatrixStack);
 
-            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
+            // COL
+            vertices[vertexCount + 0].Col = color;
+            vertices[vertexCount + 1].Col = color;
+            vertices[vertexCount + 2].Col = color;
 
-            VertexCount += 3;
+            // MULT
+            vertices[vertexCount + 0].Mult = 0;
+            vertices[vertexCount + 1].Mult = 0;
+            vertices[vertexCount + 2].Mult = 0;
+            vertices[vertexCount + 3].Mult = 0;
+
+            // WASH
+            vertices[vertexCount + 0].Wash = 0;
+            vertices[vertexCount + 1].Wash = 0;
+            vertices[vertexCount + 2].Wash = 0;
+            vertices[vertexCount + 3].Wash = 0;
+
+            // FILL
+            vertices[vertexCount + 0].Fill = 255;
+            vertices[vertexCount + 1].Fill = 255;
+            vertices[vertexCount + 2].Fill = 255;
+            vertices[vertexCount + 3].Fill = 255;
+
+            vertexCount += 3;
         }
 
-        public void Triangle(Vector2 v0, Vector2 v1, Vector2 v2, Color c0, Color c1, Color c2)
+        public void Triangle(in Vector2 v0, in Vector2 v1, in Vector2 v2, Color c0, Color c1, Color c2)
         {
             PushTriangle();
-            ExpandVertices(VertexCount + 3);
+            ExpandVertices(vertexCount + 3);
 
-            Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, c0, 0, 0, 255), VertexCount, 3);
+            // POS
+            Transform(ref vertices[vertexCount + 0].Pos, v0, MatrixStack);
+            Transform(ref vertices[vertexCount + 1].Pos, v1, MatrixStack);
+            Transform(ref vertices[vertexCount + 2].Pos, v2, MatrixStack);
 
-            Transform(ref vertices[VertexCount + 0].Pos, v0, MatrixStack);
-            Transform(ref vertices[VertexCount + 1].Pos, v1, MatrixStack);
-            Transform(ref vertices[VertexCount + 2].Pos, v2, MatrixStack);
+            // COL
+            vertices[vertexCount + 0].Col = c0;
+            vertices[vertexCount + 1].Col = c1;
+            vertices[vertexCount + 2].Col = c2;
 
-            vertices[VertexCount + 1].Col = c1;
-            vertices[VertexCount + 2].Col = c2;
+            // MULT
+            vertices[vertexCount + 0].Mult = 0;
+            vertices[vertexCount + 1].Mult = 0;
+            vertices[vertexCount + 2].Mult = 0;
+            vertices[vertexCount + 3].Mult = 0;
 
-            VertexCount += 3;
+            // WASH
+            vertices[vertexCount + 0].Wash = 0;
+            vertices[vertexCount + 1].Wash = 0;
+            vertices[vertexCount + 2].Wash = 0;
+            vertices[vertexCount + 3].Wash = 0;
+
+            // FILL
+            vertices[vertexCount + 0].Fill = 255;
+            vertices[vertexCount + 1].Fill = 255;
+            vertices[vertexCount + 2].Fill = 255;
+            vertices[vertexCount + 3].Fill = 255;
+
+            vertexCount += 3;
         }
 
         #endregion
 
         #region Rect
 
-        public void Rect(Rect rect, Color color)
+        public void Rect(in Rect rect, Color color)
         {
             Quad(
-                new Vector2(rect.X, rect.Y), 
-                new Vector2(rect.X + rect.Width, rect.Y), 
-                new Vector2(rect.X + rect.Width, rect.Y + rect.Height), 
-                new Vector2(rect.X, rect.Y + rect.Height), 
+                new Vector2(rect.X, rect.Y),
+                new Vector2(rect.X + rect.Width, rect.Y),
+                new Vector2(rect.X + rect.Width, rect.Y + rect.Height),
+                new Vector2(rect.X, rect.Y + rect.Height),
                 color);
         }
 
-        public void Rect(Vector2 position, Vector2 size, Color color)
+        public void Rect(in Vector2 position, in Vector2 size, Color color)
         {
             Quad(
-                position, 
-                position + new Vector2(size.X, 0), 
-                position + new Vector2(size.X, size.Y), 
-                position + new Vector2(0, size.Y), 
+                position,
+                position + new Vector2(size.X, 0),
+                position + new Vector2(size.X, size.Y),
+                position + new Vector2(0, size.Y),
                 color);
         }
 
         public void Rect(float x, float y, float width, float height, Color color)
         {
             Quad(
-                new Vector2(x, y), 
-                new Vector2(x + width, y), 
+                new Vector2(x, y),
+                new Vector2(x + width, y),
                 new Vector2(x + width, y + height),
                 new Vector2(x, y + height), color);
         }
 
-        public void Rect(Rect rect, Color c0, Color c1, Color c2, Color c3)
+        public void Rect(in Rect rect, Color c0, Color c1, Color c2, Color c3)
         {
             Quad(
-                new Vector2(rect.X, rect.Y), 
-                new Vector2(rect.X + rect.Width, rect.Y), 
-                new Vector2(rect.X + rect.Width, rect.Y + rect.Height), 
-                new Vector2(rect.X, rect.Y + rect.Height), 
+                new Vector2(rect.X, rect.Y),
+                new Vector2(rect.X + rect.Width, rect.Y),
+                new Vector2(rect.X + rect.Width, rect.Y + rect.Height),
+                new Vector2(rect.X, rect.Y + rect.Height),
                 c0, c1, c2, c3);
         }
 
-        public void Rect(Vector2 position, Vector2 size, Color c0, Color c1, Color c2, Color c3)
+        public void Rect(in Vector2 position, in Vector2 size, Color c0, Color c1, Color c2, Color c3)
         {
             Quad(
-                position, 
+                position,
                 position + new Vector2(size.X, 0),
-                position + new Vector2(size.X, size.Y), 
-                position + new Vector2(0, size.Y), 
+                position + new Vector2(size.X, size.Y),
+                position + new Vector2(0, size.Y),
                 c0, c1, c2, c3);
         }
 
         public void Rect(float x, float y, float width, float height, Color c0, Color c1, Color c2, Color c3)
         {
             Quad(
-                new Vector2(x, y), 
-                new Vector2(x + width, y), 
-                new Vector2(x + width, y + height), 
-                new Vector2(x, y + height), 
+                new Vector2(x, y),
+                new Vector2(x + width, y),
+                new Vector2(x + width, y + height),
+                new Vector2(x, y + height),
                 c0, c1, c2, c3);
         }
 
@@ -585,12 +728,12 @@ namespace Foster.Framework
             RoundedRect(new Rect(x, y, width, height), radius, radius, radius, radius, color);
         }
 
-        public void RoundedRect(Rect rect, float radius, Color color)
+        public void RoundedRect(in Rect rect, float radius, Color color)
         {
             RoundedRect(rect, radius, radius, radius, radius, color);
         }
 
-        public void RoundedRect(Rect rect, float r0, float r1, float r2, float r3, Color color)
+        public void RoundedRect(in Rect rect, float r0, float r1, float r2, float r3, Color color)
         {
             // clamp
             r0 = Math.Min(Math.Min(Math.Max(0, r0), rect.Width / 2f), rect.Height / 2f);
@@ -627,92 +770,92 @@ namespace Foster.Framework
 
                 // set tris
                 {
-                    while (IndicesCount + 30 >= indices.Length)
+                    while (indexCount + 30 >= indices.Length)
                         Array.Resize(ref indices, indices.Length * 2);
 
                     // top quad
                     {
-                        indices[IndicesCount + 00] = VertexCount + 00; // r0b
-                        indices[IndicesCount + 01] = VertexCount + 03; // r1a
-                        indices[IndicesCount + 02] = VertexCount + 05; // r1d
+                        indices[indexCount + 00] = vertexCount + 00; // r0b
+                        indices[indexCount + 01] = vertexCount + 03; // r1a
+                        indices[indexCount + 02] = vertexCount + 05; // r1d
 
-                        indices[IndicesCount + 03] = VertexCount + 00; // r0b
-                        indices[IndicesCount + 04] = VertexCount + 05; // r1d
-                        indices[IndicesCount + 05] = VertexCount + 01; // r0c
+                        indices[indexCount + 03] = vertexCount + 00; // r0b
+                        indices[indexCount + 04] = vertexCount + 05; // r1d
+                        indices[indexCount + 05] = vertexCount + 01; // r0c
                     }
 
                     // left quad
                     {
-                        indices[IndicesCount + 06] = VertexCount + 02; // r0d
-                        indices[IndicesCount + 07] = VertexCount + 01; // r0c
-                        indices[IndicesCount + 08] = VertexCount + 10; // r3b
+                        indices[indexCount + 06] = vertexCount + 02; // r0d
+                        indices[indexCount + 07] = vertexCount + 01; // r0c
+                        indices[indexCount + 08] = vertexCount + 10; // r3b
 
-                        indices[IndicesCount + 09] = VertexCount + 02; // r0d
-                        indices[IndicesCount + 10] = VertexCount + 10; // r3b
-                        indices[IndicesCount + 11] = VertexCount + 09; // r3a
+                        indices[indexCount + 09] = vertexCount + 02; // r0d
+                        indices[indexCount + 10] = vertexCount + 10; // r3b
+                        indices[indexCount + 11] = vertexCount + 09; // r3a
                     }
 
                     // right quad
                     {
-                        indices[IndicesCount + 12] = VertexCount + 05; // r1d
-                        indices[IndicesCount + 13] = VertexCount + 04; // r1c
-                        indices[IndicesCount + 14] = VertexCount + 07; // r2b
+                        indices[indexCount + 12] = vertexCount + 05; // r1d
+                        indices[indexCount + 13] = vertexCount + 04; // r1c
+                        indices[indexCount + 14] = vertexCount + 07; // r2b
 
-                        indices[IndicesCount + 15] = VertexCount + 05; // r1d
-                        indices[IndicesCount + 16] = VertexCount + 07; // r2b
-                        indices[IndicesCount + 17] = VertexCount + 06; // r2a
+                        indices[indexCount + 15] = vertexCount + 05; // r1d
+                        indices[indexCount + 16] = vertexCount + 07; // r2b
+                        indices[indexCount + 17] = vertexCount + 06; // r2a
                     }
 
                     // bottom quad
                     {
-                        indices[IndicesCount + 18] = VertexCount + 10; // r3b
-                        indices[IndicesCount + 19] = VertexCount + 06; // r2a
-                        indices[IndicesCount + 20] = VertexCount + 08; // r2d
+                        indices[indexCount + 18] = vertexCount + 10; // r3b
+                        indices[indexCount + 19] = vertexCount + 06; // r2a
+                        indices[indexCount + 20] = vertexCount + 08; // r2d
 
-                        indices[IndicesCount + 21] = VertexCount + 10; // r3b
-                        indices[IndicesCount + 22] = VertexCount + 08; // r2d
-                        indices[IndicesCount + 23] = VertexCount + 11; // r3c
+                        indices[indexCount + 21] = vertexCount + 10; // r3b
+                        indices[indexCount + 22] = vertexCount + 08; // r2d
+                        indices[indexCount + 23] = vertexCount + 11; // r3c
                     }
 
                     // center quad
                     {
-                        indices[IndicesCount + 24] = VertexCount + 01; // r0c
-                        indices[IndicesCount + 25] = VertexCount + 05; // r1d
-                        indices[IndicesCount + 26] = VertexCount + 06; // r2a
+                        indices[indexCount + 24] = vertexCount + 01; // r0c
+                        indices[indexCount + 25] = vertexCount + 05; // r1d
+                        indices[indexCount + 26] = vertexCount + 06; // r2a
 
-                        indices[IndicesCount + 27] = VertexCount + 01; // r0c
-                        indices[IndicesCount + 28] = VertexCount + 06; // r2a
-                        indices[IndicesCount + 29] = VertexCount + 10; // r3b
+                        indices[indexCount + 27] = vertexCount + 01; // r0c
+                        indices[indexCount + 28] = vertexCount + 06; // r2a
+                        indices[indexCount + 29] = vertexCount + 10; // r3b
                     }
 
-                    IndicesCount += 30;
+                    indexCount += 30;
                     currentBatch.Elements += 10;
                     dirty = true;
                 }
 
                 // set verts
                 {
-                    ExpandVertices(VertexCount + 12);
+                    ExpandVertices(vertexCount + 12);
 
-                    Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), VertexCount, 12);
+                    Array.Fill(vertices, new Vertex(Vector2.Zero, Vector2.Zero, color, 0, 0, 255), vertexCount, 12);
 
-                    Transform(ref vertices[VertexCount + 00].Pos, r0_tr, MatrixStack); // 0
-                    Transform(ref vertices[VertexCount + 01].Pos, r0_br, MatrixStack); // 1
-                    Transform(ref vertices[VertexCount + 02].Pos, r0_bl, MatrixStack); // 2
+                    Transform(ref vertices[vertexCount + 00].Pos, r0_tr, MatrixStack); // 0
+                    Transform(ref vertices[vertexCount + 01].Pos, r0_br, MatrixStack); // 1
+                    Transform(ref vertices[vertexCount + 02].Pos, r0_bl, MatrixStack); // 2
 
-                    Transform(ref vertices[VertexCount + 03].Pos, r1_tl, MatrixStack); // 3
-                    Transform(ref vertices[VertexCount + 04].Pos, r1_br, MatrixStack); // 4
-                    Transform(ref vertices[VertexCount + 05].Pos, r1_bl, MatrixStack); // 5
+                    Transform(ref vertices[vertexCount + 03].Pos, r1_tl, MatrixStack); // 3
+                    Transform(ref vertices[vertexCount + 04].Pos, r1_br, MatrixStack); // 4
+                    Transform(ref vertices[vertexCount + 05].Pos, r1_bl, MatrixStack); // 5
 
-                    Transform(ref vertices[VertexCount + 06].Pos, r2_tl, MatrixStack); // 6
-                    Transform(ref vertices[VertexCount + 07].Pos, r2_tr, MatrixStack); // 7
-                    Transform(ref vertices[VertexCount + 08].Pos, r2_bl, MatrixStack); // 8
+                    Transform(ref vertices[vertexCount + 06].Pos, r2_tl, MatrixStack); // 6
+                    Transform(ref vertices[vertexCount + 07].Pos, r2_tr, MatrixStack); // 7
+                    Transform(ref vertices[vertexCount + 08].Pos, r2_bl, MatrixStack); // 8
 
-                    Transform(ref vertices[VertexCount + 09].Pos, r3_tl, MatrixStack); // 9
-                    Transform(ref vertices[VertexCount + 10].Pos, r3_tr, MatrixStack); // 10
-                    Transform(ref vertices[VertexCount + 11].Pos, r3_br, MatrixStack); // 11
+                    Transform(ref vertices[vertexCount + 09].Pos, r3_tl, MatrixStack); // 9
+                    Transform(ref vertices[vertexCount + 10].Pos, r3_tr, MatrixStack); // 10
+                    Transform(ref vertices[vertexCount + 11].Pos, r3_br, MatrixStack); // 11
 
-                    VertexCount += 12;
+                    vertexCount += 12;
                 }
 
                 // TODO: replace with hard-coded values
@@ -798,7 +941,7 @@ namespace Foster.Framework
 
         #region Hollow Rect
 
-        public void HollowRect(Rect rect, float t, Color color)
+        public void HollowRect(in Rect rect, float t, Color color)
         {
             if (t > 0)
             {
@@ -817,8 +960,8 @@ namespace Foster.Framework
         #region Image
 
         public void Image(Texture texture,
-            Vector2 pos0, Vector2 pos1, Vector2 pos2, Vector2 pos3,
-            Vector2 uv0, Vector2 uv1, Vector2 uv2, Vector2 uv3,
+            in Vector2 pos0, in Vector2 pos1, in Vector2 pos2, in Vector2 pos3,
+            in Vector2 uv0, in Vector2 uv1, in Vector2 uv2, in Vector2 uv3,
             Color col0, Color col1, Color col2, Color col3, bool washed = false)
         {
             SetTexture(texture);
@@ -826,8 +969,8 @@ namespace Foster.Framework
         }
 
         public void Image(Texture texture,
-            Vector2 pos0, Vector2 pos1, Vector2 pos2, Vector2 pos3,
-            Vector2 uv0, Vector2 uv1, Vector2 uv2, Vector2 uv3,
+            in Vector2 pos0, in Vector2 pos1, in Vector2 pos2, in Vector2 pos3,
+            in Vector2 uv0, in Vector2 uv1, in Vector2 uv2, in Vector2 uv3,
             Color color, bool washed)
         {
             SetTexture(texture);
@@ -838,33 +981,33 @@ namespace Foster.Framework
         {
             SetTexture(texture);
             Quad(
-                new Vector2(0, 0), 
-                new Vector2(texture.Width, 0), 
-                new Vector2(texture.Width, texture.Height), 
+                new Vector2(0, 0),
+                new Vector2(texture.Width, 0),
+                new Vector2(texture.Width, texture.Height),
                 new Vector2(0, texture.Height),
-                new Vector2(0, 0), 
-                Vector2.UnitX, 
-                new Vector2(1, 1), 
-                Vector2.UnitY, 
+                new Vector2(0, 0),
+                Vector2.UnitX,
+                new Vector2(1, 1),
+                Vector2.UnitY,
                 color, washed);
         }
 
-        public void Image(Texture texture, Vector2 position, Color color, bool washed = false)
+        public void Image(Texture texture, in Vector2 position, Color color, bool washed = false)
         {
             SetTexture(texture);
             Quad(
-                position, 
-                position + new Vector2(texture.Width, 0), 
+                position,
+                position + new Vector2(texture.Width, 0),
                 position + new Vector2(texture.Width, texture.Height),
                 position + new Vector2(0, texture.Height),
-                new Vector2(0, 0), 
-                Vector2.UnitX, 
-                new Vector2(1, 1), 
-                Vector2.UnitY, 
+                new Vector2(0, 0),
+                Vector2.UnitX,
+                new Vector2(1, 1),
+                Vector2.UnitY,
                 color, washed);
         }
 
-        public void Image(Texture texture, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        public void Image(Texture texture, in Vector2 position, in Vector2 scale, in Vector2 origin, float rotation, Color color, bool washed = false)
         {
             var was = MatrixStack;
 
@@ -872,20 +1015,20 @@ namespace Foster.Framework
 
             SetTexture(texture);
             Quad(
-                new Vector2(0, 0), 
-                new Vector2(texture.Width, 0), 
-                new Vector2(texture.Width, texture.Height), 
+                new Vector2(0, 0),
+                new Vector2(texture.Width, 0),
+                new Vector2(texture.Width, texture.Height),
                 new Vector2(0, texture.Height),
-                new Vector2(0, 0), 
-                Vector2.UnitX, 
-                new Vector2(1, 1), 
-                Vector2.UnitY, 
+                new Vector2(0, 0),
+                Vector2.UnitX,
+                new Vector2(1, 1),
+                Vector2.UnitY,
                 color, washed);
 
             MatrixStack = was;
         }
 
-        public void Image(Texture texture, Rect clip, Vector2 position, Color color, bool washed = false)
+        public void Image(Texture texture, in Rect clip, in Vector2 position, Color color, bool washed = false)
         {
             var tx0 = clip.X / texture.Width;
             var ty0 = clip.Y / texture.Height;
@@ -894,17 +1037,17 @@ namespace Foster.Framework
 
             SetTexture(texture);
             Quad(
-                position, 
-                position + new Vector2(clip.Width, 0), 
-                position + new Vector2(clip.Width, clip.Height), 
+                position,
+                position + new Vector2(clip.Width, 0),
+                position + new Vector2(clip.Width, clip.Height),
                 position + new Vector2(0, clip.Height),
-                new Vector2(tx0, ty0), 
-                new Vector2(tx1, ty0), 
-                new Vector2(tx1, ty1), 
+                new Vector2(tx0, ty0),
+                new Vector2(tx1, ty0),
+                new Vector2(tx1, ty1),
                 new Vector2(tx0, ty1), color, washed);
         }
 
-        public void Image(Texture texture, Rect clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        public void Image(Texture texture, in Rect clip, in Vector2 position, in Vector2 scale, in Vector2 origin, float rotation, Color color, bool washed = false)
         {
             var was = MatrixStack;
 
@@ -917,14 +1060,14 @@ namespace Foster.Framework
 
             SetTexture(texture);
             Quad(
-                new Vector2(0, 0), 
-                new Vector2(clip.Width, 0), 
-                new Vector2(clip.Width, clip.Height), 
+                new Vector2(0, 0),
+                new Vector2(clip.Width, 0),
+                new Vector2(clip.Width, clip.Height),
                 new Vector2(0, clip.Height),
-                new Vector2(tx0, ty0), 
-                new Vector2(tx1, ty0), 
-                new Vector2(tx1, ty1), 
-                new Vector2(tx0, ty1), 
+                new Vector2(tx0, ty0),
+                new Vector2(tx1, ty0),
+                new Vector2(tx1, ty1),
+                new Vector2(tx0, ty1),
                 color, washed);
 
             MatrixStack = was;
@@ -939,7 +1082,7 @@ namespace Foster.Framework
                 color, washed);
         }
 
-        public void Image(Subtexture subtex, Vector2 position, Color color, bool washed = false)
+        public void Image(Subtexture subtex, in Vector2 position, Color color, bool washed = false)
         {
             SetTexture(subtex.Texture);
             Quad(position + subtex.DrawCoords[0], position + subtex.DrawCoords[1], position + subtex.DrawCoords[2], position + subtex.DrawCoords[3],
@@ -947,7 +1090,7 @@ namespace Foster.Framework
                 color, washed);
         }
 
-        public void Image(Subtexture subtex, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        public void Image(Subtexture subtex, in Vector2 position, in Vector2 scale, in Vector2 origin, float rotation, Color color, bool washed = false)
         {
             var was = MatrixStack;
 
@@ -962,7 +1105,7 @@ namespace Foster.Framework
             MatrixStack = was;
         }
 
-        public void Image(Subtexture subtex, Rect clip, Vector2 position, Vector2 scale, Vector2 origin, float rotation, Color color, bool washed = false)
+        public void Image(Subtexture subtex, in Rect clip, in Vector2 position, in Vector2 scale, in Vector2 origin, float rotation, Color color, bool washed = false)
         {
             var (source, frame) = subtex.GetClip(clip);
             var tex = subtex.Texture;
@@ -1069,9 +1212,35 @@ namespace Foster.Framework
 
         #endregion
 
+        #region Copy Arrays
+
+        /// <summary>
+        /// Copies the contents of a Vertex and Index array to this Batcher
+        /// </summary>
+        public void CopyArray(ReadOnlySpan<Vertex> vertexBuffer, ReadOnlySpan<int> indexBuffer)
+        {
+            // copy vertices over
+            ExpandVertices(vertexCount + vertexBuffer.Length);
+            vertexBuffer.CopyTo(vertices.AsSpan().Slice(vertexCount));
+
+            // copy indices over
+            while (indexCount + indexBuffer.Length >= indices.Length)
+                Array.Resize(ref indices, indices.Length * 2);
+            for (int i = 0, n = indexCount; i < indexBuffer.Length; i++, n++)
+                indices[n] = vertexCount + indexBuffer[i];
+
+            // increment
+            vertexCount += vertexBuffer.Length;
+            indexCount += indexBuffer.Length;
+            currentBatch.Elements += (uint)(vertexBuffer.Length / 3);
+            dirty = true;
+        }
+
+        #endregion
+
         #region Misc.
 
-        public void CheckeredPattern(Rect bounds, float cellWidth, float cellHeight, Color a, Color b)
+        public void CheckeredPattern(in Rect bounds, float cellWidth, float cellHeight, Color a, Color b)
         {
             var odd = false;
 
@@ -1100,16 +1269,14 @@ namespace Foster.Framework
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushTriangle()
         {
-            while (IndicesCount + 3 >= indices.Length)
-            {
+            while (indexCount + 3 >= indices.Length)
                 Array.Resize(ref indices, indices.Length * 2);
-            }
 
-            indices[IndicesCount + 0] = VertexCount + 0;
-            indices[IndicesCount + 1] = VertexCount + 1;
-            indices[IndicesCount + 2] = VertexCount + 2;
+            indices[indexCount + 0] = vertexCount + 0;
+            indices[indexCount + 1] = vertexCount + 1;
+            indices[indexCount + 2] = vertexCount + 2;
 
-            IndicesCount += 3;
+            indexCount += 3;
             currentBatch.Elements++;
             dirty = true;
         }
@@ -1117,19 +1284,20 @@ namespace Foster.Framework
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushQuad()
         {
-            while (IndicesCount + 6 >= indices.Length)
-            {
+            int index = indexCount;
+            int vert = vertexCount;
+
+            while (index + 6 >= indices.Length)
                 Array.Resize(ref indices, indices.Length * 2);
-            }
 
-            indices[IndicesCount + 0] = VertexCount + 0;
-            indices[IndicesCount + 1] = VertexCount + 1;
-            indices[IndicesCount + 2] = VertexCount + 2;
-            indices[IndicesCount + 3] = VertexCount + 0;
-            indices[IndicesCount + 4] = VertexCount + 2;
-            indices[IndicesCount + 5] = VertexCount + 3;
+            indices[index + 0] = vert + 0;
+            indices[index + 1] = vert + 1;
+            indices[index + 2] = vert + 2;
+            indices[index + 3] = vert + 0;
+            indices[index + 4] = vert + 2;
+            indices[index + 5] = vert + 3;
 
-            IndicesCount += 6;
+            indexCount += 6;
             currentBatch.Elements += 2;
             dirty = true;
         }

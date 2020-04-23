@@ -111,7 +111,7 @@ namespace Foster.Framework
             UpdateCoords();
         }
 
-        public (Rect Source, Rect Frame) GetClip(Rect clip)
+        public (Rect Source, Rect Frame) GetClip(in Rect clip)
         {
             (Rect Source, Rect Frame) result;
 
