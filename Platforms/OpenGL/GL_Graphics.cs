@@ -315,7 +315,7 @@ namespace Foster.OpenGL
                     {
                         GL.BindFramebuffer(GLEnum.FRAMEBUFFER, 0);
                     }
-                    else if (pass.Target is Framework.FrameBuffer rt && rt.Implementation is GL_FrameBuffer renderTexture)
+                    else if (pass.Target is FrameBuffer rt && rt.Implementation is GL_FrameBuffer renderTexture)
                     {
                         renderTexture.Bind(context);
                     }
@@ -482,11 +482,11 @@ namespace Foster.OpenGL
                 {
                     if (pass.MeshInstanceCount > 0)
                     {
-                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount * 3), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3), (int)pass.MeshInstanceCount);
+                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart), (int)pass.MeshInstanceCount);
                     }
                     else
                     {
-                        GL.DrawElements(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount * 3), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart * 3));
+                        GL.DrawElements(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart));
                     }
 
                     GL.BindVertexArray(0);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Foster.Framework
@@ -481,6 +482,7 @@ namespace Foster.Framework
             }
         };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int MUL_UN8(int a, int b)
         {
             var t = (a * b) + 0x80;

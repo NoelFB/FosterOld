@@ -201,8 +201,8 @@ namespace Foster.Framework
             pass.Material[TextureUniformName]?.SetTexture(batch.Texture);
             pass.Material[MatrixUniformName]?.SetMatrix4x4(new Matrix4x4(batch.Matrix) * matrix);
 
-            pass.MeshIndexStart = batch.Offset;
-            pass.MeshIndexCount = batch.Elements;
+            pass.MeshIndexStart = batch.Offset * 3;
+            pass.MeshIndexCount = batch.Elements * 3;
             pass.MeshInstanceCount = 0;
 
             Graphics.Render(ref pass);

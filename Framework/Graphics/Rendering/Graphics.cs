@@ -100,8 +100,8 @@ namespace Foster.Framework
             if (pass.Mesh.InstanceCount > 0 && (pass.Mesh.InstanceFormat == null || (pass.Mesh.InstanceCount < pass.Mesh.InstanceCount)))
                 throw new Exception("Trying to draw more Instances than exist in the Mesh");
 
-            if (pass.Mesh.ElementCount < pass.MeshIndexStart + pass.MeshIndexCount)
-                throw new Exception("Trying to draw more Elements than exist in the Mesh");
+            if (pass.Mesh.IndexCount < pass.MeshIndexStart + pass.MeshIndexCount)
+                throw new Exception("Trying to draw more Indices than exist in the Mesh");
 
             if (pass.Viewport != null)
             {
