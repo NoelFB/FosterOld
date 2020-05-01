@@ -268,7 +268,7 @@ namespace Foster.Framework
         /// </summary>
         /// <param name="value">The new Parent</param>
         /// <param name="retainWorldPosition">Whether this Transform should retain its world position when it is transfered to the new parent</param>
-        public void SetParent(Transform2D value, bool retainWorldPosition)
+        public void SetParent(Transform2D? value, bool retainWorldPosition)
         {
             if (parent != value)
             {
