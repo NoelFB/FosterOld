@@ -94,5 +94,20 @@ namespace Foster.Framework
             return OnInterval(Duration.TotalSeconds, Delta, interval, offset);
         }
 
+        /// <summary>
+        /// Returns true when the elapsed time is between the given interval. Ex: an interval of 0.1 will be true for 0.1 seconds, then false for 0.1 seconds, and then repeat.
+        /// </summary>
+        public static bool BetweenInterval(double time, double interval, double offset)
+        {
+            return (time - offset) % (interval * 2) >= interval;
+        }
+
+        /// <summary>
+        /// Returns true when the elapsed time is between the given interval. Ex: an interval of 0.1 will be true for 0.1 seconds, then false for 0.1 seconds, and then repeat.
+        /// </summary>
+        public static bool BetweenInterval(double interval, double offset = 0.0)
+        {
+            return BetweenInterval(Duration.TotalSeconds, interval, offset);
+        }
     }
 }
