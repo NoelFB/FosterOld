@@ -95,7 +95,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Returns true when the elapsed time is between the given interval. Ex: an interval of 0.1 will be true for 0.1 seconds, then false for 0.1 seconds, and then repeat.
+        /// Returns true when the elapsed time is between the given interval. Ex: an interval of 0.1 will be false for 0.1 seconds, then true for 0.1 seconds, and then repeat.
         /// </summary>
         public static bool BetweenInterval(double time, double interval, double offset)
         {
@@ -103,7 +103,7 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Returns true when the elapsed time is between the given interval. Ex: an interval of 0.1 will be true for 0.1 seconds, then false for 0.1 seconds, and then repeat.
+        /// Returns true when the elapsed time is between the given interval. Ex: an interval of 0.1 will be false for 0.1 seconds, then true for 0.1 seconds, and then repeat.
         /// </summary>
         public static bool BetweenInterval(double interval, double offset = 0.0)
         {
