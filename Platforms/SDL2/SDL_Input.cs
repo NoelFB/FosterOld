@@ -168,7 +168,7 @@ namespace Foster.SDL2
             }
             else if (e.type == SDL.SDL_EventType.SDL_CONTROLLERAXISMOTION)
             {
-                var index = e.cbutton.which;
+                var index = e.caxis.which;
                 var axis = GamepadAxisToEnum(e.caxis.axis);
                 var value = Math.Max(-1f, Math.Min(1f, e.caxis.axisValue / (float)short.MaxValue));
 
