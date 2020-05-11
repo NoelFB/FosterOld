@@ -215,6 +215,11 @@ namespace Foster.Framework
             return ((radiansB - radiansA - PI) % TAU + TAU) % TAU - PI;
         }
 
+        public static float Snap(float value, float snapTo)
+        {
+            return MathF.Round(value / snapTo) * snapTo;
+        }
+
         #endregion
 
         #region Adler32
