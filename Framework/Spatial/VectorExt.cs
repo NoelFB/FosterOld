@@ -88,10 +88,13 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Normalizes a Vector2 and snaps it to the closest of the 4 cardinal directions
+        /// Normalizes a Vector2 and snaps it to the closest of the 4 cardinal directions (a zero-length Vector2 returns 0)
         /// </summary>
         public static Vector2 FourWayNormal(this Vector2 vector)
         {
+            if (vector == Vector2.Zero)
+                return vector;
+
             vector = Calc.AngleToVector(Calc.Snap(vector.Angle(), Calc.HalfPI));
             if (MathF.Abs(vector.X) < .1f)
             {
@@ -108,10 +111,13 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Normalizes a Vector2 and snaps it to the closest of the 8 cardinal or diagonal directions
+        /// Normalizes a Vector2 and snaps it to the closest of the 8 cardinal or diagonal directions (a zero-length Vector2 returns 0)
         /// </summary>
         public static Vector2 EightWayNormal(this Vector2 vector)
         {
+            if (vector == Vector2.Zero)
+                return vector;
+
             vector = Calc.AngleToVector(Calc.Snap(vector.Angle(), Calc.PI / 4));
             if (MathF.Abs(vector.X) < .1f)
             {
