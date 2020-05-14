@@ -128,7 +128,12 @@ namespace Foster.Json
                                 if (next == '\\')
                                 {
                                     StepChar(out next);
-                                    builder.Append(next);
+                                    if (next == 'n')
+                                        builder.Append('\n');
+                                    else if (next == 'r')
+                                        builder.Append('\r');
+                                    else
+                                        builder.Append(next);
                                     continue;
                                 }
 

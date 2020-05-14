@@ -891,6 +891,10 @@ namespace Foster.Framework
 
         }
 
+        #endregion
+
+        #region Circle
+
         public void SemiCircle(Vector2 center, float startRadians, float endRadians, float radius, int steps, Color color)
         {
             SemiCircle(center, startRadians, endRadians, radius, steps, color, color);
