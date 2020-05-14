@@ -128,7 +128,7 @@ namespace Foster.Framework
             if (Pressed(key))
                 return true;
 
-            var time = timestamp[(int)key] / 1000.0;
+            var time = timestamp[(int)key] / (float) TimeSpan.TicksPerSecond;
 
             return Down(key) && (Time.Duration.TotalSeconds - time) > delay && Time.OnInterval(interval, time);
         }
