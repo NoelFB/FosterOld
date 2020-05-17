@@ -321,5 +321,20 @@ namespace Foster.SDL2
         {
             OnCloseRequested?.Invoke();
         }
+
+        public void FocusGained()
+        {
+            OnFocus?.Invoke();
+        }
+
+        public void Minimized()
+        {
+            isVisible = false;
+        }
+
+        public void Restored()
+        {
+            isVisible = true;
+        }
     }
 }

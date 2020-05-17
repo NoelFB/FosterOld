@@ -224,7 +224,7 @@ namespace Foster.GLFW
 
         private void OnWindowClose(IntPtr window)
         {
-            GLFW.SetWindowShouldClose(window, false);
+            GLFW.SetWindowShouldClose(window, true);
             OnCloseRequested?.Invoke();
         }
 
