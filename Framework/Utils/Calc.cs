@@ -137,7 +137,7 @@ namespace Foster.Framework
             else
             {
                 var diff = target - from;
-                if (diff.Length() <= amount * amount)
+                if (diff.LengthSquared() <= amount * amount)
                     return target;
                 else
                     return from + diff.Normalized() * amount;
