@@ -279,16 +279,8 @@ namespace Foster.Framework
 
                     while (packed < sources.Count)
                     {
-                        if (sources[packed].Empty)
+                        if (sources[packed].Empty || sources[packed].DuplicateOf != null)
                         {
-                            packed++;
-                            continue;
-                        }
-
-                        var duplicate = sources[packed].DuplicateOf;
-                        if (duplicate != null)
-                        {
-                            sources[packed].Packed = duplicate.Packed;
                             packed++;
                             continue;
                         }
@@ -369,18 +361,34 @@ namespace Foster.Framework
                         for (int i = from; i < packed; i++)
                         {
                             var source = sources[i];
-                            var entry = new Entry(source.Name, page, source.Packed, source.Frame);
 
-                            Packed.Entries[entry.Name] = entry;
+                            // do not pack duplicate entries yet
+                            if (source.DuplicateOf == null)
+                            {
+                                Packed.Entries[source.Name] = new Entry(source.Name, page, source.Packed, source.Frame);
 
-                            if (!source.Empty && source.DuplicateOf == null)
-                                bmp.SetPixels(sources[i].Packed, sources[i].Buffer);
+                                if (!source.Empty)
+                                    bmp.SetPixels(source.Packed, source.Buffer);
+                            }
                         }
                     }
 
                     page++;
                 }
 
+            }
+
+            // make sure duplicates have entries
+            if (CombineDuplicates)
+            {
+                foreach (var source in sources)
+                {
+                    if (source.DuplicateOf != null)
+                    {
+                        var entry = Packed.Entries[source.DuplicateOf.Name];
+                        Packed.Entries[source.Name] = new Entry(source.Name, entry.Page, entry.Source, entry.Frame);
+                    }
+                }
             }
 
             return Packed;
