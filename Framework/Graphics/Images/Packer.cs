@@ -86,6 +86,12 @@ namespace Foster.Framework
         public bool PowerOfTwo = false;
 
         /// <summary>
+        /// This will check each image to see if it's a duplicate of an already packed image. 
+        /// It will still add the entry, but not the duplicate image data.
+        /// </summary>
+        public bool CombineDuplicates = false;
+
+        /// <summary>
         /// The total number of source images
         /// </summary>
         public int SourceImageCount => sources.Count;
@@ -96,6 +102,7 @@ namespace Foster.Framework
             public RectInt Packed;
             public RectInt Frame;
             public Color[]? Buffer;
+            public Source? DuplicateOf;
             public bool Empty => Packed.Width <= 0 || Packed.Height <= 0;
 
             public Source(string name)
@@ -105,6 +112,7 @@ namespace Foster.Framework
         }
 
         private readonly List<Source> sources = new List<Source>();
+        private readonly Dictionary<int, Source> duplicateLookup = new Dictionary<int, Source>();
 
         public void AddBitmap(string name, Bitmap bitmap)
         {
@@ -167,18 +175,42 @@ namespace Foster.Framework
             // there's a chance this image was empty in which case we have no width / height
             if (left <= right && top <= bottom)
             {
+                var isDuplicate = false;
+
+                if (CombineDuplicates)
+                {
+                    var hash = 0;
+                    for (int x = left; x < right; x++)
+                        for (int y = top; y < bottom; y++)
+                            hash = ((hash << 5) + hash) + (int)pixels[x + y * width].ABGR;
+
+                    if (duplicateLookup.TryGetValue(hash, out var duplicate))
+                    {
+                        source.DuplicateOf = duplicate;
+                        isDuplicate = true;
+                    }
+                    else
+                    {
+                        duplicateLookup.Add(hash, source);
+                    }
+                }
+
                 source.Packed = new RectInt(0, 0, right - left, bottom - top);
                 source.Frame = new RectInt(-left, -top, width, height);
-                source.Buffer = new Color[source.Packed.Width * source.Packed.Height];
 
-                // copy our trimmed pixel data to the main buffer
-                for (int i = 0; i < source.Packed.Height; i++)
+                if (!isDuplicate)
                 {
-                    var run = source.Packed.Width;
-                    var from = pixels.Slice(left + (top + i) * width, run);
-                    var to = new Span<Color>(source.Buffer, i * run, run);
+                    source.Buffer = new Color[source.Packed.Width * source.Packed.Height];
 
-                    from.CopyTo(to);
+                    // copy our trimmed pixel data to the main buffer
+                    for (int i = 0; i < source.Packed.Height; i++)
+                    {
+                        var run = source.Packed.Width;
+                        var from = pixels.Slice(left + (top + i) * width, run);
+                        var to = new Span<Color>(source.Buffer, i * run, run);
+
+                        from.CopyTo(to);
+                    }
                 }
             }
             else
@@ -249,6 +281,14 @@ namespace Foster.Framework
                     {
                         if (sources[packed].Empty)
                         {
+                            packed++;
+                            continue;
+                        }
+
+                        var duplicate = sources[packed].DuplicateOf;
+                        if (duplicate != null)
+                        {
+                            sources[packed].Packed = duplicate.Packed;
                             packed++;
                             continue;
                         }
@@ -333,7 +373,7 @@ namespace Foster.Framework
 
                             Packed.Entries[entry.Name] = entry;
 
-                            if (!source.Empty)
+                            if (!source.Empty && source.DuplicateOf == null)
                                 bmp.SetPixels(sources[i].Packed, sources[i].Buffer);
                         }
                     }
@@ -376,6 +416,7 @@ namespace Foster.Framework
         public void Clear()
         {
             sources.Clear();
+            duplicateLookup.Clear();
             Packed = new Output();
             HasUnpackedData = false;
         }
