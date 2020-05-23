@@ -92,10 +92,32 @@ namespace Foster.SDL2
                             if (window == null)
                                 continue;
 
-                            if (e.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
-                                window.Resized();
-                            else if (e.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE)
-                                window.CloseRequested();
+                            switch (e.window.windowEvent)
+                            {
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
+                                    window.Resized();
+                                    break;
+
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
+                                    window.CloseRequested();
+                                    break;
+
+                                // Update visible
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SHOWN:
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESTORED:
+                                    window.Restored();
+                                    break;
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_HIDDEN:
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_MINIMIZED:
+                                    window.Minimized();
+                                    break;
+
+                                // Call onFocus
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_TAKE_FOCUS:
+                                case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED:
+                                    window.FocusGained();
+                                    break;
+                            };
                         }
                         break;
                     
