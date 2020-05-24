@@ -90,8 +90,13 @@ namespace Foster.Framework
         /// </summary>
         public abstract void SetClipboardString(string value);
 
+        public delegate void TextInputHandler(char value);
+
+        public event TextInputHandler OnTextEvent;
+
         protected void OnText(char value)
         {
+            OnTextEvent.Invoke(value);
             nextState.Keyboard.Text.Append(value);
         }
 
