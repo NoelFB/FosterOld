@@ -16,7 +16,7 @@ namespace Foster.Framework
         {
             protected internal abstract void UploadVertices<T>(ReadOnlySequence<T> vertices, VertexFormat format);
             protected internal abstract void UploadInstances<T>(ReadOnlySequence<T> instances, VertexFormat format);
-            protected internal abstract void UploadIndices(ReadOnlySequence<int> indices);
+            protected internal abstract void UploadIndices<T>(ReadOnlySequence<T> indices);
             protected internal abstract void Dispose();
         }
 
@@ -93,20 +93,20 @@ namespace Foster.Framework
             Implementation.UploadVertices(vertices, VertexFormat);
         }
 
-        public void SetIndices(int[] indices)
+        public void SetIndices<T>(T[] indices)
         {
-            SetIndices(new ReadOnlySequence<int>(indices));
+            SetIndices(new ReadOnlySequence<T>(indices));
         }
 
-        public void SetIndices(ReadOnlyMemory<int> indices)
+        public void SetIndices<T>(ReadOnlyMemory<T> indices)
         {
-            SetIndices(new ReadOnlySequence<int>(indices));
+            SetIndices(new ReadOnlySequence<T>(indices));
         }
 
-        public void SetIndices(ReadOnlySequence<int> indices)
+        public void SetIndices<T>(ReadOnlySequence<T> indices)
         {
             IndexCount = (uint)indices.Length;
-            Implementation.UploadIndices(indices);
+            Implementation.UploadIndices<T>(indices);
         }
 
         public void SetInstances<T>(T[] vertices) where T : struct, IVertex
