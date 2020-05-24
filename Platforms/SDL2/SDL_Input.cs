@@ -365,6 +365,9 @@ namespace Foster.SDL2
             { SDL.SDL_Keycode.SDLK_LALT, Keys.LeftAlt },
             { SDL.SDL_Keycode.SDLK_RCTRL, Keys.RightControl },
             { SDL.SDL_Keycode.SDLK_RSHIFT, Keys.RightShift },
+
+            { SDL.SDL_Keycode.SDLK_LGUI, Keys.LeftSuper },
+            { SDL.SDL_Keycode.SDLK_RGUI, Keys.RightSuper },
         };
     }
 }
