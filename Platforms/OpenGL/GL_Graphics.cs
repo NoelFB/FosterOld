@@ -477,16 +477,18 @@ namespace Foster.OpenGL
                         lastPass.Scissor = scissor;
                     }
                 }
+                GLEnum indexType = pass.IndexElementSize == IndexElementSize.ThirtyTwoBits? GLEnum.UNSIGNED_INT: GLEnum.UNSIGNED_SHORT;
+                int indexSize = pass.IndexElementSize == IndexElementSize.ThirtyTwoBits ? sizeof(int) : sizeof(ushort);
 
                 // Draw the Mesh
                 {
                     if (pass.MeshInstanceCount > 0)
                     {
-                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart), (int)pass.MeshInstanceCount);
+                        GL.DrawElementsInstanced(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount), indexType, new IntPtr(indexSize * pass.MeshIndexStart), (int)pass.MeshInstanceCount);
                     }
                     else
                     {
-                        GL.DrawElements(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount), GLEnum.UNSIGNED_INT, new IntPtr(sizeof(int) * pass.MeshIndexStart));
+                        GL.DrawElements(GLEnum.TRIANGLES, (int)(pass.MeshIndexCount), indexType, new IntPtr(indexSize * pass.MeshIndexStart));
                     }
 
                     GL.BindVertexArray(0);

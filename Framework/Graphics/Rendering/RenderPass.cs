@@ -4,12 +4,23 @@ using System.Text;
 
 namespace Foster.Framework
 {
+    public enum IndexElementSize
+    {
+        /// <summary>
+        /// 16-bit short/ushort indices.
+        /// </summary>
+        SixteenBits,
+        /// <summary>
+        /// 32-bit int/uint indices.
+        /// </summary>
+        ThirtyTwoBits
+    }
+
     /// <summary>
     /// A Structure which describes a single Render Pass / Render Call
     /// </summary>
     public struct RenderPass
     {
-
         /// <summary>
         /// Render Target
         /// </summary>
@@ -39,6 +50,11 @@ namespace Foster.Framework
         /// The total number of Indices to draw from the Mesh
         /// </summary>
         public uint MeshIndexCount;
+
+        /// <summary>
+        /// The total number of Indices to draw from the Mesh
+        /// </summary>
+        public IndexElementSize IndexElementSize;
 
         /// <summary>
         /// The total number of Instances to draw from the Mesh
@@ -81,6 +97,7 @@ namespace Foster.Framework
             BlendMode = BlendMode.Normal;
             DepthFunction = Compare.None;
             CullMode = CullMode.None;
+            IndexElementSize = IndexElementSize.ThirtyTwoBits;  // Default to 32 bits.
         }
 
         public void Render()

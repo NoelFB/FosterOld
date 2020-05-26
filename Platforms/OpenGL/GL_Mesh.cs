@@ -57,7 +57,7 @@ namespace Foster.OpenGL
             UploadBuffer(ref instanceBuffer, GLEnum.ARRAY_BUFFER, instances, ref instanceBufferSize);
         }
 
-        protected override unsafe void UploadIndices(ReadOnlySequence<int> indices)
+        protected override unsafe void UploadIndices<T>(ReadOnlySequence<T> indices)
         {
             UploadBuffer(ref indexBuffer, GLEnum.ELEMENT_ARRAY_BUFFER, indices, ref indexBufferSize);
         }

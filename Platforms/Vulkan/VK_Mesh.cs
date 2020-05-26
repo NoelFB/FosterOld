@@ -9,7 +9,7 @@ namespace Foster.Vulkan
     internal class VK_Mesh : Mesh.Platform
     {
 
-        protected override void UploadIndices(ReadOnlySequence<int> indices)
+        protected override void UploadIndices<T>(ReadOnlySequence<T> indices)
         {
 
         }
