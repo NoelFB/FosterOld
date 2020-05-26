@@ -127,14 +127,6 @@ namespace Foster.Framework
             Height = h;
         }
 
-        public Rect(Vector2 a, Vector2 b)
-        {
-            X = Math.Min(a.X, b.X);
-            Y = Math.Min(a.Y, b.Y);
-            Width = Math.Max(a.X, b.X) - X;
-            Height = Math.Max(a.Y, b.Y) - Y;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Vector2 point)
         {
@@ -155,37 +147,27 @@ namespace Foster.Framework
 
         public Rect OverlapRect(in Rect against)
         {
-            var overlapX = X + Width > against.X && X < against.X + against.Width;
-            var overlapY = Y + Height > against.Y && Y < against.Y + against.Height;
+            var result = new Rect(X, Y, Width, Height);
 
-            if (overlapX && overlapY)
+            if (result.X < against.X)
             {
-                return new Rect
-                {
-                    MinX = Math.Max(MinX, against.MinX),
-                    MinY = Math.Max(MinY, against.MinY),
-                    MaxX = Math.Min(MaxX, against.MaxX),
-                    MaxY = Math.Min(MaxY, against.MaxY)
-                };
-            }
-            else if (overlapX)
-            {
-                return new Rect
-                {
-                    MinX = Math.Max(MinX, against.MinX), MinY = 0,
-                    MaxX = Math.Min(MaxX, against.MaxX), MaxY = 0
-                };
-            }
-            else if (overlapY)
-            {
-                return new Rect
-                {
-                    MinX = 0, MinY = Math.Max(MinY, against.MinY),
-                    MaxX = 0, MaxY = Math.Min(MaxY, against.MaxY)
-                };
+                result.Width = Math.Max(0, result.Width - (against.X - result.X));
+                result.X = against.X;
             }
 
-            return new Rect(0, 0, 0, 0);
+            if (result.Y < against.Y)
+            {
+                result.Height = Math.Max(0, result.Height - (against.Y - result.Y));
+                result.Y = against.Y;
+            }
+
+            if (result.Width > against.Width)
+                result.Width = against.Width;
+
+            if (result.Height > against.Height)
+                result.Height = against.Height;
+
+            return result;
         }
 
         public RectInt Int()
