@@ -96,7 +96,7 @@ namespace Foster.Framework
 
         protected void OnText(char value)
         {
-            OnTextEvent.Invoke(value);
+            OnTextEvent?.Invoke(value);
             nextState.Keyboard.Text.Append(value);
         }
 
