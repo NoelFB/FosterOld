@@ -235,6 +235,18 @@ namespace Foster.Framework
             return $"[{X}, {Y}, {Width}, {Height}]";
         }
 
+        public static RectInt Between(Point2 a, Point2 b)
+        {
+            RectInt rect;
+
+            rect.X = a.X < b.X ? a.X : b.X;
+            rect.Y = a.Y < b.Y ? a.Y : b.Y;
+            rect.Width = (a.X > b.X ? a.X : b.X) - rect.X;
+            rect.Height = (a.Y > b.Y ? a.Y : b.Y) - rect.Y;
+
+            return rect;
+        }
+
         public static bool operator ==(RectInt a, RectInt b)
         {
             return a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height;

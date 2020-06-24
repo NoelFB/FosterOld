@@ -36,6 +36,7 @@ namespace Foster.Json
         public override IEnumerable<string> Keys => Value.Keys;
         public override IEnumerable<JsonValue> Values => Value.Values;
         public override IEnumerable<KeyValuePair<string, JsonValue>> Pairs => Value;
+        public override int Count => Value.Count;
 
         public override int GetHashedValue()
         {
