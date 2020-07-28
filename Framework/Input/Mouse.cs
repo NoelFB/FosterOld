@@ -20,6 +20,21 @@ namespace Foster.Framework
         public bool Down(MouseButtons button) => down[(int)button];
         public bool Released(MouseButtons button) => released[(int)button];
 
+        public long Timestamp(MouseButtons button)
+        {
+            return timestamp[(int)button];
+        }
+
+        public bool Repeated(MouseButtons button, float delay, float interval)
+        {
+            if (Pressed(button))
+                return true;
+
+            var time = timestamp[(int)button] / (float)TimeSpan.TicksPerSecond;
+
+            return Down(button) && (Time.Duration.TotalSeconds - time) > delay && Time.OnInterval(interval, time);
+        }
+
         public bool LeftPressed => pressed[(int)MouseButtons.Left];
         public bool LeftDown => down[(int)MouseButtons.Left];
         public bool LeftReleased => released[(int)MouseButtons.Left];
