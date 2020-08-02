@@ -48,6 +48,37 @@ namespace Foster.Framework
             }
         }
 
+        public class MouseButtonNode : INode
+        {
+            public Input Input;
+            public MouseButtons MouseButton;
+
+            public bool Pressed(float buffer, long lastBufferConsumedTime)
+            {
+                if (Input.Mouse.Pressed(MouseButton))
+                    return true;
+
+                var timestamp = Input.Mouse.Timestamp(MouseButton);
+                var time = Time.Duration.Ticks;
+
+                if (time - timestamp <= TimeSpan.FromSeconds(buffer).Ticks && timestamp > lastBufferConsumedTime)
+                    return true;
+
+                return false;
+            }
+
+            public bool Down => Input.Mouse.Down(MouseButton);
+            public bool Released => Input.Mouse.Released(MouseButton);
+            public bool Repeated(float delay, float interval) => Input.Mouse.Repeated(MouseButton, delay, interval);
+            public void Update() { }
+
+            public MouseButtonNode(Input input, MouseButtons mouseButton)
+            {
+                Input = input;
+                MouseButton = mouseButton;
+            }
+        }
+
         public class ButtonNode : INode
         {
             public Input Input;
@@ -243,6 +274,13 @@ namespace Foster.Framework
         {
             foreach (var key in keys)
                 Nodes.Add(new KeyNode(Input, key));
+            return this;
+        }
+
+        public VirtualButton Add(params MouseButtons[] buttons)
+        {
+            foreach (var button in buttons)
+                Nodes.Add(new MouseButtonNode(Input, button));
             return this;
         }
 
