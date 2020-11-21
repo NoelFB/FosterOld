@@ -23,8 +23,8 @@ namespace Foster.Framework
         }
 
         public Cardinal Reverse => new Cardinal(-X, -Y);
-        public Cardinal NextClockwise => new Cardinal(-Y, X);
-        public Cardinal NextCounterClockwise => new Cardinal(Y, -X);
+        public Cardinal TurnRight => new Cardinal(-Y, X);
+        public Cardinal TurnLeft => new Cardinal(Y, -X);
 
         static public implicit operator Point2(Cardinal c) => new Point2(c.X, c.Y);
     }
