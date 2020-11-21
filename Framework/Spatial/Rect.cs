@@ -210,34 +210,21 @@ namespace Foster.Framework
             var overlapX = X + Width > against.X && X < against.X + against.Width;
             var overlapY = Y + Height > against.Y && Y < against.Y + against.Height;
 
-            if (overlapX && overlapY)
+            Rect r = new Rect();
+
+            if (overlapX)
             {
-                return new Rect
-                {
-                    Left = Math.Max(Left, against.Left),
-                    Top = Math.Max(Top, against.Top),
-                    Right = Math.Min(Right, against.Right),
-                    Bottom = Math.Min(Bottom, against.Bottom)
-                };
-            }
-            else if (overlapX)
-            {
-                return new Rect
-                {
-                    Left = Math.Max(Left, against.Left), Top = 0,
-                    Right = Math.Min(Right, against.Right), Bottom = 0
-                };
-            }
-            else if (overlapY)
-            {
-                return new Rect
-                {
-                    Left = 0, Top = Math.Max(Top, against.Top),
-                    Right = 0, Bottom = Math.Min(Bottom, against.Bottom)
-                };
+                r.Left = Math.Max(Left, against.Left);
+                r.Width = Math.Min(Right, against.Right) - r.Left;
             }
 
-            return new Rect(0, 0, 0, 0);
+            if (overlapY)
+            {
+                r.Top = Math.Max(Top, against.Top);
+                r.Height = Math.Min(Bottom, against.Bottom) - r.Top;
+            }
+
+            return r;
         }
 
         public RectInt Int()
@@ -255,8 +242,8 @@ namespace Foster.Framework
             var rect = new Rect(X, Y, Width, Height);
             rect.Left -= left;
             rect.Top -= top;
-            rect.Right += right;
-            rect.Bottom += bottom;
+            rect.Width += left + right;
+            rect.Height += top + bottom;
             return rect;
         }
 

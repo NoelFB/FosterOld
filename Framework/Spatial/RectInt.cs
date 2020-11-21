@@ -204,20 +204,6 @@ namespace Foster.Framework
             return X + Width > against.X && Y + Height > against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
 
-        public RectInt CropTo(in RectInt other)
-        {
-            if (Left < other.Left)
-                Left = other.Left;
-            if (Top < other.Top)
-                Top = other.Top;
-            if (Right > other.Right)
-                Right = other.Right;
-            if (Bottom > other.Bottom)
-                Bottom = other.Bottom;
-
-            return this;
-        }
-
         public RectInt Inflate(int by)
         {
             return new RectInt(X - by, Y - by, Width + by * 2, Height + by * 2);
@@ -256,18 +242,24 @@ namespace Foster.Framework
 
         public RectInt OverlapRect(in RectInt against)
         {
-            if (Overlaps(against))
+            var overlapX = X + Width > against.X && X < against.X + against.Width;
+            var overlapY = Y + Height > against.Y && Y < against.Y + against.Height;
+
+            RectInt r = new RectInt();
+
+            if (overlapX)
             {
-                return new RectInt
-                {
-                    Left = Math.Max(Left, against.Left),
-                    Top = Math.Max(Top, against.Top),
-                    Right = Math.Min(Right, against.Right),
-                    Bottom = Math.Min(Bottom, against.Bottom)
-                };
+                r.Left = Math.Max(Left, against.Left);
+                r.Width = Math.Min(Right, against.Right) - r.Left;
             }
 
-            return new RectInt(0, 0, 0, 0);
+            if (overlapY)
+            {
+                r.Top = Math.Max(Top, against.Top);
+                r.Height = Math.Min(Bottom, against.Bottom) - r.Top;
+            }
+
+            return r;
         }
 
         public override bool Equals(object? obj) => (obj is RectInt other) && (this == other);
