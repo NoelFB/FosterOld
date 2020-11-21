@@ -643,5 +643,19 @@ namespace Foster.Framework
         }
 
         #endregion Utils
+
+        #region Logging
+
+        static public void Log()
+        {
+            Console.WriteLine("*** " + Time.Duration);
+        }
+
+        static public void Log(object? obj)
+        {
+            Console.WriteLine(obj);
+        }
+
+        #endregion
     }
 }
