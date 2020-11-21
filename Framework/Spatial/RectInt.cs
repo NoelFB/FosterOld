@@ -24,16 +24,6 @@ namespace Foster.Framework
             }
         }
 
-        public Point2 Center
-        {
-            get => new Point2(X + Width / 2, Y + Height / 2);
-            set
-            {
-                X = value.X - Width / 2;
-                Y = value.Y - Height / 2;
-            }
-        }
-
         public Point2 Size
         {
             get => new Point2(Width, Height);
@@ -44,79 +34,141 @@ namespace Foster.Framework
             }
         }
 
-        public int MinX
+        public int Area => Width * Height;
+
+        #region Edges
+
+        public int Left
         {
             get => X;
-            set
-            {
-                Width += (X - value);
-                X = value;
-            }
+            set => X = value;
         }
 
-        public int MaxX
+        public int Right
         {
             get => X + Width;
-            set => Width = value - X;
+            set => X = value - Width;
         }
 
-        public int MinY
+        public int CenterX
+        {
+            get => X + Width / 2;
+            set => X = value - Width / 2;
+        }
+
+        public int Top
         {
             get => Y;
-            set
-            {
-                Height += (Y - value);
-                Y = value;
-            }
+            set => Y = value;
         }
 
-        public int MaxY
+        public int Bottom
         {
             get => Y + Height;
-            set => Height = value - Y;
+            set => Y = value - Height;
         }
+
+        public int CenterY
+        {
+            get => Y + Height / 2;
+            set => Y = value - Height / 2;
+        }
+
+        #endregion
+
+        #region Points
 
         public Point2 TopLeft
         {
-            get => new Point2(MinX, MinY);
+            get => new Point2(Left, Top);
             set
             {
-                MinX = value.X;
-                MinY = value.Y;
+                Left = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Point2 TopCenter
+        {
+            get => new Point2(CenterX, Top);
+            set
+            {
+                CenterX = value.X;
+                Top = value.Y;
             }
         }
 
         public Point2 TopRight
         {
-            get => new Point2(MaxX, MinY);
+            get => new Point2(Right, Top);
             set
             {
-                MaxX = value.X;
-                MinY = value.Y;
+                Right = value.X;
+                Top = value.Y;
             }
         }
 
-        public Point2 BottomRight
+        public Point2 CenterLeft
         {
-            get => new Point2(MaxX, MaxY);
+            get => new Point2(Left, CenterY);
             set
             {
-                MaxX = value.X;
-                MaxY = value.Y;
+                Left = value.X;
+                CenterY = value.Y;
+            }
+        }
+
+        public Point2 Center
+        {
+            get => new Point2(CenterX, CenterY);
+            set
+            {
+                CenterX = value.X;
+                CenterY = value.Y;
+            }
+        }
+
+        public Point2 CenterRight
+        {
+            get => new Point2(Right, CenterY);
+            set
+            {
+                Right = value.X;
+                CenterY = value.Y;
             }
         }
 
         public Point2 BottomLeft
         {
-            get => new Point2(MinX, MaxY);
+            get => new Point2(Left, Bottom);
             set
             {
-                MinX = value.X;
-                MaxY = value.Y;
+                Left = value.X;
+                Bottom = value.Y;
             }
         }
 
-        public int Area => Width * Height;
+        public Point2 BottomCenter
+        {
+            get => new Point2(CenterX, Bottom);
+            set
+            {
+                CenterX = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        public Point2 BottomRight
+        {
+            get => new Point2(Right, Bottom);
+            set
+            {
+                Right = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        #endregion
 
         public RectInt(int x, int y, int w, int h)
         {
@@ -143,7 +195,7 @@ namespace Foster.Framework
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in RectInt rect)
         {
-            return (MinX < rect.MinX && MinY < rect.MinY && MaxY > rect.MaxY && MaxX > rect.MaxX);
+            return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,14 +206,14 @@ namespace Foster.Framework
 
         public RectInt CropTo(in RectInt other)
         {
-            if (MinX < other.MinX)
-                MinX = other.MinX;
-            if (MinY < other.MinY)
-                MinY = other.MinY;
-            if (MaxX > other.MaxX)
-                MaxX = other.MaxX;
-            if (MaxY > other.MaxY)
-                MaxY = other.MaxY;
+            if (Left < other.Left)
+                Left = other.Left;
+            if (Top < other.Top)
+                Top = other.Top;
+            if (Right > other.Right)
+                Right = other.Right;
+            if (Bottom > other.Bottom)
+                Bottom = other.Bottom;
 
             return this;
         }
@@ -208,10 +260,10 @@ namespace Foster.Framework
             {
                 return new RectInt
                 {
-                    MinX = Math.Max(MinX, against.MinX),
-                    MinY = Math.Max(MinY, against.MinY),
-                    MaxX = Math.Min(MaxX, against.MaxX),
-                    MaxY = Math.Min(MaxY, against.MaxY)
+                    Left = Math.Max(Left, against.Left),
+                    Top = Math.Max(Top, against.Top),
+                    Right = Math.Min(Right, against.Right),
+                    Bottom = Math.Min(Bottom, against.Bottom)
                 };
             }
 

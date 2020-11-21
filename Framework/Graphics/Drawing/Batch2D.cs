@@ -953,9 +953,9 @@ namespace Foster.Framework
                 var ty = Math.Min(t, rect.Height / 2f);
 
                 Rect(rect.X, rect.Y, rect.Width, ty, color);
-                Rect(rect.X, rect.MaxY - ty, rect.Width, ty, color);
+                Rect(rect.X, rect.Bottom - ty, rect.Width, ty, color);
                 Rect(rect.X, rect.Y + ty, tx, rect.Height - ty * 2, color);
-                Rect(rect.MaxX - tx, rect.Y + ty, tx, rect.Height - ty * 2, color);
+                Rect(rect.Right - tx, rect.Y + ty, tx, rect.Height - ty * 2, color);
             }
         }
 
@@ -1036,8 +1036,8 @@ namespace Foster.Framework
         {
             var tx0 = clip.X / texture.Width;
             var ty0 = clip.Y / texture.Height;
-            var tx1 = clip.MaxX / texture.Width;
-            var ty1 = clip.MaxY / texture.Height;
+            var tx1 = clip.Right / texture.Width;
+            var ty1 = clip.Bottom / texture.Height;
 
             SetTexture(texture);
             Quad(
@@ -1059,8 +1059,8 @@ namespace Foster.Framework
 
             var tx0 = clip.X / texture.Width;
             var ty0 = clip.Y / texture.Height;
-            var tx1 = clip.MaxX / texture.Width;
-            var ty1 = clip.MaxY / texture.Height;
+            var tx1 = clip.Right / texture.Width;
+            var ty1 = clip.Bottom / texture.Height;
 
             SetTexture(texture);
             Quad(
@@ -1129,10 +1129,10 @@ namespace Foster.Framework
 
             if (tex != null)
             {
-                tx0 = source.MinX / tex.Width;
-                ty0 = source.MinY / tex.Height;
-                tx1 = source.MaxX / tex.Width;
-                ty1 = source.MaxY / tex.Height;
+                tx0 = source.Left / tex.Width;
+                ty0 = source.Top / tex.Height;
+                tx1 = source.Right / tex.Width;
+                ty1 = source.Bottom / tex.Height;
             }
 
             SetTexture(subtex.Texture);
@@ -1248,14 +1248,14 @@ namespace Foster.Framework
         {
             var odd = false;
 
-            for (float y = bounds.MinY; y < bounds.MaxY; y += cellHeight)
+            for (float y = bounds.Top; y < bounds.Bottom; y += cellHeight)
             {
                 var cells = 0;
-                for (float x = bounds.MinX; x < bounds.MaxX; x += cellWidth)
+                for (float x = bounds.Left; x < bounds.Right; x += cellWidth)
                 {
                     var color = (odd ? a : b);
                     if (color.A > 0)
-                        Rect(x, y, Math.Min(bounds.MaxX - x, cellWidth), Math.Min(bounds.MaxY - y, cellHeight), color);
+                        Rect(x, y, Math.Min(bounds.Right - x, cellWidth), Math.Min(bounds.Bottom - y, cellHeight), color);
 
                     odd = !odd;
                     cells++;

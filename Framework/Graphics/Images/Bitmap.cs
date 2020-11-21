@@ -121,10 +121,10 @@ namespace Foster.Framework
             var dst = dest.Span;
 
             // can't be outside of the source image
-            if (sourceRect.MinX < 0) sourceRect.MinX = 0;
-            if (sourceRect.MinY < 0) sourceRect.MinY = 0;
-            if (sourceRect.MaxX > Width) sourceRect.MaxX = Width;
-            if (sourceRect.MaxY > Height) sourceRect.MaxY = Height;
+            if (sourceRect.Left < 0) sourceRect.Left = 0;
+            if (sourceRect.Top < 0) sourceRect.Top = 0;
+            if (sourceRect.Right > Width) sourceRect.Right = Width;
+            if (sourceRect.Bottom > Height) sourceRect.Bottom = Height;
 
             // can't be larger than our destination
             if (sourceRect.Width > destSize.X - destPosition.X)

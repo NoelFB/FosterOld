@@ -15,80 +15,6 @@ namespace Foster.Framework
         public float Width;
         public float Height;
 
-        public float MinX
-        {
-            get => X;
-            set
-            {
-                Width += (X - value);
-                X = value;
-            }
-        }
-
-        public float MaxX
-        {
-            get => X + Width;
-            set => Width = value - X;
-        }
-
-        public float MinY
-        {
-            get => Y;
-            set
-            {
-                Height += (Y - value);
-                Y = value;
-            }
-        }
-
-        public float MaxY
-        {
-            get => Y + Height;
-            set => Height = value - Y;
-        }
-
-        public Vector2 TopLeft
-        {
-            get => new Vector2(MinX, MinY);
-            set
-            {
-                MinX = value.X;
-                MinY = value.Y;
-            }
-        }
-
-        public Vector2 TopRight
-        {
-            get => new Vector2(MaxX, MinY);
-            set
-            {
-                MaxX = value.X;
-                MinY = value.Y;
-            }
-        }
-
-        public Vector2 BottomRight
-        {
-            get => new Vector2(MaxX, MaxY);
-            set
-            {
-                MaxX = value.X;
-                MaxY = value.Y;
-            }
-        }
-
-        public Vector2 BottomLeft
-        {
-            get => new Vector2(MinX, MaxY);
-            set
-            {
-                MinX = value.X;
-                MaxY = value.Y;
-            }
-        }
-
-        public float Area => Math.Abs(Width) * Math.Abs(Height);
-
         public Vector2 Position
         {
             get => new Vector2(X, Y);
@@ -96,16 +22,6 @@ namespace Foster.Framework
             {
                 X = value.X;
                 Y = value.Y;
-            }
-        }
-
-        public Vector2 Center
-        {
-            get => new Vector2(X + Width / 2, Y + Height / 2);
-            set
-            {
-                X = value.X - Width / 2f;
-                Y = value.Y - Height / 2f;
             }
         }
 
@@ -118,6 +34,142 @@ namespace Foster.Framework
                 Height = value.Y;
             }
         }
+
+        public float Area => Math.Abs(Width) * Math.Abs(Height);
+
+        #region Edges
+
+        public float Left
+        {
+            get => X;
+            set => X = value;
+        }
+
+        public float Right
+        {
+            get => X + Width;
+            set => X = value - Width;
+        }
+
+        public float CenterX
+        {
+            get => X + Width / 2;
+            set => X = value - Width / 2;
+        }
+
+        public float Top
+        {
+            get => Y;
+            set => Y = value;
+        }
+
+        public float Bottom
+        {
+            get => Y + Height;
+            set => Y = value - Height;
+        }
+
+        public float CenterY
+        {
+            get => Y + Height / 2;
+            set => Y = value - Height / 2;
+        }
+
+        #endregion
+
+        #region Points
+
+        public Vector2 TopLeft
+        {
+            get => new Vector2(Left, Top);
+            set
+            {
+                Left = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Vector2 TopCenter
+        {
+            get => new Vector2(CenterX, Top);
+            set
+            {
+                CenterX = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Vector2 TopRight
+        {
+            get => new Vector2(Right, Top);
+            set
+            {
+                Right = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public Vector2 CenterLeft
+        {
+            get => new Vector2(Left, CenterY);
+            set
+            {
+                Left = value.X;
+                CenterY = value.Y;
+            }
+        }
+
+        public Vector2 Center
+        {
+            get => new Vector2(CenterX, CenterY);
+            set
+            {
+                CenterX = value.X;
+                CenterY = value.Y;
+            }
+        }
+
+        public Vector2 CenterRight
+        {
+            get => new Vector2(Right, CenterY);
+            set
+            {
+                Right = value.X;
+                CenterY = value.Y;
+            }
+        }
+
+        public Vector2 BottomLeft
+        {
+            get => new Vector2(Left, Bottom);
+            set
+            {
+                Left = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        public Vector2 BottomCenter
+        {
+            get => new Vector2(CenterX, Bottom);
+            set
+            {
+                CenterX = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        public Vector2 BottomRight
+        {
+            get => new Vector2(Right, Bottom);
+            set
+            {
+                Right = value.X;
+                Bottom = value.Y;
+            }
+        }
+
+        #endregion
 
         public Rect(float x, float y, float w, float h)
         {
@@ -144,7 +196,7 @@ namespace Foster.Framework
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Rect rect)
         {
-            return (MinX <= rect.MinX && MinY <= rect.MinY && MaxY >= rect.MaxY && MaxX >= rect.MaxX);
+            return (Left <= rect.Left && Top <= rect.Top && Bottom >= rect.Bottom && Right >= rect.Right);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -162,26 +214,26 @@ namespace Foster.Framework
             {
                 return new Rect
                 {
-                    MinX = Math.Max(MinX, against.MinX),
-                    MinY = Math.Max(MinY, against.MinY),
-                    MaxX = Math.Min(MaxX, against.MaxX),
-                    MaxY = Math.Min(MaxY, against.MaxY)
+                    Left = Math.Max(Left, against.Left),
+                    Top = Math.Max(Top, against.Top),
+                    Right = Math.Min(Right, against.Right),
+                    Bottom = Math.Min(Bottom, against.Bottom)
                 };
             }
             else if (overlapX)
             {
                 return new Rect
                 {
-                    MinX = Math.Max(MinX, against.MinX), MinY = 0,
-                    MaxX = Math.Min(MaxX, against.MaxX), MaxY = 0
+                    Left = Math.Max(Left, against.Left), Top = 0,
+                    Right = Math.Min(Right, against.Right), Bottom = 0
                 };
             }
             else if (overlapY)
             {
                 return new Rect
                 {
-                    MinX = 0, MinY = Math.Max(MinY, against.MinY),
-                    MaxX = 0, MaxY = Math.Min(MaxY, against.MaxY)
+                    Left = 0, Top = Math.Max(Top, against.Top),
+                    Right = 0, Bottom = Math.Min(Bottom, against.Bottom)
                 };
             }
 
@@ -201,10 +253,10 @@ namespace Foster.Framework
         public Rect Inflate(float left, float top, float right, float bottom)
         {
             var rect = new Rect(X, Y, Width, Height);
-            rect.MinX -= left;
-            rect.MinY -= top;
-            rect.MaxX += right;
-            rect.MaxY += bottom;
+            rect.Left -= left;
+            rect.Top -= top;
+            rect.Right += right;
+            rect.Bottom += bottom;
             return rect;
         }
 
