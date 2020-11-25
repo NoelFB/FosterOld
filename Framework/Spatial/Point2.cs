@@ -63,6 +63,11 @@ namespace Foster.Framework
             return new Vector2(X, Y).Normalized();
         }
 
+        public Point2 FloorTo(int interval)
+        {
+            return (this / interval) * interval;
+        }
+
         public override bool Equals(object? obj) => (obj is Point2 other) && (other == this);
 
         public bool Equals(Point2 other) => (X == other.X && Y == other.Y);
