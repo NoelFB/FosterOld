@@ -92,7 +92,7 @@ namespace Foster.Framework
 
         public delegate void TextInputHandler(char value);
 
-        public event TextInputHandler OnTextEvent;
+        public event TextInputHandler? OnTextEvent;
 
         protected void OnText(char value)
         {
