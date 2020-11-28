@@ -569,6 +569,11 @@ namespace Foster.Framework
             }
         }
 
+        public static ReadOnlySpan<byte> ToBytes<T>(Span<T> span) where T : struct
+        {
+            return MemoryMarshal.Cast<T, byte>(span);
+        }
+
         #endregion
 
         #region Paths

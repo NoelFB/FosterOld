@@ -45,5 +45,40 @@ namespace Foster.Framework
         static public implicit operator Point2(Cardinal c) => new Point2(c.X, c.Y);
         static public bool operator ==(Cardinal a, Cardinal b) => a.X == b.X && a.Y == b.Y;
         static public bool operator !=(Cardinal a, Cardinal b) => a.X != b.X || a.Y != b.Y;
+
+        public byte ToByte()
+        {
+            if (this == Null)
+                return 0;
+            else if (this == Right)
+                return 1;
+            else if (this == Up)
+                return 2;
+            else if (this == Left)
+                return 3;
+            else if (this == Down)
+                return 4;
+
+            throw new ArgumentOutOfRangeException();
+        }
+
+        public static Cardinal FromByte(byte v)
+        {
+            switch (v)
+            {
+                case 0:
+                    return Null;
+                case 1:
+                    return Right;
+                case 2:
+                    return Up;
+                case 3:
+                    return Left;
+                case 4:
+                    return Down;
+            }
+
+            throw new ArgumentOutOfRangeException();
+        }
     }
 }
