@@ -46,6 +46,19 @@ namespace Foster.Framework
         static public bool operator ==(Cardinal a, Cardinal b) => a.X == b.X && a.Y == b.Y;
         static public bool operator !=(Cardinal a, Cardinal b) => a.X != b.X || a.Y != b.Y;
 
+        public override int GetHashCode()
+        {
+            return X * 10 + Y;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || !(obj is Cardinal c))
+                return false;
+            else
+                return this == c;
+        }
+
         public byte ToByte()
         {
             if (this == Null)
