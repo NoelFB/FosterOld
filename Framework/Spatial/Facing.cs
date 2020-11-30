@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Foster
 {
-    public struct Facing
+    public struct Facing.Framework
     {
         static public readonly Facing Right = new Facing(0);
         static public readonly Facing Left = new Facing(1);
@@ -32,7 +32,6 @@ namespace Foster
                 return a.Reverse;
             else
                 return a;
-
         }
 
         public override int GetHashCode()
