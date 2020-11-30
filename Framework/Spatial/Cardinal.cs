@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,47 +9,87 @@ namespace Foster.Framework
 {
     public struct Cardinal
     {
-        static public readonly Cardinal Null = new Cardinal(0, 0);
-        static public readonly Cardinal Right = new Cardinal(1, 0);
-        static public readonly Cardinal Left = new Cardinal(-1, 0);
-        static public readonly Cardinal Up = new Cardinal(0, -1);
-        static public readonly Cardinal Down = new Cardinal(0, 1);
+        static public readonly Cardinal Right = new Cardinal(0);
+        static public readonly Cardinal Up = new Cardinal(1);
+        static public readonly Cardinal Left = new Cardinal(2);
+        static public readonly Cardinal Down = new Cardinal(3);
 
-        public int X { get; private set; }
-        public int Y { get; private set; }
+        private byte value;
 
-        private Cardinal(int x, int y)
+        private Cardinal(byte val)
         {
-            X = x;
-            Y = y;
+            value = val;
         }
 
-        public Cardinal Reverse => new Cardinal(-X, -Y);
-        public Cardinal TurnRight => new Cardinal(-Y, X);
-        public Cardinal TurnLeft => new Cardinal(Y, -X);
+        public Cardinal Reverse => new Cardinal((byte)((value + 2) % 4));
+        public Cardinal TurnRight => new Cardinal((byte)((value + 3) % 4));
+        public Cardinal TurnLeft => new Cardinal((byte)((value + 1) % 4));
+
+        public int X
+        {
+            get
+            {
+                switch (value)
+                {
+                    case 0:
+                        return 1;
+                    case 2:
+                        return -1;
+                    case 1:
+                    case 3:
+                        return 0;
+                }
+
+                throw new ArgumentException();
+            }
+        }
+
+        public int Y
+        {
+            get
+            {
+                switch (value)
+                {
+                    case 3:
+                        return 1;
+                    case 1:
+                        return -1;
+                    case 0:
+                    case 2:
+                        return 0;
+                }
+
+                throw new ArgumentException();
+            }
+        }
 
         public float Angle
         {
             get
             {
-                if (this == Cardinal.Left)
-                    return Calc.PI;
-                else if (this == Cardinal.Up)
-                    return -Calc.HalfPI;
-                else if (this == Cardinal.Down)
-                    return Calc.HalfPI;
-                else
-                    return 0;
+                switch (value)
+                {
+                    case 0:
+                        return 0;
+                    case 1:
+                        return -Calc.HalfPI;
+                    case 2:
+                        return Calc.PI;
+                    case 3:
+                        return Calc.HalfPI;
+                }
+
+                throw new ArgumentException();
             }
         }
 
         static public implicit operator Point2(Cardinal c) => new Point2(c.X, c.Y);
-        static public bool operator ==(Cardinal a, Cardinal b) => a.X == b.X && a.Y == b.Y;
-        static public bool operator !=(Cardinal a, Cardinal b) => a.X != b.X || a.Y != b.Y;
+        static public bool operator ==(Cardinal a, Cardinal b) => a.value == b.value;
+        static public bool operator !=(Cardinal a, Cardinal b) => a.value != b.value;
 
         public override int GetHashCode()
         {
-            return X * 10 + Y;
+            return value;
         }
 
         public override bool Equals(object? obj)
@@ -61,37 +102,13 @@ namespace Foster.Framework
 
         public byte ToByte()
         {
-            if (this == Null)
-                return 0;
-            else if (this == Right)
-                return 1;
-            else if (this == Up)
-                return 2;
-            else if (this == Left)
-                return 3;
-            else if (this == Down)
-                return 4;
-
-            throw new ArgumentOutOfRangeException();
+            return value;
         }
 
         public static Cardinal FromByte(byte v)
         {
-            switch (v)
-            {
-                case 0:
-                    return Null;
-                case 1:
-                    return Right;
-                case 2:
-                    return Up;
-                case 3:
-                    return Left;
-                case 4:
-                    return Down;
-            }
-
-            throw new ArgumentOutOfRangeException();
+            Debug.Assert(v < 4, "Argument out of range");
+            return new Cardinal(v);
         }
     }
 }
