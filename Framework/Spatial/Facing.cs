@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foster
+namespace Foster.Framework
 {
-    public struct Facing.Framework
+    public struct Facing
     {
         static public readonly Facing Right = new Facing(0);
         static public readonly Facing Left = new Facing(1);
