@@ -295,6 +295,7 @@ namespace Foster.SDL2
             { SDL.SDL_Keycode.SDLK_COMMA, Keys.Comma },
             { SDL.SDL_Keycode.SDLK_PERIOD, Keys.Period },
             { SDL.SDL_Keycode.SDLK_SLASH, Keys.Slash },
+            { SDL.SDL_Keycode.SDLK_BACKQUOTE, Keys.BackQuote },
 
             { SDL.SDL_Keycode.SDLK_CAPSLOCK, Keys.CapsLock },
 

@@ -26,12 +26,14 @@ namespace Foster.Framework
         static public bool operator ==(Facing a, Facing b) => a.value == b.value;
         static public bool operator !=(Facing a, Facing b) => a.value != b.value;
 
-        static public Facing operator *(Facing a, int b)
+        static public int operator *(Facing a, int b)
         {
-            if (b < 0)
-                return a.Reverse;
-            else
-                return a;
+            return (int)a * b;
+        }
+
+        static public int operator *(int a, Facing b)
+        {
+            return a * (int)b;
         }
 
         public override int GetHashCode()

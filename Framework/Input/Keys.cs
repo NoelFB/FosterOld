@@ -10,6 +10,7 @@
 
         Space = 32,
         Apostrophe = 39,
+        BackQuote = 40,
         Comma = 44,
         Minus = 45,
         Period = 46,
