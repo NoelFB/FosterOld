@@ -63,9 +63,28 @@ namespace Foster.Framework
             return new Vector2(X, Y).Normalized();
         }
 
+        /// <summary>
+        /// Floors both axes of the Point2 to the given interval
+        /// </summary>
         public Point2 FloorTo(int interval)
         {
             return (this / interval) * interval;
+        }
+
+        /// <summary>
+        /// Returns a Point2 with the X-value of this Point2, but zero Y
+        /// </summary>
+        public Point2 OnlyX()
+        {
+            return new Point2(X, 0);
+        }
+
+        /// <summary>
+        /// Returns a Point2 with the Y-value of this Point2, but zero X
+        /// </summary>
+        public Point2 OnlyY()
+        {
+            return new Point2(0, Y);
         }
 
         public override bool Equals(object? obj) => (obj is Point2 other) && (other == this);
