@@ -8,6 +8,18 @@ namespace Foster.Framework
     public static class VectorExt
     {
         /// <summary>
+        /// Clamps the vector inside the provided range.
+        /// </summary>
+        public static Vector2 Clamp(this Vector2 vector, in Vector2 min, in Vector2 max) =>
+            new Vector2(Calc.Clamp(vector.X, min.X, max.X), Calc.Clamp(vector.Y, min.Y, max.Y));
+
+        /// <summary>
+        /// Clamps the vector inside the bounding rectangle.
+        /// </summary>
+        public static Vector2 Clamp(this Vector2 vector, in RectInt bounds) =>
+            vector.Clamp(bounds.TopLeft, bounds.BottomRight);
+
+        /// <summary>
         /// Floors the individual components of a Vector2
         /// </summary>
         public static Vector2 Floor(this Vector2 vector) => new Vector2(MathF.Floor(vector.X), MathF.Floor(vector.Y));
