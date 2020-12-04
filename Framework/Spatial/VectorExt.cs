@@ -132,5 +132,21 @@ namespace Foster.Framework
 
             return vector;
         }
+
+        /// <summary>
+        /// Returns a Vector2 with the X-value of this Vector2, but zero Y
+        /// </summary>
+        public static Vector2 OnlyX(this Vector2 vector)
+        {
+            return new Vector2(vector.X, 0);
+        }
+
+        /// <summary>
+        /// Returns a Vector2 with the Y-value of this Vector2, but zero X
+        /// </summary>
+        public static Vector2 OnlyY(this Vector2 vector)
+        {
+            return new Vector2(0, vector.Y);
+        }
     }
 }
