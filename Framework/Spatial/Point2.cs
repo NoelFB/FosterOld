@@ -87,6 +87,18 @@ namespace Foster.Framework
             return new Point2(0, Y);
         }
 
+        /// <summary>
+        /// Clamps the point inside the provided range.
+        /// </summary>
+        public Point2 Clamp(in Point2 min, in Point2 max) =>
+            new Point2(Calc.Clamp(X, min.X, max.X), Calc.Clamp(Y, min.Y, max.Y));
+
+        /// <summary>
+        /// Clamps the point inside the bounding rectangle.
+        /// </summary>
+        public Point2 Clamp(in RectInt bounds) =>
+            Clamp(bounds.TopLeft, bounds.BottomRight);
+
         public override bool Equals(object? obj) => (obj is Point2 other) && (other == this);
 
         public bool Equals(Point2 other) => (X == other.X && Y == other.Y);

@@ -16,7 +16,7 @@ namespace Foster.Framework
         /// <summary>
         /// Clamps the vector inside the bounding rectangle.
         /// </summary>
-        public static Vector2 Clamp(this Vector2 vector, in RectInt bounds) =>
+        public static Vector2 Clamp(this Vector2 vector, in Rect bounds) =>
             vector.Clamp(bounds.TopLeft, bounds.BottomRight);
 
         /// <summary>
