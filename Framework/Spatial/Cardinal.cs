@@ -86,6 +86,7 @@ namespace Foster.Framework
         static public implicit operator Point2(Cardinal c) => new Point2(c.X, c.Y);
         static public bool operator ==(Cardinal a, Cardinal b) => a.value == b.value;
         static public bool operator !=(Cardinal a, Cardinal b) => a.value != b.value;
+        static public Point2 operator *(Cardinal a, int b) => (Point2)a * b;
 
         public override int GetHashCode()
         {
