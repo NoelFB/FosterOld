@@ -111,5 +111,16 @@ namespace Foster.Framework
             Debug.Assert(v < 4, "Argument out of range");
             return new Cardinal(v);
         }
+
+        public static IEnumerable<Cardinal> All
+        {
+            get
+            {
+                yield return Right;
+                yield return Down;
+                yield return Left;
+                yield return Up;
+            }
+        }
     }
 }
