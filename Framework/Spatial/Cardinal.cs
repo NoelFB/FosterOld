@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Foster.Framework
 {
@@ -101,6 +102,17 @@ namespace Foster.Framework
                 return this == c;
         }
 
+        public override string ToString()
+        {
+            switch (value)
+            {
+                case 0: return "Right";
+                case 1: return "Up";
+                case 2: return "Left";
+                default: return "Down";
+            }
+        }
+
         public byte ToByte()
         {
             return value;
@@ -110,6 +122,13 @@ namespace Foster.Framework
         {
             Debug.Assert(v < 4, "Argument out of range");
             return new Cardinal(v);
+        }
+
+        public static Cardinal FromVector(Vector2 dir)
+        {
+            if (Math.Abs(dir.X) > Math.Abs(dir.Y))
+                return dir.X < 0 ? Left : Right;
+            return dir.Y < 0 ? Up : Down;
         }
 
         public static IEnumerable<Cardinal> All
