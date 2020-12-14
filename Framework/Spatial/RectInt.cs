@@ -284,6 +284,11 @@ namespace Foster.Framework
             return $"[{X}, {Y}, {Width}, {Height}]";
         }
 
+        public static RectInt Box(Point2 center, Point2 size)
+        {
+            return new RectInt(center.X - size.X / 2, center.Y - size.Y / 2, size.X, size.Y);
+        }
+
         public static RectInt Between(Point2 a, Point2 b)
         {
             RectInt rect;
