@@ -84,6 +84,7 @@ namespace Foster.Framework
             }
         }
 
+        static public implicit operator Cardinal(Facing f) => f.ToByte() == 0 ? Cardinal.Right : Cardinal.Left;
         static public implicit operator Point2(Cardinal c) => new Point2(c.X, c.Y);
         static public bool operator ==(Cardinal a, Cardinal b) => a.value == b.value;
         static public bool operator !=(Cardinal a, Cardinal b) => a.value != b.value;

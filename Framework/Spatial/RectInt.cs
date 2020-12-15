@@ -311,6 +311,14 @@ namespace Foster.Framework
             return !(a == b);
         }
 
+        public static RectInt operator *(RectInt rect, Facing flipX)
+        {
+            if (flipX == Facing.Right)
+                return rect;
+            else
+                return rect.MultiplyX(-1);
+        }
+
         public static RectInt operator *(RectInt rect, int scaler)
         {
             return new RectInt(rect.X * scaler, rect.Y * scaler, rect.Width * scaler, rect.Height * scaler).Validate();
