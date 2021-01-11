@@ -390,6 +390,22 @@ namespace Foster.Framework
             Quad(from + perp, from - perp, to - perp, to + perp, color);
         }
 
+        public void DashedLine(Vector2 from, Vector2 to, float thickness, Color color, float dashLength, float offsetPercent)
+        {
+            var diff = to - from;
+            var dist = diff.Length();
+            var step = diff.Normalized() * dashLength;
+            var normal = (to - from).Normalized();
+            var perp = new Vector2(-normal.Y, normal.X) * thickness * .5f;
+            offsetPercent = ((offsetPercent % 1f) + 1f) % 1f;
+            to = from + step;
+            for (float d = dashLength * offsetPercent; d < dist; d += dashLength * 2f) {
+                Quad(from + perp, from - perp, to - perp, to + perp, color);
+                from += step * 2f;
+                to += step * 2f;
+            }
+        }
+
         #endregion
 
         #region Quad
