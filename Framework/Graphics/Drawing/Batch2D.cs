@@ -395,6 +395,7 @@ namespace Foster.Framework
             var diff = to - from;
             var dist = diff.Length();
             var axis = diff.Normalized();
+            var perp = axis.TurnLeft() * (thickness * 0.5f);
             offsetPercent = ((offsetPercent % 1f) + 1f) % 1f;
 
             var startD = dashLength * offsetPercent * 2f;
@@ -405,7 +406,8 @@ namespace Foster.Framework
             {
                 var a = from + axis * Math.Max(d, 0f);
                 var b = from + axis * Math.Min(d + dashLength, dist);
-                Line(a, b, thickness, color);
+                Quad(a + perp, b + perp, b - perp, a - perp, color);
+                //Line(a, b, thickness, color);
             }
         }
 
