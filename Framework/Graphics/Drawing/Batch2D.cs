@@ -394,15 +394,18 @@ namespace Foster.Framework
         {
             var diff = to - from;
             var dist = diff.Length();
-            var step = diff.Normalized() * dashLength;
-            var normal = (to - from).Normalized();
-            var perp = new Vector2(-normal.Y, normal.X) * thickness * .5f;
+            var axis = diff.Normalized();
             offsetPercent = ((offsetPercent % 1f) + 1f) % 1f;
-            to = from + step;
-            for (float d = dashLength * offsetPercent; d < dist; d += dashLength * 2f) {
-                Quad(from + perp, from - perp, to - perp, to + perp, color);
-                from += step * 2f;
-                to += step * 2f;
+
+            var startD = dashLength * offsetPercent * 2f;
+            if (startD > dashLength)
+                startD -= dashLength * 2f;
+
+            for (float d = startD; d < dist; d += dashLength * 2f)
+            {
+                var a = from + axis * Math.Max(d, 0f);
+                var b = from + axis * Math.Min(d + dashLength, dist);
+                Line(a, b, thickness, color);
             }
         }
 
