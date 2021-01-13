@@ -122,6 +122,36 @@ namespace Foster.Framework
 
         #region Math
 
+        public static T Min<T>(T a, T b) where T : IComparable<T>
+        {
+            if (a.CompareTo(b) < 0)
+                return a;
+            return b;
+        }
+        public static T Min<T>(T a, T b, T c) where T : IComparable<T>
+        {
+            return Min(Min(a, b), c);
+        }
+        public static T Min<T>(T a, T b, T c, T d) where T : IComparable<T>
+        {
+            return Min(Min(Min(a, b), c), d);
+        }
+
+        public static T Max<T>(T a, T b) where T : IComparable<T>
+        {
+            if (a.CompareTo(b) > 0)
+                return a;
+            return b;
+        }
+        public static T Max<T>(T a, T b, T c) where T : IComparable<T>
+        {
+            return Max(Max(a, b), c);
+        }
+        public static T Max<T>(T a, T b, T c, T d) where T : IComparable<T>
+        {
+            return Max(Max(Max(a, b), c), d);
+        }
+
         public static float Approach(float from, float target, float amount)
         {
             if (from > target)
