@@ -407,7 +407,6 @@ namespace Foster.Framework
                 var a = from + axis * Math.Max(d, 0f);
                 var b = from + axis * Math.Min(d + dashLength, dist);
                 Quad(a + perp, b + perp, b - perp, a - perp, color);
-                //Line(a, b, thickness, color);
             }
         }
 
