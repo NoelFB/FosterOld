@@ -88,6 +88,16 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Turns a Point2 to its right perpendicular
+        /// </summary>
+        public Point2 TurnRight() => new Point2(-Y, X);
+
+        /// <summary>
+        /// Turns a Point2 to its left perpendicular
+        /// </summary>
+        public Point2 TurnLeft() => new Point2(Y, -X);
+
+        /// <summary>
         /// Clamps the point inside the provided range.
         /// </summary>
         public Point2 Clamp(in Point2 min, in Point2 max) =>
@@ -115,6 +125,14 @@ namespace Foster.Framework
         {
             return $"[{X}, {Y}]";
         }
+
+        public static Point2 Min(Point2 a, Point2 b) => new Point2(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
+        public static Point2 Min(Point2 a, Point2 b, Point2 c) => new Point2(Calc.Min(a.X, b.X, c.X), Calc.Min(a.Y, b.Y, c.Y));
+        public static Point2 Min(Point2 a, Point2 b, Point2 c, Point2 d) => new Point2(Calc.Min(a.X, b.X, c.X, d.X), Calc.Min(a.Y, b.Y, c.Y, d.Y));
+
+        public static Point2 Max(Point2 a, Point2 b) => new Point2(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
+        public static Point2 Max(Point2 a, Point2 b, Point2 c) => new Point2(Calc.Max(a.X, b.X, c.X), Calc.Max(a.Y, b.Y, c.Y));
+        public static Point2 Max(Point2 a, Point2 b, Point2 c, Point2 d) => new Point2(Calc.Max(a.X, b.X, c.X, d.X), Calc.Max(a.Y, b.Y, c.Y, d.Y));
 
         public static int ManhattanDist(in Point2 a, in Point2 b) =>
             Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
