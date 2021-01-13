@@ -8,7 +8,6 @@ namespace Foster.Framework
     /// </summary>
     public struct RectInt
     {
-
         public int X;
         public int Y;
         public int Width;
@@ -77,6 +76,10 @@ namespace Foster.Framework
         #endregion
 
         #region Points
+
+        public Point2 Min => new Point2(Math.Min(X, Right), Math.Min(Y, Bottom));
+
+        public Point2 Max => new Point2(Math.Max(X, Right), Math.Max(Y, Bottom));
 
         public Point2 TopLeft
         {
@@ -266,6 +269,46 @@ namespace Foster.Framework
 
             return r;
         }
+
+        public RectInt RotateLeft(Point2 origin)
+        {
+            var a = (TopLeft - origin).TurnLeft();
+            var b = (TopRight - origin).TurnLeft();
+            var c = (BottomRight - origin).TurnLeft();
+            var d = (BottomLeft - origin).TurnLeft();
+            var min = Point2.Min(a, b, c, d);
+            var max = Point2.Max(a, b, c, d);
+            return new RectInt(min.X, min.Y, max.X - min.X, max.Y - min.Y);
+        }
+        public RectInt RotateLeft(Point2 origin, int count)
+        {
+            var r = this;
+            while (count-- > 0)
+                r = r.RotateLeft(origin);
+            return r;
+        }
+        public RectInt RotateLeft() => RotateLeft(Point2.Zero);
+        public RectInt RotateLeft(int count) => RotateLeft(Point2.Zero, count);
+
+        public RectInt RotateRight(Point2 origin)
+        {
+            var a = (TopLeft - origin).TurnRight();
+            var b = (TopRight - origin).TurnRight();
+            var c = (BottomRight - origin).TurnRight();
+            var d = (BottomLeft - origin).TurnRight();
+            var min = Point2.Min(a, b, c, d);
+            var max = Point2.Max(a, b, c, d);
+            return new RectInt(min.X, min.Y, max.X - min.X, max.Y - min.Y);
+        }
+        public RectInt RotateRight(Point2 origin, int count)
+        {
+            var r = this;
+            while (count-- > 0)
+                r = r.RotateRight(origin);
+            return r;
+        }
+        public RectInt RotateRight() => RotateRight(Point2.Zero);
+        public RectInt RotateRight(int count) => RotateRight(Point2.Zero, count);
 
         public override bool Equals(object? obj) => (obj is RectInt other) && (this == other);
 
