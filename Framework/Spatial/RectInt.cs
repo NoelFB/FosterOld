@@ -207,6 +207,14 @@ namespace Foster.Framework
             return X + Width > against.X && Y + Height > against.Y && X < against.X + against.Width && Y < against.Y + against.Height;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public RectInt Conflate(in RectInt other)
+        {
+            var min = Point2.Min(Min, other.Min);
+            var max = Point2.Max(Max, other.Max);
+            return new RectInt(min.X, min.Y, max.X - min.X, max.Y - min.Y);
+        }
+
         public RectInt Inflate(int by)
         {
             return new RectInt(X - by, Y - by, Width + by * 2, Height + by * 2);
