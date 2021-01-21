@@ -109,5 +109,16 @@ namespace Foster.Framework
         {
             return BetweenInterval(Duration.TotalSeconds, interval, offset);
         }
+
+        /// <summary>
+        /// Sine-wave a value between `from` and `to` with a period of `duration`.
+        /// You can use `offsetPercent` to offset the sine wave.
+        /// </summary>
+        public static float SineWave(float from, float to, float duration, float offsetPercent)
+        {
+            float total = (float)Duration.TotalSeconds;
+            float range = (to - from) * 0.5f;
+            return from + range + MathF.Sin(((total + duration * offsetPercent) / duration) * MathF.Tau) * range;
+        }
     }
 }
