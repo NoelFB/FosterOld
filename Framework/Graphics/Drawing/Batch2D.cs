@@ -1234,6 +1234,34 @@ namespace Foster.Framework
             PopMatrix();
         }
 
+        /// <summary>
+        /// Draw text on the baseline, scaled to match `size`.
+        /// For example: if the font was loaded at 10pt, and you set `size = 20`, the text will be scaled x2.
+        /// </summary>
+        public void Text(SpriteFont font, ReadOnlySpan<char> text, Vector2 position, int size, float rotation, Color color)
+        {
+            float s = size / (float)font.Size;
+            var scale = new Vector2(s, s);
+            var origin = new Vector2(0f, font.Ascent);
+            PushMatrix(position, scale, origin, rotation);
+            Text(font, text, color);
+            PopMatrix();
+        }
+
+        /// <summary>
+        /// Draw text on the baseline, scaled to match `size`.
+        /// For example: if the font was loaded at 10pt, and you set `size = 20`, the text will be scaled x2.
+        /// </summary>
+        public void Text(SpriteFont font, string text, Vector2 position, int size, float rotation, Color color)
+        {
+            float s = size / (float)font.Size;
+            var scale = new Vector2(s, s);
+            var origin = new Vector2(0f, font.Ascent);
+            PushMatrix(position, scale, origin, rotation);
+            Text(font, text.AsSpan(), color);
+            PopMatrix();
+        }
+
         #endregion
 
         #region Copy Arrays
