@@ -181,6 +181,8 @@ namespace Foster.Framework
             Height = h;
         }
 
+        public RectInt(int w, int h) : this(0, 0, w, h) { }
+
         public RectInt(Point2 position, Point2 size)
         {
             X = position.X;
