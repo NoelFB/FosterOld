@@ -1262,6 +1262,38 @@ namespace Foster.Framework
             PopMatrix();
         }
 
+        /// <summary>
+        /// Draws the text scaled to fit into the provided rectangle, never exceeding the max font size.
+        /// </summary>
+        public void TextFitted(SpriteFont font, string text, in Rect rect, float maxSize, Color color)
+        {
+            var textSpan = text.AsSpan();
+            var size = font.SizeOf(textSpan);
+            var sx = rect.Width / size.X;
+            var sy = rect.Height / font.Size;
+            var scale = Math.Min(maxSize / font.Size, Math.Min(sx, sy));
+            var pos = rect.Size * 0.5f - size * scale * 0.5f;
+            PushMatrix(Matrix3x2.CreateScale(scale) * Matrix3x2.CreateTranslation(pos));
+            Text(font, textSpan, color);
+            PopMatrix();
+        }
+
+        /// <summary>
+        /// Draws the text scaled to fit into the provided rectangle.
+        /// </summary>
+        public void TextFitted(SpriteFont font, string text, in Rect rect, Color color)
+        {
+            var textSpan = text.AsSpan();
+            var size = font.SizeOf(textSpan);
+            var sx = rect.Width / size.X;
+            var sy = rect.Height / font.Size;
+            var scale = Math.Min(sx, sy);
+            var pos = rect.Size * 0.5f - size * scale * 0.5f;
+            PushMatrix(Matrix3x2.CreateScale(scale) * Matrix3x2.CreateTranslation(pos));
+            Text(font, textSpan, color);
+            PopMatrix();
+        }
+
         #endregion
 
         #region Copy Arrays
