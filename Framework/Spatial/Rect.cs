@@ -179,6 +179,8 @@ namespace Foster.Framework
             Height = h;
         }
 
+        public Rect(float w, float h) : this(0, 0, w, h) { }
+
         public Rect(Vector2 a, Vector2 b)
         {
             X = Math.Min(a.X, b.X);
