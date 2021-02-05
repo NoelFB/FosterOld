@@ -319,6 +319,8 @@ namespace Foster.Framework
             return $"[{X}, {Y}, {Width}, {Height}]";
         }
 
+        public static implicit operator Rect((float X, float Y, float Width, float Height) tuple) => new Rect(tuple.X, tuple.Y, tuple.Width, tuple.Height);
+
         public static implicit operator Rect(RectInt rect)
         {
             return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
