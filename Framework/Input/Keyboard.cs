@@ -147,6 +147,20 @@ namespace Foster.Framework
         public bool Ctrl => Down(Keys.LeftControl, Keys.RightControl);
 
         /// <summary>
+        /// Returns True if the Left or Right Control keys are held (or Command on MacOS)
+        /// </summary>
+        public bool CtrlOrCommand
+        {
+            get
+            {
+                if (OperatingSystem.IsMacOS())
+                    return Down(Keys.LeftSuper, Keys.RightSuper);
+                else
+                    return Down(Keys.LeftControl, Keys.RightControl);
+            }
+        }
+
+        /// <summary>
         /// Returns True if the Left or Right Alt keys are held
         /// </summary>
         public bool Alt => Down(Keys.LeftAlt, Keys.RightAlt);
