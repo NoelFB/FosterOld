@@ -15,6 +15,9 @@ namespace Foster.Framework
         public static readonly Color Transparent = new Color(0, 0, 0, 0);
         public static readonly Color White = new Color(0xffffff);
         public static readonly Color Black = new Color(0x000000);
+        public static readonly Color LightGray = new Color(0xc0c0c0);
+        public static readonly Color Gray = new Color(0x808080);
+        public static readonly Color DarkGray = new Color(0x404040);
         public static readonly Color Red = new Color(0xff0000);
         public static readonly Color Green = new Color(0x00ff00);
         public static readonly Color Blue = new Color(0x0000ff);
