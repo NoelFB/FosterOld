@@ -40,6 +40,11 @@ namespace Foster.Framework
         public static Vector2 Round(this Vector2 vector) => new Vector2(MathF.Round(vector.X), MathF.Round(vector.Y));
 
         /// <summary>
+        /// Rounds the individual components of a Vector2
+        /// </summary>
+        public static Point2 RoundToPoint2(this Vector2 vector) => new Point2((int)MathF.Round(vector.X), (int)MathF.Round(vector.Y));
+
+        /// <summary>
         /// Rounds the individual components of a Vector3
         /// </summary>
         public static Vector3 Round(this Vector3 vector) => new Vector3(MathF.Round(vector.X), MathF.Round(vector.Y), MathF.Round(vector.Z));
