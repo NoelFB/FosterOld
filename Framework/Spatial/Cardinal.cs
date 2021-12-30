@@ -132,6 +132,20 @@ namespace Foster.Framework
             return dir.Y < 0 ? Up : Down;
         }
 
+        public static Cardinal FromVector(float x, float y)
+        {
+            if (Math.Abs(x) > Math.Abs(y))
+                return x < 0 ? Left : Right;
+            return y < 0 ? Up : Down;
+        }
+
+        public static Cardinal FromVector(int x, int y)
+        {
+            if (Math.Abs(x) > Math.Abs(y))
+                return x < 0 ? Left : Right;
+            return y < 0 ? Up : Down;
+        }
+
         public static IEnumerable<Cardinal> All
         {
             get

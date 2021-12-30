@@ -320,6 +320,24 @@ namespace Foster.Framework
         public RectInt RotateRight() => RotateRight(Point2.Zero);
         public RectInt RotateRight(int count) => RotateRight(Point2.Zero, count);
 
+        public RectInt GetSweep(Cardinal direction, int distance)
+        {
+            if (distance < 0)
+            {
+                distance *= -1;
+                direction = direction.Reverse;
+            }
+
+            if (direction == Cardinal.Right)
+                return new RectInt(X + Width, Y, distance, Height);
+            else if (direction == Cardinal.Left)
+                return new RectInt(X - distance, Y, distance, Height);
+            else if (direction == Cardinal.Down)
+                return new RectInt(X, Y + Height, Width, distance);
+            else
+                return new RectInt(X, Y - distance, Width, distance);
+        }
+
         public override bool Equals(object? obj) => (obj is RectInt other) && (this == other);
 
         public override int GetHashCode()
