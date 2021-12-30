@@ -10,27 +10,35 @@ namespace Foster.Framework
 {
     public struct Cardinal
     {
-        static public readonly Cardinal Right = new Cardinal(0);
-        static public readonly Cardinal Up = new Cardinal(1);
-        static public readonly Cardinal Left = new Cardinal(2);
-        static public readonly Cardinal Down = new Cardinal(3);
+        public const byte VAL_RIGHT = 0;
+        public const byte VAL_UP = 1;
+        public const byte VAL_LEFT = 2;
+        public const byte VAL_DOWN = 3;
 
-        private byte value;
+        static public readonly Cardinal Right = new Cardinal(VAL_RIGHT);
+        static public readonly Cardinal Up = new Cardinal(VAL_UP);
+        static public readonly Cardinal Left = new Cardinal(VAL_LEFT);
+        static public readonly Cardinal Down = new Cardinal(VAL_DOWN);
+
+        public byte Value { get; private set; }
 
         private Cardinal(byte val)
         {
-            value = val;
+            Value = val;
         }
 
-        public Cardinal Reverse => new Cardinal((byte)((value + 2) % 4));
-        public Cardinal TurnRight => new Cardinal((byte)((value + 3) % 4));
-        public Cardinal TurnLeft => new Cardinal((byte)((value + 1) % 4));
+        public Cardinal Reverse => new Cardinal((byte)((Value + 2) % 4));
+        public Cardinal TurnRight => new Cardinal((byte)((Value + 3) % 4));
+        public Cardinal TurnLeft => new Cardinal((byte)((Value + 1) % 4));
+
+        public bool Horizontal => Value % 2 == 0;
+        public bool Vertical => Value % 2 == 1;    
 
         public int X
         {
             get
             {
-                switch (value)
+                switch (Value)
                 {
                     case 0:
                         return 1;
@@ -49,7 +57,7 @@ namespace Foster.Framework
         {
             get
             {
-                switch (value)
+                switch (Value)
                 {
                     case 3:
                         return 1;
@@ -68,7 +76,7 @@ namespace Foster.Framework
         {
             get
             {
-                switch (value)
+                switch (Value)
                 {
                     case 0:
                         return 0;
@@ -86,13 +94,13 @@ namespace Foster.Framework
 
         static public implicit operator Cardinal(Facing f) => f.ToByte() == 0 ? Cardinal.Right : Cardinal.Left;
         static public implicit operator Point2(Cardinal c) => new Point2(c.X, c.Y);
-        static public bool operator ==(Cardinal a, Cardinal b) => a.value == b.value;
-        static public bool operator !=(Cardinal a, Cardinal b) => a.value != b.value;
+        static public bool operator ==(Cardinal a, Cardinal b) => a.Value == b.Value;
+        static public bool operator !=(Cardinal a, Cardinal b) => a.Value != b.Value;
         static public Point2 operator *(Cardinal a, int b) => (Point2)a * b;
 
         public override int GetHashCode()
         {
-            return value;
+            return Value;
         }
 
         public override bool Equals(object? obj)
@@ -105,7 +113,7 @@ namespace Foster.Framework
 
         public override string ToString()
         {
-            switch (value)
+            switch (Value)
             {
                 case 0: return "Right";
                 case 1: return "Up";
@@ -116,7 +124,7 @@ namespace Foster.Framework
 
         public byte ToByte()
         {
-            return value;
+            return Value;
         }
 
         public static Cardinal FromByte(byte v)
@@ -139,7 +147,14 @@ namespace Foster.Framework
             return y < 0 ? Up : Down;
         }
 
-        public static Cardinal FromVector(int x, int y)
+        public static Cardinal FromPoint(Point2 dir)
+        {
+            if (Math.Abs(dir.X) > Math.Abs(dir.Y))
+                return dir.X < 0 ? Left : Right;
+            return dir.Y < 0 ? Up : Down;
+        }
+
+        public static Cardinal FromPoint(int x, int y)
         {
             if (Math.Abs(x) > Math.Abs(y))
                 return x < 0 ? Left : Right;
