@@ -37,6 +37,16 @@ namespace Foster.Json
         }
 
         /// <summary>
+        /// Creates a Json Value from a byte array
+        /// </summary>
+        public static JsonValue FromBytes(byte[] bytes)
+        {
+            using var stream = new MemoryStream(bytes);
+            using var reader = new JsonBinaryReader(stream);
+            return reader.ReadObject();
+        }
+
+        /// <summary>
         /// Creates a Json Value from a String
         /// </summary>
         public static JsonValue FromString(string jsonString)
@@ -292,6 +302,17 @@ namespace Foster.Json
         {
             using var writer = new JsonTextWriter(File.Create(path), strict);
             writer.Json(this);
+        }
+
+        /// <summary>
+        /// Creates a byte array with the contents of this Json Value
+        /// </summary>
+        public byte[] ToBytes()
+        {
+            using var stream = new MemoryStream();
+            using var writer = new JsonBinaryWriter(stream);
+            writer.Json(this);
+            return stream.ToArray();
         }
 
         public static implicit operator JsonValue(bool value) => new JsonValue<bool>(JsonType.Bool, value);
