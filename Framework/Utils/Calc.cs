@@ -250,6 +250,11 @@ namespace Foster.Framework
             return MathF.Round(value / snapTo) * snapTo;
         }
 
+        public static int Snap(int value, int snapTo)
+        {
+            return (value / snapTo) * snapTo;
+        }
+
         #endregion
 
         #region Adler32

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Foster.Framework
@@ -170,6 +171,18 @@ namespace Foster.Framework
                 Bottom = value.Y;
             }
         }
+
+        #endregion
+
+        #region PointsF
+
+        public float CenterXF => X + Width * 0.5f;
+        public float CenterYF => Y + Height * 0.5f;
+        public Vector2 TopCenterF => new Vector2(CenterX, Top);
+        public Vector2 CenterLeftF => new Vector2(Left, CenterY);
+        public Vector2 CenterF => new Vector2(CenterX, CenterY);
+        public Vector2 CenterRightF => new Vector2(Right, CenterY);
+        public Vector2 BottomCenterF => new Vector2(CenterX, Bottom);
 
         #endregion
 
