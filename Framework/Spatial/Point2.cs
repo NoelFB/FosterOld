@@ -72,6 +72,14 @@ namespace Foster.Framework
         }
 
         /// <summary>
+        /// Rounds both axes of the Point2 to the given interval
+        /// </summary>
+        public Point2 RoundTo(int interval)
+        {
+            return (this / (float)interval).RoundToPoint2() * interval;
+        }
+
+        /// <summary>
         /// Returns a Point2 with the X-value of this Point2, but zero Y
         /// </summary>
         public Point2 OnlyX()

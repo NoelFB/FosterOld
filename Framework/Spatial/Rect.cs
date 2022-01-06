@@ -321,6 +321,18 @@ namespace Foster.Framework
             return $"[{X}, {Y}, {Width}, {Height}]";
         }
 
+        public static Rect Between(Vector2 a, Vector2 b)
+        {
+            Rect rect;
+
+            rect.X = a.X < b.X ? a.X : b.X;
+            rect.Y = a.Y < b.Y ? a.Y : b.Y;
+            rect.Width = (a.X > b.X ? a.X : b.X) - rect.X;
+            rect.Height = (a.Y > b.Y ? a.Y : b.Y) - rect.Y;
+
+            return rect;
+        }
+
         public static implicit operator Rect((float X, float Y, float Width, float Height) tuple) => new Rect(tuple.X, tuple.Y, tuple.Width, tuple.Height);
 
         public static implicit operator Rect(RectInt rect)
