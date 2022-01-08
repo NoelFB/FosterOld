@@ -340,6 +340,16 @@ namespace Foster.Framework
             return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
+        public static implicit operator Rect(Vector4 vec)
+        {
+            return new Rect(vec.X, vec.Y, vec.Z, vec.W);
+        }
+
+        public static implicit operator Vector4(Rect rect)
+        {
+            return new Vector4(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
         public static bool operator ==(Rect a, Rect b)
         {
             return (a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height);
