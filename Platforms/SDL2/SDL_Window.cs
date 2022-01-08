@@ -233,6 +233,9 @@ namespace Foster.SDL2
                 isFullscreen = true;
             }
 
+            if (flags.HasFlag(WindowFlags.Maximized))
+                sdlWindowFlags |= SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED;
+
             if (App.Graphics is IGraphicsOpenGL)
             {
                 sdlWindowFlags |= SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL;

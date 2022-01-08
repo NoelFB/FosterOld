@@ -178,6 +178,7 @@ namespace Foster.GLFW
             GLFW.WindowHint(GLFW_Enum.TRANSPARENT_FRAMEBUFFER, flags.HasFlag(WindowFlags.Transparent));
             GLFW.WindowHint(GLFW_Enum.SCALE_TO_MONITOR, flags.HasFlag(WindowFlags.ScaleToMonitor));
             GLFW.WindowHint(GLFW_Enum.SAMPLES, flags.HasFlag(WindowFlags.MultiSampling) ? 4 : 0);
+            GLFW.WindowHint(GLFW_Enum.MAXIMIZED, flags.HasFlag(WindowFlags.Maximized));
 
             IntPtr shared = IntPtr.Zero;
             if (App.Graphics is IGraphicsOpenGL && windowPointers.Count > 0)

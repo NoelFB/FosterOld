@@ -39,6 +39,11 @@ namespace Foster.Framework
         /// <summary>
         /// Whether the Window should start fullscreen
         /// </summary>
-        Fullscreen = 16
+        Fullscreen = 16,
+
+        /// <summary>
+        /// Whether the Window should start maximized
+        /// </summary>
+        Maximized = 32,
     }
 }
