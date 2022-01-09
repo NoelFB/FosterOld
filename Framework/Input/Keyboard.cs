@@ -170,6 +170,15 @@ namespace Foster.Framework
         /// </summary>
         public bool Shift => Down(Keys.LeftShift, Keys.RightShift);
 
+        public void Clear()
+        {
+            Array.Clear(pressed, 0, MaxKeys);
+            Array.Clear(down, 0, MaxKeys);
+            Array.Clear(released, 0, MaxKeys);
+            Array.Clear(timestamp, 0, MaxKeys);
+            Text.Clear();
+        }
+
         internal void Copy(Keyboard other)
         {
             Array.Copy(other.pressed, 0, pressed, 0, MaxKeys);
