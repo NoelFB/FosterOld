@@ -142,7 +142,9 @@ namespace Foster.OpenGL
                 // Sampler 2D
                 if (uniform.Type == UniformType.Sampler)
                 {
+#pragma warning disable CA2014 // Do not use stackalloc in loops
                     int* n = stackalloc int[uniform.Length];
+#pragma warning restore CA2014 // Do not use stackalloc in loops
 
                     for (int i = 0; i < uniform.Length; i++)
                     {

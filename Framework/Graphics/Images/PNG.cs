@@ -154,7 +154,9 @@ namespace Foster.Framework
                 else if (Check("PLTE", fourbytes))
                 {
                     hasPLTE = true;
+#pragma warning disable CA2014 // Do not use stackalloc in loops
                     palette = stackalloc byte[chunkLength];
+#pragma warning restore CA2014 // Do not use stackalloc in loops
                     stream.Read(palette);
                 }
                 // IDAT Chunk (Image Data)
@@ -174,7 +176,9 @@ namespace Foster.Framework
                 {
                     if (color == Colors.Indexed)
                     {
+#pragma warning disable CA2014 // Do not use stackalloc in loops
                         alphaPalette = stackalloc byte[chunkLength];
+#pragma warning restore CA2014 // Do not use stackalloc in loops
                         stream.Read(alphaPalette);
                     }
                     else if (color == Colors.Greyscale)

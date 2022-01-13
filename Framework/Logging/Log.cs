@@ -143,12 +143,50 @@ namespace Foster.Framework
             return condition;
         }
 
+        public static bool InfoIf(
+            bool condition,
+            object? message,
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0)
+        {
+            string? str;
+            if (message == null)
+                str = "null";
+            else
+            {
+                str = message.ToString();
+                if (str == null)
+                    str = "null";
+            } 
+
+            LogInternalIf(condition, LogLevel.Info, str, callerFilePath, callerLineNumber);
+            return condition;
+        }
+
         public static void Info(
             string message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0)
         {
             LogInternal(LogLevel.Info, message, callerFilePath, callerLineNumber);
+        }
+
+        public static void Info(
+            object? message,
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0)
+        {
+            string? str;
+            if (message == null)
+                str = "null";
+            else
+            {
+                str = message.ToString();
+                if (str == null)
+                    str = "null";
+            }
+
+            LogInternal(LogLevel.Info, str, callerFilePath, callerLineNumber);
         }
 
         public static bool WarningIf(
