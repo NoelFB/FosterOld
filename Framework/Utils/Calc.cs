@@ -204,7 +204,7 @@ namespace Foster.Framework
 
         public static float SineMap(float counter, float newMin, float newMax)
         {
-            return Map((float)Math.Sin(counter), 0, 1, newMin, newMax);
+            return Map((float)Math.Sin(counter), -1, 1, newMin, newMax);
         }
 
         public static float ClampedMap(float val, float min, float max, float newMin = 0, float newMax = 1)
