@@ -105,9 +105,10 @@ namespace Foster.Framework
                 if (Modules.Has<System>())
                     path = Modules.Get<System>().UserDirectory(Name);
 
-                Log.Error(e);
-                Log.AppendToFile(Name, Path.Combine(path, "ErrorLog.txt"));
-                throw e;
+                Log.Error(e.Message);
+                // TODO - this call was broken with the logging updates!
+                //Log.AppendToFile(Name, Path.Combine(path, "ErrorLog.txt"));
+                throw;
             }
 #endif
             void Launch()
