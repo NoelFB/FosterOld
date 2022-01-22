@@ -278,6 +278,44 @@ namespace Foster.Framework
             max = Math.Max(dot, max);
         }
 
+        public Vector2 ClosestPointTo(Vector2 p)
+        {
+            byte sides = 0;
+            if (p.X < X)
+                sides |= 0b0001;
+            else if (p.X >= X + Width)
+                sides |= 0b0010;
+            if (p.Y < Y)
+                sides |= 0b0100;
+            else if (p.Y >= Y + Height)
+                sides |= 0b1000;
+
+            switch (sides)
+            {
+                default:
+                case 0b0000:    // inside rect
+                    return p;
+
+                case 0b0001:    // left of rect
+                    return new Vector2(X, p.Y);
+                case 0b0010:    // right of rect
+                    return new Vector2(X + Width, p.Y);
+                case 0b0100:    // above rect
+                    return new Vector2(p.X, Y);
+                case 0b1000:    // below rect
+                    return new Vector2(p.X, Y + Height);
+
+                case 0b0101:    // above & left of rect
+                    return TopLeft;
+                case 0b0110:    // above & right of rect
+                    return TopRight;
+                case 0b1001:    // below & left of rect
+                    return BottomLeft;
+                case 0b1010:    // below & right of rect
+                    return BottomRight;
+            }
+        }
+
         public int Points => 4;
 
         public Vector2 GetPoint(int index)

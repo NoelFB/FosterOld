@@ -179,6 +179,14 @@ namespace Foster.Framework
             Text.Clear();
         }
 
+        public void Clear(Keys key)
+        {
+            pressed[(int)key] = false;
+            down[(int)key] = false;
+            released[(int)key] = false;
+            timestamp[(int)key] = 0;
+        }
+
         internal void Copy(Keyboard other)
         {
             Array.Copy(other.pressed, 0, pressed, 0, MaxKeys);

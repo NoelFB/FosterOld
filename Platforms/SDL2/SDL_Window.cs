@@ -290,6 +290,7 @@ namespace Foster.SDL2
 
         protected override void Focus()
         {
+            SDL.SDL_RestoreWindow(SDLWindowPtr);
             SDL.SDL_RaiseWindow(SDLWindowPtr);
         }
 

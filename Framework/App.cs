@@ -69,6 +69,11 @@ namespace Foster.Framework
         public static bool ForceFixedTimestep;
 
         /// <summary>
+        /// Called when the App is told to exit (ex. SDL2 calls this when the X button on the last window is clicked). By default, it simply exits.
+        /// </summary>
+        public static Action? OnExitRequest = Exit;
+
+        /// <summary>
         /// Reference to the Primary Window
         /// </summary>
         private static Window? primaryWindow;

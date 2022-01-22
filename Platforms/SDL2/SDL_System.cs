@@ -72,7 +72,7 @@ namespace Foster.SDL2
                 {
                     // Quit
                     case SDL.SDL_EventType.SDL_QUIT:
-                        App.Exit();
+                        App.OnExitRequest?.Invoke();
                         return;
 
                     // Window Event

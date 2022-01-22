@@ -145,6 +145,16 @@ namespace Foster.Framework
         public static int ManhattanDist(in Point2 a, in Point2 b) =>
             Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
 
+        public static Point2 FromBools(bool left, bool right, bool up, bool down)
+        {
+            Point2 result = Point2.Zero;
+            if (right) result += Point2.Right;
+            if (up) result += Point2.Up;
+            if (left) result += Point2.Left;
+            if (down) result += Point2.Down;
+            return result;
+        }
+
         public static implicit operator Point2((int X, int Y) tuple) => new Point2(tuple.X, tuple.Y);
 
         public static Point2 operator -(Point2 point) => new Point2(-point.X, -point.Y);
@@ -178,6 +188,5 @@ namespace Foster.Framework
 
         public static explicit operator Point2(Vector2 vector) => new Point2((int)vector.X, (int)vector.Y);
         public static implicit operator Vector2(Point2 point) => new Vector2(point.X, point.Y);
-
     }
 }
