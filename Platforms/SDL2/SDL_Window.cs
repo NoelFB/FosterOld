@@ -290,7 +290,8 @@ namespace Foster.SDL2
 
         protected override void Focus()
         {
-            SDL.SDL_RestoreWindow(SDLWindowPtr);
+            if ((SDL.SDL_GetWindowFlags(SDLWindowPtr) & (uint)SDL.SDL_WindowFlags.SDL_WINDOW_MINIMIZED) > 0)
+                SDL.SDL_RestoreWindow(SDLWindowPtr);
             SDL.SDL_RaiseWindow(SDLWindowPtr);
         }
 
