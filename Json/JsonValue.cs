@@ -346,6 +346,39 @@ namespace Foster.Json
         public static implicit operator string(JsonValue value) => value.String;
         public static implicit operator byte[](JsonValue value) => value.Bytes;
 
+        public static JsonValue? FromObject(object? obj)
+        {
+            if (obj == null)
+                return JsonNull.nul;
+            else if (obj is bool)
+                return (bool)obj;
+            else if (obj is float)
+                return (float)obj;
+            else if (obj is int)
+                return (int)obj;
+            else if (obj is string)
+                return (string)obj;
+            else if (obj is double)
+                return (double)obj;
+            else if (obj is uint)
+                return (uint)obj;
+            else if (obj is byte)
+                return (byte)obj;
+            else if (obj is char)
+                return (char)obj;
+            else if (obj is short)
+                return (short)obj;
+            else if (obj is ushort)
+                return (ushort)obj;         
+            else if (obj is long)
+                return (long)obj;
+            else if (obj is ulong)
+                return (ulong)obj;           
+            else if (obj is byte[])
+                return (byte[])obj;
+            else
+                return null;
+        }
     }
 
     /// <summary>
