@@ -5,25 +5,25 @@ using System.Text;
 
 namespace Foster.Framework
 {
-    public struct Line2D : IConvexShape2D
+    public struct Line2DInt : IConvexShape2D
     {
-        public Vector2 From;
-        public Vector2 To;
+        public Point2 From;
+        public Point2 To;
 
         public int Points => 2;
         public int Axis => 1;
 
-        public Line2D(Vector2 from, Vector2 to)
+        public Line2DInt(Point2 from, Point2 to)
         {
             From = from;
             To = to;
         }
 
-        public Rect Bounds
+        public RectInt Bounds
         {
             get
             {
-                var rect = new Rect(Calc.Min(From.X, To.X), Calc.Min(From.Y, To.Y), 0, 0);
+                var rect = new RectInt(Calc.Min(From.X, To.X), Calc.Min(From.Y, To.Y), 0, 0);
                 rect.Width = Calc.Max(From.X, To.X) - rect.X;
                 rect.Height = Calc.Max(From.X + To.X, To.Y) - rect.Y;
                 return rect;
@@ -59,14 +59,14 @@ namespace Foster.Framework
             max = Math.Max(dot, max);
         }
 
-        static public Line2D operator +(Line2D a, Vector2 b)
+        static public Line2DInt operator +(Line2DInt a, Point2 b)
         {
-            return new Line2D(a.From + b, a.To + b);
+            return new Line2DInt(a.From + b, a.To + b);
         }
 
-        static public Line2D operator -(Line2D a, Vector2 b)
+        static public Line2DInt operator -(Line2DInt a, Point2 b)
         {
-            return new Line2D(a.From - b, a.To - b);
+            return new Line2DInt(a.From - b, a.To - b);
         }
     }
 }
