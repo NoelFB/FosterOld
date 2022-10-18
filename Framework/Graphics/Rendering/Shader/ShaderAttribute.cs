@@ -1,24 +1,23 @@
-﻿namespace Foster.Framework
+﻿namespace Foster.Framework;
+
+/// <summary>
+/// A Shader Attribute
+/// </summary>
+public class ShaderAttribute
 {
     /// <summary>
-    /// A Shader Attribute
+    /// The name of the Attribute
     /// </summary>
-    public class ShaderAttribute
+    public readonly string Name;
+
+    /// <summary>
+    /// The Location of the Attribute in the Shader
+    /// </summary>
+    public readonly uint Location;
+
+    public ShaderAttribute(string name, uint location)
     {
-        /// <summary>
-        /// The name of the Attribute
-        /// </summary>
-        public readonly string Name;
-
-        /// <summary>
-        /// The Location of the Attribute in the Shader
-        /// </summary>
-        public readonly uint Location;
-
-        public ShaderAttribute(string name, uint location)
-        {
-            Name = name;
-            Location = location;
-        }
+        Name = name;
+        Location = location;
     }
 }
