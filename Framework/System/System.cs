@@ -11,7 +11,6 @@ namespace Foster.Framework;
 /// </summary>
 public abstract class System : AppModule
 {
-
     /// <summary>
     /// Underlying System implementation API Name
     /// </summary>

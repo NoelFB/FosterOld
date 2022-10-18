@@ -10,7 +10,6 @@ namespace Foster.Framework;
 /// </summary>
 public class ModuleList : IEnumerable<Module>
 {
-
     private readonly List<Type> registered = new List<Type>();
     private readonly List<Module?> modules = new List<Module?>();
     private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();

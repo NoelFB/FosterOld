@@ -7,7 +7,6 @@ namespace Foster.GLFW;
 
 internal class GLFW_Input : Input
 {
-
     // we need to keep track of delegates because otherwise they can be garbage collected
     // and then the C++ GLFW stuff is calling garbage collected delegates...
     private readonly Dictionary<IntPtr, List<Delegate>> delegateTracker = new Dictionary<IntPtr, List<Delegate>>();

@@ -16,7 +16,6 @@ namespace Foster.Framework;
 /// </summary>
 public sealed class Window : RenderTarget
 {
-
     public abstract class Platform
     {
         protected internal abstract IntPtr Pointer { get; }
