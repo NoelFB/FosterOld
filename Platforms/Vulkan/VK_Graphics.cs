@@ -1,362 +1,360 @@
-﻿using Foster.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using Foster.Framework;
 
-namespace Foster.Vulkan
+namespace Foster.Vulkan;
+
+public unsafe class VK_Graphics : Graphics, IGraphicsVulkan
 {
-    public unsafe class VK_Graphics : Graphics, IGraphicsVulkan
-    {
 
-        internal ISystemVulkan System => App.System as ISystemVulkan ?? throw new Exception("System does not implement ISystemVulkan");
+    internal ISystemVulkan System => App.System as ISystemVulkan ?? throw new Exception("System does not implement ISystemVulkan");
 
-        // Vulkan Objects
-        internal VkInstance Instance;
-        internal VkPhysicalDevice PhysicalDevice;
-        internal VkDevice Device;
-        internal VkQueue GraphicsQueue;
-        internal VkDebugUtilsMessengerEXT DebugMessenger;
+    // Vulkan Objects
+    internal VkInstance Instance;
+    internal VkPhysicalDevice PhysicalDevice;
+    internal VkDevice Device;
+    internal VkQueue GraphicsQueue;
+    internal VkDebugUtilsMessengerEXT DebugMessenger;
 
-        // Vulkan Bindings
-        // Can be null until First Window is created, and then never again
-        internal VK VK = null!;
+    // Vulkan Bindings
+    // Can be null until First Window is created, and then never again
+    internal VK VK = null!;
 
-        // Debug Validation Layers
+    // Debug Validation Layers
 #if DEBUG
-        private readonly string[] requestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
+    private readonly string[] requestedValidationLayers = new[] { "VK_LAYER_KHRONOS_validation" };
 #else
-        private readonly string[] requestedValidationLayers = new string[0];
+    private readonly string[] requestedValidationLayers = new string[0];
 #endif
-        private readonly List<string> validationLayers = new List<string>();
-        private bool HasValidationLayers => validationLayers.Count > 0;
+    private readonly List<string> validationLayers = new List<string>();
+    private bool HasValidationLayers => validationLayers.Count > 0;
 
-        private readonly string[] deviceExtensions = new[] { VkConst.VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-        private readonly List<Delegate> trackedDelegates = new List<Delegate>();
+    private readonly string[] deviceExtensions = new[] { VkConst.VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    private readonly List<Delegate> trackedDelegates = new List<Delegate>();
 
-        protected override void ApplicationStarted()
+    protected override void ApplicationStarted()
+    {
+        ApiName = "Vulkan";
+
+        VK.InitStaticDelegates(System);
+
+        if (requestedValidationLayers.Length > 0)
+            FindValidationLayers(validationLayers);
+
+        Instance = CreateVulkanInstance();
+    }
+
+    protected override void FirstWindowCreated()
+    {
+        VK = new VK(this);
+
+        // Debug Callback
+        if (HasValidationLayers)
         {
-            ApiName = "Vulkan";
-
-            VK.InitStaticDelegates(System);
-
-            if (requestedValidationLayers.Length > 0)
-                FindValidationLayers(validationLayers);
-
-            Instance = CreateVulkanInstance();
-        }
-
-        protected override void FirstWindowCreated()
-        {
-            VK = new VK(this);
-
-            // Debug Callback
-            if (HasValidationLayers)
+            DebugMessenger = CreateDebugMessenger((messageSeverity, messageTypes, pCallbackData, pUserData) =>
             {
-                DebugMessenger = CreateDebugMessenger((messageSeverity, messageTypes, pCallbackData, pUserData) =>
-                {
-                    var message = VK.STRING(pCallbackData->pMessage);
+                var message = VK.STRING(pCallbackData->pMessage);
 
-                    if (messageSeverity.HasFlag(VkDebugUtilsMessageSeverityFlagsEXT.Error))
-                        Log.Error(Name, message);
-                    else if (messageSeverity.HasFlag(VkDebugUtilsMessageSeverityFlagsEXT.Warning))
-                        Log.Warning(Name, message);
-                    else
-                        Log.Message(Name, message);
-
-                    return VkConst.FALSE;
-                });
-            }
-
-            // Pick a Physical Device
-            PhysicalDevice = PickPhysicalDevice();
-
-            // get the API version
-            {
-                VkPhysicalDeviceProperties properties;
-                VK.GetPhysicalDeviceProperties(PhysicalDevice, &properties);
-                ApiVersion = VK.UNMAKE_VERSION(properties.apiVersion);
-
-                int length = 0;
-                while (length < VkConst.MAX_PHYSICAL_DEVICE_NAME_SIZE && properties.deviceName[length] != 0)
-                    length++;
-                DeviceName = Encoding.UTF8.GetString(properties.deviceName, length);
-            }
-
-            // Create the Device
-            {
-                TryGetQueueFamilyIndex(PhysicalDevice, VkQueueFlags.GraphicsBit, out uint graphicsFamilyIndex);
-
-                // Graphics Family Queue
-                var priority = 1.0f;
-                var queueCreateInfo = new VkDeviceQueueCreateInfo
-                {
-                    sType = VkStructureType.DeviceQueueCreateInfo,
-                    queueFamilyIndex = graphicsFamilyIndex,
-                    queueCount = 1,
-                    pQueuePriorities = &priority
-                };
-
-                // Device Features
-                var deviceFeatures = new VkPhysicalDeviceFeatures();
-
-                var createInfo = new VkDeviceCreateInfo
-                {
-                    sType = VkStructureType.DeviceCreateInfo,
-                    pQueueCreateInfos = &queueCreateInfo,
-                    queueCreateInfoCount = 1,
-                    pEnabledFeatures = &deviceFeatures,
-                };
-
-                // Device Extensions
-                using var deviceExtensionNames = new NativeStringArray(deviceExtensions);
-                createInfo.enabledExtensionCount = deviceExtensionNames.Length;
-                createInfo.ppEnabledExtensionNames = deviceExtensionNames;
-
-                var result = VK.CreateDevice(PhysicalDevice, &createInfo, null, out Device);
-                if (result != VkResult.Success)
-                    throw new Exception($"Failed to create Vulkan Logical Device, {result}");
-
-                // Get the Graphics Queue
-                VK.GetDeviceQueue(Device, graphicsFamilyIndex, 0, out GraphicsQueue);
-            }
-        }
-
-        private void FindValidationLayers(List<string> appendTo)
-        {
-            uint availableLayerCount;
-            VK.EnumerateInstanceLayerProperties(&availableLayerCount, null);
-            VkLayerProperties* availableLayers = stackalloc VkLayerProperties[(int)availableLayerCount];
-            VK.EnumerateInstanceLayerProperties(&availableLayerCount, availableLayers);
-
-            for (int i = 0; i < requestedValidationLayers.Length; i++)
-            {
-                var hasLayer = false;
-                for (int j = 0; j < availableLayerCount; j++)
-                    if (requestedValidationLayers[i] == VK.STRING(availableLayers[j].layerName))
-                    {
-                        hasLayer = true;
-                        break;
-                    }
-
-                if (hasLayer)
-                    appendTo.Add(requestedValidationLayers[i]);
+                if (messageSeverity.HasFlag(VkDebugUtilsMessageSeverityFlagsEXT.Error))
+                    Log.Error(Name, message);
+                else if (messageSeverity.HasFlag(VkDebugUtilsMessageSeverityFlagsEXT.Warning))
+                    Log.Warning(Name, message);
                 else
-                    Log.Warning(Name, $"Validation Layer {requestedValidationLayers[i]} requested but does not exist. You may need to install the Vulkan SDK.");
-            }
+                    Log.Info(Name, message);
+
+                return VkConst.FALSE;
+            });
         }
 
-        private VkDebugUtilsMessengerEXT CreateDebugMessenger(PFN_vkDebugUtilsMessengerCallbackEXT callback)
+        // Pick a Physical Device
+        PhysicalDevice = PickPhysicalDevice();
+
+        // get the API version
         {
-            var createInfo = new VkDebugUtilsMessengerCreateInfoEXT
+            VkPhysicalDeviceProperties properties;
+            VK.GetPhysicalDeviceProperties(PhysicalDevice, &properties);
+            ApiVersion = VK.UNMAKE_VERSION(properties.apiVersion);
+
+            int length = 0;
+            while (length < VkConst.MAX_PHYSICAL_DEVICE_NAME_SIZE && properties.deviceName[length] != 0)
+                length++;
+            DeviceName = Encoding.UTF8.GetString(properties.deviceName, length);
+        }
+
+        // Create the Device
+        {
+            TryGetQueueFamilyIndex(PhysicalDevice, VkQueueFlags.GraphicsBit, out uint graphicsFamilyIndex);
+
+            // Graphics Family Queue
+            var priority = 1.0f;
+            var queueCreateInfo = new VkDeviceQueueCreateInfo
             {
-                sType = VkStructureType.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-                messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Verbose | VkDebugUtilsMessageSeverityFlagsEXT.Warning | VkDebugUtilsMessageSeverityFlagsEXT.Error,
-                messageType = VkDebugUtilsMessageTypeFlagsEXT.General | VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance,
-                pfnUserCallback = Marshal.GetFunctionPointerForDelegate(callback),
-                pUserData = null
+                sType = VkStructureType.DeviceQueueCreateInfo,
+                queueFamilyIndex = graphicsFamilyIndex,
+                queueCount = 1,
+                pQueuePriorities = &priority
             };
 
-            trackedDelegates.Add(callback);
+            // Device Features
+            var deviceFeatures = new VkPhysicalDeviceFeatures();
 
-            var result = VK.CreateDebugUtilsMessengerEXT(Instance, &createInfo, null, out var messenger);
+            var createInfo = new VkDeviceCreateInfo
+            {
+                sType = VkStructureType.DeviceCreateInfo,
+                pQueueCreateInfos = &queueCreateInfo,
+                queueCreateInfoCount = 1,
+                pEnabledFeatures = &deviceFeatures,
+            };
+
+            // Device Extensions
+            using var deviceExtensionNames = new NativeStringArray(deviceExtensions);
+            createInfo.enabledExtensionCount = deviceExtensionNames.Length;
+            createInfo.ppEnabledExtensionNames = deviceExtensionNames;
+
+            var result = VK.CreateDevice(PhysicalDevice, &createInfo, null, out Device);
             if (result != VkResult.Success)
-                throw new Exception(result.ToString());
+                throw new Exception($"Failed to create Vulkan Logical Device, {result}");
 
-            return messenger;
+            // Get the Graphics Queue
+            VK.GetDeviceQueue(Device, graphicsFamilyIndex, 0, out GraphicsQueue);
         }
+    }
 
-        private VkInstance CreateVulkanInstance()
+    private void FindValidationLayers(List<string> appendTo)
+    {
+        uint availableLayerCount;
+        VK.EnumerateInstanceLayerProperties(&availableLayerCount, null);
+        VkLayerProperties* availableLayers = stackalloc VkLayerProperties[(int)availableLayerCount];
+        VK.EnumerateInstanceLayerProperties(&availableLayerCount, availableLayers);
+
+        for (int i = 0; i < requestedValidationLayers.Length; i++)
         {
-            NativeString name = App.Name;
-            NativeString engine = "Foster.Framework";
-
-            // create the App Info
-            var appInfo = new VkApplicationInfo
-            {
-                sType = VkStructureType.ApplicationInfo,
-                pApplicationName = name,
-                applicationVersion = VK.MAKE_VERSION(1, 0, 0),
-                pEngineName = engine,
-                engineVersion = VK.MAKE_VERSION(App.Version),
-                apiVersion = VK.MAKE_VERSION(1, 0, 0),
-            };
-
-            var createInfo = new VkInstanceCreateInfo
-            {
-                sType = VkStructureType.InstanceCreateInfo,
-                pApplicationInfo = &appInfo,
-            };
-
-            // required validation layers
-            using var validationLayerNames = new NativeStringArray(validationLayers);
-            if (HasValidationLayers)
-            {
-                createInfo.enabledLayerCount = validationLayerNames.Length;
-                createInfo.ppEnabledLayerNames = validationLayerNames;
-            }
-
-            // get the required Vulkan Extensions
-            var exts = System.GetVKExtensions();
-            if (HasValidationLayers)
-                exts.Add(VkConst.EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-            using var extensions = new NativeStringArray(exts);
-            createInfo.enabledExtensionCount = extensions.Length;
-            createInfo.ppEnabledExtensionNames = extensions;
-
-            // create instance
-            var result = VK.CreateInstance(&createInfo, null, out var instance);
-            if (result != VkResult.Success)
-                throw new Exception($"Failed to create Vulkan Instance, {result}");
-
-            return instance;
-        }
-
-        private VkPhysicalDevice PickPhysicalDevice()
-        {
-            uint deviceCount;
-            VK.EnumeratePhysicalDevices(Instance, &deviceCount, null);
-
-            if (deviceCount > 0)
-            {
-                VkPhysicalDevice* devices = stackalloc VkPhysicalDevice[(int)deviceCount];
-                VkPhysicalDevice* valid = stackalloc VkPhysicalDevice[(int)deviceCount];
-                VK.EnumeratePhysicalDevices(Instance, &deviceCount, devices);
-
-                // find valid devices
-                int validCount = 0;
-                for (int i = 0; i < deviceCount; i++)
+            var hasLayer = false;
+            for (int j = 0; j < availableLayerCount; j++)
+                if (requestedValidationLayers[i] == VK.STRING(availableLayers[j].layerName))
                 {
-                    if (IsValidPhysicalDevice(devices[i]))
-                        valid[validCount++] = devices[i];
+                    hasLayer = true;
+                    break;
                 }
 
-                // find the best device
-                if (validCount > 0)
-                {
-                    for (int i = 0; i < validCount; i++)
-                    {
-                        VkPhysicalDeviceProperties properties;
-                        VK.GetPhysicalDeviceProperties(devices[i], &properties);
+            if (hasLayer)
+                appendTo.Add(requestedValidationLayers[i]);
+            else
+                Log.Warning(Name, $"Validation Layer {requestedValidationLayers[i]} requested but does not exist. You may need to install the Vulkan SDK.");
+        }
+    }
 
-                        if (properties.deviceType == VkPhysicalDeviceType.DiscreteGpu)
-                            return valid[i];
-                    }
+    private VkDebugUtilsMessengerEXT CreateDebugMessenger(PFN_vkDebugUtilsMessengerCallbackEXT callback)
+    {
+        var createInfo = new VkDebugUtilsMessengerCreateInfoEXT
+        {
+            sType = VkStructureType.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            messageSeverity = VkDebugUtilsMessageSeverityFlagsEXT.Verbose | VkDebugUtilsMessageSeverityFlagsEXT.Warning | VkDebugUtilsMessageSeverityFlagsEXT.Error,
+            messageType = VkDebugUtilsMessageTypeFlagsEXT.General | VkDebugUtilsMessageTypeFlagsEXT.Validation | VkDebugUtilsMessageTypeFlagsEXT.Performance,
+            pfnUserCallback = Marshal.GetFunctionPointerForDelegate(callback),
+            pUserData = null
+        };
 
-                    return valid[0];
-                }
-            }
-            
-            throw new Exception("Failed to find any GPUs that support Vulkan");
+        trackedDelegates.Add(callback);
 
-            bool IsValidPhysicalDevice(VkPhysicalDevice device)
+        var result = VK.CreateDebugUtilsMessengerEXT(Instance, &createInfo, null, out var messenger);
+        if (result != VkResult.Success)
+            throw new Exception(result.ToString());
+
+        return messenger;
+    }
+
+    private VkInstance CreateVulkanInstance()
+    {
+        NativeString name = App.Name;
+        NativeString engine = "Foster.Framework";
+
+        // create the App Info
+        var appInfo = new VkApplicationInfo
+        {
+            sType = VkStructureType.ApplicationInfo,
+            pApplicationName = name,
+            applicationVersion = VK.MAKE_VERSION(1, 0, 0),
+            pEngineName = engine,
+            engineVersion = VK.MAKE_VERSION(App.Version),
+            apiVersion = VK.MAKE_VERSION(1, 0, 0),
+        };
+
+        var createInfo = new VkInstanceCreateInfo
+        {
+            sType = VkStructureType.InstanceCreateInfo,
+            pApplicationInfo = &appInfo,
+        };
+
+        // required validation layers
+        using var validationLayerNames = new NativeStringArray(validationLayers);
+        if (HasValidationLayers)
+        {
+            createInfo.enabledLayerCount = validationLayerNames.Length;
+            createInfo.ppEnabledLayerNames = validationLayerNames;
+        }
+
+        // get the required Vulkan Extensions
+        var exts = System.GetVKExtensions();
+        if (HasValidationLayers)
+            exts.Add(VkConst.EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+        using var extensions = new NativeStringArray(exts);
+        createInfo.enabledExtensionCount = extensions.Length;
+        createInfo.ppEnabledExtensionNames = extensions;
+
+        // create instance
+        var result = VK.CreateInstance(&createInfo, null, out var instance);
+        if (result != VkResult.Success)
+            throw new Exception($"Failed to create Vulkan Instance, {result}");
+
+        return instance;
+    }
+
+    private VkPhysicalDevice PickPhysicalDevice()
+    {
+        uint deviceCount;
+        VK.EnumeratePhysicalDevices(Instance, &deviceCount, null);
+
+        if (deviceCount > 0)
+        {
+            VkPhysicalDevice* devices = stackalloc VkPhysicalDevice[(int)deviceCount];
+            VkPhysicalDevice* valid = stackalloc VkPhysicalDevice[(int)deviceCount];
+            VK.EnumeratePhysicalDevices(Instance, &deviceCount, devices);
+
+            // find valid devices
+            int validCount = 0;
+            for (int i = 0; i < deviceCount; i++)
             {
-                if (!TryGetQueueFamilyIndex(device, VkQueueFlags.GraphicsBit, out _))
+                if (IsValidPhysicalDevice(devices[i]))
+                    valid[validCount++] = devices[i];
+            }
+
+            // find the best device
+            if (validCount > 0)
+            {
+                for (int i = 0; i < validCount; i++)
+                {
+                    VkPhysicalDeviceProperties properties;
+                    VK.GetPhysicalDeviceProperties(devices[i], &properties);
+
+                    if (properties.deviceType == VkPhysicalDeviceType.DiscreteGpu)
+                        return valid[i];
+                }
+
+                return valid[0];
+            }
+        }
+        
+        throw new Exception("Failed to find any GPUs that support Vulkan");
+
+        bool IsValidPhysicalDevice(VkPhysicalDevice device)
+        {
+            if (!TryGetQueueFamilyIndex(device, VkQueueFlags.GraphicsBit, out _))
+                return false;
+
+            uint extensionCount;
+            VK.EnumerateDeviceExtensionProperties(device, null, &extensionCount, null);
+            VkExtensionProperties* availableExtensions = stackalloc VkExtensionProperties[(int)extensionCount];
+            VK.EnumerateDeviceExtensionProperties(device, null, &extensionCount, availableExtensions);
+
+            foreach (var str in deviceExtensions)
+            {
+                var hasExtension = false;
+                for (int j = 0; j < extensionCount && !hasExtension; j++)
+                {
+                    if (str == VK.STRING(availableExtensions[j].extensionName))
+                        hasExtension = true;
+                }
+
+                if (!hasExtension)
                     return false;
+            }
 
-                uint extensionCount;
-                VK.EnumerateDeviceExtensionProperties(device, null, &extensionCount, null);
-                VkExtensionProperties* availableExtensions = stackalloc VkExtensionProperties[(int)extensionCount];
-                VK.EnumerateDeviceExtensionProperties(device, null, &extensionCount, availableExtensions);
+            return true;
+        }
+    }
 
-                foreach (var str in deviceExtensions)
-                {
-                    var hasExtension = false;
-                    for (int j = 0; j < extensionCount && !hasExtension; j++)
-                    {
-                        if (str == VK.STRING(availableExtensions[j].extensionName))
-                            hasExtension = true;
-                    }
+    private bool TryGetQueueFamilyIndex(VkPhysicalDevice device, VkQueueFlags flag, out uint index)
+    {
+        index = 0;
 
-                    if (!hasExtension)
-                        return false;
-                }
+        uint queueFamilyCount = 0;
+        VK.GetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, null);
 
+        VkQueueFamilyProperties* queueFamilies = stackalloc VkQueueFamilyProperties[(int)queueFamilyCount];
+        VK.GetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies);
+
+        for (int i = 0; i < queueFamilyCount; i++)
+        {
+            if (queueFamilies[i].queueFlags.HasFlag(flag))
+            {
+                index = (uint)i;
                 return true;
             }
         }
 
-        private bool TryGetQueueFamilyIndex(VkPhysicalDevice device, VkQueueFlags flag, out uint index)
-        {
-            index = 0;
+        return false;
+    }
 
-            uint queueFamilyCount = 0;
-            VK.GetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, null);
+    protected override void Disposed()
+    {
+        if (HasValidationLayers)
+            VK.DestroyDebugUtilsMessengerEXT(Instance, DebugMessenger, null);
 
-            VkQueueFamilyProperties* queueFamilies = stackalloc VkQueueFamilyProperties[(int)queueFamilyCount];
-            VK.GetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies);
+        if (Device != IntPtr.Zero)
+            VK.DestroyDevice(Device, null);
 
-            for (int i = 0; i < queueFamilyCount; i++)
-            {
-                if (queueFamilies[i].queueFlags.HasFlag(flag))
-                {
-                    index = (uint)i;
-                    return true;
-                }
-            }
+        if (Instance != IntPtr.Zero)
+            VK.DestroyInstance(Instance, null);
 
-            return false;
-        }
+        trackedDelegates.Clear();
+    }
 
-        protected override void Disposed()
-        {
-            if (HasValidationLayers)
-                VK.DestroyDebugUtilsMessengerEXT(Instance, DebugMessenger, null);
+    public IntPtr GetVulkanInstancePointer()
+    {
+        return Instance;
+    }
 
-            if (Device != IntPtr.Zero)
-                VK.DestroyDevice(Device, null);
+    public override Renderer Renderer => Renderer.Vulkan;
 
-            if (Instance != IntPtr.Zero)
-                VK.DestroyInstance(Instance, null);
+    protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
+    {
 
-            trackedDelegates.Clear();
-        }
+    }
 
-        public IntPtr GetVulkanInstancePointer()
-        {
-            return Instance;
-        }
+    protected override void RenderInternal(ref RenderPass pass)
+    {
 
-        public override Renderer Renderer => Renderer.Vulkan;
+    }
 
-        protected override void ClearInternal(RenderTarget target, Clear flags, Color color, float depth, int stencil, RectInt viewport)
-        {
+    protected override Texture.Platform CreateTexture(int width, int height, TextureFormat format)
+    {
+        return new VK_Texture(this, width, height, format);
+    }
 
-        }
+    protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] attachments)
+    {
+        return new VK_FrameBuffer(this, width, height, attachments);
+    }
 
-        protected override void RenderInternal(ref RenderPass pass)
-        {
+    protected override Shader.Platform CreateShader(ShaderSource source)
+    {
+        return new VK_Shader();
+    }
 
-        }
+    protected override Mesh.Platform CreateMesh()
+    {
+        return new VK_Mesh();
+    }
 
-        protected override Texture.Platform CreateTexture(int width, int height, TextureFormat format)
-        {
-            return new VK_Texture(this, width, height, format);
-        }
+    protected override ShaderSource CreateShaderSourceBatch2D()
+    {
+        var vertexSource = Calc.EmbeddedResource("Resources/batch2d.vert.spv");
+        var fragmentSource = Calc.EmbeddedResource("Resources/batch2d.frag.spv");
 
-        protected override FrameBuffer.Platform CreateFrameBuffer(int width, int height, TextureFormat[] attachments)
-        {
-            return new VK_FrameBuffer(this, width, height, attachments);
-        }
-
-        protected override Shader.Platform CreateShader(ShaderSource source)
-        {
-            return new VK_Shader();
-        }
-
-        protected override Mesh.Platform CreateMesh()
-        {
-            return new VK_Mesh();
-        }
-
-        protected override ShaderSource CreateShaderSourceBatch2D()
-        {
-            var vertexSource = Calc.EmbeddedResource("Resources/batch2d.vert.spv");
-            var fragmentSource = Calc.EmbeddedResource("Resources/batch2d.frag.spv");
-
-            return new ShaderSource(vertexSource, fragmentSource);
-        }
+        return new ShaderSource(vertexSource, fragmentSource);
     }
 }

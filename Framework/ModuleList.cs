@@ -48,7 +48,7 @@ namespace Foster.Framework
         /// </summary>
         private Module Instantiate(Type type)
         {
-            if (!(Activator.CreateInstance(type) is Module module))
+            if (Activator.CreateInstance(type) is not Module module)
                 throw new Exception("Type must inheirt from Module");
 
             // add Module to lookup
