@@ -58,7 +58,7 @@ public static class App
     /// <summary>
     /// Gets the Primary Window
     /// </summary>
-    public static Window Window => primaryWindow ?? throw new Exception("Application has not yet created a Primary Window");
+    public static Window Window => s_primaryWindow ?? throw new Exception("Application has not yet created a Primary Window");
 
     /// <summary>
     /// When set to true, this forces the entire application to use Fixed Timestep, including normal Update methods.
@@ -73,7 +73,7 @@ public static class App
     /// <summary>
     /// Reference to the Primary Window
     /// </summary>
-    private static Window? primaryWindow;
+    private static Window? s_primaryWindow;
 
     /// <summary>
     /// Starts running the Application
@@ -122,7 +122,7 @@ public static class App
                 throw new Exception("App requires a System Module to be registered before it can Start");
 
             // our primary Window
-            primaryWindow = new Window(System, title, width, height, flags);
+            s_primaryWindow = new Window(System, title, width, height, flags);
             Modules.FirstWindowCreated();
 
             // startup application
@@ -230,7 +230,7 @@ public static class App
             Modules.FrameEnd();
 
             // Check if the Primary Window has been closed
-            if (primaryWindow == null || !primaryWindow.Opened)
+            if (s_primaryWindow == null || !s_primaryWindow.Opened)
                 Exit();
 
             // render
@@ -261,7 +261,7 @@ public static class App
 
         // finalize
         Modules.Shutdown();
-        primaryWindow = null;
+        s_primaryWindow = null;
         Exiting = false;
 
         Log.Info("Exited");

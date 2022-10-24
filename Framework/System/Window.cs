@@ -286,7 +286,8 @@ public sealed class Window : RenderTarget
     /// </summary>
     public bool MouseOver => Implementation.MouseOver;
 
-    public Window(string title, int width, int height, WindowFlags flags = WindowFlags.ScaleToMonitor) : this(App.System, title, width, height, flags)
+    public Window(string title, int width, int height, WindowFlags flags = WindowFlags.ScaleToMonitor)
+        : this(App.System, title, width, height, flags)
     {
 
     }
