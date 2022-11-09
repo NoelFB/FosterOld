@@ -15,11 +15,12 @@ internal unsafe class GL_Bindings
         glGetString = (delegate* unmanaged<GLEnum, sbyte*>)GetProcAddress(nameof(glGetString));
         glDebugMessageCallback = (delegate* unmanaged<delegate* unmanaged<GLEnum, GLEnum, uint, GLEnum, uint, sbyte*, IntPtr, void>, IntPtr, void>)GetProcAddress(nameof(glDebugMessageCallback));
         glFlush = (delegate* unmanaged<void>)GetProcAddress(nameof(glFlush));
+        glEnable = (delegate* unmanaged<GLEnum, void>)GetProcAddress(nameof(glEnable));
+        glDisable = (delegate* unmanaged<GLEnum, void>)GetProcAddress(nameof(glDisable));
+        glClear = (delegate* unmanaged<GLEnum, void>)GetProcAddress(nameof(glClear));
 
-        CreateDelegate(ref glEnable!, "glEnable");
-        CreateDelegate(ref glDisable!, "glDisable");
-        CreateDelegate(ref glClear!, "glClear");
-        CreateDelegate(ref glClearColor!, "glClearColor");
+        glClearColor = (delegate* unmanaged<float, float, float, float, void>)GetProcAddress(nameof(glClearColor));
+
         CreateDelegate(ref glClearDepth!, "glClearDepth");
         CreateDelegate(ref glClearStencil!, "glClearStencil");
         CreateDelegate(ref glDepthMask!, "glDepthMask");
@@ -117,37 +118,28 @@ internal unsafe class GL_Bindings
         CreateDelegate(ref glUniformMatrix4x3fv!, "glUniformMatrix4x3fv");
     }
 
-    private IntPtr GetProcAddress(string name) 
+    private IntPtr GetProcAddress(string name)
     {
         return system.GetGLProcAddress(name);
     }
 
-    private void CreateDelegate<T>(ref T def, string name) where T : class
+    private void CreateDelegate<TDelegate>(ref TDelegate @delegate, string name)
     {
         var addr = system.GetGLProcAddress(name);
-        if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer(addr, typeof(T)) is T del))
-            def = del;
+        if (addr != IntPtr.Zero && (Marshal.GetDelegateForFunctionPointer<TDelegate>(addr) is TDelegate del))
+        {
+            @delegate = del;
+        }
     }
 
     public delegate* unmanaged<GLEnum, sbyte*> glGetString;
     public delegate* unmanaged<delegate* unmanaged<GLEnum, GLEnum, uint, GLEnum, uint, sbyte*, IntPtr, void>, IntPtr, void> glDebugMessageCallback;
     public delegate* unmanaged<void> glFlush;
 
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void Enable(GLEnum mode);
-    public Enable glEnable;
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void Disable(GLEnum mode);
-    public Disable glDisable;
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void Clear(GLEnum mask);
-    public Clear glClear;
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void ClearColor(float red, float green, float blue, float alpha);
-    public ClearColor glClearColor;
+    public delegate* unmanaged<GLEnum, void> glEnable;
+    public delegate* unmanaged<GLEnum, void> glDisable;
+    public delegate* unmanaged<GLEnum, void> glClear;
+    public delegate* unmanaged<float, float, float, float, void> glClearColor;
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate void ClearDepth(double depth);
