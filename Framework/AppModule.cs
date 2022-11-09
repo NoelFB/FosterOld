@@ -5,8 +5,8 @@
 /// </summary>
 public abstract class AppModule : Module
 {
-
-    protected AppModule(int priority = 10000) : base(priority)
+    protected AppModule(int priority = 10000)
+        : base(priority)
     {
 
     }
@@ -20,5 +20,4 @@ public abstract class AppModule : Module
     /// Called when the Module is created, before Startup but after the first Window is created
     /// </summary>
     protected internal virtual void FirstWindowCreated() { }
-
 }

@@ -7,7 +7,6 @@ namespace Foster.Framework;
 /// </summary>
 public abstract class Graphics : AppModule
 {
-
     /// <summary>
     /// The underlying Graphics API Name
     /// </summary>

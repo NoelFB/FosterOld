@@ -8,7 +8,6 @@ namespace Foster.GLFW;
 
 public class GLFW_System : Framework.System, ISystemOpenGL, ISystemVulkan
 {
-
     private readonly GLFW_Input input;
 
     private readonly List<IntPtr> windowPointers = new List<IntPtr>();

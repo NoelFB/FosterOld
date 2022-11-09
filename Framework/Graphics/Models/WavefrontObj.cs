@@ -112,7 +112,7 @@ public class WavefrontObj
                     }
 
                     var face = new Face { VertexIndex = obj.Vertices.Count };
-                    var data = line.Slice(2);
+                     Span<char> data = line.Slice(2);
                     var next = data;
 
                     while ((next = NextSplit(ref data, ' ')).Length > 0)
@@ -158,7 +158,7 @@ public class WavefrontObj
         }
     }
 
-    private Span<char> NextSplit(ref Span<char> span, char delim)
+    private Span<char> NextSplit(scoped ref Span<char> span, char delim)
     {
         var result = new Span<char>();
 

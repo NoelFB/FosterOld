@@ -2,6 +2,7 @@
 using Foster.Framework;
 using Foster.GLFW;
 using Foster.OpenGL;
+using Foster.SDL2;
 
 class Program
 {
@@ -9,7 +10,8 @@ class Program
     static void Main(string[] args)
     {
         // Register our System Module (GLFW in this case)
-        App.Modules.Register<GLFW_System>();
+        //App.Modules.Register<GLFW_System>();
+        App.Modules.Register<SDL_System>();
 
         // Register our Graphics Module (OpenGL in this case)
         App.Modules.Register<GL_Graphics>();
