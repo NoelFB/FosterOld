@@ -2,16 +2,14 @@
 using Foster.Framework;
 using Foster.GLFW;
 using Foster.OpenGL;
-using Foster.SDL2;
 
 class Program
 {
     // C# Entry Point
-    static void Main(string[] args)
+    static void Main()
     {
         // Register our System Module (GLFW in this case)
-        //App.Modules.Register<GLFW_System>();
-        App.Modules.Register<SDL_System>();
+        App.Modules.Register<GLFW_System>();
 
         // Register our Graphics Module (OpenGL in this case)
         App.Modules.Register<GL_Graphics>();
@@ -29,7 +27,7 @@ public class CustomModule : Module
     public readonly Batch2D Batcher = new Batch2D();
     public float Offset = 0f;
     public float OffsetY = 0f;
-    private Window secondWindow;
+    private Window? secondWindow;
 
     // This is called when the Application has Started
     protected override void Startup()

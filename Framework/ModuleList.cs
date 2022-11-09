@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 
 namespace Foster.Framework;
@@ -10,45 +11,44 @@ namespace Foster.Framework;
 /// </summary>
 public class ModuleList : IEnumerable<Module>
 {
-    private readonly List<Type> registered = new List<Type>();
-    private readonly List<Module?> modules = new List<Module?>();
-    private readonly Dictionary<Type, Module> modulesByType = new Dictionary<Type, Module>();
+    private readonly Dictionary<Type, Func<Module>> registered = new();
+    private readonly List<Module?> modules = new();
+    private readonly Dictionary<Type, Module> modulesByType = new();
     private bool immediateInit;
     private bool immediateStart;
 
     /// <summary>
     /// Registers a Module
     /// </summary>
-    public void Register<T>() where T : Module
+    public void Register<T>() where T : Module, new()
     {
-        Register(typeof(T));
+        Register(typeof(T), () => new T());
     }
 
     /// <summary>
     /// Registers a Module
     /// </summary>
-    public void Register(Type type)
+    public void Register(Type type, Func<Module> factory)
     {
         if (immediateInit)
         {
-            var module = Instantiate(type);
+            var module = Instantiate(type, factory);
 
             if (immediateStart)
                 StartupModule(module, true);
         }
         else
         {
-            registered.Add(type);
+            registered.Add(type, factory);
         }
     }
 
     /// <summary>
     /// Registers a Module
     /// </summary>
-    private Module Instantiate(Type type)
+    private Module Instantiate(Type type, Func<Module> factory)
     {
-        if (Activator.CreateInstance(type) is not Module module)
-            throw new Exception("Type must inheirt from Module");
+        Module module = factory();
 
         // add Module to lookup
         while (type != typeof(Module) && type != typeof(AppModule))
@@ -65,12 +65,14 @@ public class ModuleList : IEnumerable<Module>
         // insert in order
         var insert = 0;
         while (insert < modules.Count && (modules[insert]?.Priority ?? int.MinValue) <= module.Priority)
+        {
             insert++;
+        }
         modules.Insert(insert, module);
 
         // registered
         module.IsRegistered = true;
-        module.MainThreadId = Thread.CurrentThread.ManagedThreadId;
+        module.MainThreadId = Environment.CurrentManagedThreadId;
         return module;
     }
 
@@ -175,14 +177,19 @@ public class ModuleList : IEnumerable<Module>
     internal void ApplicationStarted()
     {
         // create Application Modules
-        for (int i = 0; i < registered.Count; i++)
+        List<Type> toRemove = new();
+        foreach (KeyValuePair<Type, Func<Module>> pair in registered)
         {
-            if (typeof(AppModule).IsAssignableFrom(registered[i]))
+            if (typeof(AppModule).IsAssignableFrom(pair.Key))
             {
-                Instantiate(registered[i]);
-                registered.RemoveAt(i);
-                i--;
+                Instantiate(pair.Key, pair.Value);
+                toRemove.Add(pair.Key);
             }
+        }
+
+        foreach (Type type in toRemove)
+        {
+            registered.Remove(type);
         }
 
         for (int i = 0; i < modules.Count; i++)
@@ -211,9 +218,11 @@ public class ModuleList : IEnumerable<Module>
         for (int i = 0; i < modules.Count; i++)
             StartupModule(modules[i], false);
 
-        // instantiate remaining modules that are registered
-        for (int i = 0; i < registered.Count; i++)
-            Instantiate(registered[i]);
+        // Instantiate remaining modules that are registered
+        foreach (KeyValuePair<Type, Func<Module>> pair in registered)
+        {
+            Instantiate(pair.Key, pair.Value);
+        }
 
         // further modules will be instantiated immediately
         immediateInit = true;

@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Foster.OpenGL;
 
-internal class GL_Bindings
+internal unsafe class GL_Bindings
 {
     private readonly ISystemOpenGL system;
 
@@ -12,9 +12,10 @@ internal class GL_Bindings
     {
         this.system = system ?? throw new Exception("GL Module requires a System that implements ProcAddress");
 
-        CreateDelegate(ref glGetString!, "glGetString");
-        CreateDelegate(ref glDebugMessageCallback!, "glDebugMessageCallback");
-        CreateDelegate(ref glFlush!, "glFlush");
+        glGetString = (delegate* unmanaged<GLEnum, sbyte*>)GetProcAddress(nameof(glGetString));
+        glDebugMessageCallback = (delegate* unmanaged<delegate* unmanaged<GLEnum, GLEnum, uint, GLEnum, uint, sbyte*, IntPtr, void>, IntPtr, void>)GetProcAddress(nameof(glDebugMessageCallback));
+        glFlush = (delegate* unmanaged<void>)GetProcAddress(nameof(glFlush));
+
         CreateDelegate(ref glEnable!, "glEnable");
         CreateDelegate(ref glDisable!, "glDisable");
         CreateDelegate(ref glClear!, "glClear");
@@ -116,6 +117,11 @@ internal class GL_Bindings
         CreateDelegate(ref glUniformMatrix4x3fv!, "glUniformMatrix4x3fv");
     }
 
+    private IntPtr GetProcAddress(string name) 
+    {
+        return system.GetGLProcAddress(name);
+    }
+
     private void CreateDelegate<T>(ref T def, string name) where T : class
     {
         var addr = system.GetGLProcAddress(name);
@@ -123,17 +129,9 @@ internal class GL_Bindings
             def = del;
     }
 
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate IntPtr GetString(GLEnum name);
-    public GetString glGetString;
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void DebugMessageCallback(IntPtr callback, IntPtr userdata);
-    public DebugMessageCallback glDebugMessageCallback;
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate void Flush();
-    public Flush glFlush;
+    public delegate* unmanaged<GLEnum, sbyte*> glGetString;
+    public delegate* unmanaged<delegate* unmanaged<GLEnum, GLEnum, uint, GLEnum, uint, sbyte*, IntPtr, void>, IntPtr, void> glDebugMessageCallback;
+    public delegate* unmanaged<void> glFlush;
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate void Enable(GLEnum mode);

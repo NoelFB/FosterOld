@@ -155,8 +155,8 @@ public class GL_Graphics : Graphics, IGraphicsOpenGL
 
     protected override ShaderSource CreateShaderSourceBatch2D()
     {
-        var vertexSource = Calc.EmbeddedResourceText("Resources/batch2d.vert");
-        var fragmentSource = Calc.EmbeddedResourceText("Resources/batch2d.frag");
+        var vertexSource = Calc.EmbeddedResourceText(typeof(GL_Graphics).Assembly, "Resources/batch2d.vert");
+        var fragmentSource = Calc.EmbeddedResourceText(typeof(GL_Graphics).Assembly, "Resources/batch2d.frag");
 
         return new ShaderSource(vertexSource, fragmentSource);
     }

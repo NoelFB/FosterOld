@@ -4,9 +4,8 @@ using System.Runtime.InteropServices;
 
 namespace Foster.OpenGL;
 
-internal static class GL
+internal static unsafe class GL
 {
-
     public static int MajorVersion;
     public static int MinorVersion;
     public static int MaxColorAttachments;
@@ -21,7 +20,6 @@ internal static class GL
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
     private static GL_Bindings bindings;
-    private static OnError onErrorRef;
 #pragma warning restore CS8618
 
     public static void Init(GL_Graphics graphics, ISystemOpenGL system)
@@ -46,58 +44,65 @@ internal static class GL
             Enable(GLEnum.DEBUG_OUTPUT);
             Enable(GLEnum.DEBUG_OUTPUT_SYNCHRONOUS);
 
-            DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(onErrorRef = new OnError((source, type, id, severity, length, message, userParam) =>
-            {
-                string typeName;
-                string severityName;
-                string output = Marshal.PtrToStringAnsi(message, (int)length);
-
-                switch (type)
-                {
-                    case GLEnum.DEBUG_TYPE_ERROR: typeName = "ERROR"; break;
-                    case GLEnum.DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "DEPRECATED BEHAVIOR"; break;
-                    case GLEnum.DEBUG_TYPE_MARKER: typeName = "MARKER"; break;
-                    case GLEnum.DEBUG_TYPE_OTHER: typeName = "OTHER"; break;
-                    case GLEnum.DEBUG_TYPE_PERFORMANCE: typeName = "PEROFRMANCE"; break;
-                    case GLEnum.DEBUG_TYPE_POP_GROUP: typeName = "POP GROUP"; break;
-                    case GLEnum.DEBUG_TYPE_PORTABILITY: typeName = "PORTABILITY"; break;
-                    case GLEnum.DEBUG_TYPE_PUSH_GROUP: typeName = "PUSH GROUP"; break;
-                    default: case GLEnum.DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "UNDEFINED BEHAVIOR"; break;
-                }
-
-                switch (severity)
-                {
-                    case GLEnum.DEBUG_SEVERITY_HIGH: severityName = "HIGH"; break;
-                    case GLEnum.DEBUG_SEVERITY_MEDIUM: severityName = "MEDIUM"; break;
-                    case GLEnum.DEBUG_SEVERITY_LOW: severityName = "LOW"; break;
-
-                    // skip notifications
-                    default:
-                    case GLEnum.DEBUG_SEVERITY_NOTIFICATION:
-                        return;
-                }
-
-                if (type == GLEnum.DEBUG_TYPE_ERROR)
-                {
-                    throw new Exception(output);
-                }
-
-                Log.Warning($"OpenGL {typeName}, {severityName}: {output}");
-
-            })), IntPtr.Zero);
+            DebugMessageCallback(&OnError, IntPtr.Zero);
         }
 
 #endif
     }
 
-    private delegate void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, IntPtr message, IntPtr userParam);
+#if DEBUG
+    [UnmanagedCallersOnly]
+    private static void OnError(GLEnum source, GLEnum type, uint id, GLEnum severity, uint length, sbyte* message, IntPtr userParam)
+    {
+        string typeName;
+        string severityName;
+        string output = new string(message, 0, (int)length);
+
+        switch (type)
+        {
+            case GLEnum.DEBUG_TYPE_ERROR: typeName = "ERROR"; break;
+            case GLEnum.DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeName = "DEPRECATED BEHAVIOR"; break;
+            case GLEnum.DEBUG_TYPE_MARKER: typeName = "MARKER"; break;
+            case GLEnum.DEBUG_TYPE_OTHER: typeName = "OTHER"; break;
+            case GLEnum.DEBUG_TYPE_PERFORMANCE: typeName = "PEROFRMANCE"; break;
+            case GLEnum.DEBUG_TYPE_POP_GROUP: typeName = "POP GROUP"; break;
+            case GLEnum.DEBUG_TYPE_PORTABILITY: typeName = "PORTABILITY"; break;
+            case GLEnum.DEBUG_TYPE_PUSH_GROUP: typeName = "PUSH GROUP"; break;
+            default: case GLEnum.DEBUG_TYPE_UNDEFINED_BEHAVIOR: typeName = "UNDEFINED BEHAVIOR"; break;
+        }
+
+        switch (severity)
+        {
+            case GLEnum.DEBUG_SEVERITY_HIGH: severityName = "HIGH"; break;
+            case GLEnum.DEBUG_SEVERITY_MEDIUM: severityName = "MEDIUM"; break;
+            case GLEnum.DEBUG_SEVERITY_LOW: severityName = "LOW"; break;
+
+            // skip notifications
+            default:
+            case GLEnum.DEBUG_SEVERITY_NOTIFICATION:
+                return;
+        }
+
+        if (type == GLEnum.DEBUG_TYPE_ERROR)
+        {
+            throw new Exception(output);
+        }
+
+        Log.Warning($"OpenGL {typeName}, {severityName}: {output}");
+
+    }
+#endif
 
     public static unsafe string GetString(GLEnum name)
     {
-        return Marshal.PtrToStringAnsi(bindings.glGetString(name)) ?? "";
+        sbyte* byteStr = bindings.glGetString(name);
+        return byteStr == null ? string.Empty : new string(byteStr);
     }
 
-    public static void DebugMessageCallback(IntPtr callback, IntPtr userdata) => bindings.glDebugMessageCallback(callback, userdata);
+    public static void DebugMessageCallback(delegate* unmanaged<GLEnum, GLEnum, uint, GLEnum, uint, sbyte*, IntPtr, void> callback, IntPtr userdata)
+    {
+        bindings.glDebugMessageCallback(callback, userdata);
+    }
 
     public static void Flush() => bindings.glFlush();
 

@@ -666,15 +666,6 @@ public static class Calc
         return stream;
     }
 
-    public static string EmbeddedResourceText(string resourceName)
-    {
-        var assembly = Assembly.GetCallingAssembly() ?? throw new Exception();
-
-        using var stream = EmbeddedResource(assembly, resourceName);
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
-    }
-
     public static string EmbeddedResourceText(Assembly assembly, string resourceName)
     {
         using var stream = EmbeddedResource(assembly, resourceName);
