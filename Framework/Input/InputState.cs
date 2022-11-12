@@ -1,77 +1,76 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Foster.Framework
-{    
+namespace Foster.Framework;
+
+/// <summary>
+/// Stores an Input State
+/// </summary>
+public class InputState
+{
     /// <summary>
-    /// Stores an Input State
+    /// The Maximum number of Controllers
     /// </summary>
-    public class InputState
+    public const int MaxControllers = 32;
+
+    /// <summary>
+    /// Our Input Module
+    /// </summary>
+    public readonly Input Input;
+
+    /// <summary>
+    /// The Keyboard State
+    /// </summary>
+    public readonly Keyboard Keyboard;
+
+    /// <summary>
+    /// The Mouse State
+    /// </summary>
+    public readonly Mouse Mouse;
+
+    /// <summary>
+    /// A list of all the Controllers
+    /// </summary>
+    private readonly Controller[] controllers;
+
+    /// <summary>
+    /// A Read-Only Collection of the Controllers
+    /// Note that they aren't necessarily connected
+    /// </summary>
+    public readonly ReadOnlyCollection<Controller> Controllers;
+
+    public InputState(Input input)
     {
-        /// <summary>
-        /// The Maximum number of Controllers
-        /// </summary>
-        public const int MaxControllers = 32;
+        Input = input;
 
-        /// <summary>
-        /// Our Input Module
-        /// </summary>
-        public readonly Input Input;
+        controllers = new Controller[MaxControllers];
+        for (int i = 0; i < controllers.Length; i++)
+            controllers[i] = new Controller(input);
 
-        /// <summary>
-        /// The Keyboard State
-        /// </summary>
-        public readonly Keyboard Keyboard;
+        Controllers = new ReadOnlyCollection<Controller>(controllers);
+        Keyboard = new Keyboard(input);
+        Mouse = new Mouse();
+    }
 
-        /// <summary>
-        /// The Mouse State
-        /// </summary>
-        public readonly Mouse Mouse;
-
-        /// <summary>
-        /// A list of all the Controllers
-        /// </summary>
-        private readonly Controller[] controllers;
-
-        /// <summary>
-        /// A Read-Only Collection of the Controllers
-        /// Note that they aren't necessarily connected
-        /// </summary>
-        public readonly ReadOnlyCollection<Controller> Controllers;
-
-        public InputState(Input input)
+    internal void Step()
+    {
+        for (int i = 0; i < Controllers.Count; i++)
         {
-            Input = input;
+            if (Controllers[i].Connected)
+                Controllers[i].Step();
+        }
+        Keyboard.Step();
+        Mouse.Step();
+    }
 
-            controllers = new Controller[MaxControllers];
-            for (int i = 0; i < controllers.Length; i++)
-                controllers[i] = new Controller(input);
-
-            Controllers = new ReadOnlyCollection<Controller>(controllers);
-            Keyboard = new Keyboard(input);
-            Mouse = new Mouse();
+    internal void Copy(InputState other)
+    {
+        for (int i = 0; i < Controllers.Count; i++)
+        {
+            if (other.Controllers[i].Connected || (Controllers[i].Connected != other.Controllers[i].Connected))
+                Controllers[i].Copy(other.Controllers[i]);
         }
 
-        internal void Step()
-        {
-            for (int i = 0; i < Controllers.Count; i++)
-            {
-                if (Controllers[i].Connected)
-                    Controllers[i].Step();
-            }
-            Keyboard.Step();
-            Mouse.Step();
-        }
-
-        internal void Copy(InputState other)
-        {
-            for (int i = 0; i < Controllers.Count; i++)
-            {
-                if (other.Controllers[i].Connected || (Controllers[i].Connected != other.Controllers[i].Connected))
-                    Controllers[i].Copy(other.Controllers[i]);
-            }
-
-            Keyboard.Copy(other.Keyboard);
-            Mouse.Copy(other.Mouse);
-        }
+        Keyboard.Copy(other.Keyboard);
+        Mouse.Copy(other.Mouse);
     }
 }

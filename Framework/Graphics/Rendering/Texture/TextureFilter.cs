@@ -1,11 +1,10 @@
-﻿namespace Foster.Framework
+﻿namespace Foster.Framework;
+
+/// <summary>
+/// Texture Filter
+/// </summary>
+public enum TextureFilter
 {
-    /// <summary>
-    /// Texture Filter
-    /// </summary>
-    public enum TextureFilter
-    {
-        Linear = 0,
-        Nearest = 1
-    }
+    Linear = 0,
+    Nearest = 1
 }
