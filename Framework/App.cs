@@ -145,6 +145,9 @@ public static class App
 
         while (Running)
         {
+            Time.PreviousFixedDuration = Time.FixedDuration;
+            Time.PreviousDuration = Time.Duration;
+
             var forceFixedTimestep = ForceFixedTimestep;
             if (!forceFixedTimestep)
                 System.Input.Step();

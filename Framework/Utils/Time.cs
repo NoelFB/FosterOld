@@ -24,9 +24,19 @@ public static class Time
     public static TimeSpan Duration { get; internal set; }
 
     /// <summary>
+    /// The time since the start of the Application, as of the previous frame
+    /// </summary>
+    public static TimeSpan PreviousDuration { get; internal set; }
+
+    /// <summary>
     /// The total fixed-update duration since the start of the Application
     /// </summary>
     public static TimeSpan FixedDuration { get; internal set; }
+
+    /// <summary>
+    /// The total fixed-update duration since the start of the Application, as of the previous frame
+    /// </summary>
+    public static TimeSpan PreviousFixedDuration { get; internal set; }
 
     /// <summary>
     /// Multiplies the Delta Time per frame by the scale value
