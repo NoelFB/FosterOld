@@ -52,9 +52,9 @@ public class Texture : IDisposable
     public int Height { get; private set; }
 
     /// <summary>
-    /// Gets the Size of the Texture
+    /// Gets the Size (Width, Height) of the Texture
     /// </summary>
-    public Vector2 Size => new(Width, Height);
+    public Point2 Size => new(Width, Height);
 
     /// <summary>
     /// Whether the Texture is part of a FrameBuffer
@@ -62,9 +62,9 @@ public class Texture : IDisposable
     public bool IsFrameBuffer => Implementation.IsFrameBuffer();
 
     /// <summary>
-    /// The Size of the Texture, in bytes
+    /// The Memory Size of the Texture, in bytes
     /// </summary>
-    public int FileSize => Width * Height * (Format switch
+    public int MemorySize => Width * Height * (Format switch
     {
         TextureFormat.Color => 4,
         TextureFormat.Red => 1,
