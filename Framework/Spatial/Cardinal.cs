@@ -11,14 +11,14 @@ namespace Foster.Framework
     public struct Cardinal
     {
         public const byte VAL_RIGHT = 0;
-        public const byte VAL_UP = 1;
+        public const byte VAL_DOWN = 1;
         public const byte VAL_LEFT = 2;
-        public const byte VAL_DOWN = 3;
+        public const byte VAL_UP = 3;
 
         static public readonly Cardinal Right = new Cardinal(VAL_RIGHT);
-        static public readonly Cardinal Up = new Cardinal(VAL_UP);
-        static public readonly Cardinal Left = new Cardinal(VAL_LEFT);
         static public readonly Cardinal Down = new Cardinal(VAL_DOWN);
+        static public readonly Cardinal Left = new Cardinal(VAL_LEFT);
+        static public readonly Cardinal Up = new Cardinal(VAL_UP);
 
         public byte Value { get; private set; }
 
@@ -28,8 +28,8 @@ namespace Foster.Framework
         }
 
         public Cardinal Reverse => new Cardinal((byte)((Value + 2) % 4));
-        public Cardinal TurnRight => new Cardinal((byte)((Value + 3) % 4));
-        public Cardinal TurnLeft => new Cardinal((byte)((Value + 1) % 4));
+        public Cardinal TurnRight => new Cardinal((byte)((Value + 1) % 4));
+        public Cardinal TurnLeft => new Cardinal((byte)((Value + 3) % 4));
 
         public bool Horizontal => Value % 2 == 0;
         public bool Vertical => Value % 2 == 1;    
@@ -40,12 +40,11 @@ namespace Foster.Framework
             {
                 switch (Value)
                 {
-                    case 0:
+                    case VAL_RIGHT:
                         return 1;
-                    case 2:
+                    case VAL_LEFT:
                         return -1;
-                    case 1:
-                    case 3:
+                    default:
                         return 0;
                 }
 
@@ -59,12 +58,11 @@ namespace Foster.Framework
             {
                 switch (Value)
                 {
-                    case 3:
+                    case VAL_DOWN:
                         return 1;
-                    case 1:
+                    case VAL_UP:
                         return -1;
-                    case 0:
-                    case 2:
+                    default:
                         return 0;
                 }
 
@@ -78,13 +76,13 @@ namespace Foster.Framework
             {
                 switch (Value)
                 {
-                    case 0:
+                    case VAL_RIGHT:
                         return 0;
-                    case 1:
+                    case VAL_UP:
                         return -Calc.HalfPI;
-                    case 2:
+                    case VAL_LEFT:
                         return Calc.PI;
-                    case 3:
+                    case VAL_DOWN:
                         return Calc.HalfPI;
                 }
 
@@ -113,13 +111,13 @@ namespace Foster.Framework
 
         public override string ToString()
         {
-            switch (Value)
+            return Value switch
             {
-                case 0: return "Right";
-                case 1: return "Up";
-                case 2: return "Left";
-                default: return "Down";
-            }
+                VAL_DOWN => "Down",
+                VAL_LEFT => "Left",
+                VAL_UP => "Up",
+                _ => "Right",
+            };
         }
 
         public byte ToByte()
@@ -170,6 +168,18 @@ namespace Foster.Framework
                 yield return Left;
                 yield return Up;
             }
+        }
+
+        public static Cardinal operator++(Cardinal c)
+        {
+            c.Value = (byte)((c.Value + 1) % 4);
+            return c;
+        }
+
+        public static Cardinal operator --(Cardinal c)
+        {
+            c.Value = (byte)((c.Value + 3) % 4);
+            return c;
         }
     }
 }

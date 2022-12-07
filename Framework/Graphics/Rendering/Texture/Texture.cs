@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Foster.Framework;
@@ -51,6 +52,11 @@ public class Texture : IDisposable
     public int Height { get; private set; }
 
     /// <summary>
+    /// Gets the Size of the Texture
+    /// </summary>
+    public Vector2 Size => new(Width, Height);
+
+    /// <summary>
     /// Whether the Texture is part of a FrameBuffer
     /// </summary>
     public bool IsFrameBuffer => Implementation.IsFrameBuffer();
@@ -58,7 +64,7 @@ public class Texture : IDisposable
     /// <summary>
     /// The Size of the Texture, in bytes
     /// </summary>
-    public int Size => Width * Height * (Format switch
+    public int FileSize => Width * Height * (Format switch
     {
         TextureFormat.Color => 4,
         TextureFormat.Red => 1,
@@ -182,7 +188,7 @@ public class Texture : IDisposable
     /// </summary>
     public void SetData<T>(ReadOnlyMemory<T> buffer)
     {
-        if (Marshal.SizeOf<T>() * buffer.Length < Size)
+        if (Marshal.SizeOf<T>() * buffer.Length < FileSize)
             throw new Exception("Buffer is smaller than the Size of the Texture");
 
         Implementation.SetData(buffer);
@@ -193,7 +199,7 @@ public class Texture : IDisposable
     /// </summary>
     public void GetData<T>(Memory<T> buffer)
     {
-        if (Marshal.SizeOf<T>() * buffer.Length < Size)
+        if (Marshal.SizeOf<T>() * buffer.Length < FileSize)
             throw new Exception("Buffer is smaller than the Size of the Texture");
 
         Implementation.GetData(buffer);
@@ -218,7 +224,7 @@ public class Texture : IDisposable
             // TODO:
             // do this inline with a single buffer
 
-            var buffer = new byte[Size];
+            var buffer = new byte[FileSize];
             GetData<byte>(buffer);
 
             if (Format == TextureFormat.Red)
