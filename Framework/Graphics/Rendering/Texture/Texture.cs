@@ -188,7 +188,7 @@ public class Texture : IDisposable
     /// </summary>
     public void SetData<T>(ReadOnlyMemory<T> buffer)
     {
-        if (Marshal.SizeOf<T>() * buffer.Length < FileSize)
+        if (Marshal.SizeOf<T>() * buffer.Length < MemorySize)
             throw new Exception("Buffer is smaller than the Size of the Texture");
 
         Implementation.SetData(buffer);
@@ -199,7 +199,7 @@ public class Texture : IDisposable
     /// </summary>
     public void GetData<T>(Memory<T> buffer)
     {
-        if (Marshal.SizeOf<T>() * buffer.Length < FileSize)
+        if (Marshal.SizeOf<T>() * buffer.Length < MemorySize)
             throw new Exception("Buffer is smaller than the Size of the Texture");
 
         Implementation.GetData(buffer);
@@ -224,7 +224,7 @@ public class Texture : IDisposable
             // TODO:
             // do this inline with a single buffer
 
-            var buffer = new byte[FileSize];
+            var buffer = new byte[MemorySize];
             GetData<byte>(buffer);
 
             if (Format == TextureFormat.Red)
