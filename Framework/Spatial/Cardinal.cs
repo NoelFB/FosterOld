@@ -70,6 +70,9 @@ namespace Foster.Framework
             }
         }
 
+        /// <summary>
+        /// The cardinal's direction represented as radians
+        /// </summary>
         public float Angle
         {
             get

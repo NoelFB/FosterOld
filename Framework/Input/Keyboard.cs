@@ -142,6 +142,39 @@ public class Keyboard
     }
 
     /// <summary>
+    /// Returns the first key that is currently down, if any
+    /// </summary>
+    public Keys? FirstDown()
+    {
+        for (int i = 0; i < down.Length; i++)
+            if (down[i])
+                return (Keys)i;
+        return null;
+    }
+
+    /// <summary>
+    /// Returns the first key that is currently pressed, if any
+    /// </summary>
+    public Keys? FirstPressed()
+    {
+        for (int i = 0; i < pressed.Length; i++)
+            if (pressed[i])
+                return (Keys)i;
+        return null;
+    }
+
+    /// <summary>
+    /// Returns the first key that is currently released, if any
+    /// </summary>
+    public Keys? FirstReleased()
+    {
+        for (int i = 0; i < released.Length; i++)
+            if (released[i])
+                return (Keys)i;
+        return null;
+    }
+
+    /// <summary>
     /// Returns True if the Left or Right Control keys are held
     /// </summary>
     public bool Ctrl => Down(Keys.LeftControl, Keys.RightControl);

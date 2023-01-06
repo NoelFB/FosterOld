@@ -11,16 +11,16 @@ namespace Foster.Framework;
 [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 4)]
 public struct Color
 {
-    public static readonly Color Transparent = new Color(0, 0, 0, 0);
-    public static readonly Color White = new Color(0xffffff);
-    public static readonly Color Black = new Color(0x000000);
-    public static readonly Color LightGray = new Color(0xc0c0c0);
-    public static readonly Color Gray = new Color(0x808080);
-    public static readonly Color DarkGray = new Color(0x404040);
-    public static readonly Color Red = new Color(0xff0000);
-    public static readonly Color Green = new Color(0x00ff00);
-    public static readonly Color Blue = new Color(0x0000ff);
-    public static readonly Color Yellow = new Color(0xffff00);
+    public static readonly Color Transparent = new(0, 0, 0, 0);
+    public static readonly Color White = new(0xffffff);
+    public static readonly Color Black = new(0x000000);
+    public static readonly Color LightGray = new(0xc0c0c0);
+    public static readonly Color Gray = new(0x808080);
+    public static readonly Color DarkGray = new(0x404040);
+    public static readonly Color Red = new(0xff0000);
+    public static readonly Color Green = new(0x00ff00);
+    public static readonly Color Blue = new(0x0000ff);
+    public static readonly Color Yellow = new(0xffff00);
 
     /// <summary>
     /// The Color Value in a ABGR 32-bit unsigned integer
