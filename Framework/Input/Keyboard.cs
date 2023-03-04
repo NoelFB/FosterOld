@@ -134,6 +134,22 @@ public class Keyboard
     }
 
     /// <summary>
+    /// Checks if the given key was Pressed or held until Repeated
+    /// </summary>
+    public bool PressedOrRepeated(Keys key)
+    {
+        return Pressed(key) || Repeated(key);
+    }
+
+    /// <summary>
+    /// Checks if the given key was Pressed or held until Repeated, given the delay and interval
+    /// </summary>
+    public bool PressedOrRepeated(Keys key, float repeatDelay, float repeatInterval)
+    {
+        return Pressed(key) || Repeated(key, repeatDelay, repeatInterval);
+    }
+
+    /// <summary>
     /// Gets the Timestamp of when the given key was last pressed, in Ticks
     /// </summary>
     public long Timestamp(Keys key)
