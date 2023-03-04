@@ -211,6 +211,12 @@ public struct RectInt
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Contains(in Vector2 vec)
+    {
+        return (vec.X >= X && vec.Y >= Y && vec.X < X + Width && vec.Y < Y + Height);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(in RectInt rect)
     {
         return (Left < rect.Left && Top < rect.Top && Bottom > rect.Bottom && Right > rect.Right);
