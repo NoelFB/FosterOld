@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -452,5 +454,15 @@ public struct RectInt
         }
 
         return this;
+    }
+
+    public IEnumerable<Point2> AllPoints
+    {
+        get
+        {
+            for (int x = X; x < X + Width; x++)
+                for (int y = Y; y < Y + Height; y++)
+                    yield return new(x, y);
+        }
     }
 }
