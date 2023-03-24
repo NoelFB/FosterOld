@@ -388,6 +388,10 @@ public class Batch2D
         Quad(from + perp, from - perp, to - perp, to + perp, color);
     }
 
+    #endregion
+
+    #region Dashed Line
+
     public void DashedLine(Vector2 from, Vector2 to, float thickness, Color color, float dashLength, float offsetPercent)
     {
         var diff = to - from;
@@ -907,6 +911,18 @@ public class Batch2D
                 Quad(r3_tl, r3_tr, r3_br, r3_bl, color);
         }
 
+    }
+
+    #endregion
+
+    #region Dashed Rect
+
+    public void DashedRect(Rect rect, float thickness, Color color, float dashLength, float dashOffset)
+    {
+        DashedLine(rect.TopLeft, rect.TopRight, thickness, color, dashLength, dashOffset);
+        DashedLine(rect.TopRight, rect.BottomRight, thickness, color, dashLength, dashOffset);
+        DashedLine(rect.BottomRight, rect.BottomLeft, thickness, color, dashLength, dashOffset);
+        DashedLine(rect.BottomLeft, rect.TopLeft, thickness, color, dashLength, dashOffset);
     }
 
     #endregion
