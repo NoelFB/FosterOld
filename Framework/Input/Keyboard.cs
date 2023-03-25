@@ -196,6 +196,11 @@ public class Keyboard
     public bool Ctrl => Down(Keys.LeftControl, Keys.RightControl);
 
     /// <summary>
+    /// Returns the timestamp in ticks of the most recent Control press
+    /// </summary>
+    public long CtrlTimestamp => Math.Max(Timestamp(Keys.LeftControl), Timestamp(Keys.RightControl));
+
+    /// <summary>
     /// Returns True if the Left or Right Control keys are held (or Command on MacOS)
     /// </summary>
     public bool CtrlOrCommand
@@ -210,14 +215,38 @@ public class Keyboard
     }
 
     /// <summary>
+    /// Returns the timestamp in ticks of the most recent Control press (or Command on MacOS)
+    /// </summary>
+    public long CtrlOrCommandTimestamp
+    {
+        get
+        {
+            if (OperatingSystem.IsMacOS())
+                return Math.Max(Timestamp(Keys.LeftSuper), Timestamp(Keys.RightSuper));
+            else
+                return Math.Max(Timestamp(Keys.LeftControl), Timestamp(Keys.RightControl));
+        }
+    }
+
+    /// <summary>
     /// Returns True if the Left or Right Alt keys are held
     /// </summary>
     public bool Alt => Down(Keys.LeftAlt, Keys.RightAlt);
 
     /// <summary>
+    /// Returns the timestamp in ticks of the most recent Alt press
+    /// </summary>
+    public long AltTimestamp => Math.Max(Timestamp(Keys.LeftAlt), Timestamp(Keys.RightAlt));
+
+    /// <summary>
     /// Returns True of the Left or Right Shift keys are held
     /// </summary>
     public bool Shift => Down(Keys.LeftShift, Keys.RightShift);
+
+    /// <summary>
+    /// Returns the timestamp in ticks of the most recent Shift press
+    /// </summary>
+    public long ShiftTimestamp => Math.Max(Timestamp(Keys.LeftShift), Timestamp(Keys.RightShift));
 
     public void Clear()
     {
