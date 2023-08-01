@@ -170,9 +170,9 @@ namespace Foster.Framework
         }
 
         /// <summary>
-        /// Get a position within the rectangle based on x- and y-values 0-1
+        /// Get a point on the rectangle based on x- and y-values 0-1 where 0 is the left/top and 1 is the right/bottom
         /// </summary>
-        public Vector2 GetPointIn(float x, float y)
+        public Vector2 On(float x, float y)
             => new(X + Width * x, Y + Height * y);
 
         #endregion
