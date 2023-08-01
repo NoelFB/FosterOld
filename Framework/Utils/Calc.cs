@@ -175,19 +175,13 @@ public static class Calc
     }
 
     public static float Lerp(float a, float b, float percent)
-    {
-        return (a + (b - a) * percent);
-    }
+        => (a + (b - a) * percent);
 
     public static int Clamp(int value, int min, int max)
-    {
-        return Math.Min(Math.Max(value, min), max);
-    }
+        => Math.Min(Math.Max(value, min), max);
 
     public static float Clamp(float value, float min, float max)
-    {
-        return Math.Min(Math.Max(value, min), max);
-    }
+        => MathF.Min(MathF.Max(value, min), max);
 
     public static float YoYo(float value)
     {
@@ -198,34 +192,22 @@ public static class Calc
     }
 
     public static float Map(float val, float min, float max, float newMin = 0, float newMax = 1)
-    {
-        return ((val - min) / (max - min)) * (newMax - newMin) + newMin;
-    }
+        => ((val - min) / (max - min)) * (newMax - newMin) + newMin;
 
     public static float SineMap(float counter, float newMin, float newMax)
-    {
-        return Map((float)Math.Sin(counter), -1, 1, newMin, newMax);
-    }
+        => Map((float)Math.Sin(counter), -1, 1, newMin, newMax);
 
     public static float ClampedMap(float val, float min, float max, float newMin = 0, float newMax = 1)
-    {
-        return Clamp((val - min) / (max - min), 0, 1) * (newMax - newMin) + newMin;
-    }
+        => Clamp((val - min) / (max - min), 0, 1) * (newMax - newMin) + newMin;
 
     public static float Angle(Vector2 vec)
-    {
-        return MathF.Atan2(vec.Y, vec.X);
-    }
+        => MathF.Atan2(vec.Y, vec.X);
 
     public static float Angle(Vector2 from, Vector2 to)
-    {
-        return MathF.Atan2(to.Y - from.Y, to.X - from.X);
-    }
+        => MathF.Atan2(to.Y - from.Y, to.X - from.X);
 
     public static Vector2 AngleToVector(float angle, float length = 1)
-    {
-        return new Vector2(MathF.Cos(angle) * length, MathF.Sin(angle) * length);
-    }
+        => new Vector2(MathF.Cos(angle) * length, MathF.Sin(angle) * length);
 
     public static float AngleApproach(float val, float target, float maxMove)
     {
@@ -236,24 +218,19 @@ public static class Calc
     }
 
     public static float AngleLerp(float startAngle, float endAngle, float percent)
-    {
-        return startAngle + AngleDiff(startAngle, endAngle) * percent;
-    }
+        => startAngle + AngleDiff(startAngle, endAngle) * percent;
 
     public static float AngleDiff(float radiansA, float radiansB)
-    {
-        return ((radiansB - radiansA - PI) % TAU + TAU) % TAU - PI;
-    }
+        => ((radiansB - radiansA - PI) % TAU + TAU) % TAU - PI;
 
     public static float Snap(float value, float snapTo)
-    {
-        return MathF.Round(value / snapTo) * snapTo;
-    }
+        => MathF.Round(value / snapTo) * snapTo;
 
     public static int Snap(int value, int snapTo)
-    {
-        return (value / snapTo) * snapTo;
-    }
+        => (value / snapTo) * snapTo;
+
+    public static Vector2 Bezier(in Vector2 a, in Vector2 b, in Vector2 c, float t)
+        => Vector2.Lerp(Vector2.Lerp(a, b, t), Vector2.Lerp(b, c, t), t);
 
     #endregion
 
