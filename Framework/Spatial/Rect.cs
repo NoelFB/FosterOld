@@ -16,7 +16,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 Position
     {
-        get => new Vector2(X, Y);
+        get => new(X, Y);
         set
         {
             X = value.X;
@@ -26,7 +26,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 Size
     {
-        get => new Vector2(Width, Height);
+        get => new(Width, Height);
         set
         {
             Width = value.X;
@@ -80,7 +80,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 TopLeft
     {
-        get => new Vector2(Left, Top);
+        get => new(Left, Top);
         set
         {
             Left = value.X;
@@ -90,7 +90,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 TopCenter
     {
-        get => new Vector2(CenterX, Top);
+        get => new(CenterX, Top);
         set
         {
             CenterX = value.X;
@@ -100,7 +100,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 TopRight
     {
-        get => new Vector2(Right, Top);
+        get => new(Right, Top);
         set
         {
             Right = value.X;
@@ -110,7 +110,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 CenterLeft
     {
-        get => new Vector2(Left, CenterY);
+        get => new(Left, CenterY);
         set
         {
             Left = value.X;
@@ -120,7 +120,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 Center
     {
-        get => new Vector2(CenterX, CenterY);
+        get => new(CenterX, CenterY);
         set
         {
             CenterX = value.X;
@@ -130,7 +130,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 CenterRight
     {
-        get => new Vector2(Right, CenterY);
+        get => new(Right, CenterY);
         set
         {
             Right = value.X;
@@ -140,7 +140,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 BottomLeft
     {
-        get => new Vector2(Left, Bottom);
+        get => new(Left, Bottom);
         set
         {
             Left = value.X;
@@ -150,7 +150,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 BottomCenter
     {
-        get => new Vector2(CenterX, Bottom);
+        get => new(CenterX, Bottom);
         set
         {
             CenterX = value.X;
@@ -160,7 +160,7 @@ public struct Rect : IConvexShape2D
 
     public Vector2 BottomRight
     {
-        get => new Vector2(Right, Bottom);
+        get => new(Right, Bottom);
         set
         {
             Right = value.X;
@@ -173,6 +173,12 @@ public struct Rect : IConvexShape2D
     /// </summary>
     public Vector2 On(float x, float y)
         => new(X + Width * x, Y + Height * y);
+
+    /// <summary>
+    /// Get a point on the rectangle based on x- and y-values 0-1 where 0 is the left/top and 1 is the right/bottom
+    /// </summary>
+    public Vector2 On(in Vector2 vec)
+       => new(X + Width * vec.X, Y + Height * vec.Y);
 
     #endregion
 
@@ -200,11 +206,11 @@ public struct Rect : IConvexShape2D
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(in Vector2 point)
-        => (point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height);
+        => point.X >= X && point.Y >= Y && point.X < X + Width && point.Y < Y + Height;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(in Rect rect)
-        => (Left <= rect.Left && Top <= rect.Top && Bottom >= rect.Bottom && Right >= rect.Right);
+        => Left <= rect.Left && Top <= rect.Top && Bottom >= rect.Bottom && Right >= rect.Right;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Overlaps(in Rect against)
@@ -372,7 +378,7 @@ public struct Rect : IConvexShape2D
         => new(rect.X, rect.Y, rect.Width, rect.Height);
 
     public static bool operator ==(in Rect a, in Rect b)
-        => (a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height);
+        => a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height;
 
     public static bool operator !=(in Rect a, in Rect b)
         => !(a == b);
