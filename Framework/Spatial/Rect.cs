@@ -34,7 +34,7 @@ public struct Rect : IConvexShape2D
         }
     }
 
-    public float Area => Math.Abs(Width) * Math.Abs(Height);
+    public float Area => Math.Abs(Width * Height);
 
     #region Edges
 
