@@ -1,3 +1,6 @@
+### This repository is no longer being worked on!
+### There is a new iteration of this library which [can be found here](https://github.com/NoelFB/Foster).
+---
 # Foster
 Foster is an open source & cross-platform game framework made in C# dotnet core.
 
